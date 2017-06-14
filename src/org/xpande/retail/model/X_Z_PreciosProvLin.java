@@ -165,6 +165,23 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 		return (String)get_Value(COLUMNNAME_Description);
 	}
 
+	/** Set InternalCode.
+		@param InternalCode 
+		Código Interno
+	  */
+	public void setInternalCode (String InternalCode)
+	{
+		set_Value (COLUMNNAME_InternalCode, InternalCode);
+	}
+
+	/** Get InternalCode.
+		@return Código Interno
+	  */
+	public String getInternalCode () 
+	{
+		return (String)get_Value(COLUMNNAME_InternalCode);
+	}
+
 	/** Set IsNew.
 		@param IsNew IsNew	  */
 	public void setIsNew (boolean IsNew)
@@ -416,23 +433,6 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 		return (String)get_Value(COLUMNNAME_UPC);
 	}
 
-	/** Set Search Key.
-		@param Value 
-		Search key for the record in the format required - must be unique
-	  */
-	public void setValue (String Value)
-	{
-		set_Value (COLUMNNAME_Value, Value);
-	}
-
-	/** Get Search Key.
-		@return Search key for the record in the format required - must be unique
-	  */
-	public String getValue () 
-	{
-		return (String)get_Value(COLUMNNAME_Value);
-	}
-
 	/** Set Partner Product Key.
 		@param VendorProductNo 
 		Product Key of the Business Partner
@@ -495,9 +495,9 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 		return ii.intValue();
 	}
 
-	public org.xpande.retail.model.I_Z_ProductoFamilia getZ_ProductoFamilia() throws RuntimeException
+	public I_Z_ProductoFamilia getZ_ProductoFamilia() throws RuntimeException
     {
-		return (org.xpande.retail.model.I_Z_ProductoFamilia)MTable.get(getCtx(), org.xpande.retail.model.I_Z_ProductoFamilia.Table_Name)
+		return (I_Z_ProductoFamilia)MTable.get(getCtx(), I_Z_ProductoFamilia.Table_Name)
 			.getPO(getZ_ProductoFamilia_ID(), get_TrxName());	}
 
 	/** Set Z_ProductoFamilia ID.
@@ -520,9 +520,9 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 		return ii.intValue();
 	}
 
-	public org.xpande.retail.model.I_Z_ProductoRubro getZ_ProductoRubro() throws RuntimeException
+	public I_Z_ProductoRubro getZ_ProductoRubro() throws RuntimeException
     {
-		return (org.xpande.retail.model.I_Z_ProductoRubro)MTable.get(getCtx(), org.xpande.retail.model.I_Z_ProductoRubro.Table_Name)
+		return (I_Z_ProductoRubro)MTable.get(getCtx(), I_Z_ProductoRubro.Table_Name)
 			.getPO(getZ_ProductoRubro_ID(), get_TrxName());	}
 
 	/** Set Z_ProductoRubro ID.
@@ -545,9 +545,9 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 		return ii.intValue();
 	}
 
-	public org.xpande.retail.model.I_Z_ProductoSeccion getZ_ProductoSeccion() throws RuntimeException
+	public I_Z_ProductoSeccion getZ_ProductoSeccion() throws RuntimeException
     {
-		return (org.xpande.retail.model.I_Z_ProductoSeccion)MTable.get(getCtx(), org.xpande.retail.model.I_Z_ProductoSeccion.Table_Name)
+		return (I_Z_ProductoSeccion)MTable.get(getCtx(), I_Z_ProductoSeccion.Table_Name)
 			.getPO(getZ_ProductoSeccion_ID(), get_TrxName());	}
 
 	/** Set Z_ProductoSeccion ID.
@@ -570,9 +570,9 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 		return ii.intValue();
 	}
 
-	public org.xpande.retail.model.I_Z_ProductoSubfamilia getZ_ProductoSubfamilia() throws RuntimeException
+	public I_Z_ProductoSubfamilia getZ_ProductoSubfamilia() throws RuntimeException
     {
-		return (org.xpande.retail.model.I_Z_ProductoSubfamilia)MTable.get(getCtx(), org.xpande.retail.model.I_Z_ProductoSubfamilia.Table_Name)
+		return (I_Z_ProductoSubfamilia)MTable.get(getCtx(), I_Z_ProductoSubfamilia.Table_Name)
 			.getPO(getZ_ProductoSubfamilia_ID(), get_TrxName());	}
 
 	/** Set Z_ProductoSubfamilia ID.

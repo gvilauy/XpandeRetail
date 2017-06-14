@@ -469,6 +469,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 			while (lineaArchivo != null) {
 
+				lineaArchivo = lineaArchivo.replace("'", "");
 				contLineas++;
 
 				zPreciosProvArchivoID = formatoImpArchivo.updateDB(lineaArchivo, getCtx(), get_TrxName());
@@ -529,6 +530,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 				MZPreciosProvLin plinea = new MZPreciosProvLin(getCtx(), 0, get_TrxName());
 				plinea.setZ_PreciosProvCab_ID(this.get_ID());
+				lineaArchivo.setIsConfirmed(false);
 
 				MProduct prod = null;
 
@@ -578,7 +580,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 							}
 
 							hashValue.put(valueProd, lineaArchivo.getLineNumber());
-							plinea.setValue(valueProd);
+							plinea.setInternalCode(valueProd);
 
 							whereClause = X_M_Product.COLUMNNAME_Value + " ='" + valueProd + "' ";
 							MProduct[] prods = MProduct.get(getCtx(), whereClause, get_TrxName());
@@ -595,6 +597,8 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				// Si tengo producto, lo marco en la tabla de lineas
 				if ((prod != null) && (prod.get_ID() > 0)){
 					plinea.setM_Product_ID(prod.get_ID());
+					plinea.setName(prod.getName());
+					plinea.setDescription(prod.getDescription());
 					plinea.setIsNew(false);
 					plinea.setZ_ProductoSeccion_ID(prod.get_ValueAsInt(X_Z_ProductoSeccion.COLUMNNAME_Z_ProductoSeccion_ID));
 					plinea.setZ_ProductoRubro_ID(prod.get_ValueAsInt(X_Z_ProductoRubro.COLUMNNAME_Z_ProductoRubro_ID));
@@ -633,6 +637,19 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 				// Si esta línea se corresponde a un nuevo producto, guardos precios sin buscar en el sistema
 				if (plinea.isNew()){
+
+					lineaArchivo.setIsNew(true);
+
+					// Valido que se haya ingresado nombre para el nuevo producto
+					if ((lineaArchivo.getName() == null) || (lineaArchivo.getName().trim().equalsIgnoreCase(""))){
+						lineaArchivo.setIsConfirmed(false);
+						lineaArchivo.setErrorMsg("No se indica Nombre de Producto en linea de archivo : " + lineaArchivo.getLineNumber());
+						lineaArchivo.saveEx();
+						continue;
+					}
+					plinea.setName(lineaArchivo.getName().trim());
+					plinea.setDescription(lineaArchivo.getName().trim());
+
 					plinea.setPriceList(lineaArchivo.getPriceList());
 					plinea.setPricePO(lineaArchivo.getPriceList());
 					plinea.setPriceFinal(lineaArchivo.getPriceList());
@@ -643,6 +660,9 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 					}
 				}
 				else{
+
+					lineaArchivo.setIsNew(false);
+
 					// El producto ya estaba definido en el sistema
 					// Tomo datos de precios de compra desde modelo proveedor-producto en caso de existir.
 					// Puede suceder que sea la primera vez que este proveedor pasa precio de este producto.
@@ -657,10 +677,10 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 						plinea.setPricePO(lineaArchivo.getPriceList());
 						plinea.setPriceFinal(lineaArchivo.getPriceList());
 					}
-
 				}
 
 				plinea.saveEx();
+				lineaArchivo.saveEx();
 			}
 
 		}

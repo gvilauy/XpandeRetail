@@ -31,7 +31,7 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170613L;
+	private static final long serialVersionUID = 20170614L;
 
     /** Standard Constructor */
     public X_Z_PreciosProvCab (Properties ctx, int Z_PreciosProvCab_ID, String trxName)
@@ -43,6 +43,7 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 			setC_DocType_ID (0);
 			setDateDoc (new Timestamp( System.currentTimeMillis() ));
 // @#Date@
+			setDateValidPO (new Timestamp( System.currentTimeMillis() ));
 			setDocAction (null);
 // CO
 			setDocStatus (null);
@@ -50,6 +51,10 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 			setDocumentNo (null);
 			setIsApproved (false);
 // N
+			setIsTaxIncluded (true);
+// Y
+			setModalidadPreciosProv (null);
+// ARCHIVO
 			setProcessed (false);
 // N
 			setZ_PreciosProvCab_ID (0);
@@ -112,6 +117,54 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 		return ii.intValue();
 	}
 
+	public I_C_Currency getC_Currency() throws RuntimeException
+    {
+		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
+			.getPO(getC_Currency_ID(), get_TrxName());	}
+
+	/** Set Currency.
+		@param C_Currency_ID 
+		The Currency for this record
+	  */
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Currency.
+		@return The Currency for this record
+	  */
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set C_Currency_ID_SO.
+		@param C_Currency_ID_SO 
+		Moneda de Venta
+	  */
+	public void setC_Currency_ID_SO (int C_Currency_ID_SO)
+	{
+		set_Value (COLUMNNAME_C_Currency_ID_SO, Integer.valueOf(C_Currency_ID_SO));
+	}
+
+	/** Get C_Currency_ID_SO.
+		@return Moneda de Venta
+	  */
+	public int getC_Currency_ID_SO () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID_SO);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	public I_C_DocType getC_DocType() throws RuntimeException
     {
 		return (I_C_DocType)MTable.get(getCtx(), I_C_DocType.Table_Name)
@@ -155,6 +208,23 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 	public Timestamp getDateDoc () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_DateDoc);
+	}
+
+	/** Set DateValidPO.
+		@param DateValidPO 
+		Fecha Vigencia Compra
+	  */
+	public void setDateValidPO (Timestamp DateValidPO)
+	{
+		set_Value (COLUMNNAME_DateValidPO, DateValidPO);
+	}
+
+	/** Get DateValidPO.
+		@return Fecha Vigencia Compra
+	  */
+	public Timestamp getDateValidPO () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DateValidPO);
 	}
 
 	/** Set Description.
@@ -324,6 +394,166 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 		return false;
 	}
 
+	/** Set Price includes Tax.
+		@param IsTaxIncluded 
+		Tax is included in the price 
+	  */
+	public void setIsTaxIncluded (boolean IsTaxIncluded)
+	{
+		set_Value (COLUMNNAME_IsTaxIncluded, Boolean.valueOf(IsTaxIncluded));
+	}
+
+	/** Get Price includes Tax.
+		@return Tax is included in the price 
+	  */
+	public boolean isTaxIncluded () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsTaxIncluded);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** ModalidadPreciosProv AD_Reference_ID=1000001 */
+	public static final int MODALIDADPRECIOSPROV_AD_Reference_ID=1000001;
+	/** ARCHIVO DE CARGA = ARCHIVO */
+	public static final String MODALIDADPRECIOSPROV_ARCHIVODECARGA = "ARCHIVO";
+	/** LINEA DE PRODUCTOS = LINEA */
+	public static final String MODALIDADPRECIOSPROV_LINEADEPRODUCTOS = "LINEA";
+	/** INGRESO MANUAL = MANUAL */
+	public static final String MODALIDADPRECIOSPROV_INGRESOMANUAL = "MANUAL";
+	/** Set ModalidadPreciosProv.
+		@param ModalidadPreciosProv 
+		Modalidad de gestión para el mantenimiento de precios de proveedor
+	  */
+	public void setModalidadPreciosProv (String ModalidadPreciosProv)
+	{
+
+		set_Value (COLUMNNAME_ModalidadPreciosProv, ModalidadPreciosProv);
+	}
+
+	/** Get ModalidadPreciosProv.
+		@return Modalidad de gestión para el mantenimiento de precios de proveedor
+	  */
+	public String getModalidadPreciosProv () 
+	{
+		return (String)get_Value(COLUMNNAME_ModalidadPreciosProv);
+	}
+
+	public I_M_PriceList getM_PriceList() throws RuntimeException
+    {
+		return (I_M_PriceList)MTable.get(getCtx(), I_M_PriceList.Table_Name)
+			.getPO(getM_PriceList_ID(), get_TrxName());	}
+
+	/** Set Price List.
+		@param M_PriceList_ID 
+		Unique identifier of a Price List
+	  */
+	public void setM_PriceList_ID (int M_PriceList_ID)
+	{
+		if (M_PriceList_ID < 1) 
+			set_Value (COLUMNNAME_M_PriceList_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_PriceList_ID, Integer.valueOf(M_PriceList_ID));
+	}
+
+	/** Get Price List.
+		@return Unique identifier of a Price List
+	  */
+	public int getM_PriceList_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set M_PriceList_ID_SO.
+		@param M_PriceList_ID_SO 
+		Lista de Precios de Venta
+	  */
+	public void setM_PriceList_ID_SO (int M_PriceList_ID_SO)
+	{
+		set_Value (COLUMNNAME_M_PriceList_ID_SO, Integer.valueOf(M_PriceList_ID_SO));
+	}
+
+	/** Get M_PriceList_ID_SO.
+		@return Lista de Precios de Venta
+	  */
+	public int getM_PriceList_ID_SO () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_ID_SO);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_M_PriceList_Version getM_PriceList_Version() throws RuntimeException
+    {
+		return (I_M_PriceList_Version)MTable.get(getCtx(), I_M_PriceList_Version.Table_Name)
+			.getPO(getM_PriceList_Version_ID(), get_TrxName());	}
+
+	/** Set Price List Version.
+		@param M_PriceList_Version_ID 
+		Identifies a unique instance of a Price List
+	  */
+	public void setM_PriceList_Version_ID (int M_PriceList_Version_ID)
+	{
+		if (M_PriceList_Version_ID < 1) 
+			set_Value (COLUMNNAME_M_PriceList_Version_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_PriceList_Version_ID, Integer.valueOf(M_PriceList_Version_ID));
+	}
+
+	/** Get Price List Version.
+		@return Identifies a unique instance of a Price List
+	  */
+	public int getM_PriceList_Version_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_Version_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set M_PriceList_Version_ID_SO.
+		@param M_PriceList_Version_ID_SO 
+		Version de Lista de Precios de Venta
+	  */
+	public void setM_PriceList_Version_ID_SO (int M_PriceList_Version_ID_SO)
+	{
+		set_Value (COLUMNNAME_M_PriceList_Version_ID_SO, Integer.valueOf(M_PriceList_Version_ID_SO));
+	}
+
+	/** Get M_PriceList_Version_ID_SO.
+		@return Version de Lista de Precios de Venta
+	  */
+	public int getM_PriceList_Version_ID_SO () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_Version_ID_SO);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set NombreLineaManual.
+		@param NombreLineaManual NombreLineaManual	  */
+	public void setNombreLineaManual (String NombreLineaManual)
+	{
+		set_Value (COLUMNNAME_NombreLineaManual, NombreLineaManual);
+	}
+
+	/** Get NombreLineaManual.
+		@return NombreLineaManual	  */
+	public String getNombreLineaManual () 
+	{
+		return (String)get_Value(COLUMNNAME_NombreLineaManual);
+	}
+
 	/** Set ProcessButton.
 		@param ProcessButton ProcessButton	  */
 	public void setProcessButton (String ProcessButton)
@@ -360,6 +590,56 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	public I_Z_LineaProductoSocio getZ_LineaProductoSocio() throws RuntimeException
+    {
+		return (I_Z_LineaProductoSocio)MTable.get(getCtx(), I_Z_LineaProductoSocio.Table_Name)
+			.getPO(getZ_LineaProductoSocio_ID(), get_TrxName());	}
+
+	/** Set Z_LineaProductoSocio ID.
+		@param Z_LineaProductoSocio_ID Z_LineaProductoSocio ID	  */
+	public void setZ_LineaProductoSocio_ID (int Z_LineaProductoSocio_ID)
+	{
+		if (Z_LineaProductoSocio_ID < 1) 
+			set_Value (COLUMNNAME_Z_LineaProductoSocio_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_LineaProductoSocio_ID, Integer.valueOf(Z_LineaProductoSocio_ID));
+	}
+
+	/** Get Z_LineaProductoSocio ID.
+		@return Z_LineaProductoSocio ID	  */
+	public int getZ_LineaProductoSocio_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_LineaProductoSocio_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_PautaComercial getZ_PautaComercial() throws RuntimeException
+    {
+		return (I_Z_PautaComercial)MTable.get(getCtx(), I_Z_PautaComercial.Table_Name)
+			.getPO(getZ_PautaComercial_ID(), get_TrxName());	}
+
+	/** Set Z_PautaComercial ID.
+		@param Z_PautaComercial_ID Z_PautaComercial ID	  */
+	public void setZ_PautaComercial_ID (int Z_PautaComercial_ID)
+	{
+		if (Z_PautaComercial_ID < 1) 
+			set_Value (COLUMNNAME_Z_PautaComercial_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_PautaComercial_ID, Integer.valueOf(Z_PautaComercial_ID));
+	}
+
+	/** Get Z_PautaComercial ID.
+		@return Z_PautaComercial ID	  */
+	public int getZ_PautaComercial_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_PautaComercial_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Z_PreciosProvCab ID.

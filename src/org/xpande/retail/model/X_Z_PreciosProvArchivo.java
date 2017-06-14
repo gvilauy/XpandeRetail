@@ -32,7 +32,7 @@ public class X_Z_PreciosProvArchivo extends PO implements I_Z_PreciosProvArchivo
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170613L;
+	private static final long serialVersionUID = 20170614L;
 
     /** Standard Constructor */
     public X_Z_PreciosProvArchivo (Properties ctx, int Z_PreciosProvArchivo_ID, String trxName)
@@ -49,7 +49,6 @@ public class X_Z_PreciosProvArchivo extends PO implements I_Z_PreciosProvArchivo
 			setProcessed (false);
 // N
 			setZ_PreciosProvArchivo_ID (0);
-			setZ_PreciosProvCab_ID (0);
         } */
     }
 

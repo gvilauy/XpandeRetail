@@ -131,6 +131,19 @@ public interface I_Z_PreciosProvLin
 	  */
 	public String getDescription();
 
+    /** Column name InternalCode */
+    public static final String COLUMNNAME_InternalCode = "InternalCode";
+
+	/** Set InternalCode.
+	  * Código Interno
+	  */
+	public void setInternalCode(String InternalCode);
+
+	/** Get InternalCode.
+	  * Código Interno
+	  */
+	public String getInternalCode();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -311,19 +324,6 @@ public interface I_Z_PreciosProvLin
 	  */
 	public int getUpdatedBy();
 
-    /** Column name Value */
-    public static final String COLUMNNAME_Value = "Value";
-
-	/** Set Search Key.
-	  * Search key for the record in the format required - must be unique
-	  */
-	public void setValue(String Value);
-
-	/** Get Search Key.
-	  * Search key for the record in the format required - must be unique
-	  */
-	public String getValue();
-
     /** Column name VendorProductNo */
     public static final String COLUMNNAME_VendorProductNo = "VendorProductNo";
 
@@ -366,7 +366,7 @@ public interface I_Z_PreciosProvLin
 	/** Get Z_ProductoFamilia ID	  */
 	public int getZ_ProductoFamilia_ID();
 
-	public org.xpande.retail.model.I_Z_ProductoFamilia getZ_ProductoFamilia() throws RuntimeException;
+	public I_Z_ProductoFamilia getZ_ProductoFamilia() throws RuntimeException;
 
     /** Column name Z_ProductoRubro_ID */
     public static final String COLUMNNAME_Z_ProductoRubro_ID = "Z_ProductoRubro_ID";
@@ -377,7 +377,7 @@ public interface I_Z_PreciosProvLin
 	/** Get Z_ProductoRubro ID	  */
 	public int getZ_ProductoRubro_ID();
 
-	public org.xpande.retail.model.I_Z_ProductoRubro getZ_ProductoRubro() throws RuntimeException;
+	public I_Z_ProductoRubro getZ_ProductoRubro() throws RuntimeException;
 
     /** Column name Z_ProductoSeccion_ID */
     public static final String COLUMNNAME_Z_ProductoSeccion_ID = "Z_ProductoSeccion_ID";
@@ -388,7 +388,7 @@ public interface I_Z_PreciosProvLin
 	/** Get Z_ProductoSeccion ID	  */
 	public int getZ_ProductoSeccion_ID();
 
-	public org.xpande.retail.model.I_Z_ProductoSeccion getZ_ProductoSeccion() throws RuntimeException;
+	public I_Z_ProductoSeccion getZ_ProductoSeccion() throws RuntimeException;
 
     /** Column name Z_ProductoSubfamilia_ID */
     public static final String COLUMNNAME_Z_ProductoSubfamilia_ID = "Z_ProductoSubfamilia_ID";
@@ -399,5 +399,5 @@ public interface I_Z_PreciosProvLin
 	/** Get Z_ProductoSubfamilia ID	  */
 	public int getZ_ProductoSubfamilia_ID();
 
-	public org.xpande.retail.model.I_Z_ProductoSubfamilia getZ_ProductoSubfamilia() throws RuntimeException;
+	public I_Z_ProductoSubfamilia getZ_ProductoSubfamilia() throws RuntimeException;
 }

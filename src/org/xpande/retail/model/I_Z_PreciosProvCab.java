@@ -78,6 +78,34 @@ public interface I_Z_PreciosProvCab
 
 	public I_C_BPartner getC_BPartner() throws RuntimeException;
 
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/** Set Currency.
+	  * The Currency for this record
+	  */
+	public void setC_Currency_ID(int C_Currency_ID);
+
+	/** Get Currency.
+	  * The Currency for this record
+	  */
+	public int getC_Currency_ID();
+
+	public I_C_Currency getC_Currency() throws RuntimeException;
+
+    /** Column name C_Currency_ID_SO */
+    public static final String COLUMNNAME_C_Currency_ID_SO = "C_Currency_ID_SO";
+
+	/** Set C_Currency_ID_SO.
+	  * Moneda de Venta
+	  */
+	public void setC_Currency_ID_SO(int C_Currency_ID_SO);
+
+	/** Get C_Currency_ID_SO.
+	  * Moneda de Venta
+	  */
+	public int getC_Currency_ID_SO();
+
     /** Column name C_DocType_ID */
     public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
@@ -121,6 +149,19 @@ public interface I_Z_PreciosProvCab
 	  * Date of the Document
 	  */
 	public Timestamp getDateDoc();
+
+    /** Column name DateValidPO */
+    public static final String COLUMNNAME_DateValidPO = "DateValidPO";
+
+	/** Set DateValidPO.
+	  * Fecha Vigencia Compra
+	  */
+	public void setDateValidPO(Timestamp DateValidPO);
+
+	/** Get DateValidPO.
+	  * Fecha Vigencia Compra
+	  */
+	public Timestamp getDateValidPO();
 
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
@@ -213,6 +254,97 @@ public interface I_Z_PreciosProvCab
 	  */
 	public boolean isApproved();
 
+    /** Column name IsTaxIncluded */
+    public static final String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
+
+	/** Set Price includes Tax.
+	  * Tax is included in the price 
+	  */
+	public void setIsTaxIncluded(boolean IsTaxIncluded);
+
+	/** Get Price includes Tax.
+	  * Tax is included in the price 
+	  */
+	public boolean isTaxIncluded();
+
+    /** Column name ModalidadPreciosProv */
+    public static final String COLUMNNAME_ModalidadPreciosProv = "ModalidadPreciosProv";
+
+	/** Set ModalidadPreciosProv.
+	  * Modalidad de gestión para el mantenimiento de precios de proveedor
+	  */
+	public void setModalidadPreciosProv(String ModalidadPreciosProv);
+
+	/** Get ModalidadPreciosProv.
+	  * Modalidad de gestión para el mantenimiento de precios de proveedor
+	  */
+	public String getModalidadPreciosProv();
+
+    /** Column name M_PriceList_ID */
+    public static final String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
+
+	/** Set Price List.
+	  * Unique identifier of a Price List
+	  */
+	public void setM_PriceList_ID(int M_PriceList_ID);
+
+	/** Get Price List.
+	  * Unique identifier of a Price List
+	  */
+	public int getM_PriceList_ID();
+
+	public I_M_PriceList getM_PriceList() throws RuntimeException;
+
+    /** Column name M_PriceList_ID_SO */
+    public static final String COLUMNNAME_M_PriceList_ID_SO = "M_PriceList_ID_SO";
+
+	/** Set M_PriceList_ID_SO.
+	  * Lista de Precios de Venta
+	  */
+	public void setM_PriceList_ID_SO(int M_PriceList_ID_SO);
+
+	/** Get M_PriceList_ID_SO.
+	  * Lista de Precios de Venta
+	  */
+	public int getM_PriceList_ID_SO();
+
+    /** Column name M_PriceList_Version_ID */
+    public static final String COLUMNNAME_M_PriceList_Version_ID = "M_PriceList_Version_ID";
+
+	/** Set Price List Version.
+	  * Identifies a unique instance of a Price List
+	  */
+	public void setM_PriceList_Version_ID(int M_PriceList_Version_ID);
+
+	/** Get Price List Version.
+	  * Identifies a unique instance of a Price List
+	  */
+	public int getM_PriceList_Version_ID();
+
+	public I_M_PriceList_Version getM_PriceList_Version() throws RuntimeException;
+
+    /** Column name M_PriceList_Version_ID_SO */
+    public static final String COLUMNNAME_M_PriceList_Version_ID_SO = "M_PriceList_Version_ID_SO";
+
+	/** Set M_PriceList_Version_ID_SO.
+	  * Version de Lista de Precios de Venta
+	  */
+	public void setM_PriceList_Version_ID_SO(int M_PriceList_Version_ID_SO);
+
+	/** Get M_PriceList_Version_ID_SO.
+	  * Version de Lista de Precios de Venta
+	  */
+	public int getM_PriceList_Version_ID_SO();
+
+    /** Column name NombreLineaManual */
+    public static final String COLUMNNAME_NombreLineaManual = "NombreLineaManual";
+
+	/** Set NombreLineaManual	  */
+	public void setNombreLineaManual(String NombreLineaManual);
+
+	/** Get NombreLineaManual	  */
+	public String getNombreLineaManual();
+
     /** Column name ProcessButton */
     public static final String COLUMNNAME_ProcessButton = "ProcessButton";
 
@@ -250,6 +382,28 @@ public interface I_Z_PreciosProvCab
 	  * User who updated this records
 	  */
 	public int getUpdatedBy();
+
+    /** Column name Z_LineaProductoSocio_ID */
+    public static final String COLUMNNAME_Z_LineaProductoSocio_ID = "Z_LineaProductoSocio_ID";
+
+	/** Set Z_LineaProductoSocio ID	  */
+	public void setZ_LineaProductoSocio_ID(int Z_LineaProductoSocio_ID);
+
+	/** Get Z_LineaProductoSocio ID	  */
+	public int getZ_LineaProductoSocio_ID();
+
+	public I_Z_LineaProductoSocio getZ_LineaProductoSocio() throws RuntimeException;
+
+    /** Column name Z_PautaComercial_ID */
+    public static final String COLUMNNAME_Z_PautaComercial_ID = "Z_PautaComercial_ID";
+
+	/** Set Z_PautaComercial ID	  */
+	public void setZ_PautaComercial_ID(int Z_PautaComercial_ID);
+
+	/** Get Z_PautaComercial ID	  */
+	public int getZ_PautaComercial_ID();
+
+	public I_Z_PautaComercial getZ_PautaComercial() throws RuntimeException;
 
     /** Column name Z_PreciosProvCab_ID */
     public static final String COLUMNNAME_Z_PreciosProvCab_ID = "Z_PreciosProvCab_ID";
