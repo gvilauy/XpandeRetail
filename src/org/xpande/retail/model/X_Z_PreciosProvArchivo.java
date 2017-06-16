@@ -32,7 +32,7 @@ public class X_Z_PreciosProvArchivo extends PO implements I_Z_PreciosProvArchivo
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170614L;
+	private static final long serialVersionUID = 20170615L;
 
     /** Standard Constructor */
     public X_Z_PreciosProvArchivo (Properties ctx, int Z_PreciosProvArchivo_ID, String trxName)
@@ -45,6 +45,8 @@ public class X_Z_PreciosProvArchivo extends PO implements I_Z_PreciosProvArchivo
 			setIsConfirmed (false);
 // N
 			setIsNew (false);
+// N
+			setIsOmitted (false);
 // N
 			setProcessed (false);
 // N
@@ -168,6 +170,30 @@ public class X_Z_PreciosProvArchivo extends PO implements I_Z_PreciosProvArchivo
 	public boolean isNew () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsNew);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set IsOmitted.
+		@param IsOmitted 
+		Omitida si o no
+	  */
+	public void setIsOmitted (boolean IsOmitted)
+	{
+		set_Value (COLUMNNAME_IsOmitted, Boolean.valueOf(IsOmitted));
+	}
+
+	/** Get IsOmitted.
+		@return Omitida si o no
+	  */
+	public boolean isOmitted () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsOmitted);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

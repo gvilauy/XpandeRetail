@@ -145,6 +145,19 @@ public interface I_Z_PreciosProvArchivo
 	/** Get IsNew	  */
 	public boolean isNew();
 
+    /** Column name IsOmitted */
+    public static final String COLUMNNAME_IsOmitted = "IsOmitted";
+
+	/** Set IsOmitted.
+	  * Omitida si o no
+	  */
+	public void setIsOmitted(boolean IsOmitted);
+
+	/** Get IsOmitted.
+	  * Omitida si o no
+	  */
+	public boolean isOmitted();
+
     /** Column name LineNumber */
     public static final String COLUMNNAME_LineNumber = "LineNumber";
 

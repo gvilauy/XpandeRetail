@@ -430,6 +430,10 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		String action = "";
 
 		try{
+
+			action = " delete from z_preciosprovlin cascade where z_preciosprovcab_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
 			action = " delete from z_preciosprovarchivo cascade where z_preciosprovcab_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 		}
@@ -647,8 +651,8 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 						lineaArchivo.saveEx();
 						continue;
 					}
-					plinea.setName(lineaArchivo.getName().trim());
-					plinea.setDescription(lineaArchivo.getName().trim());
+					plinea.setName(lineaArchivo.getName().toUpperCase().trim());
+					plinea.setDescription(lineaArchivo.getName().toUpperCase().trim());
 
 					plinea.setPriceList(lineaArchivo.getPriceList());
 					plinea.setPricePO(lineaArchivo.getPriceList());
@@ -680,6 +684,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				}
 
 				plinea.saveEx();
+				lineaArchivo.setIsConfirmed(true);
 				lineaArchivo.saveEx();
 			}
 
@@ -701,5 +706,40 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		List<MZPreciosProvArchivo> lines = new Query(getCtx(), I_Z_PreciosProvArchivo.Table_Name, whereClause, get_TrxName()).list();
 
 		return lines;
+	}
+
+	@Override
+	protected boolean afterSave(boolean newRecord, boolean success) {
+
+		if (!success) return false;
+
+		// En caso de nuevo registro
+		if (newRecord){
+
+			// Carga organizaciones según organización de este documento
+
+			// Si este documento tiene organización *, entonces cargo todas las organizaciones de la empresa para
+			// que luego el usuario indique cuales quiere procesar
+			if (this.getAD_Org_ID() == 0){
+				MOrg orgs[] = MOrg.getOfClient(this);
+				for (int i = 0; i < orgs.length; i++){
+					MZPreciosProvOrg pOrg = new MZPreciosProvOrg(getCtx(), 0, get_TrxName());
+					pOrg.setZ_PreciosProvCab_ID(this.get_ID());
+					pOrg.setAD_OrgTrx_ID(orgs[i].get_ID());
+					pOrg.saveEx();
+				}
+			}
+			else{
+				// Este documento tiene una organización determinada, cargo entonces esa única organización.
+				MZPreciosProvOrg pOrg = new MZPreciosProvOrg(getCtx(), 0, get_TrxName());
+				pOrg.setZ_PreciosProvCab_ID(this.get_ID());
+				pOrg.setAD_OrgTrx_ID(this.getAD_Org_ID());
+				pOrg.saveEx();
+			}
+
+		}
+
+
+		return true;
 	}
 }
