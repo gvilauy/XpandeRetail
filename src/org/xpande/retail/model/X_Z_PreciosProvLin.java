@@ -32,7 +32,7 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170616L;
+	private static final long serialVersionUID = 20170617L;
 
     /** Standard Constructor */
     public X_Z_PreciosProvLin (Properties ctx, int Z_PreciosProvLin_ID, String trxName)
@@ -42,6 +42,8 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
         {
 			setC_Currency_ID (0);
 			setC_Currency_ID_SO (0);
+			setIsClassified (false);
+// N
 			setIsNew (false);
 // N
 			setOrgDifferentPricePO (false);
@@ -234,6 +236,27 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 	public String getInternalCode () 
 	{
 		return (String)get_Value(COLUMNNAME_InternalCode);
+	}
+
+	/** Set IsClassified.
+		@param IsClassified IsClassified	  */
+	public void setIsClassified (boolean IsClassified)
+	{
+		set_Value (COLUMNNAME_IsClassified, Boolean.valueOf(IsClassified));
+	}
+
+	/** Get IsClassified.
+		@return IsClassified	  */
+	public boolean isClassified () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsClassified);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set IsNew.
@@ -550,6 +573,60 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 	public String getVendorProductNo () 
 	{
 		return (String)get_Value(COLUMNNAME_VendorProductNo);
+	}
+
+	/** Set Z_PautaComercialSet_ID_1.
+		@param Z_PautaComercialSet_ID_1 Z_PautaComercialSet_ID_1	  */
+	public void setZ_PautaComercialSet_ID_1 (int Z_PautaComercialSet_ID_1)
+	{
+		set_Value (COLUMNNAME_Z_PautaComercialSet_ID_1, Integer.valueOf(Z_PautaComercialSet_ID_1));
+	}
+
+	/** Get Z_PautaComercialSet_ID_1.
+		@return Z_PautaComercialSet_ID_1	  */
+	public int getZ_PautaComercialSet_ID_1 () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_PautaComercialSet_ID_1);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_PautaComercialSet_ID_2.
+		@param Z_PautaComercialSet_ID_2 Z_PautaComercialSet_ID_2	  */
+	public void setZ_PautaComercialSet_ID_2 (int Z_PautaComercialSet_ID_2)
+	{
+		set_Value (COLUMNNAME_Z_PautaComercialSet_ID_2, Integer.valueOf(Z_PautaComercialSet_ID_2));
+	}
+
+	/** Get Z_PautaComercialSet_ID_2.
+		@return Z_PautaComercialSet_ID_2	  */
+	public int getZ_PautaComercialSet_ID_2 () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_PautaComercialSet_ID_2);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_PautaComercialSet_ID_Gen.
+		@param Z_PautaComercialSet_ID_Gen 
+		Set General de Pauta Comercial 
+	  */
+	public void setZ_PautaComercialSet_ID_Gen (int Z_PautaComercialSet_ID_Gen)
+	{
+		set_Value (COLUMNNAME_Z_PautaComercialSet_ID_Gen, Integer.valueOf(Z_PautaComercialSet_ID_Gen));
+	}
+
+	/** Get Z_PautaComercialSet_ID_Gen.
+		@return Set General de Pauta Comercial 
+	  */
+	public int getZ_PautaComercialSet_ID_Gen () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_PautaComercialSet_ID_Gen);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	public I_Z_PreciosProvCab getZ_PreciosProvCab() throws RuntimeException

@@ -31,7 +31,7 @@ public class X_Z_PautaComercialSet extends PO implements I_Z_PautaComercialSet, 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170616L;
+	private static final long serialVersionUID = 20170617L;
 
     /** Standard Constructor */
     public X_Z_PautaComercialSet (Properties ctx, int Z_PautaComercialSet_ID, String trxName)
@@ -39,7 +39,6 @@ public class X_Z_PautaComercialSet extends PO implements I_Z_PautaComercialSet, 
       super (ctx, Z_PautaComercialSet_ID, trxName);
       /** if (Z_PautaComercialSet_ID == 0)
         {
-			setDateValidFrom (new Timestamp( System.currentTimeMillis() ));
 			setName (null);
 			setZ_PautaComercial_ID (0);
 			setZ_PautaComercialSet_ID (0);
@@ -106,6 +105,27 @@ public class X_Z_PautaComercialSet extends PO implements I_Z_PautaComercialSet, 
 	public String getDescription () 
 	{
 		return (String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set IsGeneral.
+		@param IsGeneral IsGeneral	  */
+	public void setIsGeneral (boolean IsGeneral)
+	{
+		set_Value (COLUMNNAME_IsGeneral, Boolean.valueOf(IsGeneral));
+	}
+
+	/** Get IsGeneral.
+		@return IsGeneral	  */
+	public boolean isGeneral () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsGeneral);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Name.

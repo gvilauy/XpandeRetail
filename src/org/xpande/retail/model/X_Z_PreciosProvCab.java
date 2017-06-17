@@ -31,7 +31,7 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170614L;
+	private static final long serialVersionUID = 20170617L;
 
     /** Standard Constructor */
     public X_Z_PreciosProvCab (Properties ctx, int Z_PreciosProvCab_ID, String trxName)
@@ -40,6 +40,8 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
       /** if (Z_PreciosProvCab_ID == 0)
         {
 			setC_BPartner_ID (0);
+			setC_Currency_ID (0);
+			setC_Currency_ID_SO (0);
 			setC_DocType_ID (0);
 			setDateDoc (new Timestamp( System.currentTimeMillis() ));
 // @#Date@
@@ -49,7 +51,11 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 			setDocStatus (null);
 // DR
 			setDocumentNo (null);
+			setHaveErrors (false);
+// N
 			setIsApproved (false);
+// N
+			setIsExecuted (false);
 // N
 			setIsTaxIncluded (true);
 // Y
@@ -370,6 +376,27 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 		return (String)get_Value(COLUMNNAME_FileName);
 	}
 
+	/** Set HaveErrors.
+		@param HaveErrors HaveErrors	  */
+	public void setHaveErrors (boolean HaveErrors)
+	{
+		set_Value (COLUMNNAME_HaveErrors, Boolean.valueOf(HaveErrors));
+	}
+
+	/** Get HaveErrors.
+		@return HaveErrors	  */
+	public boolean isHaveErrors () 
+	{
+		Object oo = get_Value(COLUMNNAME_HaveErrors);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Approved.
 		@param IsApproved 
 		Indicates if this document requires approval
@@ -385,6 +412,27 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 	public boolean isApproved () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsApproved);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set IsExecuted.
+		@param IsExecuted IsExecuted	  */
+	public void setIsExecuted (boolean IsExecuted)
+	{
+		set_Value (COLUMNNAME_IsExecuted, Boolean.valueOf(IsExecuted));
+	}
+
+	/** Get IsExecuted.
+		@return IsExecuted	  */
+	public boolean isExecuted () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsExecuted);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -566,6 +614,40 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 	public String getProcessButton () 
 	{
 		return (String)get_Value(COLUMNNAME_ProcessButton);
+	}
+
+	/** Set ProcessButton2.
+		@param ProcessButton2 
+		Botón de Proceso
+	  */
+	public void setProcessButton2 (String ProcessButton2)
+	{
+		set_Value (COLUMNNAME_ProcessButton2, ProcessButton2);
+	}
+
+	/** Get ProcessButton2.
+		@return Botón de Proceso
+	  */
+	public String getProcessButton2 () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton2);
+	}
+
+	/** Set ProcessButton3.
+		@param ProcessButton3 
+		Botón para proceso
+	  */
+	public void setProcessButton3 (String ProcessButton3)
+	{
+		set_Value (COLUMNNAME_ProcessButton3, ProcessButton3);
+	}
+
+	/** Get ProcessButton3.
+		@return Botón para proceso
+	  */
+	public String getProcessButton3 () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton3);
 	}
 
 	/** Set Processed.

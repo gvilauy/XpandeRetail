@@ -185,6 +185,15 @@ public interface I_Z_PreciosProvLin
 	  */
 	public boolean isActive();
 
+    /** Column name IsClassified */
+    public static final String COLUMNNAME_IsClassified = "IsClassified";
+
+	/** Set IsClassified	  */
+	public void setIsClassified(boolean IsClassified);
+
+	/** Get IsClassified	  */
+	public boolean isClassified();
+
     /** Column name IsNew */
     public static final String COLUMNNAME_IsNew = "IsNew";
 
@@ -390,6 +399,37 @@ public interface I_Z_PreciosProvLin
 	  * Product Key of the Business Partner
 	  */
 	public String getVendorProductNo();
+
+    /** Column name Z_PautaComercialSet_ID_1 */
+    public static final String COLUMNNAME_Z_PautaComercialSet_ID_1 = "Z_PautaComercialSet_ID_1";
+
+	/** Set Z_PautaComercialSet_ID_1	  */
+	public void setZ_PautaComercialSet_ID_1(int Z_PautaComercialSet_ID_1);
+
+	/** Get Z_PautaComercialSet_ID_1	  */
+	public int getZ_PautaComercialSet_ID_1();
+
+    /** Column name Z_PautaComercialSet_ID_2 */
+    public static final String COLUMNNAME_Z_PautaComercialSet_ID_2 = "Z_PautaComercialSet_ID_2";
+
+	/** Set Z_PautaComercialSet_ID_2	  */
+	public void setZ_PautaComercialSet_ID_2(int Z_PautaComercialSet_ID_2);
+
+	/** Get Z_PautaComercialSet_ID_2	  */
+	public int getZ_PautaComercialSet_ID_2();
+
+    /** Column name Z_PautaComercialSet_ID_Gen */
+    public static final String COLUMNNAME_Z_PautaComercialSet_ID_Gen = "Z_PautaComercialSet_ID_Gen";
+
+	/** Set Z_PautaComercialSet_ID_Gen.
+	  * Set General de Pauta Comercial 
+	  */
+	public void setZ_PautaComercialSet_ID_Gen(int Z_PautaComercialSet_ID_Gen);
+
+	/** Get Z_PautaComercialSet_ID_Gen.
+	  * Set General de Pauta Comercial 
+	  */
+	public int getZ_PautaComercialSet_ID_Gen();
 
     /** Column name Z_PreciosProvCab_ID */
     public static final String COLUMNNAME_Z_PreciosProvCab_ID = "Z_PreciosProvCab_ID";

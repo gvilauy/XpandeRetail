@@ -228,6 +228,15 @@ public interface I_Z_PreciosProvCab
 	  */
 	public String getFileName();
 
+    /** Column name HaveErrors */
+    public static final String COLUMNNAME_HaveErrors = "HaveErrors";
+
+	/** Set HaveErrors	  */
+	public void setHaveErrors(boolean HaveErrors);
+
+	/** Get HaveErrors	  */
+	public boolean isHaveErrors();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -253,6 +262,15 @@ public interface I_Z_PreciosProvCab
 	  * Indicates if this document requires approval
 	  */
 	public boolean isApproved();
+
+    /** Column name IsExecuted */
+    public static final String COLUMNNAME_IsExecuted = "IsExecuted";
+
+	/** Set IsExecuted	  */
+	public void setIsExecuted(boolean IsExecuted);
+
+	/** Get IsExecuted	  */
+	public boolean isExecuted();
 
     /** Column name IsTaxIncluded */
     public static final String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
@@ -353,6 +371,32 @@ public interface I_Z_PreciosProvCab
 
 	/** Get ProcessButton	  */
 	public String getProcessButton();
+
+    /** Column name ProcessButton2 */
+    public static final String COLUMNNAME_ProcessButton2 = "ProcessButton2";
+
+	/** Set ProcessButton2.
+	  * Botón de Proceso
+	  */
+	public void setProcessButton2(String ProcessButton2);
+
+	/** Get ProcessButton2.
+	  * Botón de Proceso
+	  */
+	public String getProcessButton2();
+
+    /** Column name ProcessButton3 */
+    public static final String COLUMNNAME_ProcessButton3 = "ProcessButton3";
+
+	/** Set ProcessButton3.
+	  * Botón para proceso
+	  */
+	public void setProcessButton3(String ProcessButton3);
+
+	/** Get ProcessButton3.
+	  * Botón para proceso
+	  */
+	public String getProcessButton3();
 
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";

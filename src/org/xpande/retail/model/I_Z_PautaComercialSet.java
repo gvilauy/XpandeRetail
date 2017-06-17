@@ -118,6 +118,15 @@ public interface I_Z_PautaComercialSet
 	  */
 	public boolean isActive();
 
+    /** Column name IsGeneral */
+    public static final String COLUMNNAME_IsGeneral = "IsGeneral";
+
+	/** Set IsGeneral	  */
+	public void setIsGeneral(boolean IsGeneral);
+
+	/** Get IsGeneral	  */
+	public boolean isGeneral();
+
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
 

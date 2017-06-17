@@ -31,7 +31,7 @@ public class X_Z_PautaComercial extends PO implements I_Z_PautaComercial, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170616L;
+	private static final long serialVersionUID = 20170617L;
 
     /** Standard Constructor */
     public X_Z_PautaComercial (Properties ctx, int Z_PautaComercial_ID, String trxName)
@@ -40,7 +40,6 @@ public class X_Z_PautaComercial extends PO implements I_Z_PautaComercial, I_Pers
       /** if (Z_PautaComercial_ID == 0)
         {
 			setC_BPartner_ID (0);
-			setDateValidFrom (new Timestamp( System.currentTimeMillis() ));
 			setName (null);
 			setZ_PautaComercial_ID (0);
         } */
