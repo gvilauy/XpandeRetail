@@ -63,6 +63,34 @@ public interface I_Z_PreciosProvLin
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/** Set Currency.
+	  * The Currency for this record
+	  */
+	public void setC_Currency_ID(int C_Currency_ID);
+
+	/** Get Currency.
+	  * The Currency for this record
+	  */
+	public int getC_Currency_ID();
+
+	public I_C_Currency getC_Currency() throws RuntimeException;
+
+    /** Column name C_Currency_ID_SO */
+    public static final String COLUMNNAME_C_Currency_ID_SO = "C_Currency_ID_SO";
+
+	/** Set C_Currency_ID_SO.
+	  * Moneda de Venta
+	  */
+	public void setC_Currency_ID_SO(int C_Currency_ID_SO);
+
+	/** Get C_Currency_ID_SO.
+	  * Moneda de Venta
+	  */
+	public int getC_Currency_ID_SO();
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -206,6 +234,32 @@ public interface I_Z_PreciosProvLin
 	  * NewPriceSO
 	  */
 	public BigDecimal getNewPriceSO();
+
+    /** Column name OrgDifferentPricePO */
+    public static final String COLUMNNAME_OrgDifferentPricePO = "OrgDifferentPricePO";
+
+	/** Set OrgDifferentPricePO.
+	  * Si se manejan precios de compra distintos por organización en modulo de retail
+	  */
+	public void setOrgDifferentPricePO(boolean OrgDifferentPricePO);
+
+	/** Get OrgDifferentPricePO.
+	  * Si se manejan precios de compra distintos por organización en modulo de retail
+	  */
+	public boolean isOrgDifferentPricePO();
+
+    /** Column name OrgDifferentPriceSO */
+    public static final String COLUMNNAME_OrgDifferentPriceSO = "OrgDifferentPriceSO";
+
+	/** Set OrgDifferentPriceSO.
+	  * Si se manejan precios de venta distintos por organización en modulo de retail
+	  */
+	public void setOrgDifferentPriceSO(boolean OrgDifferentPriceSO);
+
+	/** Get OrgDifferentPriceSO.
+	  * Si se manejan precios de venta distintos por organización en modulo de retail
+	  */
+	public boolean isOrgDifferentPriceSO();
 
     /** Column name PriceFinal */
     public static final String COLUMNNAME_PriceFinal = "PriceFinal";

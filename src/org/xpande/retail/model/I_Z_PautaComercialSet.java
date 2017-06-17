@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_PautaComercial
+/** Generated Interface for Z_PautaComercialSet
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_PautaComercial 
+public interface I_Z_PautaComercialSet 
 {
 
-    /** TableName=Z_PautaComercial */
-    public static final String Table_Name = "Z_PautaComercial";
+    /** TableName=Z_PautaComercialSet */
+    public static final String Table_Name = "Z_PautaComercialSet";
 
-    /** AD_Table_ID=1000048 */
+    /** AD_Table_ID=1000050 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -62,36 +62,6 @@ public interface I_Z_PautaComercial
 	  * Organizational entity within client
 	  */
 	public int getAD_Org_ID();
-
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
-
-	/** Set Business Partner .
-	  * Identifies a Business Partner
-	  */
-	public void setC_BPartner_ID(int C_BPartner_ID);
-
-	/** Get Business Partner .
-	  * Identifies a Business Partner
-	  */
-	public int getC_BPartner_ID();
-
-	public I_C_BPartner getC_BPartner() throws RuntimeException;
-
-    /** Column name C_Currency_ID */
-    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
-
-	/** Set Currency.
-	  * The Currency for this record
-	  */
-	public void setC_Currency_ID(int C_Currency_ID);
-
-	/** Get Currency.
-	  * The Currency for this record
-	  */
-	public int getC_Currency_ID();
-
-	public I_C_Currency getC_Currency() throws RuntimeException;
 
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
@@ -148,21 +118,6 @@ public interface I_Z_PautaComercial
 	  */
 	public boolean isActive();
 
-    /** Column name M_PriceList_ID */
-    public static final String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
-
-	/** Set Price List.
-	  * Unique identifier of a Price List
-	  */
-	public void setM_PriceList_ID(int M_PriceList_ID);
-
-	/** Get Price List.
-	  * Unique identifier of a Price List
-	  */
-	public int getM_PriceList_ID();
-
-	public I_M_PriceList getM_PriceList() throws RuntimeException;
-
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
 
@@ -175,15 +130,6 @@ public interface I_Z_PautaComercial
 	  * Alphanumeric identifier of the entity
 	  */
 	public String getName();
-
-    /** Column name ProcessButton */
-    public static final String COLUMNNAME_ProcessButton = "ProcessButton";
-
-	/** Set ProcessButton	  */
-	public void setProcessButton(String ProcessButton);
-
-	/** Get ProcessButton	  */
-	public String getProcessButton();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -201,17 +147,6 @@ public interface I_Z_PautaComercial
 	  */
 	public int getUpdatedBy();
 
-    /** Column name Z_LineaProductoSocio_ID */
-    public static final String COLUMNNAME_Z_LineaProductoSocio_ID = "Z_LineaProductoSocio_ID";
-
-	/** Set Z_LineaProductoSocio ID	  */
-	public void setZ_LineaProductoSocio_ID(int Z_LineaProductoSocio_ID);
-
-	/** Get Z_LineaProductoSocio ID	  */
-	public int getZ_LineaProductoSocio_ID();
-
-	public I_Z_LineaProductoSocio getZ_LineaProductoSocio() throws RuntimeException;
-
     /** Column name Z_PautaComercial_ID */
     public static final String COLUMNNAME_Z_PautaComercial_ID = "Z_PautaComercial_ID";
 
@@ -220,4 +155,15 @@ public interface I_Z_PautaComercial
 
 	/** Get Z_PautaComercial ID	  */
 	public int getZ_PautaComercial_ID();
+
+	public I_Z_PautaComercial getZ_PautaComercial() throws RuntimeException;
+
+    /** Column name Z_PautaComercialSet_ID */
+    public static final String COLUMNNAME_Z_PautaComercialSet_ID = "Z_PautaComercialSet_ID";
+
+	/** Set Z_PautaComercialSet ID	  */
+	public void setZ_PautaComercialSet_ID(int Z_PautaComercialSet_ID);
+
+	/** Get Z_PautaComercialSet ID	  */
+	public int getZ_PautaComercialSet_ID();
 }

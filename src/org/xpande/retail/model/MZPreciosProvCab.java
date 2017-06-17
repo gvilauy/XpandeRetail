@@ -368,7 +368,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 	{
 	//	MPriceList pl = MPriceList.get(getCtx(), getM_PriceList_ID());
 	//	return pl.getC_Currency_ID();
-		return 0;
+		return super.getC_Currency_ID();
 	}	//	getC_Currency_ID
 
     @Override
@@ -534,6 +534,8 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 				MZPreciosProvLin plinea = new MZPreciosProvLin(getCtx(), 0, get_TrxName());
 				plinea.setZ_PreciosProvCab_ID(this.get_ID());
+				plinea.setC_Currency_ID(this.getC_Currency_ID());
+				plinea.setC_Currency_ID_SO(this.getC_Currency_ID_SO());
 				lineaArchivo.setIsConfirmed(false);
 
 				MProduct prod = null;

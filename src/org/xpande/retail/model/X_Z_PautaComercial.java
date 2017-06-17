@@ -31,7 +31,7 @@ public class X_Z_PautaComercial extends PO implements I_Z_PautaComercial, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170614L;
+	private static final long serialVersionUID = 20170616L;
 
     /** Standard Constructor */
     public X_Z_PautaComercial (Properties ctx, int Z_PautaComercial_ID, String trxName)
@@ -40,9 +40,8 @@ public class X_Z_PautaComercial extends PO implements I_Z_PautaComercial, I_Pers
       /** if (Z_PautaComercial_ID == 0)
         {
 			setC_BPartner_ID (0);
-			setM_PriceList_ID (0);
+			setDateValidFrom (new Timestamp( System.currentTimeMillis() ));
 			setName (null);
-			setZ_LineaProductoSocio_ID (0);
 			setZ_PautaComercial_ID (0);
         } */
     }
@@ -98,6 +97,34 @@ public class X_Z_PautaComercial extends PO implements I_Z_PautaComercial, I_Pers
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_Currency getC_Currency() throws RuntimeException
+    {
+		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
+			.getPO(getC_Currency_ID(), get_TrxName());	}
+
+	/** Set Currency.
+		@param C_Currency_ID 
+		The Currency for this record
+	  */
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Currency.
+		@return The Currency for this record
+	  */
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
