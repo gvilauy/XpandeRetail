@@ -363,6 +363,32 @@ public interface I_Z_PreciosProvCab
 	/** Get NombreLineaManual	  */
 	public String getNombreLineaManual();
 
+    /** Column name PrecisionPO */
+    public static final String COLUMNNAME_PrecisionPO = "PrecisionPO";
+
+	/** Set PrecisionPO.
+	  * Precisión decimal para precios de compra
+	  */
+	public void setPrecisionPO(int PrecisionPO);
+
+	/** Get PrecisionPO.
+	  * Precisión decimal para precios de compra
+	  */
+	public int getPrecisionPO();
+
+    /** Column name PrecisionSO */
+    public static final String COLUMNNAME_PrecisionSO = "PrecisionSO";
+
+	/** Set PrecisionSO.
+	  * Precisión decimal para precios de venta
+	  */
+	public void setPrecisionSO(int PrecisionSO);
+
+	/** Get PrecisionSO.
+	  * Precisión decimal para precios de venta
+	  */
+	public int getPrecisionSO();
+
     /** Column name ProcessButton */
     public static final String COLUMNNAME_ProcessButton = "ProcessButton";
 
@@ -397,6 +423,19 @@ public interface I_Z_PreciosProvCab
 	  * Botón para proceso
 	  */
 	public String getProcessButton3();
+
+    /** Column name ProcessButton4 */
+    public static final String COLUMNNAME_ProcessButton4 = "ProcessButton4";
+
+	/** Set ProcessButton4.
+	  * Botón de Proceso
+	  */
+	public void setProcessButton4(String ProcessButton4);
+
+	/** Get ProcessButton4.
+	  * Botón de Proceso
+	  */
+	public String getProcessButton4();
 
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";

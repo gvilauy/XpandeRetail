@@ -400,20 +400,54 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		return newIndex;
 	}
 
+
 	/***
-	 * Ejecuta proceso de interface de archivo de precios de proveedores.
-	 * Carga información, valida y setea la información necesaria.
+	 * Ejecuta proceso de carga de productos según modalidad seleccionada de proceso: archivo, linea o manual.
 	 * Xpande. Created by Gabriel Vila on 6/13/17.
 	 */
 	public void execute() {
 
 		try{
-			
-			this.deleteData();
-			
-			this.getDataFromFile();
 
-			this.updateData();
+			// Seteo precisión decimal para precios de compra y venta
+			this.setPrecisionDecimal();
+
+			// Elimino información previa que pudiera existir, en caso que el documento no haya sido ejecutado
+			if (!this.isExecuted()){
+				this.deleteData();
+			}
+
+			// Si la modalidad de proceso es mediante Archivo de Interface
+			if (this.getModalidadPreciosProv().equalsIgnoreCase(X_Z_PreciosProvCab.MODALIDADPRECIOSPROV_ARCHIVODECARGA)){
+
+				// Si documento ya fue ejecutado
+				if (this.isExecuted()){
+
+					// Si tengo inconsistencias en líneas de archivo ya leídas
+					if (this.isHaveErrors()){
+						// Reproceso lineas incosistentes y no omitidas
+						this.setDataFromFile(false);
+					}
+				}
+				else{   // Documento no ejecutado aún
+					// Leo archivo con formato de importación
+					this.getDataFromFile();
+
+					// Seteo tabla de lineas de este documento (productos) a partir de las lineas leídas del arhivo
+					this.setDataFromFile(true);
+				}
+
+			}
+
+			// Si la modalidad de proceso es mediante la carga de productos de una linea del proveedor
+			else if (this.getModalidadPreciosProv().equalsIgnoreCase(X_Z_PreciosProvCab.MODALIDADPRECIOSPROV_LINEADEPRODUCTOS)){
+
+			}
+
+			// Marco este documento como ejecutado, para que no se permita modificar información en la ventana
+			this.setIsExecuted(true);
+			this.saveEx();
+
 			
 		}
 		catch (Exception e){
@@ -518,16 +552,27 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 	/***
 	 * Actualiza información a partir de datos leídos desde archivo de interface
 	 * Xpande. Created by Gabriel Vila on 6/13/17.
+	 * @param allLines : true si considera todas las lineas, false si considera solamente aquellas lineas con inconsistencias y
+	 *                 que no estan marcadas para omitir.
 	 */
-	private void updateData() {
+	private void setDataFromFile(boolean allLines) {
 
 		HashMap<String, Integer> hashUPC = new HashMap<String, Integer>();
 		HashMap<String, Integer> hashValue = new HashMap<String, Integer>();
 		String whereClause ="";
 
 		try{
-			// Obtengo lineas leídas del archivo de interface
-			List<MZPreciosProvArchivo> lineasArchivo = this.getLineasArchivo();
+
+			// Obtengo lineas leídas del archivo de interface segun flag recibido
+			List<MZPreciosProvArchivo> lineasArchivo = null;
+			if (allLines){
+				lineasArchivo = this.getLineasArchivo();
+			}
+			else{
+				lineasArchivo = this.getLineasArchivoNoConfNoOmitir();
+			}
+
+			boolean hayIncosistencias = false;
 
 			// Recorro y proceso lineas
 			for (MZPreciosProvArchivo lineaArchivo: lineasArchivo) {
@@ -550,11 +595,26 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 						// Controlo código de barra repetido en otra linea del mismo archivo
 						if (hashUPC.containsKey(upc)){
+							hayIncosistencias = true;
 							lineaArchivo.setIsConfirmed(false);
 							lineaArchivo.setErrorMsg("Código de barras repetido en lineas de archivo : " +
 									lineaArchivo.getLineNumber() + " y " + hashUPC.get(upc).intValue());
 							lineaArchivo.saveEx();
 							continue;
+						}
+
+						// Si estoy reprocesando lineas inconsistentes, controlo código de barras duplicado
+						// contra lineas ya procesadas
+						if (!allLines){
+							MZPreciosProvArchivo lineaConfirmada = MZPreciosProvArchivo.getConfirmedByUPC(getCtx(), this.get_ID(), upc, get_TrxName());
+							if ((lineaConfirmada != null) && (lineaConfirmada.get_ID() > 0)){
+								hayIncosistencias = true;
+								lineaArchivo.setIsConfirmed(false);
+								lineaArchivo.setErrorMsg("Código de barras repetido en lineas de archivo : " +
+										lineaArchivo.getLineNumber() + " y " + lineaConfirmada.getLineNumber());
+								lineaArchivo.saveEx();
+								continue;
+							}
 						}
 
 						hashUPC.put(upc, lineaArchivo.getLineNumber());
@@ -578,6 +638,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 							// Controlo código interno repetido en otra linea del mismo archivo
 							if (hashValue.containsKey(valueProd)){
+								hayIncosistencias = true;
 								lineaArchivo.setIsConfirmed(false);
 								lineaArchivo.setErrorMsg("Código Interno repetido en lineas de archivo : " +
 										lineaArchivo.getLineNumber() + " y " + hashValue.get(valueProd).intValue());
@@ -635,6 +696,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 				// Valido que se haya ingresado precio de lista
 				if ((lineaArchivo.getPriceList() == null) || (lineaArchivo.getPriceList().compareTo(Env.ZERO) <= 0)){
+					hayIncosistencias = true;
 					lineaArchivo.setIsConfirmed(false);
 					lineaArchivo.setErrorMsg("No se indica Precio de Lista en linea de archivo : " + lineaArchivo.getLineNumber());
 					lineaArchivo.saveEx();
@@ -648,6 +710,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 					// Valido que se haya ingresado nombre para el nuevo producto
 					if ((lineaArchivo.getName() == null) || (lineaArchivo.getName().trim().equalsIgnoreCase(""))){
+						hayIncosistencias = true;
 						lineaArchivo.setIsConfirmed(false);
 						lineaArchivo.setErrorMsg("No se indica Nombre de Producto en linea de archivo : " + lineaArchivo.getLineNumber());
 						lineaArchivo.saveEx();
@@ -656,44 +719,76 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 					plinea.setName(lineaArchivo.getName().toUpperCase().trim());
 					plinea.setDescription(lineaArchivo.getName().toUpperCase().trim());
 
-					plinea.setPriceList(lineaArchivo.getPriceList());
-					plinea.setPricePO(lineaArchivo.getPriceList());
-					plinea.setPriceFinal(lineaArchivo.getPriceList());
-					plinea.setPriceSO(Env.ZERO);
-					plinea.setNewPriceSO(lineaArchivo.getPriceSO());
-					if (plinea.getPriceSO() == null){
-						plinea.setPriceSO(Env.ZERO);
+					// Precios de compra en nuevo producto
+					plinea.setOrgDifferentPricePO(false);
+					plinea.calculatePricesPO(lineaArchivo.getPriceList(), this.getPrecisionPO(), (MZPautaComercial) this.getZ_PautaComercial());
+
+					/*
+					plinea.setPriceList(lineaArchivo.getPriceList().setScale(this.precisionDecimalCompra, BigDecimal.ROUND_HALF_UP));
+					plinea.setPricePO(lineaArchivo.getPriceList().setScale(this.precisionDecimalCompra, BigDecimal.ROUND_HALF_UP));
+					plinea.setPriceFinal(lineaArchivo.getPriceList().setScale(this.precisionDecimalCompra, BigDecimal.ROUND_HALF_UP));
+					*/
+
+					// Precios de venta en nuevo producto
+					plinea.setOrgDifferentPriceSO(false);
+					plinea.setPriceSO(null);
+					plinea.setNewPriceSO(null);
+					if (lineaArchivo.getPriceSO() != null){
+						plinea.setNewPriceSO(lineaArchivo.getPriceSO().setScale(this.getPrecisionSO(), BigDecimal.ROUND_HALF_UP));
 					}
+
 				}
-				else{
+				else{  // El producto ya estaba definido en el sistema
 
 					lineaArchivo.setIsNew(false);
 
-					// El producto ya estaba definido en el sistema
-					// Tomo datos de precios de compra desde modelo proveedor-producto en caso de existir.
-					// Puede suceder que sea la primera vez que este proveedor pasa precio de este producto.
-					MZProductoSocio pbp = MZProductoSocio.getByBPartnerProduct(getCtx(), this.getC_BPartner_ID(), prod.get_ID(), get_TrxName());
-					if ((pbp != null) && (pbp.get_ID() > 0)){
-						plinea.setPriceList(pbp.getPriceList());
-						plinea.setPricePO(pbp.getPricePO());
-						plinea.setPriceFinal(pbp.getPriceFinal());
-					}
-					else{
-						plinea.setPriceList(lineaArchivo.getPriceList());
-						plinea.setPricePO(lineaArchivo.getPriceList());
-						plinea.setPriceFinal(lineaArchivo.getPriceList());
-					}
+					// Estoy seteando nuevo precios de compra, por lo tanto todas las orgs, seleccionadas
+					// en este documento, van a tener los mismos precios de compra para este producto.
+					plinea.setOrgDifferentPricePO(false);
+
+					// Precios de compra en producto existente
+					plinea.calculatePricesPO(lineaArchivo.getPriceList(), this.getPrecisionPO(), (MZPautaComercial) this.getZ_PautaComercial());
+
+					// Precios de venta en producto existente
+					plinea.calculatePricesSO(lineaArchivo.getPriceSO(), this.getPrecisionSO());
+
 				}
+
+				//
 
 				plinea.saveEx();
 				lineaArchivo.setIsConfirmed(true);
+				lineaArchivo.setErrorMsg(null);
 				lineaArchivo.saveEx();
 			}
 
+			// Marco cabezal con inconsistencias en caso que hubiera
+			if (hayIncosistencias){
+				this.setHaveErrors(true);
+				this.saveEx();
+			}
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);
 		}
+	}
+
+	/***
+	 * Metodo que obtiene y retorna lista de modelos de lineas leídas de archivo de interface de precios de proveedor.
+	 * Solo se consideran aquellas lineas con inconsistencias y no marcadas para omitir.
+	 * Xpande. Created by Gabriel Vila on 6/13/17.
+	 * @return
+	 */
+	private List<MZPreciosProvArchivo> getLineasArchivoNoConfNoOmitir() {
+
+		String whereClause = X_Z_PreciosProvArchivo.COLUMNNAME_Z_PreciosProvCab_ID + "=" + this.get_ID() +
+				" AND " + X_Z_PreciosProvArchivo.COLUMNNAME_IsConfirmed + " ='N'" +
+				" AND " + X_Z_PreciosProvArchivo.COLUMNNAME_IsOmitted + " ='N'";
+
+		List<MZPreciosProvArchivo> lines = new Query(getCtx(), I_Z_PreciosProvArchivo.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+
 	}
 
 	/***
@@ -741,7 +836,47 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 		}
 
-
 		return true;
 	}
+
+
+	/***
+	 * Setea precisión decimal para precios de compra y venta.
+	 * Xpande. Created by Gabriel Vila on 6/17/17.
+	 */
+	private void setPrecisionDecimal(){
+
+		try{
+
+			// Obtengo precisión decimal para precios según precisión de la lista, o en caso de no tener lista,
+			// tomo la precisión de la moneda directamente
+
+			// Precision decimal para precios de compra
+			if (this.getM_PriceList_ID() > 0){
+				MPriceList pl = (MPriceList)this.getM_PriceList();
+				this.setPrecisionPO(pl.getPricePrecision());
+			}
+			else{
+				// Tomo de la moneda
+				MCurrency cur = (MCurrency)this.getC_Currency();
+				this.setPrecisionPO(cur.getCostingPrecision());
+			}
+
+			// Precisión decimal para precios de venta
+			if (this.getM_PriceList_ID_SO() > 0){
+				MPriceList pl = new MPriceList(getCtx(), this.getM_PriceList_ID_SO(), null);
+				this.setPrecisionSO(pl.getPricePrecision());
+			}
+			else{
+				MCurrency cur = new MCurrency(getCtx(), this.getC_Currency_ID_SO(), null);
+				this.setPrecisionSO(cur.getStdPrecision());
+			}
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+	}
+
 }

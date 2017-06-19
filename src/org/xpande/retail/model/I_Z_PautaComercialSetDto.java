@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_PautaComercialSet
+/** Generated Interface for Z_PautaComercialSetDto
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_PautaComercialSet 
+public interface I_Z_PautaComercialSetDto 
 {
 
-    /** TableName=Z_PautaComercialSet */
-    public static final String Table_Name = "Z_PautaComercialSet";
+    /** TableName=Z_PautaComercialSetDto */
+    public static final String Table_Name = "Z_PautaComercialSetDto";
 
-    /** AD_Table_ID=1000050 */
+    /** AD_Table_ID=1000052 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -63,6 +63,19 @@ public interface I_Z_PautaComercialSet
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name BreakValue */
+    public static final String COLUMNNAME_BreakValue = "BreakValue";
+
+	/** Set Break Value.
+	  * Low Value of trade discount break level
+	  */
+	public void setBreakValue(BigDecimal BreakValue);
+
+	/** Get Break Value.
+	  * Low Value of trade discount break level
+	  */
+	public BigDecimal getBreakValue();
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -79,19 +92,6 @@ public interface I_Z_PautaComercialSet
 	  */
 	public int getCreatedBy();
 
-    /** Column name DateValidFrom */
-    public static final String COLUMNNAME_DateValidFrom = "DateValidFrom";
-
-	/** Set DateValidFrom.
-	  * Fecha Vigencia Desde
-	  */
-	public void setDateValidFrom(Timestamp DateValidFrom);
-
-	/** Get DateValidFrom.
-	  * Fecha Vigencia Desde
-	  */
-	public Timestamp getDateValidFrom();
-
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
 
@@ -104,6 +104,32 @@ public interface I_Z_PautaComercialSet
 	  * Optional short description of the record
 	  */
 	public String getDescription();
+
+    /** Column name Discount */
+    public static final String COLUMNNAME_Discount = "Discount";
+
+	/** Set Discount %.
+	  * Discount in percent
+	  */
+	public void setDiscount(BigDecimal Discount);
+
+	/** Get Discount %.
+	  * Discount in percent
+	  */
+	public BigDecimal getDiscount();
+
+    /** Column name DiscountType */
+    public static final String COLUMNNAME_DiscountType = "DiscountType";
+
+	/** Set Discount Type.
+	  * Type of trade discount calculation
+	  */
+	public void setDiscountType(String DiscountType);
+
+	/** Get Discount Type.
+	  * Type of trade discount calculation
+	  */
+	public String getDiscountType();
 
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
@@ -118,36 +144,14 @@ public interface I_Z_PautaComercialSet
 	  */
 	public boolean isActive();
 
-    /** Column name IsGeneral */
-    public static final String COLUMNNAME_IsGeneral = "IsGeneral";
+    /** Column name QtyReward */
+    public static final String COLUMNNAME_QtyReward = "QtyReward";
 
-	/** Set IsGeneral	  */
-	public void setIsGeneral(boolean IsGeneral);
+	/** Set Reward Quantity	  */
+	public void setQtyReward(BigDecimal QtyReward);
 
-	/** Get IsGeneral	  */
-	public boolean isGeneral();
-
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
-
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public void setName(String Name);
-
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public String getName();
-
-    /** Column name ProcessButton */
-    public static final String COLUMNNAME_ProcessButton = "ProcessButton";
-
-	/** Set ProcessButton	  */
-	public void setProcessButton(String ProcessButton);
-
-	/** Get ProcessButton	  */
-	public String getProcessButton();
+	/** Get Reward Quantity	  */
+	public BigDecimal getQtyReward();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -165,16 +169,14 @@ public interface I_Z_PautaComercialSet
 	  */
 	public int getUpdatedBy();
 
-    /** Column name Z_PautaComercial_ID */
-    public static final String COLUMNNAME_Z_PautaComercial_ID = "Z_PautaComercial_ID";
+    /** Column name Z_PautaComercialSetDto_ID */
+    public static final String COLUMNNAME_Z_PautaComercialSetDto_ID = "Z_PautaComercialSetDto_ID";
 
-	/** Set Z_PautaComercial ID	  */
-	public void setZ_PautaComercial_ID(int Z_PautaComercial_ID);
+	/** Set Z_PautaComercialSetDto ID	  */
+	public void setZ_PautaComercialSetDto_ID(int Z_PautaComercialSetDto_ID);
 
-	/** Get Z_PautaComercial ID	  */
-	public int getZ_PautaComercial_ID();
-
-	public I_Z_PautaComercial getZ_PautaComercial() throws RuntimeException;
+	/** Get Z_PautaComercialSetDto ID	  */
+	public int getZ_PautaComercialSetDto_ID();
 
     /** Column name Z_PautaComercialSet_ID */
     public static final String COLUMNNAME_Z_PautaComercialSet_ID = "Z_PautaComercialSet_ID";
@@ -185,47 +187,5 @@ public interface I_Z_PautaComercialSet
 	/** Get Z_PautaComercialSet ID	  */
 	public int getZ_PautaComercialSet_ID();
 
-    /** Column name Z_ProductoFamilia_ID */
-    public static final String COLUMNNAME_Z_ProductoFamilia_ID = "Z_ProductoFamilia_ID";
-
-	/** Set Z_ProductoFamilia ID	  */
-	public void setZ_ProductoFamilia_ID(int Z_ProductoFamilia_ID);
-
-	/** Get Z_ProductoFamilia ID	  */
-	public int getZ_ProductoFamilia_ID();
-
-	public I_Z_ProductoFamilia getZ_ProductoFamilia() throws RuntimeException;
-
-    /** Column name Z_ProductoRubro_ID */
-    public static final String COLUMNNAME_Z_ProductoRubro_ID = "Z_ProductoRubro_ID";
-
-	/** Set Z_ProductoRubro ID	  */
-	public void setZ_ProductoRubro_ID(int Z_ProductoRubro_ID);
-
-	/** Get Z_ProductoRubro ID	  */
-	public int getZ_ProductoRubro_ID();
-
-	public I_Z_ProductoRubro getZ_ProductoRubro() throws RuntimeException;
-
-    /** Column name Z_ProductoSeccion_ID */
-    public static final String COLUMNNAME_Z_ProductoSeccion_ID = "Z_ProductoSeccion_ID";
-
-	/** Set Z_ProductoSeccion ID	  */
-	public void setZ_ProductoSeccion_ID(int Z_ProductoSeccion_ID);
-
-	/** Get Z_ProductoSeccion ID	  */
-	public int getZ_ProductoSeccion_ID();
-
-	public I_Z_ProductoSeccion getZ_ProductoSeccion() throws RuntimeException;
-
-    /** Column name Z_ProductoSubfamilia_ID */
-    public static final String COLUMNNAME_Z_ProductoSubfamilia_ID = "Z_ProductoSubfamilia_ID";
-
-	/** Set Z_ProductoSubfamilia ID	  */
-	public void setZ_ProductoSubfamilia_ID(int Z_ProductoSubfamilia_ID);
-
-	/** Get Z_ProductoSubfamilia ID	  */
-	public int getZ_ProductoSubfamilia_ID();
-
-	public I_Z_ProductoSubfamilia getZ_ProductoSubfamilia() throws RuntimeException;
+	public I_Z_PautaComercialSet getZ_PautaComercialSet() throws RuntimeException;
 }

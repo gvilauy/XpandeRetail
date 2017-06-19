@@ -148,6 +148,19 @@ public interface I_Z_PautaComercial
 	  */
 	public boolean isActive();
 
+    /** Column name IsConfirmed */
+    public static final String COLUMNNAME_IsConfirmed = "IsConfirmed";
+
+	/** Set Confirmed.
+	  * Assignment is confirmed
+	  */
+	public void setIsConfirmed(boolean IsConfirmed);
+
+	/** Get Confirmed.
+	  * Assignment is confirmed
+	  */
+	public boolean isConfirmed();
+
     /** Column name M_PriceList_ID */
     public static final String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
 

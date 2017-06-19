@@ -31,7 +31,7 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170617L;
+	private static final long serialVersionUID = 20170618L;
 
     /** Standard Constructor */
     public X_Z_PreciosProvCab (Properties ctx, int Z_PreciosProvCab_ID, String trxName)
@@ -602,6 +602,46 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 		return (String)get_Value(COLUMNNAME_NombreLineaManual);
 	}
 
+	/** Set PrecisionPO.
+		@param PrecisionPO 
+		Precisión decimal para precios de compra
+	  */
+	public void setPrecisionPO (int PrecisionPO)
+	{
+		set_Value (COLUMNNAME_PrecisionPO, Integer.valueOf(PrecisionPO));
+	}
+
+	/** Get PrecisionPO.
+		@return Precisión decimal para precios de compra
+	  */
+	public int getPrecisionPO () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PrecisionPO);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set PrecisionSO.
+		@param PrecisionSO 
+		Precisión decimal para precios de venta
+	  */
+	public void setPrecisionSO (int PrecisionSO)
+	{
+		set_Value (COLUMNNAME_PrecisionSO, Integer.valueOf(PrecisionSO));
+	}
+
+	/** Get PrecisionSO.
+		@return Precisión decimal para precios de venta
+	  */
+	public int getPrecisionSO () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PrecisionSO);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set ProcessButton.
 		@param ProcessButton ProcessButton	  */
 	public void setProcessButton (String ProcessButton)
@@ -648,6 +688,23 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 	public String getProcessButton3 () 
 	{
 		return (String)get_Value(COLUMNNAME_ProcessButton3);
+	}
+
+	/** Set ProcessButton4.
+		@param ProcessButton4 
+		Botón de Proceso
+	  */
+	public void setProcessButton4 (String ProcessButton4)
+	{
+		set_Value (COLUMNNAME_ProcessButton4, ProcessButton4);
+	}
+
+	/** Get ProcessButton4.
+		@return Botón de Proceso
+	  */
+	public String getProcessButton4 () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton4);
 	}
 
 	/** Set Processed.

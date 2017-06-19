@@ -1,5 +1,6 @@
 package org.xpande.retail.process;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.process.SvrProcess;
 import org.xpande.retail.model.MZPreciosProvCab;
 
@@ -20,7 +21,18 @@ public class InterfacePreciosProveedor extends SvrProcess{
     @Override
     protected String doIt() throws Exception {
 
-        model.execute();
+        try{
+            // Verifico que se haya seleccionado un archivo
+            if (model.getFileName() == null){
+                return "@Error@ Debe indicar archivo a procesar ";
+            }
+
+            model.execute();
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
 
         return "OK";
     }

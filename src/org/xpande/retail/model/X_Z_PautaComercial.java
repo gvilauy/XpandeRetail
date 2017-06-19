@@ -31,7 +31,7 @@ public class X_Z_PautaComercial extends PO implements I_Z_PautaComercial, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170617L;
+	private static final long serialVersionUID = 20170618L;
 
     /** Standard Constructor */
     public X_Z_PautaComercial (Properties ctx, int Z_PautaComercial_ID, String trxName)
@@ -40,6 +40,8 @@ public class X_Z_PautaComercial extends PO implements I_Z_PautaComercial, I_Pers
       /** if (Z_PautaComercial_ID == 0)
         {
 			setC_BPartner_ID (0);
+			setIsConfirmed (false);
+// N
 			setName (null);
 			setZ_PautaComercial_ID (0);
         } */
@@ -161,6 +163,30 @@ public class X_Z_PautaComercial extends PO implements I_Z_PautaComercial, I_Pers
 	public String getDescription () 
 	{
 		return (String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Confirmed.
+		@param IsConfirmed 
+		Assignment is confirmed
+	  */
+	public void setIsConfirmed (boolean IsConfirmed)
+	{
+		set_Value (COLUMNNAME_IsConfirmed, Boolean.valueOf(IsConfirmed));
+	}
+
+	/** Get Confirmed.
+		@return Assignment is confirmed
+	  */
+	public boolean isConfirmed () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsConfirmed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	public I_M_PriceList getM_PriceList() throws RuntimeException
