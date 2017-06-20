@@ -159,6 +159,15 @@ public interface I_Z_PreciosProvLin
 	  */
 	public String getDescription();
 
+    /** Column name ErrorMsg */
+    public static final String COLUMNNAME_ErrorMsg = "ErrorMsg";
+
+	/** Set Error Msg	  */
+	public void setErrorMsg(String ErrorMsg);
+
+	/** Get Error Msg	  */
+	public String getErrorMsg();
+
     /** Column name InternalCode */
     public static final String COLUMNNAME_InternalCode = "InternalCode";
 
@@ -193,6 +202,19 @@ public interface I_Z_PreciosProvLin
 
 	/** Get IsClassified	  */
 	public boolean isClassified();
+
+    /** Column name IsConfirmed */
+    public static final String COLUMNNAME_IsConfirmed = "IsConfirmed";
+
+	/** Set Confirmed.
+	  * Assignment is confirmed
+	  */
+	public void setIsConfirmed(boolean IsConfirmed);
+
+	/** Get Confirmed.
+	  * Assignment is confirmed
+	  */
+	public boolean isConfirmed();
 
     /** Column name IsNew */
     public static final String COLUMNNAME_IsNew = "IsNew";

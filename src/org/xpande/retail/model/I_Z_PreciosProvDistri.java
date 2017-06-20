@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_LineaProductoSocio
+/** Generated Interface for Z_PreciosProvDistri
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_LineaProductoSocio 
+public interface I_Z_PreciosProvDistri 
 {
 
-    /** TableName=Z_LineaProductoSocio */
-    public static final String Table_Name = "Z_LineaProductoSocio";
+    /** TableName=Z_PreciosProvDistri */
+    public static final String Table_Name = "Z_PreciosProvDistri";
 
-    /** AD_Table_ID=1000046 */
+    /** AD_Table_ID=1000054 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -94,19 +94,6 @@ public interface I_Z_LineaProductoSocio
 	  */
 	public int getCreatedBy();
 
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
-
-	/** Set Description.
-	  * Optional short description of the record
-	  */
-	public void setDescription(String Description);
-
-	/** Get Description.
-	  * Optional short description of the record
-	  */
-	public String getDescription();
-
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -120,18 +107,18 @@ public interface I_Z_LineaProductoSocio
 	  */
 	public boolean isActive();
 
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+    /** Column name IsManualRecord */
+    public static final String COLUMNNAME_IsManualRecord = "IsManualRecord";
 
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
+	/** Set IsManualRecord.
+	  * Registro ingresado manualmente por el usuario
 	  */
-	public void setName(String Name);
+	public void setIsManualRecord(boolean IsManualRecord);
 
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
+	/** Get IsManualRecord.
+	  * Registro ingresado manualmente por el usuario
 	  */
-	public String getName();
+	public boolean isManualRecord();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -149,12 +136,23 @@ public interface I_Z_LineaProductoSocio
 	  */
 	public int getUpdatedBy();
 
-    /** Column name Z_LineaProductoSocio_ID */
-    public static final String COLUMNNAME_Z_LineaProductoSocio_ID = "Z_LineaProductoSocio_ID";
+    /** Column name Z_PreciosProvCab_ID */
+    public static final String COLUMNNAME_Z_PreciosProvCab_ID = "Z_PreciosProvCab_ID";
 
-	/** Set Z_LineaProductoSocio ID	  */
-	public void setZ_LineaProductoSocio_ID(int Z_LineaProductoSocio_ID);
+	/** Set Z_PreciosProvCab ID	  */
+	public void setZ_PreciosProvCab_ID(int Z_PreciosProvCab_ID);
 
-	/** Get Z_LineaProductoSocio ID	  */
-	public int getZ_LineaProductoSocio_ID();
+	/** Get Z_PreciosProvCab ID	  */
+	public int getZ_PreciosProvCab_ID();
+
+	public I_Z_PreciosProvCab getZ_PreciosProvCab() throws RuntimeException;
+
+    /** Column name Z_PreciosProvDistri_ID */
+    public static final String COLUMNNAME_Z_PreciosProvDistri_ID = "Z_PreciosProvDistri_ID";
+
+	/** Set Z_PreciosProvDistri ID	  */
+	public void setZ_PreciosProvDistri_ID(int Z_PreciosProvDistri_ID);
+
+	/** Get Z_PreciosProvDistri ID	  */
+	public int getZ_PreciosProvDistri_ID();
 }

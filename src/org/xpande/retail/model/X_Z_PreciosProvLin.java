@@ -32,7 +32,7 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170617L;
+	private static final long serialVersionUID = 20170619L;
 
     /** Standard Constructor */
     public X_Z_PreciosProvLin (Properties ctx, int Z_PreciosProvLin_ID, String trxName)
@@ -44,6 +44,8 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 			setC_Currency_ID_SO (0);
 			setIsClassified (false);
 // N
+			setIsConfirmed (true);
+// Y
 			setIsNew (false);
 // N
 			setOrgDifferentPricePO (false);
@@ -221,6 +223,20 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 		return (String)get_Value(COLUMNNAME_Description);
 	}
 
+	/** Set Error Msg.
+		@param ErrorMsg Error Msg	  */
+	public void setErrorMsg (String ErrorMsg)
+	{
+		set_Value (COLUMNNAME_ErrorMsg, ErrorMsg);
+	}
+
+	/** Get Error Msg.
+		@return Error Msg	  */
+	public String getErrorMsg () 
+	{
+		return (String)get_Value(COLUMNNAME_ErrorMsg);
+	}
+
 	/** Set InternalCode.
 		@param InternalCode 
 		Código Interno
@@ -250,6 +266,30 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 	public boolean isClassified () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsClassified);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Confirmed.
+		@param IsConfirmed 
+		Assignment is confirmed
+	  */
+	public void setIsConfirmed (boolean IsConfirmed)
+	{
+		set_Value (COLUMNNAME_IsConfirmed, Boolean.valueOf(IsConfirmed));
+	}
+
+	/** Get Confirmed.
+		@return Assignment is confirmed
+	  */
+	public boolean isConfirmed () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsConfirmed);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

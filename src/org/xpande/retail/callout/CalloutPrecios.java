@@ -4,6 +4,7 @@ import org.compiere.model.*;
 import org.compiere.util.Env;
 import org.xpande.core.model.MZSocioListaPrecio;
 import org.xpande.core.utils.PriceListUtils;
+import org.xpande.retail.model.*;
 
 import java.util.Properties;
 
@@ -89,5 +90,52 @@ public class CalloutPrecios extends CalloutEngine {
 
         return "";
     }
+
+
+    /***
+     * Al cambiar producto en linea de documento de gestión de precios de proveedor, se setean atributos correspondientes.
+     * Xpande. Created by Gabriel Vila on 6/19/17.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String productInfoByProduct(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if ((value == null) || (((Integer) value).intValue() <= 0)){
+            return "";
+        }
+
+        int mProductID = ((Integer) value).intValue();
+        MProduct prod = new MProduct(ctx, mProductID, null);
+        if ((prod == null) || (prod.get_ID() <= 0)){
+            return "";
+        }
+
+        mTab.setValue(X_Z_PreciosProvLin.COLUMNNAME_InternalCode, prod.getValue());
+        mTab.setValue(X_Z_PreciosProvLin.COLUMNNAME_Name, prod.getName());
+        mTab.setValue(X_Z_PreciosProvLin.COLUMNNAME_Description, prod.getDescription());
+        mTab.setValue(X_Z_PreciosProvLin.COLUMNNAME_Z_ProductoSeccion_ID, prod.get_ValueAsInt(X_Z_ProductoSeccion.COLUMNNAME_Z_ProductoSeccion_ID));
+        mTab.setValue(X_Z_PreciosProvLin.COLUMNNAME_Z_ProductoRubro_ID, prod.get_ValueAsInt(X_Z_ProductoRubro.COLUMNNAME_Z_ProductoRubro_ID));
+        mTab.setValue(X_Z_PreciosProvLin.COLUMNNAME_C_UOM_ID, prod.getC_UOM_ID());
+        mTab.setValue(X_Z_PreciosProvLin.COLUMNNAME_C_TaxCategory_ID, prod.getC_TaxCategory_ID());
+
+        if (prod.get_ValueAsInt(X_Z_ProductoFamilia.COLUMNNAME_Z_ProductoFamilia_ID) > 0){
+            mTab.setValue(X_Z_PreciosProvLin.COLUMNNAME_Z_ProductoFamilia_ID, prod.get_ValueAsInt(X_Z_ProductoFamilia.COLUMNNAME_Z_ProductoFamilia_ID));
+        }
+
+        if (prod.get_ValueAsInt(X_Z_ProductoSubfamilia.COLUMNNAME_Z_ProductoSubfamilia_ID) > 0){
+            mTab.setValue(X_Z_PreciosProvLin.COLUMNNAME_Z_ProductoSubfamilia_ID, prod.get_ValueAsInt(X_Z_ProductoSubfamilia.COLUMNNAME_Z_ProductoSubfamilia_ID));
+        }
+
+        if (prod.get_ValueAsInt(X_Z_PreciosProvLin.COLUMNNAME_C_TaxCategory_ID_2) > 0){
+            mTab.setValue(X_Z_PreciosProvLin.COLUMNNAME_C_TaxCategory_ID_2, prod.get_ValueAsInt(X_Z_PreciosProvLin.COLUMNNAME_C_TaxCategory_ID_2));
+        }
+
+        return "";
+    }
+
 
 }

@@ -21,10 +21,10 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import org.compiere.model.*;
 
-/** Generated Model for Z_LineaProductoSocio
+/** Generated Model for Z_PreciosProvDistri
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0 - $Id$ */
-public class X_Z_LineaProductoSocio extends PO implements I_Z_LineaProductoSocio, I_Persistent 
+public class X_Z_PreciosProvDistri extends PO implements I_Z_PreciosProvDistri, I_Persistent 
 {
 
 	/**
@@ -33,19 +33,20 @@ public class X_Z_LineaProductoSocio extends PO implements I_Z_LineaProductoSocio
 	private static final long serialVersionUID = 20170619L;
 
     /** Standard Constructor */
-    public X_Z_LineaProductoSocio (Properties ctx, int Z_LineaProductoSocio_ID, String trxName)
+    public X_Z_PreciosProvDistri (Properties ctx, int Z_PreciosProvDistri_ID, String trxName)
     {
-      super (ctx, Z_LineaProductoSocio_ID, trxName);
-      /** if (Z_LineaProductoSocio_ID == 0)
+      super (ctx, Z_PreciosProvDistri_ID, trxName);
+      /** if (Z_PreciosProvDistri_ID == 0)
         {
 			setC_BPartner_ID (0);
-			setName (null);
-			setZ_LineaProductoSocio_ID (0);
+			setIsManualRecord (false);
+			setZ_PreciosProvCab_ID (0);
+			setZ_PreciosProvDistri_ID (0);
         } */
     }
 
     /** Load Constructor */
-    public X_Z_LineaProductoSocio (Properties ctx, ResultSet rs, String trxName)
+    public X_Z_PreciosProvDistri (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -67,7 +68,7 @@ public class X_Z_LineaProductoSocio extends PO implements I_Z_LineaProductoSocio
 
     public String toString()
     {
-      StringBuffer sb = new StringBuffer ("X_Z_LineaProductoSocio[")
+      StringBuffer sb = new StringBuffer ("X_Z_PreciosProvDistri[")
         .append(get_ID()).append("]");
       return sb.toString();
     }
@@ -100,55 +101,70 @@ public class X_Z_LineaProductoSocio extends PO implements I_Z_LineaProductoSocio
 		return ii.intValue();
 	}
 
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
+	/** Set IsManualRecord.
+		@param IsManualRecord 
+		Registro ingresado manualmente por el usuario
 	  */
-	public void setDescription (String Description)
+	public void setIsManualRecord (boolean IsManualRecord)
 	{
-		set_Value (COLUMNNAME_Description, Description);
+		set_Value (COLUMNNAME_IsManualRecord, Boolean.valueOf(IsManualRecord));
 	}
 
-	/** Get Description.
-		@return Optional short description of the record
+	/** Get IsManualRecord.
+		@return Registro ingresado manualmente por el usuario
 	  */
-	public String getDescription () 
+	public boolean isManualRecord () 
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		Object oo = get_Value(COLUMNNAME_IsManualRecord);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
-	public void setName (String Name)
-	{
-		set_Value (COLUMNNAME_Name, Name);
-	}
+	public I_Z_PreciosProvCab getZ_PreciosProvCab() throws RuntimeException
+    {
+		return (I_Z_PreciosProvCab)MTable.get(getCtx(), I_Z_PreciosProvCab.Table_Name)
+			.getPO(getZ_PreciosProvCab_ID(), get_TrxName());	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
-	public String getName () 
+	/** Set Z_PreciosProvCab ID.
+		@param Z_PreciosProvCab_ID Z_PreciosProvCab ID	  */
+	public void setZ_PreciosProvCab_ID (int Z_PreciosProvCab_ID)
 	{
-		return (String)get_Value(COLUMNNAME_Name);
-	}
-
-	/** Set Z_LineaProductoSocio ID.
-		@param Z_LineaProductoSocio_ID Z_LineaProductoSocio ID	  */
-	public void setZ_LineaProductoSocio_ID (int Z_LineaProductoSocio_ID)
-	{
-		if (Z_LineaProductoSocio_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Z_LineaProductoSocio_ID, null);
+		if (Z_PreciosProvCab_ID < 1) 
+			set_Value (COLUMNNAME_Z_PreciosProvCab_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_Z_LineaProductoSocio_ID, Integer.valueOf(Z_LineaProductoSocio_ID));
+			set_Value (COLUMNNAME_Z_PreciosProvCab_ID, Integer.valueOf(Z_PreciosProvCab_ID));
 	}
 
-	/** Get Z_LineaProductoSocio ID.
-		@return Z_LineaProductoSocio ID	  */
-	public int getZ_LineaProductoSocio_ID () 
+	/** Get Z_PreciosProvCab ID.
+		@return Z_PreciosProvCab ID	  */
+	public int getZ_PreciosProvCab_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_LineaProductoSocio_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_PreciosProvCab_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_PreciosProvDistri ID.
+		@param Z_PreciosProvDistri_ID Z_PreciosProvDistri ID	  */
+	public void setZ_PreciosProvDistri_ID (int Z_PreciosProvDistri_ID)
+	{
+		if (Z_PreciosProvDistri_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Z_PreciosProvDistri_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Z_PreciosProvDistri_ID, Integer.valueOf(Z_PreciosProvDistri_ID));
+	}
+
+	/** Get Z_PreciosProvDistri ID.
+		@return Z_PreciosProvDistri ID	  */
+	public int getZ_PreciosProvDistri_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_PreciosProvDistri_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

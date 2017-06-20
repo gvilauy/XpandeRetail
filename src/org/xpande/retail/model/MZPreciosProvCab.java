@@ -35,7 +35,9 @@ import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.xpande.core.model.MZProductoUPC;
+import org.xpande.core.model.MZSocioListaPrecio;
 import sun.misc.MessageUtils;
 
 /** Generated Model for Z_PreciosProvCab
@@ -218,8 +220,34 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		if (!isApproved())
 			approveIt();
 		log.info(toString());
-		//
-		
+
+		// Obtengo lineas del documento
+		List<MZPreciosProvLin> lines = this.getLines();
+
+		// Valido condiciones para completar este documento
+		m_processMsg = this.validateDocument(lines);
+		if (m_processMsg != null){
+			return DocAction.STATUS_Invalid;
+		}
+
+		// Obtengo lista de precios de compra y versión de la misma a procesar
+		this.setPriceListPO();
+		MPriceList plCompra = (MPriceList) this.getM_PriceList();
+		MPriceListVersion plVersionCompra = (MPriceListVersion) this.getM_PriceList_Version();
+
+		// Recorro y proceso lineas (ya fueron validadas)
+		for (MZPreciosProvLin line: lines){
+
+			// Sete de producto de la linea, en caso de ser un nuevo producto se crea en este momento.
+			line.setProduct();
+
+			// Proceso lo referente a compras con la información de esta linea de documento
+			line.setDataPO(plCompra, plVersionCompra);
+
+			// Proceso lo referente a ventas con la información de esta linea de documento
+			//line.setDataSO();
+		}
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -234,7 +262,139 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
-	
+
+
+	/***
+	 * Setea lista de precios de compra a considerar.
+	 * Procedimiento:
+	 * 1. Si tengo lista seleccionada en el documento, utilizo eso.
+	 * 2. Si no tengo lista seleccionada, verifico si no hay una lista existente para la moneda de compra indicada,
+	 * si hay la asocio a este documento y la utilizo.
+	 * 3. Si no tengo lista seleccionada y tampoco existe una para la moneda de compra, tengo que crear una nueva,
+	 * asociarla a este documento y utilizarla.
+	 * Xpande. Created by Gabriel Vila on 6/19/17.
+	 * @return
+	 */
+	private void setPriceListPO() {
+
+		MPriceList pl = null;
+
+		try{
+
+			// Si tengo lista seleccionada, retorno esa.
+			if (this.getM_PriceList_ID() > 0){
+				return;
+			}
+
+			// Veo si hay una lista existente para socio de negocio y moneda de compra
+			MZSocioListaPrecio bpl = MZSocioListaPrecio.getByPartnerCurrency(getCtx(), this.getC_BPartner_ID(), this.getC_Currency_ID(), get_TrxName());
+			if ((bpl != null) && (bpl.get_ID() > 0)){
+				this.setM_PriceList_ID(bpl.getM_PriceList_ID());
+				this.setM_PriceList_Version_ID(((MPriceList)bpl.getM_PriceList()).getPriceListVersion(null).get_ID());
+			}
+			else{
+				// No existe lista para este socio de negocio y moneda de compra. La creo y seteo al socio de negocio.
+				MBPartner bp = (MBPartner) this.getC_BPartner();
+				MCurrency cur = (MCurrency) this.getC_Currency();
+				pl = new MPriceList(getCtx(), 0, get_TrxName());
+				pl.setName("LISTA " + bp.getName2().toUpperCase() + " " + cur.getISO_Code());
+				pl.setC_Currency_ID(this.getC_Currency_ID());
+				pl.setIsSOPriceList(false);
+				pl.setIsTaxIncluded(true);
+				pl.setIsNetPrice(false);
+				pl.setPricePrecision(cur.getCostingPrecision());
+				pl.setAD_Org_ID(0);
+				pl.saveEx();
+
+				MPriceListVersion plv = new MPriceListVersion(pl);
+				plv.setName("VIGENTE");
+				plv.saveEx();
+
+				bpl =  new MZSocioListaPrecio(getCtx(), 0, get_TrxName());
+				bpl.setC_BPartner_ID(this.getC_BPartner_ID());
+				bpl.setC_Currency_ID(this.getC_Currency_ID());
+				bpl.setM_PriceList_ID(pl.get_ID());
+				bpl.saveEx();
+
+				this.setM_PriceList_ID(pl.get_ID());
+				this.setM_PriceList_Version_ID(plv.get_ID());
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+	}
+
+
+	/***
+	 * Realiza validaciones a nivel del documento.
+	 * @param lines
+	 * @return null si esta ok, o mensaje de invalidez
+	 */
+	private String validateDocument(List<MZPreciosProvLin> lines) {
+
+		String message = null;
+
+		if (lines.size() <= 0){
+			return "El documento no tiene productos para procesar.";
+		}
+
+		Timestamp today = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+		Timestamp validFrom = TimeUtil.trunc(this.getDateValidPO(), TimeUtil.TRUNC_DAY);
+
+		if (validFrom.compareTo(today) < 0){
+			return "La fecha de Vigencia tiene que ser mayor o igual a hoy";
+		}
+
+		// Si tengo modalidad de de proceso por medio de archivo de interface
+		if (this.getModalidadPreciosProv().equalsIgnoreCase(X_Z_PreciosProvCab.MODALIDADPRECIOSPROV_ARCHIVODECARGA)){
+			// Valido que no haya lineas de inconsistencias en el archivo que NO fueron marcadas como omitidas
+			List<MZPreciosProvArchivo> linesFile = this.getLineasArchivoNoConfNoOmitir();
+			if (linesFile.size() > 0){
+				return "Hay lineas del archivo que aún tienen inconsistencias.\nDebe omitir o solucionar las mismas.";
+			}
+		}
+
+		// Recorro y valido lineas del documento
+		boolean hayInconcistencias = false;
+		for (MZPreciosProvLin line: lines){
+
+			// En caso de haber alguna inconsistencia, marco linea como no confirmada y guardo el mensaje
+			String messageLine = line.validate();
+			if (messageLine != null){
+				hayInconcistencias = true;
+				line.setIsConfirmed(false);
+				line.setErrorMsg(messageLine);
+			}
+			else {
+				// Linea validada, proceso.
+				line.setIsConfirmed(true);
+				line.setErrorMsg(null);
+			}
+		}
+
+		if (hayInconcistencias){
+			return "Hay inconsistencias en algunos de los productos.\nDebe solucionarlas antes de poder completar el documento.";
+		}
+
+		return message;
+	}
+
+
+	/***
+	 * Obtiene y retorna lineas del documento.
+	 * Xpande. Created by Gabriel Vila on 6/19/17.
+	 * @return
+	 */
+	private List<MZPreciosProvLin> getLines() {
+
+		String whereClause = X_Z_PreciosProvLin.COLUMNNAME_Z_PreciosProvCab_ID + " =" + this.get_ID();
+
+		List<MZPreciosProvLin> lines = new Query(getCtx(), I_Z_PreciosProvLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
 	/**
 	 * 	Set the definite document number after completed
 	 */
@@ -722,12 +882,6 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 					// Precios de compra en nuevo producto
 					plinea.setOrgDifferentPricePO(false);
 					plinea.calculatePricesPO(lineaArchivo.getPriceList(), this.getPrecisionPO(), (MZPautaComercial) this.getZ_PautaComercial());
-
-					/*
-					plinea.setPriceList(lineaArchivo.getPriceList().setScale(this.precisionDecimalCompra, BigDecimal.ROUND_HALF_UP));
-					plinea.setPricePO(lineaArchivo.getPriceList().setScale(this.precisionDecimalCompra, BigDecimal.ROUND_HALF_UP));
-					plinea.setPriceFinal(lineaArchivo.getPriceList().setScale(this.precisionDecimalCompra, BigDecimal.ROUND_HALF_UP));
-					*/
 
 					// Precios de venta en nuevo producto
 					plinea.setOrgDifferentPriceSO(false);
