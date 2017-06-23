@@ -832,13 +832,127 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			// Si la modalidad de proceso es mediante la carga de productos de una linea del proveedor
 			else if (this.getModalidadPreciosProv().equalsIgnoreCase(X_Z_PreciosProvCab.MODALIDADPRECIOSPROV_LINEADEPRODUCTOS)){
 
+				// Seteo tabla de lineas de este documento (productos existentes) con los productos contenidos en la
+				// linea de productos seleccionada.
+				this.setDateFromLineaProductoSocio();
 			}
 
 			// Marco este documento como ejecutado, para que no se permita modificar información en la ventana
 			this.setIsExecuted(true);
 			this.saveEx();
 
-			
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+	}
+
+	private void setDateFromLineaProductoSocio() {
+
+		try{
+
+			// Otengo lista de modelos de asociación productos-socio para linea y socio seleccionados.
+			List<MZProductoSocio> productoSocios = MZProductoSocio.getByBPartnerLineaPriceList(getCtx(), this.getC_BPartner_ID(),
+					this.getZ_LineaProductoSocio_ID(), this.getM_PriceList_ID(), get_TrxName());
+			if ((productoSocios == null) || (productoSocios.size() <= 0)){
+				log.saveError("Error", "No se obtuvieron Productos para la Linea, Socio de Negocios y Lista de Precios de Compra seleccionados.");
+				return;
+			}
+
+			// Instancio modelo de lista de precios de compra y versión vigente de la misma
+			MPriceList plCompra = (MPriceList) this.getM_PriceList();
+			MPriceListVersion plVersionCompra = (MPriceListVersion) this.getM_PriceList_Version();
+
+			// Instancio modelo  lista de precios de venta y versión de la misma a procesar
+			MPriceList plVenta = new MPriceList(getCtx(), this.getM_PriceList_ID_SO(), get_TrxName());
+			MPriceListVersion plVersionVenta = new MPriceListVersion(getCtx(), this.getM_PriceList_Version_ID_SO(), get_TrxName());
+
+			// Recorro y proceso lista, para obtener productos a cargar
+			for (MZProductoSocio productoSocio: productoSocios){
+
+				// Producto a considerar
+				MProduct prod = (MProduct) productoSocio.getM_Product();
+
+				// Precio de lista compra actual tomado desde la propia lista
+				BigDecimal priceListPO = null;
+				MProductPrice productPrice = MProductPrice.get(getCtx(), plVersionCompra.get_ID(), prod.get_ID(), get_TrxName());
+
+				// Si no encontre producto en la lista, lo tomo del modelo producto-socio
+				if (productPrice != null){
+					priceListPO = productPrice.getPriceList();
+				}
+				else{
+					priceListPO = productoSocio.getPriceList();
+				}
+
+				if ((priceListPO == null) || (priceListPO.compareTo(Env.ZERO) <= 0)){
+					log.saveError("Error", "No se obtuvo Precio de Lista Compra para el producto: " + prod.getValue() + " - " + prod.getName());
+					return;
+				}
+
+				// Precio de lista venta actual tomado desde la propia lista
+				BigDecimal priceListSO = null;
+				MProductPrice productPriceSO = MProductPrice.get(getCtx(), plVersionVenta.get_ID(), prod.get_ID(), get_TrxName());
+
+				// Si no encontre producto en la lista, lo tomo del modelo producto-socio
+				if (productPriceSO != null){
+					priceListSO = productPrice.getPriceList();
+				}
+				else{
+					priceListSO = productoSocio.getPriceSO();
+				}
+
+				if ((priceListSO == null) || (priceListSO.compareTo(Env.ZERO) <= 0)){
+					log.saveError("Error", "No se obtuvo Precio de Lista Venta para el producto: " + prod.getValue() + " - " + prod.getName());
+					return;
+				}
+
+				MZPreciosProvLin plinea = new MZPreciosProvLin(getCtx(), 0, get_TrxName());
+				plinea.setZ_PreciosProvCab_ID(this.get_ID());
+				plinea.setC_Currency_ID(this.getC_Currency_ID());
+				plinea.setC_Currency_ID_SO(this.getC_Currency_ID_SO());
+				plinea.setM_Product_ID(prod.get_ID());
+				plinea.setInternalCode(prod.getValue());
+				plinea.setName(prod.getName());
+				plinea.setDescription(prod.getDescription());
+				plinea.setIsNew(false);
+
+				// Ultimo código de barras asociado al producto (en caso de tenerlo)
+				MZProductoUPC pupc = MZProductoUPC.getByProduct(getCtx(), prod.get_ID(), get_TrxName());
+				if ((pupc != null) && (pupc.get_ID() > 0)){
+					plinea.setUPC(pupc.getUPC());
+				}
+				if (productoSocio.getVendorProductNo() != null){
+					plinea.setVendorProductNo(productoSocio.getVendorProductNo());
+				}
+
+				plinea.setZ_ProductoSeccion_ID(prod.get_ValueAsInt(X_Z_ProductoSeccion.COLUMNNAME_Z_ProductoSeccion_ID));
+				plinea.setZ_ProductoRubro_ID(prod.get_ValueAsInt(X_Z_ProductoRubro.COLUMNNAME_Z_ProductoRubro_ID));
+				if (prod.get_ValueAsInt(X_Z_ProductoFamilia.COLUMNNAME_Z_ProductoFamilia_ID) > 0){
+					plinea.setZ_ProductoFamilia_ID(prod.get_ValueAsInt(X_Z_ProductoFamilia.COLUMNNAME_Z_ProductoFamilia_ID));
+				}
+				if (prod.get_ValueAsInt(X_Z_ProductoSubfamilia.COLUMNNAME_Z_ProductoSubfamilia_ID) > 0){
+					plinea.setZ_ProductoSubfamilia_ID(prod.get_ValueAsInt(X_Z_ProductoSubfamilia.COLUMNNAME_Z_ProductoSubfamilia_ID));
+				}
+				plinea.setC_TaxCategory_ID(prod.getC_TaxCategory_ID());
+				if (prod.get_ValueAsInt("C_TaxCategory_ID_2") > 0){
+					plinea.setC_TaxCategory_ID_2(prod.get_ValueAsInt("C_TaxCategory_ID_2"));
+				}
+				if (prod.getC_UOM_ID() > 0){
+					plinea.setC_UOM_ID(prod.getC_UOM_ID());
+				}
+
+				plinea.setOrgDifferentPricePO(productoSocio.isDistinctPricePO());
+
+				// Precios de compra
+				plinea.calculatePricesPO(priceListPO, this.getPrecisionPO(), (MZPautaComercial) this.getZ_PautaComercial());
+
+				// Precios de venta
+				plinea.calculatePricesSO(priceListSO, this.getPrecisionSO());
+
+				plinea.saveEx();
+			}
+
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);
@@ -1121,6 +1235,8 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 						plinea.setNewPriceSO(lineaArchivo.getPriceSO().setScale(this.getPrecisionSO(), BigDecimal.ROUND_HALF_UP));
 					}
 
+
+
 				}
 				else{  // El producto ya estaba definido en el sistema
 
@@ -1138,7 +1254,8 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 				}
 
-				//
+				// Calculo y seteo márgenes de linea
+				plinea.calculateMargins();
 
 				plinea.saveEx();
 				lineaArchivo.setIsConfirmed(true);
@@ -1217,6 +1334,14 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 					pOrg.setAD_OrgTrx_ID(orgs[i].get_ID());
 					pOrg.saveEx();
 				}
+
+				// Marco flag que determina si tengo mas de una organización o no para procesar
+				if (orgs.length > 1){
+					this.setOnlyOneOrg(false);
+				}
+				else{
+					this.setOnlyOneOrg(true);
+				}
 			}
 			else{
 				// Este documento tiene una organización determinada, cargo entonces esa única organización.
@@ -1224,8 +1349,12 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				pOrg.setZ_PreciosProvCab_ID(this.get_ID());
 				pOrg.setAD_OrgTrx_ID(this.getAD_Org_ID());
 				pOrg.saveEx();
+
+				// Marco flag que indica que solo tengo una organización para procesar
+				this.setOnlyOneOrg(true);
 			}
 
+			this.saveEx();
 		}
 
 		return true;

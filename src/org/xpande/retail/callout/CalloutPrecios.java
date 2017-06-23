@@ -6,6 +6,7 @@ import org.xpande.core.model.MZSocioListaPrecio;
 import org.xpande.core.utils.PriceListUtils;
 import org.xpande.retail.model.*;
 
+import java.math.BigDecimal;
 import java.util.Properties;
 
 /**
@@ -133,6 +134,70 @@ public class CalloutPrecios extends CalloutEngine {
         if (prod.get_ValueAsInt(X_Z_PreciosProvLin.COLUMNNAME_C_TaxCategory_ID_2) > 0){
             mTab.setValue(X_Z_PreciosProvLin.COLUMNNAME_C_TaxCategory_ID_2, prod.get_ValueAsInt(X_Z_PreciosProvLin.COLUMNNAME_C_TaxCategory_ID_2));
         }
+
+        return "";
+    }
+
+
+    public String calculateMargins(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (value == null) return "";
+
+        String column = mField.getColumnName();
+
+        BigDecimal priceFinal = (BigDecimal) mTab.getValue("PriceFinal");
+        BigDecimal pricePO = (BigDecimal) mTab.getValue("PricePO");
+        BigDecimal priceInvoiced = (BigDecimal) mTab.getValue("PriceInvoiced");
+
+        // Si es moneda de compra la recibida, busco lista de compra del proveedor en esa moneda
+        if (column.equalsIgnoreCase("NewPriceSO")){
+
+            BigDecimal newPriceSO = (BigDecimal)value;
+            if ((newPriceSO == null) || (newPriceSO.compareTo(Env.ZERO) <= 0)){
+                mTab.setValue("PriceFinalMargin", null);
+                mTab.setValue("PricePOMargin", null);
+                mTab.setValue("PriceInvoicedMargin", null);
+            }
+            else{
+                // Margen final
+                if ((priceFinal == null) || (priceFinal.compareTo(Env.ZERO) <= 0)){
+                    mTab.setValue("PriceFinalMargin", null);
+                }
+                else{
+                    mTab.setValue("PriceFinalMargin", (priceFinal.divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP))
+                            .multiply(newPriceSO).setScale(2, BigDecimal.ROUND_HALF_UP));
+                }
+
+                // Margen OC
+                if ((pricePO == null) || (pricePO.compareTo(Env.ZERO) <= 0)){
+                    mTab.setValue("PricePOMargin", null);
+                }
+                else{
+                    mTab.setValue("PricePOMargin", (pricePO.divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP))
+                            .multiply(newPriceSO).setScale(2, BigDecimal.ROUND_HALF_UP));
+                }
+
+                // Margen Factura
+                if ((priceInvoiced == null) || (priceInvoiced.compareTo(Env.ZERO) <= 0)){
+                    mTab.setValue("PriceInvoicedMargin", null);
+                }
+                else{
+                    mTab.setValue("PriceInvoicedMargin", (priceInvoiced.divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP))
+                            .multiply(newPriceSO).setScale(2, BigDecimal.ROUND_HALF_UP));
+                }
+            }
+        }
+        else if (column.equalsIgnoreCase("PriceFinalMargin")){
+
+        }
+        else if (column.equalsIgnoreCase("PriceInvoicedMargin")){
+
+        }
+        else{
+            return "";
+        }
+
+
 
         return "";
     }

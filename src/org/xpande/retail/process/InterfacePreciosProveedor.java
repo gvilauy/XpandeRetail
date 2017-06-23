@@ -3,6 +3,7 @@ package org.xpande.retail.process;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.process.SvrProcess;
 import org.xpande.retail.model.MZPreciosProvCab;
+import org.xpande.retail.model.X_Z_PreciosProvCab;
 
 /**
  * Proceso de interface de precios de proveedor
@@ -22,9 +23,18 @@ public class InterfacePreciosProveedor extends SvrProcess{
     protected String doIt() throws Exception {
 
         try{
-            // Verifico que se haya seleccionado un archivo
-            if (model.getFileName() == null){
-                return "@Error@ Debe indicar archivo a procesar ";
+
+            // Valido según modalidad de proceso
+            if (model.getModalidadPreciosProv().equalsIgnoreCase(X_Z_PreciosProvCab.MODALIDADPRECIOSPROV_ARCHIVODECARGA)){
+                // Verifico que se haya seleccionado un archivo
+                if (model.getFileName() == null){
+                    return "@Error@ Debe indicar archivo a procesar ";
+                }
+            }
+            else if (model.getModalidadPreciosProv().equalsIgnoreCase(X_Z_PreciosProvCab.MODALIDADPRECIOSPROV_LINEADEPRODUCTOS)){
+                if (model.getZ_LineaProductoSocio_ID() <= 0){
+                    return "@Error@ Debe indicar Linea de Productos a procesar ";
+                }
             }
 
             model.execute();

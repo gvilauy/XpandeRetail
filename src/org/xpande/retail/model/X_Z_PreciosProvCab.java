@@ -31,7 +31,7 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170618L;
+	private static final long serialVersionUID = 20170623L;
 
     /** Standard Constructor */
     public X_Z_PreciosProvCab (Properties ctx, int Z_PreciosProvCab_ID, String trxName)
@@ -61,6 +61,8 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 // Y
 			setModalidadPreciosProv (null);
 // ARCHIVO
+			setOnlyOneOrg (true);
+// Y
 			setProcessed (false);
 // N
 			setZ_PreciosProvCab_ID (0);
@@ -602,6 +604,30 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 		return (String)get_Value(COLUMNNAME_NombreLineaManual);
 	}
 
+	/** Set OnlyOneOrg.
+		@param OnlyOneOrg 
+		Flag para indicar si estoy procesando una sola una organización
+	  */
+	public void setOnlyOneOrg (boolean OnlyOneOrg)
+	{
+		set_Value (COLUMNNAME_OnlyOneOrg, Boolean.valueOf(OnlyOneOrg));
+	}
+
+	/** Get OnlyOneOrg.
+		@return Flag para indicar si estoy procesando una sola una organización
+	  */
+	public boolean isOnlyOneOrg () 
+	{
+		Object oo = get_Value(COLUMNNAME_OnlyOneOrg);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set PrecisionPO.
 		@param PrecisionPO 
 		Precisión decimal para precios de compra
@@ -722,6 +748,27 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 	public boolean isProcessed () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Process Now.
+		@param Processing Process Now	  */
+	public void setProcessing (boolean Processing)
+	{
+		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+	}
+
+	/** Get Process Now.
+		@return Process Now	  */
+	public boolean isProcessing () 
+	{
+		Object oo = get_Value(COLUMNNAME_Processing);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

@@ -159,6 +159,24 @@ public interface I_Z_PreciosProvLin
 	  */
 	public String getDescription();
 
+    /** Column name DistinctPricePO */
+    public static final String COLUMNNAME_DistinctPricePO = "DistinctPricePO";
+
+	/** Set DistinctPricePO	  */
+	public void setDistinctPricePO(boolean DistinctPricePO);
+
+	/** Get DistinctPricePO	  */
+	public boolean isDistinctPricePO();
+
+    /** Column name DistinctPriceSO */
+    public static final String COLUMNNAME_DistinctPriceSO = "DistinctPriceSO";
+
+	/** Set DistinctPriceSO	  */
+	public void setDistinctPriceSO(boolean DistinctPriceSO);
+
+	/** Get DistinctPriceSO	  */
+	public boolean isDistinctPriceSO();
+
     /** Column name ErrorMsg */
     public static final String COLUMNNAME_ErrorMsg = "ErrorMsg";
 

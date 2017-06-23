@@ -50,6 +50,9 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
 
             // Recalculo precios de compra de esta linea ya que se modificaron los segmentos especiales en la misma
             this.calculatePricesPO(this.getPriceList(), cab.getPrecisionPO(), (MZPautaComercial) cab.getZ_PautaComercial());
+
+            // Recalculo márgenes
+            this.calculateMargins();
         }
 
 
@@ -307,4 +310,61 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
         }
     }
 
+    /***
+     * Metodo que calcula y setea margenes de esta linea.
+     * Xpande. Created by Gabriel Vila on 6/23/17.
+     */
+    public void calculateMargins() {
+
+        try{
+
+            // Si no tengo nuevo precio de venta, seteo margenes nulos y salgo
+            if ((this.getNewPriceSO() == null) || (this.getNewPriceSO().compareTo(Env.ZERO) <= 0)){
+                this.setPriceFinalMargin(null);
+                this.setPricePOMargin(null);
+                this.setPriceInvoicedMargin(null);
+                return;
+            }
+
+            // Si no tengo precio de lista, seteo margenes nulos y salgo
+            if ((this.getPriceList() == null) || (this.getPriceList().compareTo(Env.ZERO) <= 0)){
+                this.setPriceFinalMargin(null);
+                this.setPricePOMargin(null);
+                this.setPriceInvoicedMargin(null);
+                return;
+            }
+
+            // Margen final
+            if ((this.getPriceFinal() == null) || (this.getPriceFinal().compareTo(Env.ZERO) <= 0)){
+                this.setPriceFinalMargin(null);
+            }
+            else{
+                this.setPriceFinalMargin((this.getPriceFinal().divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP))
+                        .multiply(this.getNewPriceSO()).setScale(2, BigDecimal.ROUND_HALF_UP));
+            }
+
+            // Margen OC
+            if ((this.getPricePO() == null) || (this.getPricePO().compareTo(Env.ZERO) <= 0)){
+                this.setPricePOMargin(null);
+            }
+            else{
+                this.setPricePOMargin((this.getPricePO().divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP))
+                        .multiply(this.getNewPriceSO()).setScale(2, BigDecimal.ROUND_HALF_UP));
+            }
+
+            // Margen Factura
+            if ((this.getPriceInvoiced() == null) || (this.getPriceInvoiced().compareTo(Env.ZERO) <= 0)){
+                this.setPriceInvoicedMargin(null);
+            }
+            else{
+                this.setPriceInvoicedMargin((this.getPriceInvoiced().divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP))
+                        .multiply(this.getNewPriceSO()).setScale(2, BigDecimal.ROUND_HALF_UP));
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+    }
 }

@@ -3,6 +3,7 @@ package org.xpande.retail.model;
 import org.compiere.model.Query;
 
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -19,6 +20,7 @@ public class MZProductoSocio extends X_Z_ProductoSocio {
     public MZProductoSocio(Properties ctx, ResultSet rs, String trxName) {
         super(ctx, rs, trxName);
     }
+
 
     /***
      * Obtiene y retorna modelo segun id de socio de negocio y id de producto recibidos.
@@ -55,5 +57,25 @@ public class MZProductoSocio extends X_Z_ProductoSocio {
         return model;
     }
 
+
+    /***
+     * Obtiene y retorna lista de este modelo para un socio y una linea de productos recibidos.
+     * Xpande. Created by Gabriel Vila on 6/22/17.
+     * @param ctx
+     * @param cBPartnerID
+     * @param zLineaProductoSocioID
+     * @param mPriceListID
+     * @param trxName
+     * @return
+     */
+    public static List<MZProductoSocio> getByBPartnerLineaPriceList(Properties ctx, int cBPartnerID, int zLineaProductoSocioID, int mPriceListID, String trxName) {
+
+        String whereClause = X_Z_ProductoSocio.COLUMNNAME_C_BPartner_ID + " =" + cBPartnerID +
+                " AND " + X_Z_ProductoSocio.COLUMNNAME_Z_LineaProductoSocio_ID + " =" + zLineaProductoSocioID;
+
+        List<MZProductoSocio> lines = new Query(ctx, I_Z_ProductoSocio.Table_Name, whereClause, trxName).list();
+
+        return lines;
+    }
 
 }

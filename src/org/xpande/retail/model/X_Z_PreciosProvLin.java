@@ -32,7 +32,7 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170621L;
+	private static final long serialVersionUID = 20170623L;
 
     /** Standard Constructor */
     public X_Z_PreciosProvLin (Properties ctx, int Z_PreciosProvLin_ID, String trxName)
@@ -42,6 +42,10 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
         {
 			setC_Currency_ID (0);
 			setC_Currency_ID_SO (0);
+			setDistinctPricePO (false);
+// N
+			setDistinctPriceSO (false);
+// N
 			setIsClassified (false);
 // N
 			setIsConfirmed (true);
@@ -221,6 +225,48 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 	public String getDescription () 
 	{
 		return (String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set DistinctPricePO.
+		@param DistinctPricePO DistinctPricePO	  */
+	public void setDistinctPricePO (boolean DistinctPricePO)
+	{
+		set_Value (COLUMNNAME_DistinctPricePO, Boolean.valueOf(DistinctPricePO));
+	}
+
+	/** Get DistinctPricePO.
+		@return DistinctPricePO	  */
+	public boolean isDistinctPricePO () 
+	{
+		Object oo = get_Value(COLUMNNAME_DistinctPricePO);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set DistinctPriceSO.
+		@param DistinctPriceSO DistinctPriceSO	  */
+	public void setDistinctPriceSO (boolean DistinctPriceSO)
+	{
+		set_Value (COLUMNNAME_DistinctPriceSO, Boolean.valueOf(DistinctPriceSO));
+	}
+
+	/** Get DistinctPriceSO.
+		@return DistinctPriceSO	  */
+	public boolean isDistinctPriceSO () 
+	{
+		Object oo = get_Value(COLUMNNAME_DistinctPriceSO);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Error Msg.

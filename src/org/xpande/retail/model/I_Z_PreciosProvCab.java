@@ -363,6 +363,19 @@ public interface I_Z_PreciosProvCab
 	/** Get NombreLineaManual	  */
 	public String getNombreLineaManual();
 
+    /** Column name OnlyOneOrg */
+    public static final String COLUMNNAME_OnlyOneOrg = "OnlyOneOrg";
+
+	/** Set OnlyOneOrg.
+	  * Flag para indicar si estoy procesando una sola una organización
+	  */
+	public void setOnlyOneOrg(boolean OnlyOneOrg);
+
+	/** Get OnlyOneOrg.
+	  * Flag para indicar si estoy procesando una sola una organización
+	  */
+	public boolean isOnlyOneOrg();
+
     /** Column name PrecisionPO */
     public static final String COLUMNNAME_PrecisionPO = "PrecisionPO";
 
@@ -449,6 +462,15 @@ public interface I_Z_PreciosProvCab
 	  * The document has been processed
 	  */
 	public boolean isProcessed();
+
+    /** Column name Processing */
+    public static final String COLUMNNAME_Processing = "Processing";
+
+	/** Set Process Now	  */
+	public void setProcessing(boolean Processing);
+
+	/** Get Process Now	  */
+	public boolean isProcessing();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
