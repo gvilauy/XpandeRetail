@@ -91,6 +91,19 @@ public interface I_Z_ProductoSocioOrg
 
 	public I_C_Currency getC_Currency() throws RuntimeException;
 
+    /** Column name C_Currency_ID_SO */
+    public static final String COLUMNNAME_C_Currency_ID_SO = "C_Currency_ID_SO";
+
+	/** Set C_Currency_ID_SO.
+	  * Moneda de Venta
+	  */
+	public void setC_Currency_ID_SO(int C_Currency_ID_SO);
+
+	/** Get C_Currency_ID_SO.
+	  * Moneda de Venta
+	  */
+	public int getC_Currency_ID_SO();
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -145,6 +158,62 @@ public interface I_Z_ProductoSocioOrg
 	  * The record is active in the system
 	  */
 	public boolean isActive();
+
+    /** Column name M_PriceList_ID */
+    public static final String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
+
+	/** Set Price List.
+	  * Unique identifier of a Price List
+	  */
+	public void setM_PriceList_ID(int M_PriceList_ID);
+
+	/** Get Price List.
+	  * Unique identifier of a Price List
+	  */
+	public int getM_PriceList_ID();
+
+	public I_M_PriceList getM_PriceList() throws RuntimeException;
+
+    /** Column name M_PriceList_ID_SO */
+    public static final String COLUMNNAME_M_PriceList_ID_SO = "M_PriceList_ID_SO";
+
+	/** Set M_PriceList_ID_SO.
+	  * Lista de Precios de Venta
+	  */
+	public void setM_PriceList_ID_SO(int M_PriceList_ID_SO);
+
+	/** Get M_PriceList_ID_SO.
+	  * Lista de Precios de Venta
+	  */
+	public int getM_PriceList_ID_SO();
+
+    /** Column name M_PriceList_Version_ID */
+    public static final String COLUMNNAME_M_PriceList_Version_ID = "M_PriceList_Version_ID";
+
+	/** Set Price List Version.
+	  * Identifies a unique instance of a Price List
+	  */
+	public void setM_PriceList_Version_ID(int M_PriceList_Version_ID);
+
+	/** Get Price List Version.
+	  * Identifies a unique instance of a Price List
+	  */
+	public int getM_PriceList_Version_ID();
+
+	public I_M_PriceList_Version getM_PriceList_Version() throws RuntimeException;
+
+    /** Column name M_PriceList_Version_ID_SO */
+    public static final String COLUMNNAME_M_PriceList_Version_ID_SO = "M_PriceList_Version_ID_SO";
+
+	/** Set M_PriceList_Version_ID_SO.
+	  * Version de Lista de Precios de Venta
+	  */
+	public void setM_PriceList_Version_ID_SO(int M_PriceList_Version_ID_SO);
+
+	/** Get M_PriceList_Version_ID_SO.
+	  * Version de Lista de Precios de Venta
+	  */
+	public int getM_PriceList_Version_ID_SO();
 
     /** Column name PriceFinal */
     public static final String COLUMNNAME_PriceFinal = "PriceFinal";

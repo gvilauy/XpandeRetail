@@ -39,4 +39,21 @@ public class MZProductoSocio extends X_Z_ProductoSocio {
         return model;
     }
 
+    /***
+     * Obtiene y retorna modelo de organización asociada a este producto-socio.
+     * Xpande. Created by Gabriel Vila on 6/21/17.
+     * @param adOrgTrxID
+     * @return
+     */
+    public MZProductoSocioOrg getOrg(int adOrgTrxID) {
+
+        String whereClause = X_Z_ProductoSocioOrg.COLUMNNAME_Z_ProductoSocio_ID + " =" + this.get_ID() +
+                " AND " + X_Z_ProductoSocioOrg.COLUMNNAME_AD_OrgTrx_ID + " =" + adOrgTrxID;
+
+        MZProductoSocioOrg model = new Query(getCtx(), I_Z_ProductoSocioOrg.Table_Name, whereClause, get_TrxName()).first();
+
+        return model;
+    }
+
+
 }

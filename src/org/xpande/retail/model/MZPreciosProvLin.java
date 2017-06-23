@@ -11,6 +11,7 @@ import org.xpande.retail.utils.ProductPricesInfo;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -130,10 +131,23 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
                     // Seteo precios de compra y segmentos si es necesario
                     this.setPricePO(ppi.getPricePO());
                     this.setPriceFinal(ppi.getPriceFinal());
+                    if (ppi.getSumPercentageDiscountsOC() != null) {
+                        this.setTotalDiscountsPO(ppi.getSumPercentageDiscountsOC());
+                    }
+                    else{
+                        this.setTotalDiscountsPO(Env.ZERO);
+                    }
+                    if (ppi.getSumPercentageDiscountsFinal() != null) {
+                        this.setTotalDiscountsFinal(ppi.getSumPercentageDiscountsFinal());
+                    }
+                    else{
+                        this.setTotalDiscountsFinal(Env.ZERO);
+                    }
 
                     if (ppi.getSegmentoGral_ID() > 0) this.setZ_PautaComercialSet_ID_Gen(ppi.getSegmentoGral_ID());
                     if (ppi.getSegmentoEspecial1_ID() > 0) this.setZ_PautaComercialSet_ID_1(ppi.getSegmentoEspecial1_ID());
                     if (ppi.getSegmentoEspecial2_ID() > 0) this.setZ_PautaComercialSet_ID_2(ppi.getSegmentoEspecial2_ID());
+
 
                 }
                 else{
@@ -236,10 +250,12 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
                 else{
                     // No tengo producto asociado, creo nuevo producto y seteo algunos atributos
                     prod = new MProduct(getCtx(), 0, get_TrxName());
-                    prod.setC_UOM_ID(this.getC_UOM_ID());
+
                     prod.setIsSold(true);
                     prod.setIsPurchased(true);
                     prod.setIsStocked(true);
+                    if (this.getC_UOM_ID() <= 0) this.setC_UOM_ID(100);
+                    prod.setC_UOM_ID(this.getC_UOM_ID());
                     if (this.getInternalCode() != null){
                         String value = this.getInternalCode().trim().toUpperCase();
                         if (!value.equalsIgnoreCase("")){
@@ -253,10 +269,20 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
             prod.setName(this.getName().trim().toUpperCase());
             prod.set_ValueOfColumn(X_Z_ProductoSeccion.COLUMNNAME_Z_ProductoSeccion_ID, this.getZ_ProductoSeccion_ID());
             prod.set_ValueOfColumn(X_Z_ProductoRubro.COLUMNNAME_Z_ProductoRubro_ID, this.getZ_ProductoRubro_ID());
-            prod.set_ValueOfColumn(X_Z_ProductoFamilia.COLUMNNAME_Z_ProductoFamilia_ID, this.getZ_ProductoFamilia_ID());
-            prod.set_ValueOfColumn(X_Z_ProductoSubfamilia.COLUMNNAME_Z_ProductoSubfamilia_ID, this.getZ_ProductoSubfamilia_ID());
             prod.setC_TaxCategory_ID(this.getC_TaxCategory_ID());
-            prod.set_ValueOfColumn(X_Z_PreciosProvLin.COLUMNNAME_C_TaxCategory_ID_2, this.getC_TaxCategory_ID_2());
+
+            if (this.getZ_ProductoFamilia_ID() > 0){
+                prod.set_ValueOfColumn(X_Z_ProductoFamilia.COLUMNNAME_Z_ProductoFamilia_ID, this.getZ_ProductoFamilia_ID());
+            }
+
+            if (this.getZ_ProductoSubfamilia_ID() > 0){
+                prod.set_ValueOfColumn(X_Z_ProductoSubfamilia.COLUMNNAME_Z_ProductoSubfamilia_ID, this.getZ_ProductoSubfamilia_ID());
+            }
+
+            if (this.getC_TaxCategory_ID_2() > 0){
+                prod.set_ValueOfColumn(X_Z_PreciosProvLin.COLUMNNAME_C_TaxCategory_ID_2, this.getC_TaxCategory_ID_2());
+            }
+
             if (this.getDescription() != null){
                 prod.setDescription(this.getDescription().trim().toUpperCase());
             }
@@ -281,46 +307,4 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
         }
     }
 
-    /***
-     * Setea precios de compra y demas datos según información contenida en esta linea de documento.
-     * Procedimiento:
-     * 1. Actualizo o da de alta producto en version de lista de precios de compra
-     * 2. Actualiza auditoria de precios de compra del producto
-     * 3. Actualiza relación producto-socio-lista-precios del socio de negocio del documento y de todos
-     * sus ditribuidores.
-     * Xpande. Created by Gabriel Vila on 6/19/17.
-     * @param plCompra
-     * @param plVersionCompra
-     */
-    public void setDataPO(MPriceList plCompra, MPriceListVersion plVersionCompra) {
-
-        try{
-
-            // Intento obtener precio de lista actual para el producto de esta linea, en la versión de lista
-            // de precios de compra recibida.
-            MProductPrice pprice = MProductPrice.get(getCtx(), plVersionCompra.get_ID(), this.getM_Product_ID(), get_TrxName());
-
-            // Si no tengo precio para este producto, entonces lo ingreso en la lista
-            if ((pprice == null) || (pprice.getM_Product_ID() <= 0)){
-                pprice = new MProductPrice(plVersionCompra, this.getM_Product_ID(), this.getPriceList(), this.getPriceList(), this.getPriceList());
-                pprice.saveEx();
-            }
-            else {
-                // Producto existe en lista de preciosde compra
-                // Actualizo precio de lista si el precio cambio
-                if (pprice.getPriceList().compareTo(this.getPriceList()) != 0){
-                    pprice.setPriceList(this.getPriceList());
-                    pprice.setPriceStd(this.getPriceList());
-                    pprice.setPriceLimit(this.getPriceList());
-                    pprice.saveEx();
-                }
-            }
-
-
-
-        }
-        catch (Exception e){
-            throw new AdempiereException(e);
-        }
-    }
 }

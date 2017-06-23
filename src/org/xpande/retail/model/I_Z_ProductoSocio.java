@@ -93,6 +93,19 @@ public interface I_Z_ProductoSocio
 
 	public I_C_Currency getC_Currency() throws RuntimeException;
 
+    /** Column name C_Currency_ID_SO */
+    public static final String COLUMNNAME_C_Currency_ID_SO = "C_Currency_ID_SO";
+
+	/** Set C_Currency_ID_SO.
+	  * Moneda de Venta
+	  */
+	public void setC_Currency_ID_SO(int C_Currency_ID_SO);
+
+	/** Get C_Currency_ID_SO.
+	  * Moneda de Venta
+	  */
+	public int getC_Currency_ID_SO();
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -408,6 +421,32 @@ public interface I_Z_ProductoSocio
 	  */
 	public BigDecimal getPriceSO();
 
+    /** Column name TotalDiscountsFinal */
+    public static final String COLUMNNAME_TotalDiscountsFinal = "TotalDiscountsFinal";
+
+	/** Set TotalDiscountsFinal.
+	  * Suma total de los porcentajes de descuentos de productos para pagos
+	  */
+	public void setTotalDiscountsFinal(BigDecimal TotalDiscountsFinal);
+
+	/** Get TotalDiscountsFinal.
+	  * Suma total de los porcentajes de descuentos de productos para pagos
+	  */
+	public BigDecimal getTotalDiscountsFinal();
+
+    /** Column name TotalDiscountsPO */
+    public static final String COLUMNNAME_TotalDiscountsPO = "TotalDiscountsPO";
+
+	/** Set TotalDiscountsPO.
+	  * Suma total de los porcentajes de descuentos para ordenes de compra
+	  */
+	public void setTotalDiscountsPO(BigDecimal TotalDiscountsPO);
+
+	/** Get TotalDiscountsPO.
+	  * Suma total de los porcentajes de descuentos para ordenes de compra
+	  */
+	public BigDecimal getTotalDiscountsPO();
+
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -436,6 +475,59 @@ public interface I_Z_ProductoSocio
 	  * Product Key of the Business Partner
 	  */
 	public String getVendorProductNo();
+
+    /** Column name Z_LineaProductoSocio_ID */
+    public static final String COLUMNNAME_Z_LineaProductoSocio_ID = "Z_LineaProductoSocio_ID";
+
+	/** Set Z_LineaProductoSocio ID	  */
+	public void setZ_LineaProductoSocio_ID(int Z_LineaProductoSocio_ID);
+
+	/** Get Z_LineaProductoSocio ID	  */
+	public int getZ_LineaProductoSocio_ID();
+
+	public I_Z_LineaProductoSocio getZ_LineaProductoSocio() throws RuntimeException;
+
+    /** Column name Z_PautaComercial_ID */
+    public static final String COLUMNNAME_Z_PautaComercial_ID = "Z_PautaComercial_ID";
+
+	/** Set Z_PautaComercial ID	  */
+	public void setZ_PautaComercial_ID(int Z_PautaComercial_ID);
+
+	/** Get Z_PautaComercial ID	  */
+	public int getZ_PautaComercial_ID();
+
+	public I_Z_PautaComercial getZ_PautaComercial() throws RuntimeException;
+
+    /** Column name Z_PautaComercialSet_ID_1 */
+    public static final String COLUMNNAME_Z_PautaComercialSet_ID_1 = "Z_PautaComercialSet_ID_1";
+
+	/** Set Z_PautaComercialSet_ID_1	  */
+	public void setZ_PautaComercialSet_ID_1(int Z_PautaComercialSet_ID_1);
+
+	/** Get Z_PautaComercialSet_ID_1	  */
+	public int getZ_PautaComercialSet_ID_1();
+
+    /** Column name Z_PautaComercialSet_ID_2 */
+    public static final String COLUMNNAME_Z_PautaComercialSet_ID_2 = "Z_PautaComercialSet_ID_2";
+
+	/** Set Z_PautaComercialSet_ID_2	  */
+	public void setZ_PautaComercialSet_ID_2(int Z_PautaComercialSet_ID_2);
+
+	/** Get Z_PautaComercialSet_ID_2	  */
+	public int getZ_PautaComercialSet_ID_2();
+
+    /** Column name Z_PautaComercialSet_ID_Gen */
+    public static final String COLUMNNAME_Z_PautaComercialSet_ID_Gen = "Z_PautaComercialSet_ID_Gen";
+
+	/** Set Z_PautaComercialSet_ID_Gen.
+	  * Set General de Pauta Comercial 
+	  */
+	public void setZ_PautaComercialSet_ID_Gen(int Z_PautaComercialSet_ID_Gen);
+
+	/** Get Z_PautaComercialSet_ID_Gen.
+	  * Set General de Pauta Comercial 
+	  */
+	public int getZ_PautaComercialSet_ID_Gen();
 
     /** Column name Z_ProductoSocio_ID */
     public static final String COLUMNNAME_Z_ProductoSocio_ID = "Z_ProductoSocio_ID";

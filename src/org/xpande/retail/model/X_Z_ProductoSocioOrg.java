@@ -33,7 +33,7 @@ public class X_Z_ProductoSocioOrg extends PO implements I_Z_ProductoSocioOrg, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170619L;
+	private static final long serialVersionUID = 20170621L;
 
     /** Standard Constructor */
     public X_Z_ProductoSocioOrg (Properties ctx, int Z_ProductoSocioOrg_ID, String trxName)
@@ -127,6 +127,26 @@ public class X_Z_ProductoSocioOrg extends PO implements I_Z_ProductoSocioOrg, I_
 		return ii.intValue();
 	}
 
+	/** Set C_Currency_ID_SO.
+		@param C_Currency_ID_SO 
+		Moneda de Venta
+	  */
+	public void setC_Currency_ID_SO (int C_Currency_ID_SO)
+	{
+		set_Value (COLUMNNAME_C_Currency_ID_SO, Integer.valueOf(C_Currency_ID_SO));
+	}
+
+	/** Get C_Currency_ID_SO.
+		@return Moneda de Venta
+	  */
+	public int getC_Currency_ID_SO () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID_SO);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set DateValidPO.
 		@param DateValidPO 
 		Fecha Vigencia Compra
@@ -159,6 +179,102 @@ public class X_Z_ProductoSocioOrg extends PO implements I_Z_ProductoSocioOrg, I_
 	public Timestamp getDateValidSO () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_DateValidSO);
+	}
+
+	public I_M_PriceList getM_PriceList() throws RuntimeException
+    {
+		return (I_M_PriceList)MTable.get(getCtx(), I_M_PriceList.Table_Name)
+			.getPO(getM_PriceList_ID(), get_TrxName());	}
+
+	/** Set Price List.
+		@param M_PriceList_ID 
+		Unique identifier of a Price List
+	  */
+	public void setM_PriceList_ID (int M_PriceList_ID)
+	{
+		if (M_PriceList_ID < 1) 
+			set_Value (COLUMNNAME_M_PriceList_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_PriceList_ID, Integer.valueOf(M_PriceList_ID));
+	}
+
+	/** Get Price List.
+		@return Unique identifier of a Price List
+	  */
+	public int getM_PriceList_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set M_PriceList_ID_SO.
+		@param M_PriceList_ID_SO 
+		Lista de Precios de Venta
+	  */
+	public void setM_PriceList_ID_SO (int M_PriceList_ID_SO)
+	{
+		set_Value (COLUMNNAME_M_PriceList_ID_SO, Integer.valueOf(M_PriceList_ID_SO));
+	}
+
+	/** Get M_PriceList_ID_SO.
+		@return Lista de Precios de Venta
+	  */
+	public int getM_PriceList_ID_SO () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_ID_SO);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_M_PriceList_Version getM_PriceList_Version() throws RuntimeException
+    {
+		return (I_M_PriceList_Version)MTable.get(getCtx(), I_M_PriceList_Version.Table_Name)
+			.getPO(getM_PriceList_Version_ID(), get_TrxName());	}
+
+	/** Set Price List Version.
+		@param M_PriceList_Version_ID 
+		Identifies a unique instance of a Price List
+	  */
+	public void setM_PriceList_Version_ID (int M_PriceList_Version_ID)
+	{
+		if (M_PriceList_Version_ID < 1) 
+			set_Value (COLUMNNAME_M_PriceList_Version_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_PriceList_Version_ID, Integer.valueOf(M_PriceList_Version_ID));
+	}
+
+	/** Get Price List Version.
+		@return Identifies a unique instance of a Price List
+	  */
+	public int getM_PriceList_Version_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_Version_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set M_PriceList_Version_ID_SO.
+		@param M_PriceList_Version_ID_SO 
+		Version de Lista de Precios de Venta
+	  */
+	public void setM_PriceList_Version_ID_SO (int M_PriceList_Version_ID_SO)
+	{
+		set_Value (COLUMNNAME_M_PriceList_Version_ID_SO, Integer.valueOf(M_PriceList_Version_ID_SO));
+	}
+
+	/** Get M_PriceList_Version_ID_SO.
+		@return Version de Lista de Precios de Venta
+	  */
+	public int getM_PriceList_Version_ID_SO () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_Version_ID_SO);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set PriceFinal.

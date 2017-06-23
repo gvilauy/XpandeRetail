@@ -380,6 +380,32 @@ public interface I_Z_PreciosProvLin
 	  */
 	public BigDecimal getPriceSO();
 
+    /** Column name TotalDiscountsFinal */
+    public static final String COLUMNNAME_TotalDiscountsFinal = "TotalDiscountsFinal";
+
+	/** Set TotalDiscountsFinal.
+	  * Suma total de los porcentajes de descuentos de productos para pagos
+	  */
+	public void setTotalDiscountsFinal(BigDecimal TotalDiscountsFinal);
+
+	/** Get TotalDiscountsFinal.
+	  * Suma total de los porcentajes de descuentos de productos para pagos
+	  */
+	public BigDecimal getTotalDiscountsFinal();
+
+    /** Column name TotalDiscountsPO */
+    public static final String COLUMNNAME_TotalDiscountsPO = "TotalDiscountsPO";
+
+	/** Set TotalDiscountsPO.
+	  * Suma total de los porcentajes de descuentos para ordenes de compra
+	  */
+	public void setTotalDiscountsPO(BigDecimal TotalDiscountsPO);
+
+	/** Get TotalDiscountsPO.
+	  * Suma total de los porcentajes de descuentos para ordenes de compra
+	  */
+	public BigDecimal getTotalDiscountsPO();
+
     /** Column name UPC */
     public static final String COLUMNNAME_UPC = "UPC";
 

@@ -33,7 +33,7 @@ public class X_Z_ProductoSocio extends PO implements I_Z_ProductoSocio, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170613L;
+	private static final long serialVersionUID = 20170621L;
 
     /** Standard Constructor */
     public X_Z_ProductoSocio (Properties ctx, int Z_ProductoSocio_ID, String trxName)
@@ -135,6 +135,26 @@ public class X_Z_ProductoSocio extends PO implements I_Z_ProductoSocio, I_Persis
 	public int getC_Currency_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set C_Currency_ID_SO.
+		@param C_Currency_ID_SO 
+		Moneda de Venta
+	  */
+	public void setC_Currency_ID_SO (int C_Currency_ID_SO)
+	{
+		set_Value (COLUMNNAME_C_Currency_ID_SO, Integer.valueOf(C_Currency_ID_SO));
+	}
+
+	/** Get C_Currency_ID_SO.
+		@return Moneda de Venta
+	  */
+	public int getC_Currency_ID_SO () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID_SO);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -616,6 +636,46 @@ public class X_Z_ProductoSocio extends PO implements I_Z_ProductoSocio, I_Persis
 		return bd;
 	}
 
+	/** Set TotalDiscountsFinal.
+		@param TotalDiscountsFinal 
+		Suma total de los porcentajes de descuentos de productos para pagos
+	  */
+	public void setTotalDiscountsFinal (BigDecimal TotalDiscountsFinal)
+	{
+		set_Value (COLUMNNAME_TotalDiscountsFinal, TotalDiscountsFinal);
+	}
+
+	/** Get TotalDiscountsFinal.
+		@return Suma total de los porcentajes de descuentos de productos para pagos
+	  */
+	public BigDecimal getTotalDiscountsFinal () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalDiscountsFinal);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set TotalDiscountsPO.
+		@param TotalDiscountsPO 
+		Suma total de los porcentajes de descuentos para ordenes de compra
+	  */
+	public void setTotalDiscountsPO (BigDecimal TotalDiscountsPO)
+	{
+		set_Value (COLUMNNAME_TotalDiscountsPO, TotalDiscountsPO);
+	}
+
+	/** Get TotalDiscountsPO.
+		@return Suma total de los porcentajes de descuentos para ordenes de compra
+	  */
+	public BigDecimal getTotalDiscountsPO () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalDiscountsPO);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
 	/** Set Partner Product Key.
 		@param VendorProductNo 
 		Product Key of the Business Partner
@@ -631,6 +691,110 @@ public class X_Z_ProductoSocio extends PO implements I_Z_ProductoSocio, I_Persis
 	public String getVendorProductNo () 
 	{
 		return (String)get_Value(COLUMNNAME_VendorProductNo);
+	}
+
+	public I_Z_LineaProductoSocio getZ_LineaProductoSocio() throws RuntimeException
+    {
+		return (I_Z_LineaProductoSocio)MTable.get(getCtx(), I_Z_LineaProductoSocio.Table_Name)
+			.getPO(getZ_LineaProductoSocio_ID(), get_TrxName());	}
+
+	/** Set Z_LineaProductoSocio ID.
+		@param Z_LineaProductoSocio_ID Z_LineaProductoSocio ID	  */
+	public void setZ_LineaProductoSocio_ID (int Z_LineaProductoSocio_ID)
+	{
+		if (Z_LineaProductoSocio_ID < 1) 
+			set_Value (COLUMNNAME_Z_LineaProductoSocio_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_LineaProductoSocio_ID, Integer.valueOf(Z_LineaProductoSocio_ID));
+	}
+
+	/** Get Z_LineaProductoSocio ID.
+		@return Z_LineaProductoSocio ID	  */
+	public int getZ_LineaProductoSocio_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_LineaProductoSocio_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_PautaComercial getZ_PautaComercial() throws RuntimeException
+    {
+		return (I_Z_PautaComercial)MTable.get(getCtx(), I_Z_PautaComercial.Table_Name)
+			.getPO(getZ_PautaComercial_ID(), get_TrxName());	}
+
+	/** Set Z_PautaComercial ID.
+		@param Z_PautaComercial_ID Z_PautaComercial ID	  */
+	public void setZ_PautaComercial_ID (int Z_PautaComercial_ID)
+	{
+		if (Z_PautaComercial_ID < 1) 
+			set_Value (COLUMNNAME_Z_PautaComercial_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_PautaComercial_ID, Integer.valueOf(Z_PautaComercial_ID));
+	}
+
+	/** Get Z_PautaComercial ID.
+		@return Z_PautaComercial ID	  */
+	public int getZ_PautaComercial_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_PautaComercial_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_PautaComercialSet_ID_1.
+		@param Z_PautaComercialSet_ID_1 Z_PautaComercialSet_ID_1	  */
+	public void setZ_PautaComercialSet_ID_1 (int Z_PautaComercialSet_ID_1)
+	{
+		set_Value (COLUMNNAME_Z_PautaComercialSet_ID_1, Integer.valueOf(Z_PautaComercialSet_ID_1));
+	}
+
+	/** Get Z_PautaComercialSet_ID_1.
+		@return Z_PautaComercialSet_ID_1	  */
+	public int getZ_PautaComercialSet_ID_1 () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_PautaComercialSet_ID_1);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_PautaComercialSet_ID_2.
+		@param Z_PautaComercialSet_ID_2 Z_PautaComercialSet_ID_2	  */
+	public void setZ_PautaComercialSet_ID_2 (int Z_PautaComercialSet_ID_2)
+	{
+		set_Value (COLUMNNAME_Z_PautaComercialSet_ID_2, Integer.valueOf(Z_PautaComercialSet_ID_2));
+	}
+
+	/** Get Z_PautaComercialSet_ID_2.
+		@return Z_PautaComercialSet_ID_2	  */
+	public int getZ_PautaComercialSet_ID_2 () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_PautaComercialSet_ID_2);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_PautaComercialSet_ID_Gen.
+		@param Z_PautaComercialSet_ID_Gen 
+		Set General de Pauta Comercial 
+	  */
+	public void setZ_PautaComercialSet_ID_Gen (int Z_PautaComercialSet_ID_Gen)
+	{
+		set_Value (COLUMNNAME_Z_PautaComercialSet_ID_Gen, Integer.valueOf(Z_PautaComercialSet_ID_Gen));
+	}
+
+	/** Get Z_PautaComercialSet_ID_Gen.
+		@return Set General de Pauta Comercial 
+	  */
+	public int getZ_PautaComercialSet_ID_Gen () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_PautaComercialSet_ID_Gen);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Z_ProductoSocio ID.

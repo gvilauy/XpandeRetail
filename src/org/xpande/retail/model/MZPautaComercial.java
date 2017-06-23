@@ -31,6 +31,7 @@ public class MZPautaComercial extends X_Z_PautaComercial {
         ProductPricesInfo ppi = null;
 
         try{
+            // Obtengo segmentos para el producto recibido
 
         }
         catch (Exception e){

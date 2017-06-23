@@ -32,7 +32,7 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170619L;
+	private static final long serialVersionUID = 20170621L;
 
     /** Standard Constructor */
     public X_Z_PreciosProvLin (Properties ctx, int Z_PreciosProvLin_ID, String trxName)
@@ -576,6 +576,46 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 	public BigDecimal getPriceSO () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceSO);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set TotalDiscountsFinal.
+		@param TotalDiscountsFinal 
+		Suma total de los porcentajes de descuentos de productos para pagos
+	  */
+	public void setTotalDiscountsFinal (BigDecimal TotalDiscountsFinal)
+	{
+		set_Value (COLUMNNAME_TotalDiscountsFinal, TotalDiscountsFinal);
+	}
+
+	/** Get TotalDiscountsFinal.
+		@return Suma total de los porcentajes de descuentos de productos para pagos
+	  */
+	public BigDecimal getTotalDiscountsFinal () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalDiscountsFinal);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set TotalDiscountsPO.
+		@param TotalDiscountsPO 
+		Suma total de los porcentajes de descuentos para ordenes de compra
+	  */
+	public void setTotalDiscountsPO (BigDecimal TotalDiscountsPO)
+	{
+		set_Value (COLUMNNAME_TotalDiscountsPO, TotalDiscountsPO);
+	}
+
+	/** Get TotalDiscountsPO.
+		@return Suma total de los porcentajes de descuentos para ordenes de compra
+	  */
+	public BigDecimal getTotalDiscountsPO () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalDiscountsPO);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;

@@ -230,10 +230,29 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			return DocAction.STATUS_Invalid;
 		}
 
+		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
+		// Obtengo modelo para linea de productos del socio, si es nueva la creo en este momento
+		MZLineaProductoSocio lineaProductoSocio = null;
+		if (this.getZ_LineaProductoSocio_ID() > 0){
+			lineaProductoSocio = (MZLineaProductoSocio) this.getZ_LineaProductoSocio();
+		}
+		else{
+			lineaProductoSocio = new MZLineaProductoSocio(getCtx(), 0, get_TrxName());
+			lineaProductoSocio.setC_BPartner_ID(this.getC_BPartner_ID());
+			lineaProductoSocio.setName(this.getNombreLineaManual());
+			lineaProductoSocio.saveEx();
+			this.setZ_LineaProductoSocio_ID(lineaProductoSocio.get_ID());
+		}
+
 		// Obtengo lista de precios de compra y versión de la misma a procesar
 		this.setPriceListPO();
 		MPriceList plCompra = (MPriceList) this.getM_PriceList();
 		MPriceListVersion plVersionCompra = (MPriceListVersion) this.getM_PriceList_Version();
+
+		// Obtengo lista de precios de venta y versión de la misma a procesar
+		MPriceList plVenta = new MPriceList(getCtx(), this.getM_PriceList_ID_SO(), get_TrxName());
+		MPriceListVersion plVersionVenta = new MPriceListVersion(getCtx(), this.getM_PriceList_Version_ID_SO(), get_TrxName());
 
 		// Recorro y proceso lineas (ya fueron validadas)
 		for (MZPreciosProvLin line: lines){
@@ -241,11 +260,35 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			// Sete de producto de la linea, en caso de ser un nuevo producto se crea en este momento.
 			line.setProduct();
 
-			// Proceso lo referente a compras con la información de esta linea de documento
-			line.setDataPO(plCompra, plVersionCompra);
+			// Actualizo lista de precios de compra del documento para el producto de esta linea
+			this.updateProductPriceListPO(plCompra, plVersionCompra, line);
 
-			// Proceso lo referente a ventas con la información de esta linea de documento
-			//line.setDataSO();
+ 			// Actualizo lista de precios de venta del documento para el producto de esta linea
+			this.updateProductPriceListSO(plVenta, plVersionVenta, line);
+
+			// Proceso información para asociaciones de producto, socio de negocio, distribuidores y organizaciones
+			// Primero para el socio de negocio del documento
+			this.setProductSocioOrgs(this.getC_BPartner_ID(), line, fechaHoy, plCompra, plVersionCompra, plVenta, plVersionVenta);
+
+			// Luego para los ditribuidores del socio de negocio del documento
+			List<MZPreciosProvDistri> distris = this.getDistribuidores();
+			for (MZPreciosProvDistri distri: distris){
+
+				this.setProductSocioOrgs(distri.getC_BPartner_ID(), line, fechaHoy, plCompra, plVersionCompra, plVenta, plVersionVenta);
+
+				// Si el distribuidor es nuevo (en este documento se pueden asociar nuevos distribuidores al socio
+				if (distri.isManualRecord()){
+					MZLineaProductoDistri lineaProductoDistri = MZLineaProductoDistri.getByLineaDistri(getCtx(), this.getZ_LineaProductoSocio_ID(), distri.getC_BPartner_ID(), get_TrxName());
+					if ((lineaProductoDistri == null) || (lineaProductoDistri.get_ID() <= 0)){
+						lineaProductoDistri = new MZLineaProductoDistri(getCtx(), 0, get_TrxName());
+						lineaProductoDistri.setZ_LineaProductoSocio_ID(this.getZ_LineaProductoSocio_ID());
+						lineaProductoDistri.setC_BPartner_ID(distri.getC_BPartner_ID());
+						lineaProductoDistri.saveEx();
+					}
+				}
+			}
+
+			line.saveEx();
 		}
 
 		//	User Validation
@@ -263,6 +306,71 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
 
+
+	/***
+	 * Actualiza lista de precio de compra para el producto de la linea recibida.
+	 * Xpande. Created by Gabriel Vila on 6/21/17.
+ 	 * @param plCompra
+	 * @param plVersionCompra
+	 * @param line
+	 */
+	private void updateProductPriceListPO(MPriceList plCompra, MPriceListVersion plVersionCompra, MZPreciosProvLin line) {
+
+		try{
+			// Intento obtener precio de lista actual para el producto de esta linea, en la versión de lista
+			// de precios de compra recibida.
+			MProductPrice pprice = MProductPrice.get(getCtx(), plVersionCompra.get_ID(), line.getM_Product_ID(), get_TrxName());
+
+			// Si no tengo precio para este producto, lo creo.
+			if ((pprice == null) || (pprice.getM_Product_ID() <= 0)){
+				pprice = new MProductPrice(plVersionCompra, line.getM_Product_ID(), line.getPriceList(), line.getPriceList(), line.getPriceList());
+			}
+			else{
+				// Actualizo precios
+				pprice.setPriceList(line.getPriceList());
+				pprice.setPriceStd(line.getPriceList());
+				pprice.setPriceLimit(line.getPriceList());
+			}
+			pprice.saveEx();
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+	}
+
+	/***
+	 * Actualiza lista de precios de venta para el producto de la linea recibida.
+	 * Xpande. Created by Gabriel Vila on 6/21/17.
+	 * @param plVenta
+	 * @param plVersionVenta
+	 * @param line
+	 */
+	private void updateProductPriceListSO(MPriceList plVenta, MPriceListVersion plVersionVenta, MZPreciosProvLin line) {
+
+		try{
+			// Intento obtener precio de lista actual para el producto de esta linea, en la versión de lista
+			// de precios de venta recibida.
+			MProductPrice pprice = MProductPrice.get(getCtx(), plVersionVenta.get_ID(), line.getM_Product_ID(), get_TrxName());
+
+			// Si no tengo precio para este producto, lo creo.
+			if ((pprice == null) || (pprice.getM_Product_ID() <= 0)){
+				pprice = new MProductPrice(plVersionVenta, line.getM_Product_ID(), line.getPriceList(), line.getPriceList(), line.getPriceList());
+			}
+			else{
+				// Actualizo precios
+				pprice.setPriceList(line.getPriceList());
+				pprice.setPriceStd(line.getPriceList());
+				pprice.setPriceLimit(line.getPriceList());
+			}
+			pprice.saveEx();
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+	}
 
 	/***
 	 * Setea lista de precios de compra a considerar.
@@ -308,6 +416,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 				MPriceListVersion plv = new MPriceListVersion(pl);
 				plv.setName("VIGENTE");
+				plv.setM_DiscountSchema_ID(1000000);
 				plv.saveEx();
 
 				bpl =  new MZSocioListaPrecio(getCtx(), 0, get_TrxName());
@@ -335,6 +444,12 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 		String message = null;
 
+		if (this.getZ_LineaProductoSocio_ID() <= 0){
+			if ((this.getNombreLineaManual() == null) || (this.getNombreLineaManual().trim().equalsIgnoreCase(""))){
+				return "Debe indicar Linea de Producto del Socio de Negocio a considerar, o ingresar Nombre para crear una Nueva.";
+			}
+		}
+
 		if (lines.size() <= 0){
 			return "El documento no tiene productos para procesar.";
 		}
@@ -342,8 +457,8 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		Timestamp today = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 		Timestamp validFrom = TimeUtil.trunc(this.getDateValidPO(), TimeUtil.TRUNC_DAY);
 
-		if (validFrom.compareTo(today) < 0){
-			return "La fecha de Vigencia tiene que ser mayor o igual a hoy";
+		if (validFrom.compareTo(today) != 0){
+			return "La fecha de Vigencia tiene que ser igual a hoy";
 		}
 
 		// Si tengo modalidad de de proceso por medio de archivo de interface
@@ -378,6 +493,121 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		}
 
 		return message;
+	}
+
+
+	/***
+	 * Setea información para la asociación de producto, socio de negocio, y organizaciones.
+	 * Xpande. Created by Gabriel Vila on 6/21/17.
+	 * @param cBPartnerID
+	 * @param line
+	 * @param fechaHoy
+	 * @param plCompra
+	 * @param plVersionCompra
+	 * @param plVenta
+	 * @param plVersionVenta
+	 */
+	private void setProductSocioOrgs(int cBPartnerID, MZPreciosProvLin line, Timestamp fechaHoy,
+									 MPriceList plCompra, MPriceListVersion plVersionCompra,
+									 MPriceList plVenta, MPriceListVersion plVersionVenta) {
+
+		try{
+
+			// Si es la primera vez que proceso precios de este proveedor para este producto, creo la asociación.
+			// Si ya ha tenido compras, entonces obtengo modelo de la asociación
+			MZProductoSocio prodbp = MZProductoSocio.getByBPartnerProduct(getCtx(), this.getC_BPartner_ID(), line.getM_Product_ID(), get_TrxName());
+			if (prodbp == null){
+				prodbp = new MZProductoSocio(getCtx(), 0, get_TrxName());
+				prodbp.setM_Product_ID(line.getM_Product_ID());
+				prodbp.setC_BPartner_ID(this.getC_BPartner_ID());
+				prodbp.setDateValidPO(fechaHoy);
+				prodbp.setDateValidSO(fechaHoy);
+				prodbp.setZ_LineaProductoSocio_ID(this.getZ_LineaProductoSocio_ID());
+				prodbp.setPriceList(line.getPriceList());
+				prodbp.setPriceSO(line.getNewPriceSO());
+			}
+			else{
+				// Si precio de lista compra cambia
+				if (prodbp.getPriceList().compareTo(line.getPriceList()) != 0){
+					// Actualizo info precios compra para este producto-socio
+					prodbp.setDateValidPO(fechaHoy);
+					prodbp.setPriceList(line.getPriceList());
+				}
+
+				// Si precio de lista venta cambia
+				if (prodbp.getPriceSO().compareTo(line.getNewPriceSO()) != 0){
+					prodbp.setDateValidSO(fechaHoy);
+					prodbp.setPriceSO(line.getNewPriceSO());
+				}
+			}
+
+			// Precios OC, final y descuentos se actualizan siempre porque pueden haber cambiado las pautas comerciales
+			prodbp.setM_PriceList_ID(plCompra.get_ID());
+			prodbp.setM_PriceList_Version_ID(plVersionCompra.get_ID());
+			prodbp.setM_PriceList_ID_SO(plVenta.get_ID());
+			prodbp.setM_PriceList_Version_ID_SO(plVersionVenta.get_ID());
+			prodbp.setC_Currency_ID(plCompra.getC_Currency_ID());
+			prodbp.setC_Currency_ID_SO(this.getC_Currency_ID_SO());
+			prodbp.setPricePO(line.getPricePO());
+			prodbp.setPricePOMargin(line.getPricePOMargin());
+			prodbp.setPriceFinal(line.getPriceFinal());
+			prodbp.setPriceFinalMargin(line.getPriceFinalMargin());
+			if (this.getZ_PautaComercial_ID() > 0){
+				prodbp.setZ_PautaComercial_ID(this.getZ_PautaComercial_ID());
+				prodbp.setTotalDiscountsPO(line.getTotalDiscountsPO());
+				prodbp.setTotalDiscountsFinal(line.getTotalDiscountsFinal());
+				if (line.getZ_PautaComercialSet_ID_Gen() > 0) prodbp.setZ_PautaComercialSet_ID_Gen(line.getZ_PautaComercialSet_ID_Gen());
+				if (line.getZ_PautaComercialSet_ID_1() > 0) prodbp.setZ_PautaComercialSet_ID_1(line.getZ_PautaComercialSet_ID_1());
+				if (line.getZ_PautaComercialSet_ID_2() > 0) prodbp.setZ_PautaComercialSet_ID_2(line.getZ_PautaComercialSet_ID_2());
+			}
+
+			prodbp.saveEx();
+
+			// Proceso cada organización seleccionada para procesar
+			List<MZPreciosProvOrg> pporgs = this.getOrgsSelected();
+			for (MZPreciosProvOrg pporg: pporgs){
+				// Si no tengo precio para esta organización dentro del producto-socio, la creo en este momento
+				MZProductoSocioOrg prodbpOrg = prodbp.getOrg(pporg.get_ID());
+				if ((prodbpOrg == null) || (prodbpOrg.get_ID() <= 0)){
+					prodbpOrg = new MZProductoSocioOrg(getCtx(), 0, get_TrxName());
+					prodbpOrg.setZ_ProductoSocio_ID(prodbp.get_ID());
+					prodbpOrg.setAD_OrgTrx_ID(pporg.getAD_OrgTrx_ID());
+					prodbpOrg.setDateValidPO(fechaHoy);
+					prodbpOrg.setDateValidSO(fechaHoy);
+					prodbpOrg.setPriceList(line.getPriceList());
+					prodbpOrg.setPriceSO(line.getNewPriceSO());
+				}
+				else{
+					// Si precio de lista compra cambia
+					if (prodbpOrg.getPriceList().compareTo(line.getPriceList()) != 0){
+						// Actualizo info precios compra para este producto-socio-organizacion
+						prodbpOrg.setDateValidPO(fechaHoy);
+						prodbpOrg.setPriceList(line.getPriceList());
+					}
+
+					// Si precio de lista venta cambia
+					if (prodbpOrg.getPriceSO().compareTo(line.getNewPriceSO()) != 0){
+						prodbpOrg.setDateValidSO(fechaHoy);
+						prodbpOrg.setPriceSO(line.getNewPriceSO());
+					}
+				}
+				prodbpOrg.setM_PriceList_ID(plCompra.get_ID());
+				prodbpOrg.setM_PriceList_Version_ID(plVersionCompra.get_ID());
+				prodbpOrg.setM_PriceList_ID_SO(plVenta.get_ID());
+				prodbpOrg.setM_PriceList_Version_ID_SO(plVersionVenta.get_ID());
+				prodbpOrg.setC_Currency_ID(plCompra.getC_Currency_ID());
+				prodbpOrg.setC_Currency_ID_SO(this.getC_Currency_ID_SO());
+				prodbpOrg.setPricePO(line.getPricePO());
+				prodbpOrg.setPricePOMargin(line.getPricePOMargin());
+				prodbpOrg.setPriceFinal(line.getPriceFinal());
+				prodbpOrg.setPriceFinalMargin(line.getPriceFinalMargin());
+				prodbpOrg.saveEx();
+			}
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
 	}
 
 
@@ -967,6 +1197,14 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		// En caso de nuevo registro
 		if (newRecord){
 
+			if (this.getM_PriceList_Version_ID_SO() <= 0){
+				MPriceList priceList = new MPriceList(getCtx(), this.getM_PriceList_ID_SO(), get_TrxName());
+				MPriceListVersion plv = priceList.getPriceListVersion(null);
+				if (plv != null){
+					this.setM_PriceList_ID_SO(plv.get_ID());
+				}
+			}
+
 			// Carga organizaciones según organización de este documento
 
 			// Si este documento tiene organización *, entonces cargo todas las organizaciones de la empresa para
@@ -1031,6 +1269,34 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		    throw new AdempiereException(e);
 		}
 
+	}
+
+	/***
+	 * Obtiene y retorna organizaciones seleccionadas para considerarse en este proceso.
+	 * Xpande. Created by Gabriel Vila on 6/20/17.
+	 * @return
+	 */
+	public List<MZPreciosProvOrg> getOrgsSelected() {
+
+		String whereClause = X_Z_PreciosProvOrg.COLUMNNAME_Z_PreciosProvCab_ID + " =" + this.get_ID() +
+				" AND " + X_Z_PreciosProvOrg.COLUMNNAME_IsSelected + " ='Y'";
+		List<MZPreciosProvOrg> lines = new Query(getCtx(), I_Z_PreciosProvOrg.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+	/***
+	 * Obtiene y retorna distribuidores a considerarse en este proceso.
+	 * Xpande. Created by Gabriel Vila on 6/20/17.
+	 * @return
+	 */
+	public List<MZPreciosProvDistri> getDistribuidores() {
+
+		String whereClause = X_Z_PreciosProvDistri.COLUMNNAME_Z_PreciosProvCab_ID + " =" + this.get_ID();
+
+		List<MZPreciosProvDistri> lines = new Query(getCtx(), I_Z_PreciosProvDistri.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
 	}
 
 }

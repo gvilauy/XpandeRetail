@@ -71,9 +71,6 @@ public class MZPautaComercialSet extends X_Z_PautaComercialSet {
     public void calculatePrices(ProductPricesInfo ppi) {
 
         try{
-
-
-
             // Recorro descuentos de este segmento que aplican a la FACTURA y calculo precio OC
             List<MZPautaComercialSetDto> dtos = this.getInvoiceDiscounts();
             if (dtos.size() > 1){
