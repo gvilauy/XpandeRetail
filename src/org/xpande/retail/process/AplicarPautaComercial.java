@@ -20,7 +20,7 @@ public class AplicarPautaComercial extends SvrProcess {
     @Override
     protected String doIt() throws Exception {
 
-        String message = pauta.applyPauta();
+        String message = pauta.applyPauta(true);
 
         if (message != null){
             return "@Error@ " + message;

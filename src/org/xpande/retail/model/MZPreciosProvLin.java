@@ -122,7 +122,7 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
                 // Si tengo producto, calculo precios basandome en este producto y precio de lista
                 if (this.getM_Product_ID() > 0){
                     // Cuando tengo producto, voy a considerar los segmentos que ya se definieron en la pauta
-                    ppi = pautaComercial.calculatePrices(this.getM_Product_ID(), this.getPriceList());
+                    ppi = pautaComercial.calculatePrices(this.getM_Product_ID(), this.getPriceList(), precisionDecimalCompra);
                 }
                 else{
                     // No tengo producto, por lo tanto me baso en el precio de lista y segmentos especiales que pueda tener asociados en esta linea
@@ -154,8 +154,8 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
 
                 }
                 else{
-                    log.saveError("ATENCIÓN", "No se obtuvieron precios de compra para la Pauta Comercial seleccionada.");
-                    return;
+                    this.setIsConfirmed(false);
+                    this.setErrorMsg("No se obtuvieron precios de compra para la Pauta Comercial seleccionada.");
                 }
             }
         }
@@ -165,8 +165,21 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
     }
 
 
+    /***
+     * Calcula y seteo precios de venta de esta linea.
+     * Xpande. Created by Gabriel Vila on 6/23/17.
+     * @param priceSO
+     * @param precisionDecimalVenta
+     */
     public void calculatePricesSO(BigDecimal priceSO, int precisionDecimalVenta) {
 
+        try{
+            this.setPriceSO(priceSO);
+            this.setNewPriceSO(priceSO);
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
     }
 
 
@@ -339,8 +352,8 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
                 this.setPriceFinalMargin(null);
             }
             else{
-                this.setPriceFinalMargin((this.getPriceFinal().divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP))
-                        .multiply(this.getNewPriceSO()).setScale(2, BigDecimal.ROUND_HALF_UP));
+                this.setPriceFinalMargin(((this.getNewPriceSO().multiply(Env.ONEHUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP))
+                        .divide(this.getPriceFinal(), 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
             }
 
             // Margen OC
@@ -348,8 +361,8 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
                 this.setPricePOMargin(null);
             }
             else{
-                this.setPricePOMargin((this.getPricePO().divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP))
-                        .multiply(this.getNewPriceSO()).setScale(2, BigDecimal.ROUND_HALF_UP));
+                this.setPricePOMargin(((this.getNewPriceSO().multiply(Env.ONEHUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP))
+                        .divide(this.getPricePO(), 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
             }
 
             // Margen Factura
@@ -357,8 +370,8 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
                 this.setPriceInvoicedMargin(null);
             }
             else{
-                this.setPriceInvoicedMargin((this.getPriceInvoiced().divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP))
-                        .multiply(this.getNewPriceSO()).setScale(2, BigDecimal.ROUND_HALF_UP));
+                this.setPriceInvoicedMargin(((this.getNewPriceSO().multiply(Env.ONEHUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP))
+                        .divide(this.getPriceInvoiced(), 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
             }
 
         }

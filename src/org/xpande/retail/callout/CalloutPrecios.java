@@ -139,6 +139,16 @@ public class CalloutPrecios extends CalloutEngine {
     }
 
 
+    /***
+     * Al cambiar nuevo precio de venta, o margen final, o margen factura, se recalculan los margenes y nuevo precio de venta.
+     * Xpande. Created by Gabriel Vila on 6/23/17.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
     public String calculateMargins(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
 
         if (value == null) return "";
@@ -148,6 +158,22 @@ public class CalloutPrecios extends CalloutEngine {
         BigDecimal priceFinal = (BigDecimal) mTab.getValue("PriceFinal");
         BigDecimal pricePO = (BigDecimal) mTab.getValue("PricePO");
         BigDecimal priceInvoiced = (BigDecimal) mTab.getValue("PriceInvoiced");
+
+        int mPriceListCompraID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_ID");
+        int mPriceListVentaID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_ID_SO");
+
+        int precisionCompra = 2;
+        int precisionVenta = 2;
+
+        if (mPriceListCompraID > 0){
+            MPriceList plCompra = new MPriceList(ctx, mPriceListCompraID, null);
+            precisionCompra = plCompra.getPricePrecision();
+        }
+
+        if (mPriceListVentaID > 0){
+            MPriceList plVenta = new MPriceList(ctx, mPriceListVentaID, null);
+            precisionVenta = plVenta.getPricePrecision();
+        }
 
         // Si es moneda de compra la recibida, busco lista de compra del proveedor en esa moneda
         if (column.equalsIgnoreCase("NewPriceSO")){
@@ -164,8 +190,8 @@ public class CalloutPrecios extends CalloutEngine {
                     mTab.setValue("PriceFinalMargin", null);
                 }
                 else{
-                    mTab.setValue("PriceFinalMargin", (priceFinal.divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP))
-                            .multiply(newPriceSO).setScale(2, BigDecimal.ROUND_HALF_UP));
+                    mTab.setValue("PriceFinalMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP))
+                            .divide(priceFinal, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
                 }
 
                 // Margen OC
@@ -173,8 +199,8 @@ public class CalloutPrecios extends CalloutEngine {
                     mTab.setValue("PricePOMargin", null);
                 }
                 else{
-                    mTab.setValue("PricePOMargin", (pricePO.divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP))
-                            .multiply(newPriceSO).setScale(2, BigDecimal.ROUND_HALF_UP));
+                    mTab.setValue("PricePOMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP))
+                            .divide(pricePO, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
                 }
 
                 // Margen Factura
@@ -182,22 +208,70 @@ public class CalloutPrecios extends CalloutEngine {
                     mTab.setValue("PriceInvoicedMargin", null);
                 }
                 else{
-                    mTab.setValue("PriceInvoicedMargin", (priceInvoiced.divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP))
-                            .multiply(newPriceSO).setScale(2, BigDecimal.ROUND_HALF_UP));
+                    mTab.setValue("PriceInvoicedMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP))
+                            .divide(priceInvoiced, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
                 }
             }
         }
         else if (column.equalsIgnoreCase("PriceFinalMargin")){
 
+            BigDecimal newFinalMargin = (BigDecimal)value;
+            BigDecimal newPriceSO = ((newFinalMargin.add(Env.ONEHUNDRED)).multiply(priceFinal).setScale(precisionVenta, BigDecimal.ROUND_HALF_UP)
+                    .divide(Env.ONEHUNDRED, precisionVenta, BigDecimal.ROUND_HALF_UP));
+
+            // Nuevo Precio
+            mTab.setValue("NewPriceSO", newPriceSO);
+
+            // Margen OC
+            if ((pricePO == null) || (pricePO.compareTo(Env.ZERO) <= 0)){
+                mTab.setValue("PricePOMargin", null);
+            }
+            else{
+                mTab.setValue("PricePOMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP))
+                        .divide(pricePO, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
+            }
+
+            // Margen Factura
+            if ((priceInvoiced == null) || (priceInvoiced.compareTo(Env.ZERO) <= 0)){
+                mTab.setValue("PriceInvoicedMargin", null);
+            }
+            else{
+                mTab.setValue("PriceInvoicedMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP))
+                        .divide(priceInvoiced, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
+            }
+
         }
         else if (column.equalsIgnoreCase("PriceInvoicedMargin")){
+
+            BigDecimal newInvoiceMargin = (BigDecimal)value;
+            BigDecimal newPriceSO = ((newInvoiceMargin.add(Env.ONEHUNDRED)).multiply(priceInvoiced).setScale(precisionVenta, BigDecimal.ROUND_HALF_UP)
+                    .divide(Env.ONEHUNDRED, precisionVenta, BigDecimal.ROUND_HALF_UP));
+
+            // Nuevo Precio
+            mTab.setValue("NewPriceSO", newPriceSO);
+
+            // Margen OC
+            if ((pricePO == null) || (pricePO.compareTo(Env.ZERO) <= 0)){
+                mTab.setValue("PricePOMargin", null);
+            }
+            else{
+                mTab.setValue("PricePOMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP))
+                        .divide(pricePO, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
+            }
+
+            // Margen final
+            if ((priceFinal == null) || (priceFinal.compareTo(Env.ZERO) <= 0)){
+                mTab.setValue("PriceFinalMargin", null);
+            }
+            else{
+                mTab.setValue("PriceFinalMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP))
+                        .divide(priceFinal, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
+            }
 
         }
         else{
             return "";
         }
-
-
 
         return "";
     }

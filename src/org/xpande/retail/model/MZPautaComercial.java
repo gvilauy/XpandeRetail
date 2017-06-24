@@ -3,10 +3,12 @@ package org.xpande.retail.model;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.xpande.retail.utils.ProductPricesInfo;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
@@ -26,13 +28,24 @@ public class MZPautaComercial extends X_Z_PautaComercial {
     }
 
 
-    public ProductPricesInfo calculatePrices(int mProductID, BigDecimal priceList) {
+    /***
+     * Calcula y retorna información relacionada a precios de compra según producto y precio de lista base recibidos.
+     * Xpande. Created by Gabriel Vila on 6/23/17.
+     * @param mProductID
+     * @param priceList
+     * @param precisionDecimalCompra
+     * @return
+     */
+    public ProductPricesInfo calculatePrices(int mProductID, BigDecimal priceList, int precisionDecimalCompra) {
 
         ProductPricesInfo ppi = null;
 
         try{
-            // Obtengo segmentos para el producto recibido
-
+            // Obtengo segmentos especiales para el producto recibido, desde la asociación producto-socio
+            MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(getCtx(), this.getC_BPartner_ID(), mProductID, get_TrxName());
+            if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+                return this.calculatePrices(priceList, precisionDecimalCompra, productoSocio.getZ_PautaComercialSet_ID_1(), productoSocio.getZ_PautaComercialSet_ID_2());
+            }
         }
         catch (Exception e){
             throw new AdempiereException(e);
@@ -43,9 +56,10 @@ public class MZPautaComercial extends X_Z_PautaComercial {
 
 
     /***
-     * Calcula y retorna información relacionada a precios de compra según un precio de lista base.
+     * Calcula y retorna información relacionada a precios de compra según un precio de lista base recibido.
      * Pueden haber segmentos especiales a considerar en el cálculo.
      * No hay producto determinado.
+     * Xpande. Created by Gabriel Vila on 6/23/17.
      * @param priceList
      * @param setEspecialID_1
      * @param setEspecialID_2
@@ -58,7 +72,7 @@ public class MZPautaComercial extends X_Z_PautaComercial {
         try{
 
             // Verifico que esta pauta esta activa y este aplicada correctamente
-            if ((!this.isActive()) || (this.isConfirmed())){
+            if ((!this.isActive()) || (!this.isConfirmed())){
                 return null;
             }
 
@@ -129,13 +143,69 @@ public class MZPautaComercial extends X_Z_PautaComercial {
     /***
      * Aplica pauta comercial a los productos requeridos.
      * Xpande. Created by Gabriel Vila on 6/18/17.
-     * @return
+     * @parem recalculate : true si se debe recalcular los descuentos en los productos, false sino.
+     * @return : String, null o mensaje de inconsistencia.
      */
-    public String applyPauta() {
+    public String applyPauta(boolean recalculate) {
 
         String message = null;
 
         try{
+
+            message = this.validate();
+            if (message != null){
+                return message;
+            }
+
+            Timestamp today = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
+            // Si tengo que recalcular descuentos y tengo linea de producto asociada
+            if ((recalculate) && (this.getZ_LineaProductoSocio_ID() > 0)){
+                // Recalculo descuentos en productos que pertenecen al socio-linea.
+
+            }
+
+            this.setIsConfirmed(true);
+            this.setDateValidFrom(today);
+            this.saveEx();
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return message;
+    }
+
+
+    /***
+     * Valida datos de la pauta.
+     * Xpande. Created by Gabriel Vila on 6/23/17.
+     * @return
+     */
+    private String validate() {
+
+        String message = null;
+
+        try{
+
+            // Verifico que tenga socio de negocio
+            if (this.getC_BPartner_ID() <= 0) {
+                return "Debe indicar Socio de Negocio";
+            }
+
+            // Verifico que no exista otra pauta con el mismo socio de negocio - linea
+            if (this.getZ_LineaProductoSocio_ID() > 0){
+                String whereClause = X_Z_PautaComercial.COLUMNNAME_Z_PautaComercial_ID + " !=" + this.get_ID() +
+                        " AND " + X_Z_PautaComercial.COLUMNNAME_C_BPartner_ID + " =" + this.getC_BPartner_ID() +
+                        " AND " + X_Z_PautaComercial.COLUMNNAME_Z_LineaProductoSocio_ID + " =" + this.getZ_LineaProductoSocio_ID() +
+                        " AND " + X_Z_PautaComercial.COLUMNNAME_IsConfirmed + " ='Y'" +
+                        " AND " + X_Z_PautaComercial.COLUMNNAME_IsActive + " ='Y'";
+
+                int[] pautasIDs = MZPautaComercial.getAllIDs(I_Z_PautaComercial.Table_Name, whereClause, get_TrxName());
+                if (pautasIDs.length > 0){
+                    return "Ya existe una Pauta Comercial Confirmada para este Socio de Negocio - Linea de Producto.";
+                }
+            }
 
         }
         catch (Exception e){
@@ -144,4 +214,5 @@ public class MZPautaComercial extends X_Z_PautaComercial {
 
         return message;
     }
+
 }

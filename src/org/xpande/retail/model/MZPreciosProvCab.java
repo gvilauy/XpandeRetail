@@ -243,6 +243,16 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			lineaProductoSocio.setName(this.getNombreLineaManual());
 			lineaProductoSocio.saveEx();
 			this.setZ_LineaProductoSocio_ID(lineaProductoSocio.get_ID());
+
+			// Si tengo pauta comercial, le asocio la nueva linea de productos en este momento
+			if (this.getZ_PautaComercial_ID() > 0){
+				MZPautaComercial pautaComercial = (MZPautaComercial)this.getZ_PautaComercial();
+				pautaComercial.setZ_LineaProductoSocio_ID(this.getZ_LineaProductoSocio_ID());
+				m_processMsg = pautaComercial.applyPauta(false);
+				if (m_processMsg != null){
+					return DocAction.STATUS_Invalid;
+				}
+			}
 		}
 
 		// Obtengo lista de precios de compra y versión de la misma a procesar
@@ -616,7 +626,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 	 * Xpande. Created by Gabriel Vila on 6/19/17.
 	 * @return
 	 */
-	private List<MZPreciosProvLin> getLines() {
+	public List<MZPreciosProvLin> getLines() {
 
 		String whereClause = X_Z_PreciosProvLin.COLUMNNAME_Z_PreciosProvCab_ID + " =" + this.get_ID();
 
@@ -624,6 +634,35 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 		return lines;
 	}
+
+
+	/***
+	 * Obtiene y retorna lineas a clasificar sus productos, según parametros recibidos.
+	 * Xpande. Created by Gabriel Vila on 6/23/17.
+	 * @param newProducts
+	 * @param selectAll
+	 * @return
+	 */
+	public List<MZPreciosProvLin> getLinesToClassified(boolean newProducts, boolean selectAll) {
+
+		String whereClause = X_Z_PreciosProvLin.COLUMNNAME_Z_PreciosProvCab_ID + " =" + this.get_ID();
+
+		if (newProducts){
+			whereClause += " AND " + X_Z_PreciosProvLin.COLUMNNAME_IsNew + " ='Y' ";
+		}
+		else{
+			whereClause += " AND " + X_Z_PreciosProvLin.COLUMNNAME_IsNew + " ='N' ";
+		}
+
+		if (!selectAll){
+			whereClause += " AND " + X_Z_PreciosProvLin.COLUMNNAME_IsClassified + " ='Y' ";
+		}
+
+		List<MZPreciosProvLin> lines = new Query(getCtx(), I_Z_PreciosProvLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
 
 	/**
 	 * 	Set the definite document number after completed
@@ -847,6 +886,11 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		}
 	}
 
+
+	/***
+	 * Actualiza información a partir de datos leídos desde linea de productos existente.
+	 * Xpande. Created by Gabriel Vila on 6/23/17.
+	 */
 	private void setDateFromLineaProductoSocio() {
 
 		try{
@@ -855,8 +899,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			List<MZProductoSocio> productoSocios = MZProductoSocio.getByBPartnerLineaPriceList(getCtx(), this.getC_BPartner_ID(),
 					this.getZ_LineaProductoSocio_ID(), this.getM_PriceList_ID(), get_TrxName());
 			if ((productoSocios == null) || (productoSocios.size() <= 0)){
-				log.saveError("Error", "No se obtuvieron Productos para la Linea, Socio de Negocios y Lista de Precios de Compra seleccionados.");
-				return;
+				throw new AdempiereException("No se obtuvieron Productos para la Linea, Socio de Negocios y Lista de Precios de Compra seleccionados.");
 			}
 
 			// Instancio modelo de lista de precios de compra y versión vigente de la misma
@@ -886,8 +929,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				}
 
 				if ((priceListPO == null) || (priceListPO.compareTo(Env.ZERO) <= 0)){
-					log.saveError("Error", "No se obtuvo Precio de Lista Compra para el producto: " + prod.getValue() + " - " + prod.getName());
-					return;
+					throw new AdempiereException("No se obtuvo Precio de Lista Compra para el producto: " + prod.getValue() + " - " + prod.getName());
 				}
 
 				// Precio de lista venta actual tomado desde la propia lista
@@ -896,15 +938,14 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 				// Si no encontre producto en la lista, lo tomo del modelo producto-socio
 				if (productPriceSO != null){
-					priceListSO = productPrice.getPriceList();
+					priceListSO = productPriceSO.getPriceList();
 				}
 				else{
 					priceListSO = productoSocio.getPriceSO();
 				}
 
 				if ((priceListSO == null) || (priceListSO.compareTo(Env.ZERO) <= 0)){
-					log.saveError("Error", "No se obtuvo Precio de Lista Venta para el producto: " + prod.getValue() + " - " + prod.getName());
-					return;
+					throw new AdempiereException("No se obtuvo Precio de Lista Venta para el producto: " + prod.getValue() + " - " + prod.getName());
 				}
 
 				MZPreciosProvLin plinea = new MZPreciosProvLin(getCtx(), 0, get_TrxName());
@@ -949,6 +990,9 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 				// Precios de venta
 				plinea.calculatePricesSO(priceListSO, this.getPrecisionSO());
+
+				// Calculo y seteo márgenes de linea
+				plinea.calculateMargins();
 
 				plinea.saveEx();
 			}
@@ -1318,7 +1362,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				MPriceList priceList = new MPriceList(getCtx(), this.getM_PriceList_ID_SO(), get_TrxName());
 				MPriceListVersion plv = priceList.getPriceListVersion(null);
 				if (plv != null){
-					this.setM_PriceList_ID_SO(plv.get_ID());
+					this.setM_PriceList_Version_ID_SO(plv.get_ID());
 				}
 			}
 
