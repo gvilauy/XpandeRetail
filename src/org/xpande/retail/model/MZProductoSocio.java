@@ -41,6 +41,27 @@ public class MZProductoSocio extends X_Z_ProductoSocio {
         return model;
     }
 
+
+    /***
+     * Obtiene y retorna modelo según id de socio de negocio y codigo de producto del proveedor recibidos.
+     * Xpande. Created by Gabriel Vila on 6/25/17.
+     * @param ctx
+     * @param cBPartnerID
+     * @param vendorProductNo
+     * @param trxName
+     * @return
+     */
+    public static MZProductoSocio getByBPartnerVendorProdNo(Properties ctx, int cBPartnerID, String vendorProductNo, String trxName) {
+
+        String whereClause = X_Z_ProductoSocio.COLUMNNAME_C_BPartner_ID + " =" + cBPartnerID +
+                " AND " + X_Z_ProductoSocio.COLUMNNAME_VendorProductNo + " ='" + vendorProductNo + "'";
+
+        MZProductoSocio model = new Query(ctx, I_Z_ProductoSocio.Table_Name, whereClause, trxName).first();
+
+        return model;
+    }
+
+
     /***
      * Obtiene y retorna modelo de organización asociada a este producto-socio.
      * Xpande. Created by Gabriel Vila on 6/21/17.

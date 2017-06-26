@@ -1424,7 +1424,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			else{
 				// Tomo de la moneda
 				MCurrency cur = (MCurrency)this.getC_Currency();
-				this.setPrecisionPO(cur.getCostingPrecision());
+				this.setPrecisionPO(cur.getStdPrecision());
 			}
 
 			// Precisión decimal para precios de venta
@@ -1434,7 +1434,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			}
 			else{
 				MCurrency cur = new MCurrency(getCtx(), this.getC_Currency_ID_SO(), null);
-				this.setPrecisionSO(cur.getStdPrecision());
+				this.setPrecisionSO(cur.getCostingPrecision());
 			}
 
 		}

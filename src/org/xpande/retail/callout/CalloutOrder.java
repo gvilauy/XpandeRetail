@@ -6,6 +6,8 @@ import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.xpande.core.model.MZProductoUPC;
+import org.xpande.retail.model.MZProductoSocio;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -325,7 +327,7 @@ public class CalloutOrder extends CalloutEngine {
         int C_UOM_To_ID = Env.getContextAsInt(ctx, WindowNo, "C_UOM_ID");
         int M_Product_ID = Env.getContextAsInt(ctx, WindowNo, "M_Product_ID");
         int M_PriceList_ID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_ID");
-        int StdPrecision = MPriceList.getStandardPrecision(ctx, M_PriceList_ID);
+        int StdPrecision = MPriceList.getPricePrecision(ctx, M_PriceList_ID);
         BigDecimal QtyEntered, QtyOrdered, PriceEntered, PriceActual, PriceLimit, Discount, PriceList;
         //	get values
         QtyEntered = (BigDecimal)mTab.getValue("QtyEntered");
@@ -638,4 +640,78 @@ public class CalloutOrder extends CalloutEngine {
         return "";
     }	//	qty
 
+
+    /***
+     * Al ingresar código de barras, o codigo de producto del proveedor, o el producto directamente,
+     * se deben setear los otros dos valores asociados.
+     * Xpande. Created by Gabriel Vila on 6/25/17.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String upcVendProdNoProduct(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (isCalloutActive()) return "";
+
+        if (value == null){
+            mTab.setValue("UPC", null);
+            mTab.setValue("VendorProductNo", null);
+            mTab.setValue("M_Product_ID", null);
+            return "";
+        }
+
+        int cBPartnerID = Env.getContextAsInt(ctx, WindowNo, "C_BPartner_ID");
+
+        String column = mField.getColumnName();
+
+        if (column.equalsIgnoreCase("UPC")){
+            MZProductoUPC pupc = MZProductoUPC.getByUPC(ctx, value.toString().trim(), null);
+            if ((pupc != null) && (pupc.get_ID() > 0)){
+                MProduct prod = (MProduct) pupc.getM_Product();
+                MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(ctx, cBPartnerID, prod.get_ID(), null);
+                if ((productoSocio == null) || (productoSocio.get_ID() <= 0)){
+                    mTab.setValue("VendorProductNo", null);
+                    mTab.setValue("M_Product_ID", null);
+                    mTab.fireDataStatusEEvent ("Error", "El código de barras ingresado no pertenece a un Producto de este Socio de Negocio.", true);
+                }
+                else{
+                    if (productoSocio.getVendorProductNo() != null){
+                        if (!productoSocio.getVendorProductNo().trim().equalsIgnoreCase("")){
+                            mTab.setValue("VendorProductNo", productoSocio.getVendorProductNo().trim());
+                        }
+                    }
+                    mTab.setValue("M_Product_ID", prod.get_ID());
+                }
+            }
+            else{
+                mTab.setValue("VendorProductNo", null);
+                mTab.setValue("M_Product_ID", null);
+                mTab.fireDataStatusEEvent ("Error", "No existe Producto con código de barras ingresado", true);
+            }
+        }
+        else if (column.equalsIgnoreCase("VendorProductNo")){
+            MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerVendorProdNo(ctx, cBPartnerID, value.toString().trim(), null);
+            if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+                MProduct prod = (MProduct) productoSocio.getM_Product();
+                MZProductoUPC pupc = MZProductoUPC.getByProduct(ctx, prod.get_ID(), null);
+                if ((pupc != null) & (pupc.get_ID() > 0)){
+                    mTab.setValue("UPC", pupc.getUPC());
+                }
+                mTab.setValue("M_Product_ID", prod.get_ID());
+            }
+            else{
+                mTab.setValue("UPC", null);
+                mTab.setValue("M_Product_ID", null);
+                mTab.fireDataStatusEEvent ("Error", "No existe Producto para el código ingresado de producto del proveedor", true);
+            }
+        }
+        else if (column.equalsIgnoreCase("M_Product_ID")){
+
+        }
+
+        return "";
+    }
 }
