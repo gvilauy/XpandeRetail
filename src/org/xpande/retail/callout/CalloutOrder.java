@@ -44,6 +44,14 @@ public class CalloutOrder extends CalloutEngine {
      */
     public String product (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
     {
+
+        // Llamo a callout para setear los datos : codigo de barras - codigo prod.prov - producto
+        String message = upcVendProdNoProduct(ctx, WindowNo, mTab, mField, value);
+        if (!message.equalsIgnoreCase("")){
+            return  message;
+        }
+
+
         Integer M_Product_ID = (Integer)value;
         Integer M_AttributeSetInstance_ID = 0;
         //
@@ -656,7 +664,7 @@ public class CalloutOrder extends CalloutEngine {
 
         if (isCalloutActive()) return "";
 
-        if (value == null){
+        if ((value == null) || (value.toString().trim().equalsIgnoreCase(""))){
             mTab.setValue("UPC", null);
             mTab.setValue("VendorProductNo", null);
             mTab.setValue("M_Product_ID", null);
@@ -709,7 +717,28 @@ public class CalloutOrder extends CalloutEngine {
             }
         }
         else if (column.equalsIgnoreCase("M_Product_ID")){
-
+            int mProductID = ((Integer) value).intValue();
+            MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(ctx, cBPartnerID, mProductID, null);
+            if ((productoSocio != null) || (productoSocio.get_ID() > 0)){
+                if (productoSocio.getVendorProductNo() != null){
+                    if (!productoSocio.getVendorProductNo().trim().equalsIgnoreCase("")){
+                        mTab.setValue("VendorProductNo", productoSocio.getVendorProductNo().trim());
+                    }
+                    else{
+                        mTab.setValue("VendorProductNo", null);
+                    }
+                }
+                else{
+                    mTab.setValue("VendorProductNo", null);
+                }
+            }
+            MZProductoUPC pupc = MZProductoUPC.getByProduct(ctx, mProductID, null);
+            if ((pupc != null) & (pupc.get_ID() > 0)){
+                mTab.setValue("UPC", pupc.getUPC());
+            }
+            else{
+                mTab.setValue("UPC", null);
+            }
         }
 
         return "";

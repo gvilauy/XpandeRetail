@@ -365,13 +365,13 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 			// Si no tengo precio para este producto, lo creo.
 			if ((pprice == null) || (pprice.getM_Product_ID() <= 0)){
-				pprice = new MProductPrice(plVersionVenta, line.getM_Product_ID(), line.getPriceList(), line.getPriceList(), line.getPriceList());
+				pprice = new MProductPrice(plVersionVenta, line.getM_Product_ID(), line.getNewPriceSO(), line.getNewPriceSO(), line.getNewPriceSO());
 			}
 			else{
 				// Actualizo precios
-				pprice.setPriceList(line.getPriceList());
-				pprice.setPriceStd(line.getPriceList());
-				pprice.setPriceLimit(line.getPriceList());
+				pprice.setPriceList(line.getNewPriceSO());
+				pprice.setPriceStd(line.getNewPriceSO());
+				pprice.setPriceLimit(line.getNewPriceSO());
 			}
 			pprice.saveEx();
 
@@ -420,7 +420,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				pl.setIsSOPriceList(false);
 				pl.setIsTaxIncluded(true);
 				pl.setIsNetPrice(false);
-				pl.setPricePrecision(cur.getCostingPrecision());
+				pl.setPricePrecision(cur.getStdPrecision());
 				pl.setAD_Org_ID(0);
 				pl.saveEx();
 
@@ -577,7 +577,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			List<MZPreciosProvOrg> pporgs = this.getOrgsSelected();
 			for (MZPreciosProvOrg pporg: pporgs){
 				// Si no tengo precio para esta organización dentro del producto-socio, la creo en este momento
-				MZProductoSocioOrg prodbpOrg = prodbp.getOrg(pporg.get_ID());
+				MZProductoSocioOrg prodbpOrg = prodbp.getOrg(pporg.getAD_OrgTrx_ID());
 				if ((prodbpOrg == null) || (prodbpOrg.get_ID() <= 0)){
 					prodbpOrg = new MZProductoSocioOrg(getCtx(), 0, get_TrxName());
 					prodbpOrg.setZ_ProductoSocio_ID(prodbp.get_ID());
@@ -837,9 +837,6 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 	public void execute() {
 
 		try{
-
-			// Seteo precisión decimal para precios de compra y venta
-			this.setPrecisionDecimal();
 
 			// Elimino información previa que pudiera existir, en caso que el documento no haya sido ejecutado
 			if (!this.isExecuted()){
@@ -1111,6 +1108,18 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 		try{
 
+			// Instancio modelo de lista de precios de compra y versión vigente de la misma, en caso de tener una.
+			MPriceList plCompra = null;
+			MPriceListVersion plVersionCompra = null;
+			if (this.getM_PriceList_ID() > 0){
+				plCompra = (MPriceList) this.getM_PriceList();
+				plVersionCompra = (MPriceListVersion) this.getM_PriceList_Version();
+			}
+
+			// Instancio modelo  lista de precios de venta y versión de la misma a procesar
+			MPriceList plVenta = new MPriceList(getCtx(), this.getM_PriceList_ID_SO(), get_TrxName());
+			MPriceListVersion plVersionVenta = new MPriceListVersion(getCtx(), this.getM_PriceList_Version_ID_SO(), get_TrxName());
+
 			// Obtengo lineas leídas del archivo de interface segun flag recibido
 			List<MZPreciosProvArchivo> lineasArchivo = null;
 			if (allLines){
@@ -1279,8 +1288,6 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 						plinea.setNewPriceSO(lineaArchivo.getPriceSO().setScale(this.getPrecisionSO(), BigDecimal.ROUND_HALF_UP));
 					}
 
-
-
 				}
 				else{  // El producto ya estaba definido en el sistema
 
@@ -1295,6 +1302,24 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 					// Precios de venta en producto existente
 					plinea.calculatePricesSO(lineaArchivo.getPriceSO(), this.getPrecisionSO());
+
+					/*
+					// Valido que tenga cambios en precio de lista, precio OC y precio de venta.
+					// Si estos valores son iguales, no debo considerar esta linea, entonces la marco como inváida,
+					// indico motivo, pero la marco para Omitir.
+					if ((plCompra != null) && (plCompra.get_ID() > 0)){
+						if ((plVersionCompra != null) && (plVersionCompra.get_ID() > 0)){
+							MProductPrice productPrice = MProductPrice.get(getCtx(), plVersionCompra.get_ID(), plinea.getM_Product_ID(), get_TrxName());
+							if (productPrice != null){
+								if (productPrice.getPriceList() != null){
+									if (productPrice.getPriceList().compareTo(plinea.getPriceList()) == 0){
+
+									}
+								}
+							}
+						}
+					}
+					*/
 
 				}
 
@@ -1357,6 +1382,9 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 		// En caso de nuevo registro
 		if (newRecord){
+
+			// Seteo precisión decimal para precios de compra y venta
+			this.setPrecisionDecimal();
 
 			if (this.getM_PriceList_Version_ID_SO() <= 0){
 				MPriceList priceList = new MPriceList(getCtx(), this.getM_PriceList_ID_SO(), get_TrxName());
@@ -1472,4 +1500,36 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		return lines;
 	}
 
+
+	/***
+	 * Refresca información de precios de compra de las lineas del documento.
+	 * Xpande. Created by Gabriel Vila on 6/26/17.
+	 * @return
+	 */
+	public String refrescarPrecios(){
+
+		String message = null;
+
+		try{
+
+			// Obtengo y recorro lineas de este documento
+			List<MZPreciosProvLin> preciosProvLins = this.getLines();
+			for (MZPreciosProvLin preciosProvLin: preciosProvLins){
+
+				// Refresco valores de precio de compra de este linea
+				preciosProvLin.calculatePricesPO(preciosProvLin.getPriceList(), this.getPrecisionPO(), (MZPautaComercial) this.getZ_PautaComercial());
+
+				// Calculo y seteo márgenes de linea
+				preciosProvLin.calculateMargins();
+
+				preciosProvLin.saveEx();
+			}
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return message;
+	}
 }

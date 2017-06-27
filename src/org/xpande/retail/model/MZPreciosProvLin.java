@@ -1,10 +1,8 @@
 package org.xpande.retail.model;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.MPriceList;
-import org.compiere.model.MPriceListVersion;
-import org.compiere.model.MProduct;
-import org.compiere.model.MProductPrice;
+import org.compiere.model.*;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.retail.utils.ProductPricesInfo;
@@ -36,6 +34,23 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
 
         MZPreciosProvCab cab = (MZPreciosProvCab)this.getZ_PreciosProvCab();
 
+        // Cuando estoy en modalidad ingreso manual
+        if (cab.getModalidadPreciosProv().equalsIgnoreCase(X_Z_PreciosProvCab.MODALIDADPRECIOSPROV_INGRESOMANUAL)){
+
+            // Valido información cargada manualmente
+            message = this.validateIngresoManual(cab);
+
+            if (message != null){
+                log.saveError("ATENCIÓN", message);
+                return false;
+            }
+
+            // Si además estoy en nuevo registro, seteo información necesaria para el ingreso manual
+            if (newRecord){
+                this.setInfoIngresoManual(cab);
+            }
+        }
+
         // Si modifica segmentos de pauta comercial
         if ((is_ValueChanged(X_Z_PreciosProvLin.COLUMNNAME_Z_PautaComercialSet_ID_1))
                 || (is_ValueChanged(X_Z_PreciosProvLin.COLUMNNAME_Z_PautaComercialSet_ID_2))){
@@ -55,10 +70,155 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
             this.calculateMargins();
         }
 
-
-
-
         return true;
+    }
+
+
+    /***
+     * Valido información para un ingreso manual de nuevo producto.
+     * Xpande. Created by Gabriel Vila on 6/26/17.
+     * @param cab
+     * @return
+     */
+    private String validateIngresoManual(MZPreciosProvCab cab) {
+
+        String message = null;
+        String sql = "";
+
+        try{
+            // Valido código de barras repetido en este documento y en otro producto existente
+            if (this.getUPC() != null){
+                this.setUPC(this.getUPC().trim().replaceAll("[^0-9]", ""));
+                sql = " select z_preciosprovlin_id from z_preciosprovlin " +
+                        " where z_preciosprovcab_id = " + this.getZ_PreciosProvCab_ID() +
+                        " and z_preciosprovlin_id !=" + this.get_ID() +
+                        " and upc ='" + this.getUPC() + "'";
+                int idExistente = DB.getSQLValueEx(null, sql);
+                if (idExistente > 0){
+                    return "Código de Barras duplicado en otro producto de este Documento.";
+                }
+
+                MZProductoUPC pupc = MZProductoUPC.getByUPC(getCtx(), this.getUPC(), null);
+                if ((pupc != null) && (pupc.get_ID() > 0)){
+                    MProduct prod = (MProduct) pupc.getM_Product();
+                    return "Código de Barras ya existe asociado el producto : " + prod.getValue() + " - " + prod.getName();
+                }
+            }
+
+            // Valido codigo de producto del proveedor duplicado en este documento y en otro producto existente
+            if ((this.getVendorProductNo() != null) && (!this.getVendorProductNo().trim().equalsIgnoreCase(""))){
+                this.setVendorProductNo(this.getVendorProductNo().trim());
+                sql = " select z_preciosprovlin_id from z_preciosprovlin " +
+                        " where z_preciosprovcab_id = " + this.getZ_PreciosProvCab_ID() +
+                        " and z_preciosprovlin_id !=" + this.get_ID() +
+                        " and vendorproductno ='" + this.getVendorProductNo() + "'";
+                int idExistente = DB.getSQLValueEx(null, sql);
+                if (idExistente > 0){
+                    return "Código Producto de Proveedor duplicado en otro producto de este Documento.";
+                }
+
+                MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerVendorProdNo(getCtx(), cab.getC_BPartner_ID(), this.getVendorProductNo(), null);
+                if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+                    MProduct prod = (MProduct) productoSocio.getM_Product();
+                    return "Código Producto de Proveedor ya existe asociado el producto : " + prod.getValue() + " - " + prod.getName();
+                }
+            }
+
+            // Valido codigo interno duplicado en este documento y en otro producto existente
+            if ((this.getInternalCode() != null) && (!this.getInternalCode().trim().equalsIgnoreCase(""))){
+                this.setInternalCode(this.getInternalCode().trim());
+                sql = " select z_preciosprovlin_id from z_preciosprovlin " +
+                        " where z_preciosprovcab_id = " + this.getZ_PreciosProvCab_ID() +
+                        " and z_preciosprovlin_id !=" + this.get_ID() +
+                        " and InternalCode ='" + this.getInternalCode() + "'";
+                int idExistente = DB.getSQLValueEx(null, sql);
+                if (idExistente > 0){
+                    return "Código Interno de Producto duplicado en otro producto de este Documento.";
+                }
+
+                MProduct[] prods = MProduct.get(getCtx(), X_M_Product.COLUMNNAME_Value + " ='" + this.getInternalCode() + "'", null);
+                if (prods.length > 0){
+                    MProduct prod = (MProduct) prods[0];
+                    return "Código Interno de Producto ya existe asociado el producto : " + prod.getValue() + " - " + prod.getName();
+                }
+            }
+
+            // Valido que haya ingresado nombre corto
+            if ((this.getName() == null) || (this.getName().trim().equalsIgnoreCase(""))){
+                return "Debe indicar Nombre Corto para el Nuevo Producto";
+            }
+            this.setName(this.getName().trim().toUpperCase());
+
+            // Si no ingreso nombre largo, le seteo el nombre corto
+            if ((this.getDescription() == null) || (this.getDescription().trim().equalsIgnoreCase(""))){
+                this.setDescription(this.getName());
+            }
+            else{
+                this.setDescription(this.getDescription().trim().toUpperCase());
+            }
+
+            // Valido que haya ingresado precio de lista
+            if ((this.getPriceList() == null) || (this.getPriceList().compareTo(Env.ZERO) <= 0)){
+                return "Debe indicar Precio de Lista para el Nuevo Producto.";
+            }
+
+            // Valido que haya ingresado precio de venta
+            if ((this.getNewPriceSO() == null) || (this.getNewPriceSO().compareTo(Env.ZERO) <= 0)){
+                return "Debe indicar Precio de Venta para el Nuevo Producto.";
+            }
+
+            // Valido que haya ingresado seccion y rubro
+            if (this.getZ_ProductoSeccion_ID() <= 0){
+                return "Debe indicar Sección para el Nuevo Producto";
+            }
+            if (this.getZ_ProductoRubro_ID() <= 0){
+                return "Debe indicar Rubro para el Nuevo Producto";
+            }
+
+            // Valido impuesto
+            if (this.getC_TaxCategory_ID() <= 0){
+                return "Debe indicar Impuesto para el Nuevo Producto";
+            }
+
+            // Si no tengo unidad de medida, asocio unidad por defecto
+            if (this.getC_UOM_ID() <= 0){
+                this.setC_UOM_ID(100);
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return message;
+    }
+
+    /***
+     * Seteo información de nuevo registro ingresado manualmente.
+     * Xpande. Created by Gabriel Vila on 6/26/17.
+     * @param cab
+     */
+    private void setInfoIngresoManual(MZPreciosProvCab cab) {
+
+        try{
+
+            this.setIsNew(true);
+            this.setC_Currency_ID(cab.getC_Currency_ID());
+            this.setC_Currency_ID_SO(cab.getC_Currency_ID_SO());
+
+            // Si tengo pauta comercial seleccionada en el cabezal
+            if (cab.getZ_PautaComercial_ID() > 0){
+
+                // Seto precio de compra
+                this.setOrgDifferentPricePO(false);
+                this.calculatePricesPO(this.getPriceList(), cab.getPrecisionPO(), (MZPautaComercial) cab.getZ_PautaComercial());
+                this.calculateMargins();
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
     }
 
     /***
@@ -279,6 +439,9 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
                         }
                     }
                 }
+            }
+            else{
+                prod = (MProduct) this.getM_Product();
             }
 
             // Seteo atributos al producto que el usuario pudo haber modificado en este documento

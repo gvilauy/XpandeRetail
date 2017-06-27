@@ -1,7 +1,10 @@
 package org.xpande.retail.model;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.Query;
+import org.compiere.util.Env;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
@@ -92,6 +95,27 @@ public class MZProductoSocio extends X_Z_ProductoSocio {
     public static List<MZProductoSocio> getByBPartnerLineaPriceList(Properties ctx, int cBPartnerID, int zLineaProductoSocioID, int mPriceListID, String trxName) {
 
         String whereClause = X_Z_ProductoSocio.COLUMNNAME_C_BPartner_ID + " =" + cBPartnerID +
+                " AND " + X_Z_ProductoSocio.COLUMNNAME_Z_LineaProductoSocio_ID + " =" + zLineaProductoSocioID +
+                " AND " + X_Z_ProductoSocio.COLUMNNAME_M_PriceList_ID + " =" + mPriceListID;
+
+        List<MZProductoSocio> lines = new Query(ctx, I_Z_ProductoSocio.Table_Name, whereClause, trxName).list();
+
+        return lines;
+    }
+
+
+    /***
+     * Obtiene y retorna lista de este modelo para un socio y una linea de productos recibidos.
+     * Xpande. Created by Gabriel Vila on 6/22/17.
+     * @param ctx
+     * @param cBPartnerID
+     * @param zLineaProductoSocioID
+     * @param trxName
+     * @return
+     */
+    public static List<MZProductoSocio> getByBPartnerLinea(Properties ctx, int cBPartnerID, int zLineaProductoSocioID, String trxName) {
+
+        String whereClause = X_Z_ProductoSocio.COLUMNNAME_C_BPartner_ID + " =" + cBPartnerID +
                 " AND " + X_Z_ProductoSocio.COLUMNNAME_Z_LineaProductoSocio_ID + " =" + zLineaProductoSocioID;
 
         List<MZProductoSocio> lines = new Query(ctx, I_Z_ProductoSocio.Table_Name, whereClause, trxName).list();
@@ -99,4 +123,62 @@ public class MZProductoSocio extends X_Z_ProductoSocio {
         return lines;
     }
 
+
+    /***
+     * Metodo que calcula y setea margenes de esta linea.
+     * Xpande. Created by Gabriel Vila on 6/23/17.
+     */
+    public void calculateMargins() {
+
+        try{
+
+            // Si no tengo nuevo precio de venta, seteo margenes nulos y salgo
+            if ((this.getPriceSO() == null) || (this.getPriceSO().compareTo(Env.ZERO) <= 0)){
+                this.setPriceFinalMargin(null);
+                this.setPricePOMargin(null);
+                this.setPriceInvoicedMargin(null);
+                return;
+            }
+
+            // Si no tengo precio de lista, seteo margenes nulos y salgo
+            if ((this.getPriceList() == null) || (this.getPriceList().compareTo(Env.ZERO) <= 0)){
+                this.setPriceFinalMargin(null);
+                this.setPricePOMargin(null);
+                this.setPriceInvoicedMargin(null);
+                return;
+            }
+
+            // Margen final
+            if ((this.getPriceFinal() == null) || (this.getPriceFinal().compareTo(Env.ZERO) <= 0)){
+                this.setPriceFinalMargin(null);
+            }
+            else{
+                this.setPriceFinalMargin(((this.getPriceSO().multiply(Env.ONEHUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP))
+                        .divide(this.getPriceFinal(), 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
+            }
+
+            // Margen OC
+            if ((this.getPricePO() == null) || (this.getPricePO().compareTo(Env.ZERO) <= 0)){
+                this.setPricePOMargin(null);
+            }
+            else{
+                this.setPricePOMargin(((this.getPriceSO().multiply(Env.ONEHUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP))
+                        .divide(this.getPricePO(), 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
+            }
+
+            // Margen Factura
+            if ((this.getPriceInvoiced() == null) || (this.getPriceInvoiced().compareTo(Env.ZERO) <= 0)){
+                this.setPriceInvoicedMargin(null);
+            }
+            else{
+                this.setPriceInvoicedMargin(((this.getPriceSO().multiply(Env.ONEHUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP))
+                        .divide(this.getPriceInvoiced(), 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+    }
 }

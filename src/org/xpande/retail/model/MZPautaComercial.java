@@ -1,9 +1,10 @@
 package org.xpande.retail.model;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.Query;
+import org.compiere.model.*;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.xpande.core.model.MZSocioListaPrecio;
 import org.xpande.retail.utils.ProductPricesInfo;
 
 import java.math.BigDecimal;
@@ -161,8 +162,67 @@ public class MZPautaComercial extends X_Z_PautaComercial {
 
             // Si tengo que recalcular descuentos y tengo linea de producto asociada
             if ((recalculate) && (this.getZ_LineaProductoSocio_ID() > 0)){
+
                 // Recalculo descuentos en productos que pertenecen al socio-linea.
 
+                // Obtengo y recorro lista de modelos de producto-socio para este socio y linea de productos
+                List<MZProductoSocio> productoSocios = MZProductoSocio.getByBPartnerLinea(getCtx(), this.getC_BPartner_ID(), this.getZ_LineaProductoSocio_ID(), get_TrxName());
+                for (MZProductoSocio productoSocio: productoSocios){
+
+                    // Instancio modelo de producto y aplico pauta en la lista de precios que viene en la relacion producto-socio
+                    MProduct prod = (MProduct) productoSocio.getM_Product();
+
+                    MPriceList priceList = (MPriceList) productoSocio.getM_PriceList();
+                    if ((priceList == null) || (priceList.get_ID() <= 0)){
+                        return "No se obtuvo Lista de Precios para Producto : " + prod.getValue() + " - " + prod.getName();
+                    }
+
+                    MPriceListVersion priceListVersion = priceList.getPriceListVersion(null);
+                    if ((priceListVersion == null) || (priceListVersion.get_ID() <= 0)){
+                        return "No se obtuvo Versión Lista de Precios para Producto : " + prod.getValue() + " - " + prod.getName() +
+                                " , Lista de Precios : " + priceList.getName();
+                    }
+
+                    MProductPrice productPrice = MProductPrice.get(getCtx(), priceListVersion.get_ID(), prod.get_ID(), get_TrxName());
+                    if (productPrice == null){
+                        return "No se obtuvo Precios para Producto : " + prod.getValue() + " - " + prod.getName() +
+                                " en la Lista de Precios : " + priceList.getName();
+                    }
+
+                    ProductPricesInfo ppi = this.calculatePrices(prod.get_ID(), productPrice.getPriceList(), priceList.getPricePrecision());
+                    if (ppi != null){
+
+                        // Seteo precios de compra y segmentos si es necesario en producto-socio
+                        productoSocio.setPricePO(ppi.getPricePO());
+                        productoSocio.setPriceFinal(ppi.getPriceFinal());
+                        if (ppi.getSumPercentageDiscountsOC() != null) {
+                            productoSocio.setTotalDiscountsPO(ppi.getSumPercentageDiscountsOC());
+                        }
+                        else{
+                            productoSocio.setTotalDiscountsPO(Env.ZERO);
+                        }
+                        if (ppi.getSumPercentageDiscountsFinal() != null) {
+                            productoSocio.setTotalDiscountsFinal(ppi.getSumPercentageDiscountsFinal());
+                        }
+                        else{
+                            productoSocio.setTotalDiscountsFinal(Env.ZERO);
+                        }
+
+                        productoSocio.setZ_PautaComercial_ID(this.get_ID());
+                        if (ppi.getSegmentoGral_ID() > 0) productoSocio.setZ_PautaComercialSet_ID_Gen(ppi.getSegmentoGral_ID());
+                        if (ppi.getSegmentoEspecial1_ID() > 0) productoSocio.setZ_PautaComercialSet_ID_1(ppi.getSegmentoEspecial1_ID());
+                        if (ppi.getSegmentoEspecial2_ID() > 0) productoSocio.setZ_PautaComercialSet_ID_2(ppi.getSegmentoEspecial2_ID());
+
+                        productoSocio.calculateMargins();
+
+                        productoSocio.saveEx();
+
+                    }
+                    else{
+                        return "No se pudo Aplicar la Pauta Comercial al producto : " + prod.getValue() + " - " + prod.getName();
+                    }
+
+                }
             }
 
             this.setIsConfirmed(true);
