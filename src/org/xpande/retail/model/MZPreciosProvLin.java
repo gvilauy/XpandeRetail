@@ -52,8 +52,8 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
         }
 
         // Si modifica segmentos de pauta comercial
-        if ((is_ValueChanged(X_Z_PreciosProvLin.COLUMNNAME_Z_PautaComercialSet_ID_1))
-                || (is_ValueChanged(X_Z_PreciosProvLin.COLUMNNAME_Z_PautaComercialSet_ID_2))){
+        if ((!newRecord) && ((is_ValueChanged(X_Z_PreciosProvLin.COLUMNNAME_Z_PautaComercialSet_ID_1))
+                || (is_ValueChanged(X_Z_PreciosProvLin.COLUMNNAME_Z_PautaComercialSet_ID_2)))){
 
             // Valido segmentos de pautas comerciales aplicados a este productos
             message = this.validateSegmentos();
@@ -64,10 +64,21 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
             }
 
             // Recalculo precios de compra de esta linea ya que se modificaron los segmentos especiales en la misma
-            this.calculatePricesPO(this.getPriceList(), cab.getPrecisionPO(), (MZPautaComercial) cab.getZ_PautaComercial());
+            this.calculatePricesPO(this.getPriceList(), cab.getPrecisionPO(), (MZPautaComercial) cab.getZ_PautaComercial(), true);
 
             // Recalculo márgenes
-            this.calculateMargins();
+            this.calculateMargins(cab.getRate());
+        }
+        else{
+            // Si se modifica precio de lista
+            if ((!newRecord) && (is_ValueChanged(X_Z_PreciosProvLin.COLUMNNAME_PriceList))){
+
+                // Recalculo precios de compra de esta linea ya que se modifico el precio de lista base
+                this.calculatePricesPO(this.getPriceList(), cab.getPrecisionPO(), (MZPautaComercial) cab.getZ_PautaComercial(), true);
+
+                // Recalculo márgenes
+                this.calculateMargins(cab.getRate());
+            }
         }
 
         return true;
@@ -211,8 +222,8 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
 
                 // Seto precio de compra
                 this.setOrgDifferentPricePO(false);
-                this.calculatePricesPO(this.getPriceList(), cab.getPrecisionPO(), (MZPautaComercial) cab.getZ_PautaComercial());
-                this.calculateMargins();
+                this.calculatePricesPO(this.getPriceList(), cab.getPrecisionPO(), (MZPautaComercial) cab.getZ_PautaComercial(), false);
+                this.calculateMargins(cab.getRate());
             }
 
         }
@@ -265,7 +276,7 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
      * @param precisionDecimalCompra
      * @param pautaComercial
      */
-    public void calculatePricesPO(BigDecimal priceList, int precisionDecimalCompra, MZPautaComercial pautaComercial) {
+    public void calculatePricesPO(BigDecimal priceList, int precisionDecimalCompra, MZPautaComercial pautaComercial, boolean useLineSegments) {
 
         try{
             // Precio de lista viene por parametro y será la base para calcular los demas
@@ -281,8 +292,15 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
 
                 // Si tengo producto, calculo precios basandome en este producto y precio de lista
                 if (this.getM_Product_ID() > 0){
-                    // Cuando tengo producto, voy a considerar los segmentos que ya se definieron en la pauta
-                    ppi = pautaComercial.calculatePrices(this.getM_Product_ID(), this.getPriceList(), precisionDecimalCompra);
+
+                    // Cuando tengo producto y no uso segmentos seleccionados en este linea, voy a considerar los segmentos que ya se definieron en la pauta
+                    if (!useLineSegments){
+                        ppi = pautaComercial.calculatePrices(this.getM_Product_ID(), this.getPriceList(), precisionDecimalCompra);
+                    }
+                    else{
+                        // Tengo producto, pero el usuario le cambio los segmentos especiales editando esta linea
+                        ppi = pautaComercial.calculatePrices(this.getPriceList(), precisionDecimalCompra, this.getZ_PautaComercialSet_ID_1(), this.getZ_PautaComercialSet_ID_2());
+                    }
                 }
                 else{
                     // No tengo producto, por lo tanto me baso en el precio de lista y segmentos especiales que pueda tener asociados en esta linea
@@ -310,8 +328,6 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
                     if (ppi.getSegmentoGral_ID() > 0) this.setZ_PautaComercialSet_ID_Gen(ppi.getSegmentoGral_ID());
                     if (ppi.getSegmentoEspecial1_ID() > 0) this.setZ_PautaComercialSet_ID_1(ppi.getSegmentoEspecial1_ID());
                     if (ppi.getSegmentoEspecial2_ID() > 0) this.setZ_PautaComercialSet_ID_2(ppi.getSegmentoEspecial2_ID());
-
-
                 }
                 else{
                     this.setIsConfirmed(false);
@@ -490,7 +506,7 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
      * Metodo que calcula y setea margenes de esta linea.
      * Xpande. Created by Gabriel Vila on 6/23/17.
      */
-    public void calculateMargins() {
+    public void calculateMargins(BigDecimal multiplyRate) {
 
         try{
 
@@ -515,8 +531,12 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
                 this.setPriceFinalMargin(null);
             }
             else{
+                BigDecimal priceFinal = this.getPriceFinal();
+                if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) > 0)){
+                    priceFinal = priceFinal.multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                }
                 this.setPriceFinalMargin(((this.getNewPriceSO().multiply(Env.ONEHUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP))
-                        .divide(this.getPriceFinal(), 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
+                        .divide(priceFinal, 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
             }
 
             // Margen OC
@@ -524,8 +544,12 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
                 this.setPricePOMargin(null);
             }
             else{
+                BigDecimal pricePO = this.getPricePO();
+                if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) > 0)){
+                    pricePO = pricePO.multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                }
                 this.setPricePOMargin(((this.getNewPriceSO().multiply(Env.ONEHUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP))
-                        .divide(this.getPricePO(), 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
+                        .divide(pricePO, 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
             }
 
             // Margen Factura
@@ -533,8 +557,12 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
                 this.setPriceInvoicedMargin(null);
             }
             else{
+                BigDecimal priceInv = this.getPriceInvoiced();
+                if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) > 0)){
+                    priceInv = priceInv.multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                }
                 this.setPriceInvoicedMargin(((this.getNewPriceSO().multiply(Env.ONEHUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP))
-                        .divide(this.getPriceInvoiced(), 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
+                        .divide(priceInv, 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
             }
 
         }

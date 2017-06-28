@@ -450,6 +450,19 @@ public interface I_Z_PreciosProvCab
 	  */
 	public String getProcessButton4();
 
+    /** Column name ProcessButton5 */
+    public static final String COLUMNNAME_ProcessButton5 = "ProcessButton5";
+
+	/** Set ProcessButton5.
+	  * Botón de Proceso
+	  */
+	public void setProcessButton5(String ProcessButton5);
+
+	/** Get ProcessButton5.
+	  * Botón de Proceso
+	  */
+	public String getProcessButton5();
+
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
@@ -471,6 +484,19 @@ public interface I_Z_PreciosProvCab
 
 	/** Get Process Now	  */
 	public boolean isProcessing();
+
+    /** Column name Rate */
+    public static final String COLUMNNAME_Rate = "Rate";
+
+	/** Set Rate.
+	  * Rate or Tax or Exchange
+	  */
+	public void setRate(BigDecimal Rate);
+
+	/** Get Rate.
+	  * Rate or Tax or Exchange
+	  */
+	public BigDecimal getRate();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";

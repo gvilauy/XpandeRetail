@@ -42,17 +42,61 @@ public class MZPautaComercial extends X_Z_PautaComercial {
         ProductPricesInfo ppi = null;
 
         try{
+
+            int zPautaComercialSetID_1 = 0, zPautaComercialSetID_2 = 0;
+
+            // Obtengo lista de segmentos especiales para este producto en esta pauta
+            List<MZPautaComercialSet> pautaComercialSets = this.getSetsByProduct(mProductID);
+            int i = 1;
+            for (MZPautaComercialSet pautaComercialSet: pautaComercialSets){
+                if (i == 1){
+                    zPautaComercialSetID_1 = pautaComercialSet.get_ID();
+                    i++;
+                }
+                else if (i == 2){
+                    zPautaComercialSetID_2 = pautaComercialSet.get_ID();
+                    i++;
+                }
+            }
+
+            ppi = this.calculatePrices(priceList, precisionDecimalCompra, zPautaComercialSetID_1, zPautaComercialSetID_2);
+
+            /*
             // Obtengo segmentos especiales para el producto recibido, desde la asociación producto-socio
             MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(getCtx(), this.getC_BPartner_ID(), mProductID, get_TrxName());
             if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
                 return this.calculatePrices(priceList, precisionDecimalCompra, productoSocio.getZ_PautaComercialSet_ID_1(), productoSocio.getZ_PautaComercialSet_ID_2());
             }
+            */
         }
         catch (Exception e){
             throw new AdempiereException(e);
         }
 
         return ppi;
+    }
+
+
+    /***
+     * Obtiene y retorna lista de segmentos especiales que contienen el producto recibido.
+     * Xpande. Created by Gabriel Vila on 6/27/17.
+     * @param mProductID
+     * @return
+     */
+    private List<MZPautaComercialSet> getSetsByProduct(int mProductID) {
+
+        String whereClause = X_Z_PautaComercialSet.COLUMNNAME_Z_PautaComercial_ID + " =" + this.get_ID() +
+                " AND " + X_Z_PautaComercialSet.COLUMNNAME_IsGeneral + " ='N'" +
+                " AND " + X_Z_PautaComercialSet.COLUMNNAME_Z_PautaComercialSet_ID +
+                " IN (select " + X_Z_PautaComercialSet.COLUMNNAME_Z_PautaComercialSet_ID +
+                " FROM " + I_Z_PautaComercialSetProd.Table_Name +
+                " WHERE " + X_Z_PautaComercialSetProd.COLUMNNAME_M_Product_ID + " =" + mProductID +
+                " AND " + X_Z_PautaComercialSetProd.COLUMNNAME_IsActive + " ='Y')";
+
+        List<MZPautaComercialSet> lines = new Query(getCtx(), I_Z_PautaComercialSet.Table_Name, whereClause, get_TrxName())
+                .setOnlyActiveRecords(true).setOrderBy(X_Z_PautaComercialSet.COLUMNNAME_Created).list();
+
+        return lines;
     }
 
 
@@ -72,8 +116,8 @@ public class MZPautaComercial extends X_Z_PautaComercial {
 
         try{
 
-            // Verifico que esta pauta esta activa y este aplicada correctamente
-            if ((!this.isActive()) || (!this.isConfirmed())){
+            // Verifico que esta pauta esta activa y tenga productos para aplicar
+            if ((!this.isActive()) || ((this.getZ_LineaProductoSocio_ID() <= 0) && (!this.isConfirmed()))){
                 return null;
             }
 

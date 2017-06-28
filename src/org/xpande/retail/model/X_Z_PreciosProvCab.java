@@ -17,10 +17,12 @@
 /** Generated Model - DO NOT CHANGE */
 package org.xpande.retail.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 import org.compiere.model.*;
+import org.compiere.util.Env;
 
 /** Generated Model for Z_PreciosProvCab
  *  @author Adempiere (generated) 
@@ -31,7 +33,7 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170623L;
+	private static final long serialVersionUID = 20170627L;
 
     /** Standard Constructor */
     public X_Z_PreciosProvCab (Properties ctx, int Z_PreciosProvCab_ID, String trxName)
@@ -733,6 +735,23 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 		return (String)get_Value(COLUMNNAME_ProcessButton4);
 	}
 
+	/** Set ProcessButton5.
+		@param ProcessButton5 
+		Botón de Proceso
+	  */
+	public void setProcessButton5 (String ProcessButton5)
+	{
+		set_Value (COLUMNNAME_ProcessButton5, ProcessButton5);
+	}
+
+	/** Get ProcessButton5.
+		@return Botón de Proceso
+	  */
+	public String getProcessButton5 () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton5);
+	}
+
 	/** Set Processed.
 		@param Processed 
 		The document has been processed
@@ -776,6 +795,26 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Rate.
+		@param Rate 
+		Rate or Tax or Exchange
+	  */
+	public void setRate (BigDecimal Rate)
+	{
+		set_Value (COLUMNNAME_Rate, Rate);
+	}
+
+	/** Get Rate.
+		@return Rate or Tax or Exchange
+	  */
+	public BigDecimal getRate () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Rate);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	public I_Z_LineaProductoSocio getZ_LineaProductoSocio() throws RuntimeException

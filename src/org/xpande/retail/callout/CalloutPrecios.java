@@ -161,6 +161,7 @@ public class CalloutPrecios extends CalloutEngine {
 
         int mPriceListCompraID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_ID");
         int mPriceListVentaID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_ID_SO");
+        int zPreciosProvCabID = Env.getContextAsInt(ctx, WindowNo, "Z_PreciosProvCab_ID");
 
         int precisionCompra = 2;
         int precisionVenta = 2;
@@ -174,6 +175,8 @@ public class CalloutPrecios extends CalloutEngine {
             MPriceList plVenta = new MPriceList(ctx, mPriceListVentaID, null);
             precisionVenta = plVenta.getPricePrecision();
         }
+
+        MZPreciosProvCab preciosProvCab = new MZPreciosProvCab(ctx, zPreciosProvCabID, null);
 
         // Si es moneda de compra la recibida, busco lista de compra del proveedor en esa moneda
         if (column.equalsIgnoreCase("NewPriceSO")){
@@ -190,6 +193,9 @@ public class CalloutPrecios extends CalloutEngine {
                     mTab.setValue("PriceFinalMargin", null);
                 }
                 else{
+                    if ((preciosProvCab.getRate() != null) && (preciosProvCab.getRate().compareTo(Env.ZERO) > 0)){
+                        priceFinal = priceFinal.multiply(preciosProvCab.getRate()).setScale(4, BigDecimal.ROUND_HALF_UP);
+                    }
                     mTab.setValue("PriceFinalMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP))
                             .divide(priceFinal, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
                 }
@@ -199,6 +205,9 @@ public class CalloutPrecios extends CalloutEngine {
                     mTab.setValue("PricePOMargin", null);
                 }
                 else{
+                    if ((preciosProvCab.getRate() != null) && (preciosProvCab.getRate().compareTo(Env.ZERO) > 0)){
+                        pricePO = pricePO.multiply(preciosProvCab.getRate()).setScale(4, BigDecimal.ROUND_HALF_UP);
+                    }
                     mTab.setValue("PricePOMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP))
                             .divide(pricePO, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
                 }
@@ -208,6 +217,9 @@ public class CalloutPrecios extends CalloutEngine {
                     mTab.setValue("PriceInvoicedMargin", null);
                 }
                 else{
+                    if ((preciosProvCab.getRate() != null) && (preciosProvCab.getRate().compareTo(Env.ZERO) > 0)){
+                        priceInvoiced = priceInvoiced.multiply(preciosProvCab.getRate()).setScale(4, BigDecimal.ROUND_HALF_UP);
+                    }
                     mTab.setValue("PriceInvoicedMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP))
                             .divide(priceInvoiced, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
                 }
@@ -220,6 +232,9 @@ public class CalloutPrecios extends CalloutEngine {
                     .divide(Env.ONEHUNDRED, precisionVenta, BigDecimal.ROUND_HALF_UP));
 
             // Nuevo Precio
+            if ((preciosProvCab.getRate() != null) && (preciosProvCab.getRate().compareTo(Env.ZERO) > 0)){
+                newPriceSO = newPriceSO.multiply(preciosProvCab.getRate()).setScale(precisionVenta, BigDecimal.ROUND_HALF_UP);
+            }
             mTab.setValue("NewPriceSO", newPriceSO);
 
             // Margen OC
@@ -227,6 +242,9 @@ public class CalloutPrecios extends CalloutEngine {
                 mTab.setValue("PricePOMargin", null);
             }
             else{
+                if ((preciosProvCab.getRate() != null) && (preciosProvCab.getRate().compareTo(Env.ZERO) > 0)){
+                    pricePO = pricePO.multiply(preciosProvCab.getRate()).setScale(4, BigDecimal.ROUND_HALF_UP);
+                }
                 mTab.setValue("PricePOMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP))
                         .divide(pricePO, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
             }
@@ -236,6 +254,9 @@ public class CalloutPrecios extends CalloutEngine {
                 mTab.setValue("PriceInvoicedMargin", null);
             }
             else{
+                if ((preciosProvCab.getRate() != null) && (preciosProvCab.getRate().compareTo(Env.ZERO) > 0)){
+                    priceInvoiced = priceInvoiced.multiply(preciosProvCab.getRate()).setScale(4, BigDecimal.ROUND_HALF_UP);
+                }
                 mTab.setValue("PriceInvoicedMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP))
                         .divide(priceInvoiced, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
             }
@@ -248,6 +269,9 @@ public class CalloutPrecios extends CalloutEngine {
                     .divide(Env.ONEHUNDRED, precisionVenta, BigDecimal.ROUND_HALF_UP));
 
             // Nuevo Precio
+            if ((preciosProvCab.getRate() != null) && (preciosProvCab.getRate().compareTo(Env.ZERO) > 0)){
+                newPriceSO = newPriceSO.multiply(preciosProvCab.getRate()).setScale(precisionVenta, BigDecimal.ROUND_HALF_UP);
+            }
             mTab.setValue("NewPriceSO", newPriceSO);
 
             // Margen OC
@@ -255,6 +279,9 @@ public class CalloutPrecios extends CalloutEngine {
                 mTab.setValue("PricePOMargin", null);
             }
             else{
+                if ((preciosProvCab.getRate() != null) && (preciosProvCab.getRate().compareTo(Env.ZERO) > 0)){
+                    pricePO = pricePO.multiply(preciosProvCab.getRate()).setScale(4, BigDecimal.ROUND_HALF_UP);
+                }
                 mTab.setValue("PricePOMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP))
                         .divide(pricePO, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
             }
@@ -264,6 +291,9 @@ public class CalloutPrecios extends CalloutEngine {
                 mTab.setValue("PriceFinalMargin", null);
             }
             else{
+                if ((preciosProvCab.getRate() != null) && (preciosProvCab.getRate().compareTo(Env.ZERO) > 0)){
+                    priceFinal = priceFinal.multiply(preciosProvCab.getRate()).setScale(4, BigDecimal.ROUND_HALF_UP);
+                }
                 mTab.setValue("PriceFinalMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP))
                         .divide(priceFinal, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
             }
@@ -275,6 +305,5 @@ public class CalloutPrecios extends CalloutEngine {
 
         return "";
     }
-
 
 }

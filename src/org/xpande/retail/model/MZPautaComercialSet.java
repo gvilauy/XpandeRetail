@@ -81,7 +81,7 @@ public class MZPautaComercialSet extends X_Z_PautaComercialSet {
             }
             BigDecimal pricePO = ppi.getPricePO();
             for (MZPautaComercialSetDto dto: dtos){
-                pricePO = pricePO.multiply(Env.ONE.subtract(dto.getDiscount().divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP))).setScale(ppi.getPrecisionDecimal(), BigDecimal.ROUND_HALF_UP);
+                pricePO = pricePO.multiply(Env.ONE.subtract(dto.getDiscount().divide(Env.ONEHUNDRED, 6, BigDecimal.ROUND_HALF_UP))).setScale(ppi.getPrecisionDecimal(), BigDecimal.ROUND_HALF_UP);
                 ppi.setSumPercentageDiscountsOC(ppi.getSumPercentageDiscountsOC().add(dto.getDiscount()));
             }
 
@@ -95,9 +95,13 @@ public class MZPautaComercialSet extends X_Z_PautaComercialSet {
             else{
                 ppi.setCascadeDiscountsFinal(false);
             }
-            BigDecimal priceFinal = ppi.getPricePO();
+            BigDecimal priceFinal = ppi.getPriceFinal();
+            if (priceFinal.compareTo(ppi.getPricePO()) > 0){
+                priceFinal = ppi.getPricePO();
+            }
+
             for (MZPautaComercialSetDto dtoPago: dtosPago){
-                priceFinal = priceFinal.multiply(Env.ONE.subtract(dtoPago.getDiscount().divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP))).setScale(ppi.getPrecisionDecimal(), BigDecimal.ROUND_HALF_UP);
+                priceFinal = priceFinal.multiply(Env.ONE.subtract(dtoPago.getDiscount().divide(Env.ONEHUNDRED, 6, BigDecimal.ROUND_HALF_UP))).setScale(ppi.getPrecisionDecimal(), BigDecimal.ROUND_HALF_UP);
                 ppi.setSumPercentageDiscountsFinal(ppi.getSumPercentageDiscountsFinal().add(dtoPago.getDiscount()));
             }
 

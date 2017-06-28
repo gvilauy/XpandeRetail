@@ -45,11 +45,13 @@ public class CalloutOrder extends CalloutEngine {
     public String product (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
     {
 
+        // Xpande. Gabriel Vila.
         // Llamo a callout para setear los datos : codigo de barras - codigo prod.prov - producto
         String message = upcVendProdNoProduct(ctx, WindowNo, mTab, mField, value);
         if (!message.equalsIgnoreCase("")){
             return  message;
         }
+        // Xpande.
 
 
         Integer M_Product_ID = (Integer)value;

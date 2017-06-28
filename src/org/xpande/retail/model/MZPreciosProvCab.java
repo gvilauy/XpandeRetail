@@ -276,6 +276,9 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
  			// Actualizo lista de precios de venta del documento para el producto de esta linea
 			this.updateProductPriceListSO(plVenta, plVersionVenta, line);
 
+			// Actualizo segmentos especiales en pauta comercial para el producto de esta linea
+			this.updateProductPautaComercial(line);
+
 			// Proceso información para asociaciones de producto, socio de negocio, distribuidores y organizaciones
 			// Primero para el socio de negocio del documento
 			this.setProductSocioOrgs(this.getC_BPartner_ID(), line, fechaHoy, plCompra, plVersionCompra, plVenta, plVersionVenta);
@@ -315,6 +318,54 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
+
+
+	/***
+	 * Actualiza pauta comercial, asociando el producto de la linea recibida con los segmentos especiales correspondientes.
+	 * Xpande. Created by Gabriel Vila on 6/27/17.
+	 * @param line
+	 */
+	private void updateProductPautaComercial(MZPreciosProvLin line) {
+
+		try{
+
+			// No hago nada si no tengo pauta comercial en este documento y si no tengo producto en la linea
+			if (this.getZ_PautaComercial_ID() <= 0) return;
+			if (line.getM_Product_ID() <= 0) return;
+
+			// Al producto de esta linea, le quito los segmentos espciales actualmente asociados
+			String action = " delete from " + I_Z_PautaComercialSetProd.Table_Name +
+					" where " + X_Z_PautaComercialSetProd.COLUMNNAME_M_Product_ID + " =" + line.getM_Product_ID() +
+					" and " + X_Z_PautaComercialSetProd.COLUMNNAME_Z_PautaComercialSet_ID +
+					" in (select z_pautacomercialset_id from z_pautacomercialset where z_pautacomercial_id =" + this.getZ_PautaComercial_ID() + ")";
+			DB.executeUpdateEx(action, get_TrxName());
+
+			// Asocio el producto de esta linea en los segmentos especiales 1 y 2 seleccionados
+			// Segmento especial 1
+			if (line.getZ_PautaComercialSet_ID_1() > 0){
+				MZPautaComercialSetProd pautaComercialSetProd = new MZPautaComercialSetProd(getCtx(), 0, get_TrxName());
+				pautaComercialSetProd = new MZPautaComercialSetProd(getCtx(), 0, get_TrxName());
+				pautaComercialSetProd.setZ_PautaComercialSet_ID(line.getZ_PautaComercialSet_ID_1());
+				pautaComercialSetProd.setM_Product_ID(line.getM_Product_ID());
+				pautaComercialSetProd.setUPC(line.getUPC());
+				pautaComercialSetProd.setVendorProductNo(line.getVendorProductNo());
+				pautaComercialSetProd.saveEx();
+			}
+			// Segmento especial 2
+			if (line.getZ_PautaComercialSet_ID_2() > 0){
+				MZPautaComercialSetProd pautaComercialSetProd = new MZPautaComercialSetProd(getCtx(), 0, get_TrxName());
+				pautaComercialSetProd = new MZPautaComercialSetProd(getCtx(), 0, get_TrxName());
+				pautaComercialSetProd.setZ_PautaComercialSet_ID(line.getZ_PautaComercialSet_ID_2());
+				pautaComercialSetProd.setM_Product_ID(line.getM_Product_ID());
+				pautaComercialSetProd.setUPC(line.getUPC());
+				pautaComercialSetProd.setVendorProductNo(line.getVendorProductNo());
+				pautaComercialSetProd.saveEx();
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+	}
 
 
 	/***
@@ -496,6 +547,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				line.setIsConfirmed(true);
 				line.setErrorMsg(null);
 			}
+			line.saveEx();
 		}
 
 		if (hayInconcistencias){
@@ -983,13 +1035,13 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				plinea.setOrgDifferentPricePO(productoSocio.isDistinctPricePO());
 
 				// Precios de compra
-				plinea.calculatePricesPO(priceListPO, this.getPrecisionPO(), (MZPautaComercial) this.getZ_PautaComercial());
+				plinea.calculatePricesPO(priceListPO, this.getPrecisionPO(), (MZPautaComercial) this.getZ_PautaComercial(), false);
 
 				// Precios de venta
 				plinea.calculatePricesSO(priceListSO, this.getPrecisionSO());
 
 				// Calculo y seteo márgenes de linea
-				plinea.calculateMargins();
+				plinea.calculateMargins(this.getRate());
 
 				plinea.saveEx();
 			}
@@ -1278,7 +1330,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 					// Precios de compra en nuevo producto
 					plinea.setOrgDifferentPricePO(false);
-					plinea.calculatePricesPO(lineaArchivo.getPriceList(), this.getPrecisionPO(), (MZPautaComercial) this.getZ_PautaComercial());
+					plinea.calculatePricesPO(lineaArchivo.getPriceList(), this.getPrecisionPO(), (MZPautaComercial) this.getZ_PautaComercial(), false);
 
 					// Precios de venta en nuevo producto
 					plinea.setOrgDifferentPriceSO(false);
@@ -1298,7 +1350,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 					plinea.setOrgDifferentPricePO(false);
 
 					// Precios de compra en producto existente
-					plinea.calculatePricesPO(lineaArchivo.getPriceList(), this.getPrecisionPO(), (MZPautaComercial) this.getZ_PautaComercial());
+					plinea.calculatePricesPO(lineaArchivo.getPriceList(), this.getPrecisionPO(), (MZPautaComercial) this.getZ_PautaComercial(), false);
 
 					// Precios de venta en producto existente
 					plinea.calculatePricesSO(lineaArchivo.getPriceSO(), this.getPrecisionSO());
@@ -1324,7 +1376,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				}
 
 				// Calculo y seteo márgenes de linea
-				plinea.calculateMargins();
+				plinea.calculateMargins(this.getRate());
 
 				plinea.saveEx();
 				lineaArchivo.setIsConfirmed(true);
@@ -1385,6 +1437,13 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 			// Seteo precisión decimal para precios de compra y venta
 			this.setPrecisionDecimal();
+
+			// Obtengo tasa de cambio de hoy para compra-venta multimoneda
+			if (this.getC_Currency_ID() != this.getC_Currency_ID_SO()){
+				Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+				BigDecimal rate = MConversionRate.getRate(this.getC_Currency_ID(), this.getC_Currency_ID_SO(), fechaHoy, 0, this.getAD_Client_ID(), 0);
+				this.setRate(rate.setScale(3, BigDecimal.ROUND_HALF_UP));
+			}
 
 			if (this.getM_PriceList_Version_ID_SO() <= 0){
 				MPriceList priceList = new MPriceList(getCtx(), this.getM_PriceList_ID_SO(), get_TrxName());
@@ -1517,10 +1576,10 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			for (MZPreciosProvLin preciosProvLin: preciosProvLins){
 
 				// Refresco valores de precio de compra de este linea
-				preciosProvLin.calculatePricesPO(preciosProvLin.getPriceList(), this.getPrecisionPO(), (MZPautaComercial) this.getZ_PautaComercial());
+				preciosProvLin.calculatePricesPO(preciosProvLin.getPriceList(), this.getPrecisionPO(), (MZPautaComercial) this.getZ_PautaComercial(), false);
 
 				// Calculo y seteo márgenes de linea
-				preciosProvLin.calculateMargins();
+				preciosProvLin.calculateMargins(this.getRate());
 
 				preciosProvLin.saveEx();
 			}
