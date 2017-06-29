@@ -61,13 +61,6 @@ public class MZPautaComercial extends X_Z_PautaComercial {
 
             ppi = this.calculatePrices(priceList, precisionDecimalCompra, zPautaComercialSetID_1, zPautaComercialSetID_2);
 
-            /*
-            // Obtengo segmentos especiales para el producto recibido, desde la asociación producto-socio
-            MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(getCtx(), this.getC_BPartner_ID(), mProductID, get_TrxName());
-            if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
-                return this.calculatePrices(priceList, precisionDecimalCompra, productoSocio.getZ_PautaComercialSet_ID_1(), productoSocio.getZ_PautaComercialSet_ID_2());
-            }
-            */
         }
         catch (Exception e){
             throw new AdempiereException(e);
