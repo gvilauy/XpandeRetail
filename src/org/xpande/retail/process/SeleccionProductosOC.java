@@ -17,22 +17,24 @@
 
 package org.xpande.retail.process;
 
-import org.xpande.retail.model.MZPautaComercialSet;
+import org.compiere.model.MOrder;
 
 import java.util.List;
 
-/** Generated Process for (Z_SeleccionProductosPauta)
+/** Generated Process for (Z_SeleccionProductosOrdenCompra)
  *  @author ADempiere (generated) 
  *  @version Release 3.9.0
  */
-public class SeleccionProductosPauta extends SeleccionProductosPautaAbstract
+public class SeleccionProductosOC extends SeleccionProductosOCAbstract
 {
-	private MZPautaComercialSet pautaComercialSet = null;
+
+	private MOrder order = null;
 
 	@Override
 	protected void prepare()
 	{
-		this.pautaComercialSet = new MZPautaComercialSet(getCtx(), this.getRecord_ID(), get_TrxName());
+
+		this.order = new MOrder(getCtx(), this.getRecord_ID(), get_TrxName());
 
 		super.prepare();
 	}
@@ -48,8 +50,8 @@ public class SeleccionProductosPauta extends SeleccionProductosPautaAbstract
 
 			int mProductId = getSelectionAsInt(key, "PP_M_Product_ID");
 
-			// Inserto producto en este segmento.
-			this.pautaComercialSet.insertProduct(mProductId);
+			// Inserto producto en nueva linea de orden de compra
+
 
 		});
 

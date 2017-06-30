@@ -113,4 +113,53 @@ public class MZPautaComercialSet extends X_Z_PautaComercialSet {
         }
     }
 
+
+    /***
+     * Inserta nuevo producto en este segmento según id de producto recibido.
+     * Xpande. Created by Gabriel Vila on 6/29/17.
+     * @param mProductID
+     */
+    public void insertProduct(int mProductID){
+
+        try{
+
+            // Si este segmento es general no hago nada
+            if (this.isGeneral()) return;
+
+            // Si el producto recibido ya existe en este segmento, no hago nada
+            MZPautaComercialSetProd pautaComercialSetProd = this.getSetProduct(mProductID);
+            if ((pautaComercialSetProd != null) && (pautaComercialSetProd.get_ID() > 0)){
+                return;
+            }
+
+            // Inserto producto en este segmento
+            pautaComercialSetProd = new MZPautaComercialSetProd(getCtx(), 0, get_TrxName());
+            pautaComercialSetProd.setZ_PautaComercialSet_ID(this.get_ID());
+            pautaComercialSetProd.setM_Product_ID(mProductID);
+            pautaComercialSetProd.saveEx();
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
+
+
+    /***
+     * Obtiene y retorna modelo de producto de este segmento para el id de producto recibido.
+     * Xpande. Created by Gabriel Vila on 6/29/17.
+     * @param mProductID
+     * @return
+     */
+    private MZPautaComercialSetProd getSetProduct(int mProductID) {
+
+        String whereClause = X_Z_PautaComercialSetProd.COLUMNNAME_Z_PautaComercialSet_ID + " =" + this.get_ID() +
+                " AND " + X_Z_PautaComercialSetProd.COLUMNNAME_M_Product_ID + " =" + mProductID;
+
+        MZPautaComercialSetProd model = new Query(getCtx(), I_Z_PautaComercialSetProd.Table_Name, whereClause, get_TrxName()).setOnlyActiveRecords(true).first();
+
+        return model;
+
+    }
+
 }

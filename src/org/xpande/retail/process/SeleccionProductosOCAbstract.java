@@ -17,42 +17,36 @@
 
 package org.xpande.retail.process;
 
-import org.xpande.retail.model.MZPautaComercialSet;
+import org.compiere.process.SvrProcess;
 
-import java.util.List;
-
-/** Generated Process for (Z_SeleccionProductosPauta)
+/** Generated Process for (Z_SeleccionProductosOrdenCompra)
  *  @author ADempiere (generated) 
  *  @version Release 3.9.0
  */
-public class SeleccionProductosPauta extends SeleccionProductosPautaAbstract
-{
-	private MZPautaComercialSet pautaComercialSet = null;
+public abstract class SeleccionProductosOCAbstract extends SvrProcess {
+	/** Process Value 	*/
+	private static final String VALUE_FOR_PROCESS = "Z_SeleccionProductosOrdenCompra";
+	/** Process Name 	*/
+	private static final String NAME_FOR_PROCESS = "Z_SeleccionProductosOrdenCompra";
+	/** Process Id 	*/
+	private static final int ID_FOR_PROCESS = 1000009;
 
 	@Override
-	protected void prepare()
-	{
-		this.pautaComercialSet = new MZPautaComercialSet(getCtx(), this.getRecord_ID(), get_TrxName());
-
-		super.prepare();
+	protected void prepare() {
 	}
 
-	@Override
-	protected String doIt() throws Exception
-	{
+	/**	 Getter Parameter Value for Process ID	*/
+	public static final int getProcessId() {
+		return ID_FOR_PROCESS;
+	}
 
-		List<Integer> recordIds =  getSelectionKeys();
+	/**	 Getter Parameter Value for Process Value	*/
+	public static final String getProcessValue() {
+		return VALUE_FOR_PROCESS;
+	}
 
-		//	Recorro filas de selección de productos que fueron seleccionadas por el usuario
-		recordIds.stream().forEach( key -> {
-
-			int mProductId = getSelectionAsInt(key, "PP_M_Product_ID");
-
-			// Inserto producto en este segmento.
-			this.pautaComercialSet.insertProduct(mProductId);
-
-		});
-
-		return "";
+	/**	 Getter Parameter Value for Process Name	*/
+	public static final String getProcessName() {
+		return NAME_FOR_PROCESS;
 	}
 }
