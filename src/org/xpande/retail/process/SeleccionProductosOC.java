@@ -17,8 +17,15 @@
 
 package org.xpande.retail.process;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
 import org.compiere.model.MOrder;
+import org.compiere.model.MOrderLine;
+import org.compiere.model.MProduct;
+import org.compiere.util.Env;
+import org.xpande.retail.model.MProductPricing;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /** Generated Process for (Z_SeleccionProductosOrdenCompra)
@@ -43,18 +50,78 @@ public class SeleccionProductosOC extends SeleccionProductosOCAbstract
 	protected String doIt() throws Exception
 	{
 
-		List<Integer> recordIds =  getSelectionKeys();
+		try{
 
-		//	Recorro filas de selección de productos que fueron seleccionadas por el usuario
-		recordIds.stream().forEach( key -> {
+			List<Integer> recordIds =  getSelectionKeys();
 
-			int mProductId = getSelectionAsInt(key, "PP_M_Product_ID");
+			//	Recorro filas de selección de productos que fueron seleccionadas por el usuario
+			recordIds.stream().forEach( key -> {
 
-			// Inserto producto en nueva linea de orden de compra
+				int mProductId = getSelectionAsInt(key, "PP_M_Product_ID");
 
+				MProduct prod = new MProduct(getCtx(), mProductId, get_TrxName());
 
-		});
+				// Inserto producto en nueva linea de orden de compra
+				MOrderLine orderLine = new MOrderLine(order);
+				orderLine.setM_Product_ID(mProductId);
+				orderLine.setQtyEntered(Env.ONE);
+				orderLine.setQtyOrdered(Env.ONE);
+				orderLine.setC_UOM_ID(prod.getC_UOM_ID());
+
+				MProductPricing productPricing = this.getProductPricing(orderLine);
+				if (productPricing == null){
+					throw new AdempiereException("No se pudo calcular precios y montos para el producto : " + prod.getValue() + " - " + prod.getName());
+				}
+
+				orderLine.setPriceActual(productPricing.getPriceStd());
+				orderLine.setPriceList(productPricing.getPriceList());
+				orderLine.setPriceLimit(productPricing.getPriceLimit());
+				//
+				if (orderLine.getQtyEntered().compareTo(orderLine.getQtyOrdered()) == 0)
+					orderLine.setPriceEntered(orderLine.getPriceActual());
+				else
+					orderLine.setPriceEntered(orderLine.getPriceActual().multiply(orderLine.getQtyOrdered()
+							.divide(orderLine.getQtyEntered(), 12, BigDecimal.ROUND_HALF_UP)));	//	recision
+
+				//	Calculate Discount
+				orderLine.setDiscount(productPricing.getDiscount());
+
+				//	Set UOM
+				if(orderLine.getC_UOM_ID() == 0 ){
+					orderLine.setC_UOM_ID(productPricing.getC_UOM_ID());
+				}
+				orderLine.saveEx();
+
+			});
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
 
 		return "";
+	}
+
+	/**
+	 * 	Get and calculate Product Pricing
+	 *	@param orderLine
+	 *	@return product pricing
+	 */
+	private MProductPricing getProductPricing (MOrderLine orderLine)
+	{
+		MProductPricing productPricing = null;
+
+		try{
+			productPricing = new MProductPricing (orderLine.getM_Product_ID(), this.order.getC_BPartner_ID(), orderLine.getQtyOrdered(), false, null);
+			productPricing.setM_PriceList_ID(this.order.getM_PriceList_ID());
+			productPricing.setPriceDate(this.order.getDateOrdered());
+
+			productPricing.calculatePrice();
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+		return productPricing;
 	}
 }
