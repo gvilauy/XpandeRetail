@@ -715,9 +715,11 @@ public class CalloutInvoice extends CalloutEngine
 			if (!isTaxIncluded(WindowNo)){
 				//	Add it up
 				mTab.setValue("LineTotalAmt", LineNetAmt.add(TaxAmt));
+				mTab.setValue("AmtSubtotal", LineNetAmt);
 			}
 			else{
 				mTab.setValue("LineTotalAmt", LineNetAmt);
+				mTab.setValue("AmtSubtotal", LineNetAmt.subtract(TaxAmt));
 			}
 			// Xpande
 

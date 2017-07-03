@@ -2,6 +2,7 @@ package org.xpande.retail.model;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.xpande.core.model.MZSocioListaPrecio;
@@ -310,6 +311,27 @@ public class MZPautaComercial extends X_Z_PautaComercial {
         }
 
         return message;
+    }
+
+    /***
+     * Actualizo lista de productos en esta pauta comercial y en sus segmentos.
+     * Xpande. Created by Gabriel Vila on 6/30/17.
+     * @param zLineaProductoSocioID
+     */
+    public void updateLineaProducto(int zLineaProductoSocioID) {
+
+        try{
+            this.setZ_LineaProductoSocio_ID(zLineaProductoSocioID);
+            this.saveEx();
+
+            String action = " update z_pautacomercialset set z_lineaproductosocio_id =" + zLineaProductoSocioID +
+                    " where z_pautacomercial_id =" + this.get_ID();
+            DB.executeUpdateEx(action, get_TrxName());
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
     }
 
 }

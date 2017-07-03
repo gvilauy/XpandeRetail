@@ -67,6 +67,7 @@ public class CalloutOrder extends CalloutEngine {
             mTab.setValue("PriceEntered", new BigDecimal(0));
             mTab.setValue("C_Currency_ID", null);
             mTab.setValue("Discount", new BigDecimal(0));
+            mTab.setValue("Discount2", new BigDecimal(0));
             mTab.setValue("C_UOM_ID", null);
             return "";
         }
@@ -219,6 +220,7 @@ public class CalloutOrder extends CalloutEngine {
                 mTab.setValue ("PriceLimit", Env.ZERO);
                 mTab.setValue ("PriceList", Env.ZERO);
                 mTab.setValue ("Discount", Env.ZERO);
+                mTab.setValue ("Discount2", Env.ZERO);
             }
         }
         catch (SQLException e)

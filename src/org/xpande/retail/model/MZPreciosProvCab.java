@@ -232,22 +232,25 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 
-		// Obtengo modelo para linea de productos del socio, si es nueva la creo en este momento
+		// Obtengo modelo para linea de productos del socio, si es nueva la creo en este momento y la asocio al socio del documento.
 		MZLineaProductoSocio lineaProductoSocio = null;
 		if (this.getZ_LineaProductoSocio_ID() > 0){
 			lineaProductoSocio = (MZLineaProductoSocio) this.getZ_LineaProductoSocio();
 		}
 		else{
+			// Nueva linea, la creo y la asocio al socio de negocios de este documento
 			lineaProductoSocio = new MZLineaProductoSocio(getCtx(), 0, get_TrxName());
 			lineaProductoSocio.setC_BPartner_ID(this.getC_BPartner_ID());
 			lineaProductoSocio.setName(this.getNombreLineaManual());
+			lineaProductoSocio.setIsOwn(true);
+			lineaProductoSocio.setIsLockedPO(false);
 			lineaProductoSocio.saveEx();
 			this.setZ_LineaProductoSocio_ID(lineaProductoSocio.get_ID());
 
-			// Si tengo pauta comercial, le asocio la nueva linea de productos en este momento
+			// Si tengo pauta comercial, le asocio la nueva linea de productos en este momento y aplico
 			if (this.getZ_PautaComercial_ID() > 0){
 				MZPautaComercial pautaComercial = (MZPautaComercial)this.getZ_PautaComercial();
-				pautaComercial.setZ_LineaProductoSocio_ID(this.getZ_LineaProductoSocio_ID());
+				pautaComercial.updateLineaProducto(this.getZ_LineaProductoSocio_ID());
 				m_processMsg = pautaComercial.applyPauta(false);
 				if (m_processMsg != null){
 					return DocAction.STATUS_Invalid;
@@ -281,24 +284,34 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 			// Proceso información para asociaciones de producto, socio de negocio, distribuidores y organizaciones
 			// Primero para el socio de negocio del documento
-			this.setProductSocioOrgs(this.getC_BPartner_ID(), line, fechaHoy, plCompra, plVersionCompra, plVenta, plVersionVenta);
+			this.setProductSocioOrgs(this.getC_BPartner_ID(), this.getZ_LineaProductoSocio_ID(), line, fechaHoy, plCompra, plVersionCompra, plVenta, plVersionVenta);
 
 			// Luego para los ditribuidores del socio de negocio del documento
 			List<MZPreciosProvDistri> distris = this.getDistribuidores();
-			for (MZPreciosProvDistri distri: distris){
+			for (MZPreciosProvDistri preciosProvDistri: distris){
 
-				this.setProductSocioOrgs(distri.getC_BPartner_ID(), line, fechaHoy, plCompra, plVersionCompra, plVenta, plVersionVenta);
-
-				// Si el distribuidor es nuevo (en este documento se pueden asociar nuevos distribuidores al socio
-				if (distri.isManualRecord()){
-					MZLineaProductoDistri lineaProductoDistri = MZLineaProductoDistri.getByLineaDistri(getCtx(), this.getZ_LineaProductoSocio_ID(), distri.getC_BPartner_ID(), get_TrxName());
-					if ((lineaProductoDistri == null) || (lineaProductoDistri.get_ID() <= 0)){
-						lineaProductoDistri = new MZLineaProductoDistri(getCtx(), 0, get_TrxName());
-						lineaProductoDistri.setZ_LineaProductoSocio_ID(this.getZ_LineaProductoSocio_ID());
-						lineaProductoDistri.setC_BPartner_ID(distri.getC_BPartner_ID());
-						lineaProductoDistri.saveEx();
-					}
+				// Obtengo o creo distribuidor del socio de negocio del documento
+				MZLineaProductoDistri lineaProductoDistri = null;
+				if (preciosProvDistri.getZ_LineaProductoDistri_ID() > 0){
+					lineaProductoDistri = (MZLineaProductoDistri) preciosProvDistri.getZ_LineaProductoDistri();
 				}
+				else{
+					lineaProductoDistri = new MZLineaProductoDistri(getCtx(), 0, get_TrxName());
+					lineaProductoDistri.setZ_LineaProductoSocio_ID(this.getZ_LineaProductoSocio_ID());
+					lineaProductoDistri.setC_BPartner_ID(preciosProvDistri.getC_BPartner_ID());
+					lineaProductoDistri.setIsLockedPO(false);
+					lineaProductoDistri.setLineaProductoDistribuidor();
+					lineaProductoDistri.saveEx();
+					preciosProvDistri.setZ_LineaProductoDistri_ID(lineaProductoDistri.get_ID());
+					preciosProvDistri.saveEx();
+				}
+
+				// Actualizo precios de compra de este producto en lista de precios de compra del distribuidor
+				lineaProductoDistri.updateProductPriceListPO(this.getC_Currency_ID(), line.getM_Product_ID(), line.getPriceList());
+
+				// Asocio producto a distribuidor y organizaciones
+				this.setProductSocioOrgs(lineaProductoDistri.getC_BPartner_ID(), lineaProductoDistri.getZ_LineaProductoSocioRelated_ID(), line, fechaHoy,
+						lineaProductoDistri.getPlCompra(), lineaProductoDistri.getPlVersionCompra(), plVenta, plVersionVenta);
 			}
 
 			line.saveEx();
@@ -450,7 +463,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 		try{
 
-			// Si tengo lista seleccionada, retorno esa.
+			// Si tengo lista seleccionada, no hago nada.
 			if (this.getM_PriceList_ID() > 0){
 				return;
 			}
@@ -562,6 +575,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 	 * Setea información para la asociación de producto, socio de negocio, y organizaciones.
 	 * Xpande. Created by Gabriel Vila on 6/21/17.
 	 * @param cBPartnerID
+	 * @param zLineaProductoSocioID
 	 * @param line
 	 * @param fechaHoy
 	 * @param plCompra
@@ -569,22 +583,24 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 	 * @param plVenta
 	 * @param plVersionVenta
 	 */
-	private void setProductSocioOrgs(int cBPartnerID, MZPreciosProvLin line, Timestamp fechaHoy,
+	private void setProductSocioOrgs(int cBPartnerID, int zLineaProductoSocioID, MZPreciosProvLin line, Timestamp fechaHoy,
 									 MPriceList plCompra, MPriceListVersion plVersionCompra,
 									 MPriceList plVenta, MPriceListVersion plVersionVenta) {
 
 		try{
 
+			String action = "";
+
 			// Si es la primera vez que proceso precios de este proveedor para este producto, creo la asociación.
 			// Si ya ha tenido compras, entonces obtengo modelo de la asociación
-			MZProductoSocio prodbp = MZProductoSocio.getByBPartnerProduct(getCtx(), this.getC_BPartner_ID(), line.getM_Product_ID(), get_TrxName());
+			MZProductoSocio prodbp = MZProductoSocio.getByBPartnerProduct(getCtx(), cBPartnerID, line.getM_Product_ID(), get_TrxName());
 			if (prodbp == null){
 				prodbp = new MZProductoSocio(getCtx(), 0, get_TrxName());
 				prodbp.setM_Product_ID(line.getM_Product_ID());
-				prodbp.setC_BPartner_ID(this.getC_BPartner_ID());
+				prodbp.setC_BPartner_ID(cBPartnerID);
 				prodbp.setDateValidPO(fechaHoy);
 				prodbp.setDateValidSO(fechaHoy);
-				prodbp.setZ_LineaProductoSocio_ID(this.getZ_LineaProductoSocio_ID());
+				prodbp.setZ_LineaProductoSocio_ID(zLineaProductoSocioID);
 				prodbp.setPriceList(line.getPriceList());
 				prodbp.setPriceSO(line.getNewPriceSO());
 			}
@@ -618,12 +634,67 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				prodbp.setZ_PautaComercial_ID(this.getZ_PautaComercial_ID());
 				prodbp.setTotalDiscountsPO(line.getTotalDiscountsPO());
 				prodbp.setTotalDiscountsFinal(line.getTotalDiscountsFinal());
-				if (line.getZ_PautaComercialSet_ID_Gen() > 0) prodbp.setZ_PautaComercialSet_ID_Gen(line.getZ_PautaComercialSet_ID_Gen());
-				if (line.getZ_PautaComercialSet_ID_1() > 0) prodbp.setZ_PautaComercialSet_ID_1(line.getZ_PautaComercialSet_ID_1());
-				if (line.getZ_PautaComercialSet_ID_2() > 0) prodbp.setZ_PautaComercialSet_ID_2(line.getZ_PautaComercialSet_ID_2());
+
+				if (line.getZ_PautaComercialSet_ID_Gen() > 0){
+					prodbp.setZ_PautaComercialSet_ID_Gen(line.getZ_PautaComercialSet_ID_Gen());
+				}
+				else{
+					prodbp.setZ_PautaComercialSet_ID_Gen(0);
+				}
+				if (line.getZ_PautaComercialSet_ID_1() > 0){
+					prodbp.setZ_PautaComercialSet_ID_1(line.getZ_PautaComercialSet_ID_1());
+				}
+				else{
+					prodbp.setZ_PautaComercialSet_ID_1(0);
+				}
+				if (line.getZ_PautaComercialSet_ID_2() > 0){
+					prodbp.setZ_PautaComercialSet_ID_2(line.getZ_PautaComercialSet_ID_2());
+				}
+				else{
+					prodbp.setZ_PautaComercialSet_ID_2(0);
+				}
+			}
+			else{
+				prodbp.setZ_PautaComercial_ID(0);
+				prodbp.setTotalDiscountsPO(null);
+				prodbp.setTotalDiscountsFinal(null);
+				prodbp.setZ_PautaComercialSet_ID_Gen(0);
+				prodbp.setZ_PautaComercialSet_ID_1(0);
+				prodbp.setZ_PautaComercialSet_ID_2(0);
 			}
 
 			prodbp.saveEx();
+
+			// No dejo ids de pauta en cero en el producto-socio
+			if (prodbp.getZ_PautaComercial_ID() == 0){
+				action = " update z_productosocio set z_pautacomercial_id = null, z_pautacomercialset_id_gen = null, " +
+						 " z_pautacomercialset_id_1 = null, z_pautacomercialset_id_2 = null " +
+						 " where z_productosocio_id =" + prodbp.get_ID();
+				DB.executeUpdateEx(action, get_TrxName());
+			}
+			else{
+				boolean infoPautaCero = false;
+				String setInfo = "";
+				if (prodbp.getZ_PautaComercialSet_ID_Gen() == 0){
+					infoPautaCero = true;
+					setInfo = " z_pautacomercialset_id_gen = null ";
+				}
+				if (prodbp.getZ_PautaComercialSet_ID_1() == 0){
+					infoPautaCero = true;
+					if (!setInfo.equalsIgnoreCase("")) setInfo = setInfo + ", ";
+					setInfo = setInfo + " z_pautacomercialset_id_1 = null ";
+				}
+				if (prodbp.getZ_PautaComercialSet_ID_2() == 0){
+					infoPautaCero = true;
+					if (!setInfo.equalsIgnoreCase("")) setInfo = setInfo + ", ";
+					setInfo = setInfo + " z_pautacomercialset_id_2 = null ";
+				}
+				if (infoPautaCero){
+					action = " update z_productosocio set " + setInfo +
+							" where z_productosocio_id =" + prodbp.get_ID();
+					DB.executeUpdateEx(action, get_TrxName());
+				}
+			}
 
 			// Proceso cada organización seleccionada para procesar
 			List<MZPreciosProvOrg> pporgs = this.getOrgsSelected();
@@ -1432,11 +1503,18 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 		if (!success) return false;
 
+		// Si es nuevo registro o modifico linea de productos del socio
+		if (newRecord || is_ValueChanged(X_Z_PreciosProvCab.COLUMNNAME_Z_LineaProductoSocio_ID)){
+			// Cargo distribuidores del socio de negocio de este documento
+			this.setDistribuidores();
+		}
+
 		// En caso de nuevo registro
 		if (newRecord){
 
 			// Seteo precisión decimal para precios de compra y venta
 			this.setPrecisionDecimal();
+
 
 			// Obtengo tasa de cambio de hoy para compra-venta multimoneda
 			if (this.getC_Currency_ID() != this.getC_Currency_ID_SO()){
@@ -1489,6 +1567,34 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		}
 
 		return true;
+	}
+
+
+	/***
+	 * Setea distribuidores del socio de negocio de este documento.
+	 * Xpande. Created by Gabriel Vila on 7/2/17.
+	 */
+	private void setDistribuidores() {
+
+		try{
+			// Si tengo linea de productos (no estoy creando una nueva)
+			if (this.getZ_LineaProductoSocio_ID() > 0){
+				// Obtengo distribuidores de esta linea de negocio y los seteo en este documento para procesarlos
+				MZLineaProductoSocio lineaProductoSocio = (MZLineaProductoSocio) this.getZ_LineaProductoSocio();
+				List<MZLineaProductoDistri> distris = lineaProductoSocio.getDistribuidores();
+				for (MZLineaProductoDistri lineaProductoDistri: distris){
+					MZPreciosProvDistri preciosProvDistri = new MZPreciosProvDistri(getCtx(), 0, get_TrxName());
+					preciosProvDistri.setZ_PreciosProvCab_ID(this.get_ID());
+					preciosProvDistri.setZ_LineaProductoDistri_ID(lineaProductoDistri.get_ID());
+					preciosProvDistri.setC_BPartner_ID(lineaProductoDistri.getC_BPartner_ID());
+					preciosProvDistri.setIsManualRecord(false);
+					preciosProvDistri.saveEx();
+				}
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
 	}
 
 
@@ -1591,4 +1697,5 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 		return message;
 	}
+
 }

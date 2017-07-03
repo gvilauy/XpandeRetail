@@ -23,7 +23,9 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProduct;
 import org.compiere.util.Env;
+import org.xpande.core.model.MZProductoUPC;
 import org.xpande.retail.model.MProductPricing;
+import org.xpande.retail.model.MZProductoSocio;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -90,6 +92,21 @@ public class SeleccionProductosOC extends SeleccionProductosOCAbstract
 				if(orderLine.getC_UOM_ID() == 0 ){
 					orderLine.setC_UOM_ID(productPricing.getC_UOM_ID());
 				}
+
+				// Si tengo codigo de barras del producto, lo inserto en la linea
+				MZProductoUPC productoUPC = MZProductoUPC.getByProduct(getCtx(), mProductId, null);
+				if ((productoUPC != null) && (productoUPC.get_ID() > 0)){
+					orderLine.set_ValueOfColumn("UPC", productoUPC.getUPC());
+				}
+
+				// Si tengo codigo de producto del proveedor, lo inserto en la linea
+				MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(getCtx(), this.order.getC_BPartner_ID(), mProductId, null);
+				if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+					if (productoSocio.getVendorProductNo() != null){
+						orderLine.set_ValueOfColumn("VendorProductNo", productoSocio.getVendorProductNo());
+					}
+				}
+
 				orderLine.saveEx();
 
 			});
@@ -116,7 +133,7 @@ public class SeleccionProductosOC extends SeleccionProductosOCAbstract
 			productPricing.setM_PriceList_ID(this.order.getM_PriceList_ID());
 			productPricing.setPriceDate(this.order.getDateOrdered());
 
-			productPricing.calculatePrice();
+			productPricing.calculatePrice(null);
 
 		}
 		catch (Exception e){

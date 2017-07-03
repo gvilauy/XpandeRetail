@@ -136,6 +136,17 @@ public interface I_Z_PreciosProvDistri
 	  */
 	public int getUpdatedBy();
 
+    /** Column name Z_LineaProductoDistri_ID */
+    public static final String COLUMNNAME_Z_LineaProductoDistri_ID = "Z_LineaProductoDistri_ID";
+
+	/** Set Z_LineaProductoDistri ID	  */
+	public void setZ_LineaProductoDistri_ID(int Z_LineaProductoDistri_ID);
+
+	/** Get Z_LineaProductoDistri ID	  */
+	public int getZ_LineaProductoDistri_ID();
+
+	public I_Z_LineaProductoDistri getZ_LineaProductoDistri() throws RuntimeException;
+
     /** Column name Z_PreciosProvCab_ID */
     public static final String COLUMNNAME_Z_PreciosProvCab_ID = "Z_PreciosProvCab_ID";
 

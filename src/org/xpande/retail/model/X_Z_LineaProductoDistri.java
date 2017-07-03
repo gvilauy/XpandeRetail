@@ -30,7 +30,7 @@ public class X_Z_LineaProductoDistri extends PO implements I_Z_LineaProductoDist
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170621L;
+	private static final long serialVersionUID = 20170702L;
 
     /** Standard Constructor */
     public X_Z_LineaProductoDistri (Properties ctx, int Z_LineaProductoDistri_ID, String trxName)
@@ -39,6 +39,8 @@ public class X_Z_LineaProductoDistri extends PO implements I_Z_LineaProductoDist
       /** if (Z_LineaProductoDistri_ID == 0)
         {
 			setC_BPartner_ID (0);
+			setIsLockedPO (false);
+// N
 			setZ_LineaProductoDistri_ID (0);
 			setZ_LineaProductoSocio_ID (0);
         } */
@@ -100,6 +102,30 @@ public class X_Z_LineaProductoDistri extends PO implements I_Z_LineaProductoDist
 		return ii.intValue();
 	}
 
+	/** Set IsLockedPO.
+		@param IsLockedPO 
+		Si esta bloqueado para compras o no
+	  */
+	public void setIsLockedPO (boolean IsLockedPO)
+	{
+		set_Value (COLUMNNAME_IsLockedPO, Boolean.valueOf(IsLockedPO));
+	}
+
+	/** Get IsLockedPO.
+		@return Si esta bloqueado para compras o no
+	  */
+	public boolean isLockedPO () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsLockedPO);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Z_LineaProductoDistri ID.
 		@param Z_LineaProductoDistri_ID Z_LineaProductoDistri ID	  */
 	public void setZ_LineaProductoDistri_ID (int Z_LineaProductoDistri_ID)
@@ -140,6 +166,34 @@ public class X_Z_LineaProductoDistri extends PO implements I_Z_LineaProductoDist
 	public int getZ_LineaProductoSocio_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_LineaProductoSocio_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_LineaProductoSocio getZ_LineaProductoSocioRelated() throws RuntimeException
+    {
+		return (I_Z_LineaProductoSocio)MTable.get(getCtx(), I_Z_LineaProductoSocio.Table_Name)
+			.getPO(getZ_LineaProductoSocioRelated_ID(), get_TrxName());	}
+
+	/** Set Z_LineaProductoSocioRelated_ID.
+		@param Z_LineaProductoSocioRelated_ID 
+		Linea de producto relacionada de otro socio de negocio
+	  */
+	public void setZ_LineaProductoSocioRelated_ID (int Z_LineaProductoSocioRelated_ID)
+	{
+		if (Z_LineaProductoSocioRelated_ID < 1) 
+			set_Value (COLUMNNAME_Z_LineaProductoSocioRelated_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_LineaProductoSocioRelated_ID, Integer.valueOf(Z_LineaProductoSocioRelated_ID));
+	}
+
+	/** Get Z_LineaProductoSocioRelated_ID.
+		@return Linea de producto relacionada de otro socio de negocio
+	  */
+	public int getZ_LineaProductoSocioRelated_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_LineaProductoSocioRelated_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

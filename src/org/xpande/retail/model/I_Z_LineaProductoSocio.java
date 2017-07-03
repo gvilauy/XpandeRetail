@@ -78,6 +78,21 @@ public interface I_Z_LineaProductoSocio
 
 	public I_C_BPartner getC_BPartner() throws RuntimeException;
 
+    /** Column name C_BPartnerRelation_ID */
+    public static final String COLUMNNAME_C_BPartnerRelation_ID = "C_BPartnerRelation_ID";
+
+	/** Set Related Partner.
+	  * Related Business Partner
+	  */
+	public void setC_BPartnerRelation_ID(int C_BPartnerRelation_ID);
+
+	/** Get Related Partner.
+	  * Related Business Partner
+	  */
+	public int getC_BPartnerRelation_ID();
+
+	public I_C_BPartner getC_BPartnerRelation() throws RuntimeException;
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -120,6 +135,32 @@ public interface I_Z_LineaProductoSocio
 	  */
 	public boolean isActive();
 
+    /** Column name IsLockedPO */
+    public static final String COLUMNNAME_IsLockedPO = "IsLockedPO";
+
+	/** Set IsLockedPO.
+	  * Si esta bloqueado para compras o no
+	  */
+	public void setIsLockedPO(boolean IsLockedPO);
+
+	/** Get IsLockedPO.
+	  * Si esta bloqueado para compras o no
+	  */
+	public boolean isLockedPO();
+
+    /** Column name IsOwn */
+    public static final String COLUMNNAME_IsOwn = "IsOwn";
+
+	/** Set IsOwn.
+	  * Si le pertenece o no
+	  */
+	public void setIsOwn(boolean IsOwn);
+
+	/** Get IsOwn.
+	  * Si le pertenece o no
+	  */
+	public boolean isOwn();
+
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
 
@@ -157,4 +198,19 @@ public interface I_Z_LineaProductoSocio
 
 	/** Get Z_LineaProductoSocio ID	  */
 	public int getZ_LineaProductoSocio_ID();
+
+    /** Column name Z_LineaProductoSocioRelated_ID */
+    public static final String COLUMNNAME_Z_LineaProductoSocioRelated_ID = "Z_LineaProductoSocioRelated_ID";
+
+	/** Set Z_LineaProductoSocioRelated_ID.
+	  * Linea de producto relacionada de otro socio de negocio
+	  */
+	public void setZ_LineaProductoSocioRelated_ID(int Z_LineaProductoSocioRelated_ID);
+
+	/** Get Z_LineaProductoSocioRelated_ID.
+	  * Linea de producto relacionada de otro socio de negocio
+	  */
+	public int getZ_LineaProductoSocioRelated_ID();
+
+	public I_Z_LineaProductoSocio getZ_LineaProductoSocioRelated() throws RuntimeException;
 }

@@ -30,7 +30,7 @@ public class X_Z_PreciosProvDistri extends PO implements I_Z_PreciosProvDistri, 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170619L;
+	private static final long serialVersionUID = 20170702L;
 
     /** Standard Constructor */
     public X_Z_PreciosProvDistri (Properties ctx, int Z_PreciosProvDistri_ID, String trxName)
@@ -39,7 +39,8 @@ public class X_Z_PreciosProvDistri extends PO implements I_Z_PreciosProvDistri, 
       /** if (Z_PreciosProvDistri_ID == 0)
         {
 			setC_BPartner_ID (0);
-			setIsManualRecord (false);
+			setIsManualRecord (true);
+// Y
 			setZ_PreciosProvCab_ID (0);
 			setZ_PreciosProvDistri_ID (0);
         } */
@@ -123,6 +124,31 @@ public class X_Z_PreciosProvDistri extends PO implements I_Z_PreciosProvDistri, 
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	public I_Z_LineaProductoDistri getZ_LineaProductoDistri() throws RuntimeException
+    {
+		return (I_Z_LineaProductoDistri)MTable.get(getCtx(), I_Z_LineaProductoDistri.Table_Name)
+			.getPO(getZ_LineaProductoDistri_ID(), get_TrxName());	}
+
+	/** Set Z_LineaProductoDistri ID.
+		@param Z_LineaProductoDistri_ID Z_LineaProductoDistri ID	  */
+	public void setZ_LineaProductoDistri_ID (int Z_LineaProductoDistri_ID)
+	{
+		if (Z_LineaProductoDistri_ID < 1) 
+			set_Value (COLUMNNAME_Z_LineaProductoDistri_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_LineaProductoDistri_ID, Integer.valueOf(Z_LineaProductoDistri_ID));
+	}
+
+	/** Get Z_LineaProductoDistri ID.
+		@return Z_LineaProductoDistri ID	  */
+	public int getZ_LineaProductoDistri_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_LineaProductoDistri_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	public I_Z_PreciosProvCab getZ_PreciosProvCab() throws RuntimeException

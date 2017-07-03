@@ -110,7 +110,7 @@ public class MProductPricing
 	 * 	Calculate Price
 	 * 	@return true if calculated
 	 */
-	public boolean calculatePrice ()
+	public boolean calculatePrice (BigDecimal manualDiscount)
 	{
 		if (productId == 0
 			|| (found != null && !found.booleanValue()))	//	previously not found
@@ -150,7 +150,7 @@ public class MProductPricing
 			setBaseInfo();
 		//	User based Discount
 		if (calculated && !vendorBreak)
-			calculateDiscount();
+			calculateDiscount(manualDiscount);
 		setPrecision();		//	from Price List
 		//
 		found = new Boolean (calculated);
@@ -686,7 +686,7 @@ public class MProductPricing
 	/**************************************************************************
 	 * 	Calculate (Business Partner) Discount
 	 */
-	private void calculateDiscount()
+	private void calculateDiscount(BigDecimal manualDiscount)
 	{
 		discountSchema = false;
 		if (partnerId == 0 || productId == 0)
@@ -877,7 +877,7 @@ public class MProductPricing
 	public int getC_UOM_ID()
 	{
 		if (!calculated)
-			calculatePrice();
+			calculatePrice(null);
 		return uomId;
 	}
 	
@@ -888,7 +888,7 @@ public class MProductPricing
 	public BigDecimal getPriceList()
 	{
 		if (!calculated)
-			calculatePrice();
+			calculatePrice(null);
 		return round(priceList);
 	}
 	/**
@@ -898,7 +898,7 @@ public class MProductPricing
 	public BigDecimal getPriceStd()
 	{
 		if (!calculated)
-			calculatePrice();
+			calculatePrice(null);
 		return round(priceStd);
 	}
 	/**
@@ -908,7 +908,7 @@ public class MProductPricing
 	public BigDecimal getPriceLimit()
 	{
 		if (!calculated)
-			calculatePrice();
+			calculatePrice(null);
 		return round(priceLimit);
 	}
 	/**
@@ -918,7 +918,7 @@ public class MProductPricing
 	public int getC_Currency_ID()
 	{
 		if (!calculated)
-			calculatePrice();
+			calculatePrice(null);
 		return currencyId;
 	}
 	/**
@@ -928,7 +928,7 @@ public class MProductPricing
 	public boolean isEnforcePriceLimit()
 	{
 		if (!calculated)
-			calculatePrice();
+			calculatePrice(null);
 		return isEnforcePriceLimit;
 	}	//	isEnforcePriceLimit
 
