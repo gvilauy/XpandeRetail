@@ -83,6 +83,21 @@ public class MZProductoSocio extends X_Z_ProductoSocio {
 
 
     /***
+     * Obtiene y retorna lista de organizaciones asociadas a este producto-socio.
+     * Xpande. Created by Gabriel Vila on 7/2/17.
+     * @return
+     */
+    public List<MZProductoSocioOrg> getOrgs() {
+
+        String whereClause = X_Z_ProductoSocioOrg.COLUMNNAME_Z_ProductoSocio_ID + " =" + this.get_ID();
+
+        List<MZProductoSocioOrg> lines = new Query(getCtx(), I_Z_ProductoSocioOrg.Table_Name, whereClause, get_TrxName()).list();
+
+        return lines;
+    }
+
+
+    /***
      * Obtiene y retorna lista de este modelo para un socio y una linea de productos recibidos.
      * Xpande. Created by Gabriel Vila on 6/22/17.
      * @param ctx

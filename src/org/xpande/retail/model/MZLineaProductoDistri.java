@@ -46,7 +46,7 @@ public class MZLineaProductoDistri extends X_Z_LineaProductoDistri {
             lineaProductoSocio.setC_BPartner_ID(this.getC_BPartner_ID());
             lineaProductoSocio.setName(lineaProductoSocioPadre.getName());
             lineaProductoSocio.setIsOwn(false);
-            lineaProductoSocio.setC_BPartnerRelation_ID(lineaProductoSocio.getC_BPartner_ID());
+            lineaProductoSocio.setC_BPartnerRelation_ID(lineaProductoSocioPadre.getC_BPartner_ID());
             lineaProductoSocio.setZ_LineaProductoSocioRelated_ID(lineaProductoSocioPadre.get_ID());
             lineaProductoSocio.setIsLockedPO(false);
             lineaProductoSocio.saveEx();
@@ -84,7 +84,7 @@ public class MZLineaProductoDistri extends X_Z_LineaProductoDistri {
                 MBPartner bp = (MBPartner) this.getC_BPartner();
                 MCurrency cur = new MCurrency(getCtx(), cCurrencyID, null);
                 plCompra = new MPriceList(getCtx(), 0, get_TrxName());
-                plCompra.setName("LISTA " + bp.getName2().toUpperCase() + " " + cur.getISO_Code());
+                plCompra.setName("LISTA " + bp.getName().toUpperCase() + " " + cur.getISO_Code());
                 plCompra.setC_Currency_ID(cCurrencyID);
                 plCompra.setIsSOPriceList(false);
                 plCompra.setIsTaxIncluded(true);

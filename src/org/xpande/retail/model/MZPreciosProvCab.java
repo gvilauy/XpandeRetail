@@ -232,6 +232,15 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 
+		// Obtengo lista de precios de compra y versión de la misma a procesar
+		this.setPriceListPO();
+		MPriceList plCompra = (MPriceList) this.getM_PriceList();
+		MPriceListVersion plVersionCompra = (MPriceListVersion) this.getM_PriceList_Version();
+
+		// Obtengo lista de precios de venta y versión de la misma a procesar
+		MPriceList plVenta = new MPriceList(getCtx(), this.getM_PriceList_ID_SO(), get_TrxName());
+		MPriceListVersion plVersionVenta = new MPriceListVersion(getCtx(), this.getM_PriceList_Version_ID_SO(), get_TrxName());
+
 		// Obtengo modelo para linea de productos del socio, si es nueva la creo en este momento y la asocio al socio del documento.
 		MZLineaProductoSocio lineaProductoSocio = null;
 		if (this.getZ_LineaProductoSocio_ID() > 0){
@@ -244,6 +253,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			lineaProductoSocio.setName(this.getNombreLineaManual());
 			lineaProductoSocio.setIsOwn(true);
 			lineaProductoSocio.setIsLockedPO(false);
+			lineaProductoSocio.setM_PriceList_ID(plCompra.get_ID());
 			lineaProductoSocio.saveEx();
 			this.setZ_LineaProductoSocio_ID(lineaProductoSocio.get_ID());
 
@@ -257,15 +267,6 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				}
 			}
 		}
-
-		// Obtengo lista de precios de compra y versión de la misma a procesar
-		this.setPriceListPO();
-		MPriceList plCompra = (MPriceList) this.getM_PriceList();
-		MPriceListVersion plVersionCompra = (MPriceListVersion) this.getM_PriceList_Version();
-
-		// Obtengo lista de precios de venta y versión de la misma a procesar
-		MPriceList plVenta = new MPriceList(getCtx(), this.getM_PriceList_ID_SO(), get_TrxName());
-		MPriceListVersion plVersionVenta = new MPriceListVersion(getCtx(), this.getM_PriceList_Version_ID_SO(), get_TrxName());
 
 		// Recorro y proceso lineas (ya fueron validadas)
 		for (MZPreciosProvLin line: lines){
@@ -479,7 +480,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				MBPartner bp = (MBPartner) this.getC_BPartner();
 				MCurrency cur = (MCurrency) this.getC_Currency();
 				pl = new MPriceList(getCtx(), 0, get_TrxName());
-				pl.setName("LISTA " + bp.getName2().toUpperCase() + " " + cur.getISO_Code());
+				pl.setName("LISTA " + bp.getName().toUpperCase() + " " + cur.getISO_Code());
 				pl.setC_Currency_ID(this.getC_Currency_ID());
 				pl.setIsSOPriceList(false);
 				pl.setIsTaxIncluded(true);
