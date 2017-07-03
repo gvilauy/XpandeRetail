@@ -19,9 +19,11 @@ package org.xpande.retail.process;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
+import org.compiere.model.MCurrency;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProduct;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.retail.model.MProductPricing;

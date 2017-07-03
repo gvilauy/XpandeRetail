@@ -125,6 +125,26 @@ public class CalloutOrder extends CalloutEngine {
         Env.setContext(ctx, WindowNo, "EnforcePriceLimit", pp.isEnforcePriceLimit() ? "Y" : "N");
         Env.setContext(ctx, WindowNo, "DiscountSchema", pp.isDiscountSchema() ? "Y" : "N");
 
+        // Xpande.Gabriel Vila.
+        // Si estoy en orden de compra y tengo tasa de cambio que aplicar, la aplico.
+        int cOrderID = ((Integer)mTab.getValue("C_Order_ID")).intValue();
+        MOrder order = new MOrder(ctx, cOrderID, null);
+        BigDecimal multiplyRate = (BigDecimal) order.get_Value("MultiplyRate");
+        if (!order.isSOTrx()){
+            if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) != 0)){
+                BigDecimal priceList = ((BigDecimal)mTab.getValue("PriceList")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                BigDecimal priceActual = ((BigDecimal)mTab.getValue("PriceActual")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                BigDecimal priceLimit = ((BigDecimal)mTab.getValue("PriceLimit")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                BigDecimal priceEntered = ((BigDecimal)mTab.getValue("PriceEntered")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                mTab.setValue("PriceList", priceList);
+                mTab.setValue("PriceLimit", priceLimit);
+                mTab.setValue("PriceActual", priceActual);
+                mTab.setValue("PriceEntered", priceEntered);
+                mTab.setValue("IsConverted", true);
+            }
+        }
+        // Xpande.
+
         //	Check/Update Warehouse Setting
         //	int M_Warehouse_ID = Env.getContextAsInt(ctx, WindowNo, "M_Warehouse_ID");
         //	Integer wh = (Integer)mTab.getValue("M_Warehouse_ID");
@@ -354,6 +374,24 @@ public class CalloutOrder extends CalloutEngine {
         log.fine("PriceList=" + PriceList + ", Limit=" + PriceLimit + ", Precision=" + StdPrecision);
         log.fine("PriceEntered=" + PriceEntered + ", Actual=" + PriceActual + ", Discount=" + Discount);
 
+
+        // Xpande.Gabriel Vila.
+        // Obtengo tasa multiplicadora por conversión entre moneda de lista y moneda de compra
+        int cOrderID = ((Integer)mTab.getValue("C_Order_ID")).intValue();
+        MOrder order = new MOrder(ctx, cOrderID, null);
+        BigDecimal multiplyRate = (BigDecimal) order.get_Value("MultiplyRate");
+        if (!order.isSOTrx()){
+            if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) != 0)){
+                BigDecimal priceLimit = ((BigDecimal)mTab.getValue("PriceLimit")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                PriceLimit = priceLimit;
+                mTab.setValue("IsConverted", true);
+            }
+        }
+
+        // Xpande.
+
+
+
         //		No Product
         if (M_Product_ID == 0)
         {
@@ -403,6 +441,18 @@ public class CalloutOrder extends CalloutEngine {
             mTab.setValue("Discount", pp.getDiscount());
             mTab.setValue("PriceEntered", PriceEntered);
             Env.setContext(ctx, WindowNo, "DiscountSchema", pp.isDiscountSchema() ? "Y" : "N");
+
+            if (!order.isSOTrx()){
+                if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) != 0)){
+                    BigDecimal priceActual = ((BigDecimal)mTab.getValue("PriceActual")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    BigDecimal priceEntered = ((BigDecimal)mTab.getValue("PriceEntered")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    mTab.setValue("PriceActual", priceActual);
+                    mTab.setValue("PriceEntered", priceEntered);
+                    mTab.setValue("IsConverted", true);
+                }
+            }
+
+
         }
         else if (mField.getColumnName().equals("PriceActual"))
         {
@@ -415,6 +465,16 @@ public class CalloutOrder extends CalloutEngine {
             log.fine("PriceActual=" + PriceActual
                     + " -> PriceEntered=" + PriceEntered);
             mTab.setValue("PriceEntered", PriceEntered);
+
+            if (!order.isSOTrx()){
+                if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) != 0)){
+                    BigDecimal priceEntered = ((BigDecimal)mTab.getValue("PriceEntered")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    mTab.setValue("PriceEntered", priceEntered);
+                    mTab.setValue("IsConverted", true);
+                }
+            }
+
+
         }
         else if (mField.getColumnName().equals("PriceEntered"))
         {
@@ -427,6 +487,15 @@ public class CalloutOrder extends CalloutEngine {
             log.fine("PriceEntered=" + PriceEntered
                     + " -> PriceActual=" + PriceActual);
             mTab.setValue("PriceActual", PriceActual);
+
+            if (!order.isSOTrx()){
+                if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) != 0)){
+                    BigDecimal priceActual = ((BigDecimal)mTab.getValue("PriceActual")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    mTab.setValue("PriceActual", priceActual);
+                    mTab.setValue("IsConverted", true);
+                }
+            }
+
         }
 
         //  Discount entered - Calculate Actual/Entered
@@ -442,6 +511,18 @@ public class CalloutOrder extends CalloutEngine {
                 PriceEntered = PriceActual;
             mTab.setValue("PriceActual", PriceActual);
             mTab.setValue("PriceEntered", PriceEntered);
+
+            if (!order.isSOTrx()){
+                if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) != 0)){
+                    BigDecimal priceActual = ((BigDecimal)mTab.getValue("PriceActual")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    BigDecimal priceEntered = ((BigDecimal)mTab.getValue("PriceEntered")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    mTab.setValue("PriceActual", priceActual);
+                    mTab.setValue("PriceEntered", priceEntered);
+                    mTab.setValue("IsConverted", true);
+                }
+            }
+
+
         }
         //	calculate Discount
         else
@@ -490,6 +571,7 @@ public class CalloutOrder extends CalloutEngine {
             LineNetAmt = LineNetAmt.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
         log.info("LineNetAmt=" + LineNetAmt);
         mTab.setValue("LineNetAmt", LineNetAmt);
+
         //
         return "";
     }	//	amt
@@ -747,4 +829,87 @@ public class CalloutOrder extends CalloutEngine {
 
         return "";
     }
+
+    /**
+     *	Order Header - PriceList.
+     *	(used also in Invoice)
+     *		- C_Currency_ID
+     *		- IsTaxIncluded
+     *	Window Context:
+     *		- EnforcePriceLimit
+     *		- StdPrecision
+     *		- M_PriceList_Version_ID
+     *  @param ctx context
+     *  @param WindowNo current Window No
+     *  @param mTab Grid Tab
+     *  @param mField Grid Field
+     *  @param value New Value
+     *  @return null or error message
+     */
+    public String priceList (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+    {
+        Integer M_PriceList_ID = (Integer) mTab.getValue("M_PriceList_ID");
+        if (M_PriceList_ID == null || M_PriceList_ID.intValue()== 0)
+            return "";
+        if (steps) log.warning("init");
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        String sql = "SELECT pl.IsTaxIncluded,pl.EnforcePriceLimit,pl.C_Currency_ID,c.StdPrecision,"
+                + "plv.M_PriceList_Version_ID,plv.ValidFrom "
+                + "FROM M_PriceList pl,C_Currency c,M_PriceList_Version plv "
+                + "WHERE pl.C_Currency_ID=c.C_Currency_ID"
+                + " AND pl.M_PriceList_ID=plv.M_PriceList_ID"
+                + " AND pl.M_PriceList_ID=? "						//	1
+                + " AND plv.ValidFrom <= ? "
+                + "ORDER BY plv.ValidFrom DESC";
+        //	Use newest price list - may not be future
+        try
+        {
+            pstmt = DB.prepareStatement(sql, null);
+            pstmt.setInt(1, M_PriceList_ID.intValue());
+            Timestamp date = new Timestamp(System.currentTimeMillis());
+            if (mTab.getAD_Table_ID() == I_C_Order.Table_ID)
+                date = Env.getContextAsDate(ctx, WindowNo, "DateOrdered");
+            else if (mTab.getAD_Table_ID() == I_C_Invoice.Table_ID)
+                date = Env.getContextAsDate(ctx, WindowNo, "DateInvoiced");
+            pstmt.setTimestamp(2, date);
+
+            rs = pstmt.executeQuery();
+            if (rs.next())
+            {
+                //	Tax Included
+                mTab.setValue("IsTaxIncluded", new Boolean("Y".equals(rs.getString(1))));
+                //	Price Limit Enforce
+                Env.setContext(ctx, WindowNo, "EnforcePriceLimit", rs.getString(2));
+                //	Currency
+                Integer ii = new Integer(rs.getInt(3));
+                mTab.setValue("C_Currency_ID", ii);
+
+                // Xpande. Gabriel Vila.
+                // Seteo moneda de lista de precio.
+                // Esto se debe a que puede haber compras de productos en lista UYU pero en moneda de OC USD.
+                // La moneda OC se mantiene en el campo c_currency_id, y se mantiene la moneda de la lista en este
+                // nuevo campo.
+                mTab.setValue("C_Currency_PriceList_ID", ii);
+                // Xpande.
+
+                //	PriceList Version
+                Env.setContext(ctx, WindowNo, "M_PriceList_Version_ID", rs.getInt(5));
+            }
+        }
+        catch (SQLException e)
+        {
+            log.log(Level.SEVERE, sql, e);
+            return e.getLocalizedMessage();
+        }
+        finally
+        {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+        if (steps) log.warning("fini");
+
+        return "";
+    }	//	priceList
+
 }

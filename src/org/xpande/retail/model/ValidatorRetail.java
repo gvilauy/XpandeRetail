@@ -24,6 +24,7 @@ public class ValidatorRetail implements ModelValidator {
 
         // DB Validations
         //engine.addModelChange(I_M_Product.Table_Name, this);
+        engine.addModelChange(I_C_Order.Table_Name, this);
         engine.addModelChange(I_C_OrderLine.Table_Name, this);
         engine.addModelChange(I_C_Invoice.Table_Name, this);
         engine.addModelChange(I_C_InvoiceLine.Table_Name, this);
@@ -43,17 +44,11 @@ public class ValidatorRetail implements ModelValidator {
     @Override
     public String modelChange(PO po, int type) throws Exception {
 
-        /*
-        if (po.get_TableName().equalsIgnoreCase(I_M_Product.Table_Name)){
-            return modelChange((MProduct) po, type);
-        }
-        else if (po.get_TableName().equalsIgnoreCase(I_C_OrderLine.Table_Name)){
-            return modelChange((MOrderLine) po, type);
-        }
-        */
-
         if (po.get_TableName().equalsIgnoreCase(I_C_OrderLine.Table_Name)){
             return modelChange((MOrderLine) po, type);
+        }
+        else if (po.get_TableName().equalsIgnoreCase(I_C_Order.Table_Name)){
+            return modelChange((MOrder) po, type);
         }
         else if (po.get_TableName().equalsIgnoreCase(I_C_Invoice.Table_Name)){
             return modelChange((MInvoice) po, type);
@@ -62,33 +57,12 @@ public class ValidatorRetail implements ModelValidator {
             return modelChange((MInvoiceLine) po, type);
         }
 
-
         return null;
     }
 
     @Override
     public String docValidate(PO po, int timing) {
         return null;
-    }
-
-
-    /***
-     * Validaciones para el modelo de Producto.
-     * Xpande. Created by Gabriel Vila on 6/30/17.
-     * @param model
-     * @param type
-     * @return
-     * @throws Exception
-     */
-    public String modelChange(MProduct model, int type) throws Exception {
-
-        String mensaje = null;
-
-        if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
-
-        }
-
-        return mensaje;
     }
 
 
@@ -104,13 +78,37 @@ public class ValidatorRetail implements ModelValidator {
 
         String mensaje = null;
 
-        if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)
+        MOrder order = (MOrder)model.getC_Order();
+        // No hago nada para ordenes de venta.
+        if (order.isSOTrx()) return mensaje;
+
+
+        if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
+
+            // Para ordenes de compra que tiene moneda de compra != a moneda de la lista,
+            // debo llevar todos los montos de esta linea a la moneda de compra.
+            if (order.get_ValueAsInt("C_Currency_PriceList_ID") != order.getC_Currency_ID()){
+                if (!model.get_ValueAsBoolean("IsConverted")){
+                    if (order.get_Value("MultiplyRate") != null){
+                        BigDecimal multiplyRate = (BigDecimal) order.get_Value("MultiplyRate");
+                        int precisionDecimal = ((MCurrency) order.getC_Currency()).getStdPrecision(); // Precision decimal compra de moneda de compra
+                        if (multiplyRate.compareTo(Env.ZERO) != 0){
+
+                            // Actualizo montos de esta linea de orden de compra
+                            model.setPriceList(model.getPriceList().multiply(multiplyRate).setScale(precisionDecimal, BigDecimal.ROUND_HALF_UP));
+                            model.setPriceActual(model.getPriceActual().multiply(multiplyRate).setScale(precisionDecimal, BigDecimal.ROUND_HALF_UP));
+                            model.setPriceLimit(model.getPriceLimit().multiply(multiplyRate).setScale(precisionDecimal, BigDecimal.ROUND_HALF_UP));
+                            model.setPriceEntered(model.getPriceEntered().multiply(multiplyRate).setScale(precisionDecimal, BigDecimal.ROUND_HALF_UP));
+                            model.setLineNetAmt();
+                            model.set_ValueOfColumn("IsConverted", true);
+                        }
+                    }
+                }
+            }
+        }
+        else if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)
                 || (type == ModelValidator.TYPE_AFTER_DELETE)){
 
-            MOrder order = (MOrder)model.getC_Order();
-
-            // No hago nada para ordenes de venta.
-            if (order.isSOTrx()) return mensaje;
 
             // Cuando modifico linea de orden de compra, me aseguro que se calcule bien el campo del cabezal
             // para subtotal en retail. Esto es porque Adempiere de fábrica, cuando maneja lista de precios con
@@ -162,7 +160,40 @@ public class ValidatorRetail implements ModelValidator {
             if (model.getC_Order_ID() > 0){
                 model.setC_Order_ID(0);
             }
+        }
 
+        return mensaje;
+    }
+
+
+    /***
+     * Validaciones para el modelo de Orders (c_order)
+     * Xpande. Created by Gabriel Vila on 6/30/17.
+     * @param model
+     * @param type
+     * @return
+     * @throws Exception
+     */
+    public String modelChange(MOrder model, int type) throws Exception {
+
+        String mensaje = null;
+
+        if ((type == ModelValidator.TYPE_BEFORE_NEW)
+                || ((type == ModelValidator.TYPE_BEFORE_CHANGE) && (model.is_ValueChanged("C_Currency_ID")))){
+
+            // Si es una orden de venta no hago nada
+            if (model.isSOTrx()) return mensaje;
+
+            // Para ordenes de compra, si la moneda de lista es distinta a la moneda de orden de compra
+            if (model.get_ValueAsInt("C_Currency_PriceList_ID") != model.getC_Currency_ID()){
+                // Obtengo tasa de cambio (multiplyRate) entre ambas monedas para fecha del documento.
+                int cCurrencyListaID = model.get_ValueAsInt("C_Currency_PriceList_ID");
+                BigDecimal multiplyRate = MConversionRate.getRate(cCurrencyListaID, model.getC_Currency_ID(), model.getDateOrdered(), 0, model.getAD_Client_ID(), 0);
+                if (multiplyRate == null){
+                    multiplyRate = Env.ZERO;
+                }
+                model.set_ValueOfColumn("MultiplyRate", multiplyRate);
+            }
         }
 
         return mensaje;
