@@ -1,8 +1,10 @@
 package org.xpande.retail.model;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.zkoss.zhtml.Big;
 
 import java.math.BigDecimal;
 
@@ -84,6 +86,54 @@ public class ValidatorRetail implements ModelValidator {
 
 
         if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
+
+            // Debido a la posibilidad de ingresar un descuento manual en la linea de la orden para Retail (campo Discount2),
+            // y también debido a la posibilidad de que se haga una orden de compra en una moneda distinta a la moneda de la lista de precios
+            // Se agregan estas lineas que recalculas los precios de compra, descuentos y conversión a moneda de compra.
+            MProductPricing productPricing = this.getProductPricing(model, order);
+            if (productPricing == null){
+                throw new AdempiereException("No se pudo calcular precios y montos para esta linea de Orden de Compra");
+            }
+
+            model.setPriceActual(productPricing.getPriceStd());
+            model.setPriceList(productPricing.getPriceList());
+            model.setPriceLimit(productPricing.getPriceLimit());
+
+            if (model.getQtyEntered().compareTo(model.getQtyOrdered()) == 0)
+                model.setPriceEntered(model.getPriceActual());
+            else
+                model.setPriceEntered(model.getPriceActual().multiply(model.getQtyOrdered()
+                        .divide(model.getQtyEntered(), 12, BigDecimal.ROUND_HALF_UP)));	//	recision
+
+            //	Calculate Discount
+            model.setDiscount(productPricing.getDiscount());
+            //	Set UOM
+            if(model.getC_UOM_ID() == 0 ){
+                model.setC_UOM_ID(productPricing.getC_UOM_ID());
+            }
+
+            // Calcula descuento manual
+            BigDecimal Discount2 = (BigDecimal)model.get_Value("Discount2");
+            BigDecimal PriceActual = model.getPriceActual();
+            if (Discount2 == null) Discount2 = Env.ZERO;
+            if (model.getPriceList().doubleValue() != 0 ){
+                PriceActual = new BigDecimal ((100.0 - model.getDiscount().doubleValue()) / 100.0 * model.getPriceList().doubleValue());
+            }
+            PriceActual = new BigDecimal ((100.0 - Discount2.doubleValue()) / 100.0 * PriceActual.doubleValue());
+            if (PriceActual.scale() > 2)
+                PriceActual = PriceActual.setScale(2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal PriceEntered = MUOMConversion.convertProductFrom (model.getCtx(), model.getM_Product_ID(),
+                    model.getC_UOM_ID(), PriceActual);
+            if (PriceEntered == null)
+                PriceEntered = PriceActual;
+            model.setPriceActual(PriceActual);
+            model.setPriceEntered(PriceEntered);
+
+            if (model.getC_BPartner_Location_ID() <= 0) model.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
+
+            // Me aseguro de dejar marcada la linea como no convertida a moneda de compra en caso de bimoneda, ya que se acaba de actualizar precios
+            // en moneda de lista
+            model.set_ValueOfColumn("IsConverted",false);
 
             // Para ordenes de compra que tiene moneda de compra != a moneda de la lista,
             // debo llevar todos los montos de esta linea a la moneda de compra.
@@ -264,4 +314,29 @@ public class ValidatorRetail implements ModelValidator {
 
         return mensaje;
     }
+
+
+    /**
+     * 	Get and calculate Product Pricing
+     *	@param orderLine
+     *	@return product pricing
+     */
+    private MProductPricing getProductPricing (MOrderLine orderLine, MOrder order)
+    {
+        MProductPricing productPricing = null;
+
+        try{
+            productPricing = new MProductPricing (orderLine.getM_Product_ID(), order.getC_BPartner_ID(), orderLine.getQtyOrdered(), false, null);
+            productPricing.setM_PriceList_ID(order.getM_PriceList_ID());
+            productPricing.setPriceDate(order.getDateOrdered());
+
+            productPricing.calculatePrice();
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        return productPricing;
+    }
+
 }

@@ -583,7 +583,7 @@ public class CalloutInvoice extends CalloutEngine
 			if (PriceEntered == null)
 				PriceEntered = pp.getPriceStd();
 			//
-			log.fine("amt - QtyChanged -> PriceActual=" + pp.getPriceStd() 
+			log.fine("amt - QtyChanged -> PriceActual=" + pp.getPriceStd()
 				+ ", PriceEntered=" + PriceEntered + ", Discount=" + pp.getDiscount());
 			
 			PriceActual = pp.getPriceStd();

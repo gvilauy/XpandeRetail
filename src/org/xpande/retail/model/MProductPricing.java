@@ -110,7 +110,7 @@ public class MProductPricing
 	 * 	Calculate Price
 	 * 	@return true if calculated
 	 */
-	public boolean calculatePrice (BigDecimal manualDiscount)
+	public boolean calculatePrice ()
 	{
 		if (productId == 0
 			|| (found != null && !found.booleanValue()))	//	previously not found
@@ -150,7 +150,7 @@ public class MProductPricing
 			setBaseInfo();
 		//	User based Discount
 		if (calculated && !vendorBreak)
-			calculateDiscount(manualDiscount);
+			calculateDiscount();
 		setPrecision();		//	from Price List
 		//
 		found = new Boolean (calculated);
@@ -686,7 +686,7 @@ public class MProductPricing
 	/**************************************************************************
 	 * 	Calculate (Business Partner) Discount
 	 */
-	private void calculateDiscount(BigDecimal manualDiscount)
+	private void calculateDiscount()
 	{
 		discountSchema = false;
 		if (partnerId == 0 || productId == 0)
@@ -750,6 +750,15 @@ public class MProductPricing
 					priceStd = ppi.getPricePO();
 				}
 			}
+			/*
+			// Si además de los descuentos por pautas comerciales, tengo descuento manual
+			if ((manualDiscount != null) && (manualDiscount.compareTo(Env.ZERO) != 0)){
+				// Aplico descuento manual al precio
+				BigDecimal multiplier = (Env.ONEHUNDRED).subtract(manualDiscount);
+				multiplier = multiplier.divide(Env.ONEHUNDRED, 6, BigDecimal.ROUND_HALF_UP);
+				priceStd = priceStd.multiply(multiplier).setScale(precision, BigDecimal.ROUND_HALF_UP);
+			}
+			*/
 		}
 		// Xpande.
 	}
@@ -877,7 +886,7 @@ public class MProductPricing
 	public int getC_UOM_ID()
 	{
 		if (!calculated)
-			calculatePrice(null);
+			calculatePrice();
 		return uomId;
 	}
 	
@@ -888,7 +897,7 @@ public class MProductPricing
 	public BigDecimal getPriceList()
 	{
 		if (!calculated)
-			calculatePrice(null);
+			calculatePrice();
 		return round(priceList);
 	}
 	/**
@@ -898,7 +907,7 @@ public class MProductPricing
 	public BigDecimal getPriceStd()
 	{
 		if (!calculated)
-			calculatePrice(null);
+			calculatePrice();
 		return round(priceStd);
 	}
 	/**
@@ -908,7 +917,7 @@ public class MProductPricing
 	public BigDecimal getPriceLimit()
 	{
 		if (!calculated)
-			calculatePrice(null);
+			calculatePrice();
 		return round(priceLimit);
 	}
 	/**
@@ -918,7 +927,7 @@ public class MProductPricing
 	public int getC_Currency_ID()
 	{
 		if (!calculated)
-			calculatePrice(null);
+			calculatePrice();
 		return currencyId;
 	}
 	/**
@@ -928,7 +937,7 @@ public class MProductPricing
 	public boolean isEnforcePriceLimit()
 	{
 		if (!calculated)
-			calculatePrice(null);
+			calculatePrice();
 		return isEnforcePriceLimit;
 	}	//	isEnforcePriceLimit
 

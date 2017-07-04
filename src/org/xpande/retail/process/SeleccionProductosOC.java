@@ -70,6 +70,7 @@ public class SeleccionProductosOC extends SeleccionProductosOCAbstract
 				orderLine.setM_Product_ID(mProductId);
 				orderLine.setQtyEntered(Env.ONE);
 				orderLine.setQtyOrdered(Env.ONE);
+				orderLine.set_ValueOfColumn("Discount2", Env.ZERO);
 				orderLine.setC_UOM_ID(prod.getC_UOM_ID());
 
 				MProductPricing productPricing = this.getProductPricing(orderLine);
@@ -135,7 +136,7 @@ public class SeleccionProductosOC extends SeleccionProductosOCAbstract
 			productPricing.setM_PriceList_ID(this.order.getM_PriceList_ID());
 			productPricing.setPriceDate(this.order.getDateOrdered());
 
-			productPricing.calculatePrice(null);
+			productPricing.calculatePrice();
 
 		}
 		catch (Exception e){
