@@ -255,6 +255,8 @@ public class MZPautaComercial extends X_Z_PautaComercial {
 
                         productoSocio.saveEx();
 
+                        productoSocio.orgsRefreshPO(prod.getM_Product_ID(), priceList.getPricePrecision(), this);
+
                     }
                     else{
                         return "No se pudo Aplicar la Pauta Comercial al producto : " + prod.getValue() + " - " + prod.getName();

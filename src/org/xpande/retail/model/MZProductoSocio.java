@@ -1,8 +1,10 @@
 package org.xpande.retail.model;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
+import org.xpande.retail.utils.ProductPricesInfo;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -196,4 +198,38 @@ public class MZProductoSocio extends X_Z_ProductoSocio {
         }
 
     }
+
+
+    /***
+     * Refresco datos de compras de las organizaciones asociadas a este produto-socio.
+     * Xpande. Created by Gabriel Vila on 7/5/17.
+     * @param precisionDecimalCompra
+     * @param pautaComercial
+     */
+    public void orgsRefreshPO(int mProductID, int precisionDecimalCompra, MZPautaComercial pautaComercial) {
+
+        try{
+            List<MZProductoSocioOrg> productoSocioOrgs = this.getOrgs();
+            for (MZProductoSocioOrg productoSocioOrg: productoSocioOrgs){
+
+                ProductPricesInfo ppi = pautaComercial.calculatePrices(mProductID, productoSocioOrg.getPriceList(), precisionDecimalCompra);
+                if (ppi != null){
+
+                    // Seteo precios de compra y segmentos si es necesario en producto-socio
+                    productoSocioOrg.setPricePO(ppi.getPricePO());
+                    productoSocioOrg.setPriceFinal(ppi.getPriceFinal());
+                    productoSocioOrg.calculateMargins();
+                    productoSocioOrg.saveEx();
+
+                }
+                else{
+                    throw new AdempiereException("No se pudo Aplicar la Pauta Comercial al producto: " + mProductID + ", organizacion: " + productoSocioOrg.getAD_OrgTrx_ID());
+                }
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
+
 }

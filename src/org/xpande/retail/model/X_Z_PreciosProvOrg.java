@@ -30,7 +30,7 @@ public class X_Z_PreciosProvOrg extends PO implements I_Z_PreciosProvOrg, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170615L;
+	private static final long serialVersionUID = 20170705L;
 
     /** Standard Constructor */
     public X_Z_PreciosProvOrg (Properties ctx, int Z_PreciosProvOrg_ID, String trxName)
@@ -116,6 +116,46 @@ public class X_Z_PreciosProvOrg extends PO implements I_Z_PreciosProvOrg, I_Pers
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set M_PriceList_ID_SO.
+		@param M_PriceList_ID_SO 
+		Lista de Precios de Venta
+	  */
+	public void setM_PriceList_ID_SO (int M_PriceList_ID_SO)
+	{
+		set_Value (COLUMNNAME_M_PriceList_ID_SO, Integer.valueOf(M_PriceList_ID_SO));
+	}
+
+	/** Get M_PriceList_ID_SO.
+		@return Lista de Precios de Venta
+	  */
+	public int getM_PriceList_ID_SO () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_ID_SO);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set M_PriceList_Version_ID_SO.
+		@param M_PriceList_Version_ID_SO 
+		Version de Lista de Precios de Venta
+	  */
+	public void setM_PriceList_Version_ID_SO (int M_PriceList_Version_ID_SO)
+	{
+		set_Value (COLUMNNAME_M_PriceList_Version_ID_SO, Integer.valueOf(M_PriceList_Version_ID_SO));
+	}
+
+	/** Get M_PriceList_Version_ID_SO.
+		@return Version de Lista de Precios de Venta
+	  */
+	public int getM_PriceList_Version_ID_SO () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_Version_ID_SO);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	public I_Z_PreciosProvCab getZ_PreciosProvCab() throws RuntimeException

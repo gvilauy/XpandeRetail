@@ -68,20 +68,118 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
 
             // Recalculo márgenes
             this.calculateMargins(cab.getRate());
+
+            // Refresco precio de venta y margenes en organizaciones asociadas a esta linea (si no es *PC)
+            if (!this.isDistinctPricePO()){
+                this.orgsRefreshPO();
+            }
+
         }
-        else{
-            // Si se modifica precio de lista
-            if ((!newRecord) && (is_ValueChanged(X_Z_PreciosProvLin.COLUMNNAME_PriceList))){
 
-                // Recalculo precios de compra de esta linea ya que se modifico el precio de lista base
-                this.calculatePricesPO(this.getPriceList(), cab.getPrecisionPO(), (MZPautaComercial) cab.getZ_PautaComercial(), true);
+        // Si se modifica precio de lista
+        if ((!newRecord) && (is_ValueChanged(X_Z_PreciosProvLin.COLUMNNAME_PriceList))){
 
-                // Recalculo márgenes
-                this.calculateMargins(cab.getRate());
+            // Recalculo precios de compra de esta linea ya que se modifico el precio de lista base
+            this.calculatePricesPO(this.getPriceList(), cab.getPrecisionPO(), (MZPautaComercial) cab.getZ_PautaComercial(), true);
+
+            // Recalculo márgenes
+            this.calculateMargins(cab.getRate());
+
+            // Refresco precio de venta y margenes en organizaciones asociadas a esta linea (si no es *PC)
+            if (!this.isDistinctPricePO()){
+                this.orgsRefreshPO();
+            }
+
+        }
+
+        // Si se modifica nuevo precio de venta
+        if ((!newRecord) && (is_ValueChanged(X_Z_PreciosProvLin.COLUMNNAME_NewPriceSO))){
+            // Refresco precio de venta y margenes en organizaciones asociadas a esta linea (si no es *PVP)
+            if (!this.isDistinctPriceSO()){
+                this.orgsRefreshSO();
             }
         }
 
         return true;
+
+    }
+
+    /***
+     * Refresco datos de compra y margenes de las organizaciones de esta linea.
+     * Xpande. Created by Gabriel Vila on 7/5/17.
+     */
+    private void orgsRefreshPO() {
+        try{
+            List<MZPreciosProvLinOrg> preciosProvLinOrgs = this.getOrganizaciones();
+            for (MZPreciosProvLinOrg preciosProvLinOrg: preciosProvLinOrgs){
+                preciosProvLinOrg.setPriceList(this.getPriceList());
+                preciosProvLinOrg.setPricePO(this.getPricePO());
+                preciosProvLinOrg.setPriceFinal(this.getPriceFinal());
+                preciosProvLinOrg.setPriceFinalMargin(this.getPriceFinalMargin());
+                preciosProvLinOrg.setPricePOMargin(this.getPricePOMargin());
+                preciosProvLinOrg.saveEx();
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
+
+    /***
+     * Refresco datos de venta y margenes de las organizaciones de esta linea.
+     * Xpande. Created by Gabriel Vila on 7/5/17.
+     */
+    private void orgsRefreshSO() {
+
+        try{
+            List<MZPreciosProvLinOrg> preciosProvLinOrgs = this.getOrganizaciones();
+            for (MZPreciosProvLinOrg preciosProvLinOrg: preciosProvLinOrgs){
+                preciosProvLinOrg.setNewPriceSO(this.getNewPriceSO());
+                preciosProvLinOrg.setPriceFinalMargin(this.getPriceFinalMargin());
+                preciosProvLinOrg.setPricePOMargin(this.getPricePOMargin());
+                preciosProvLinOrg.saveEx();
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
+
+
+    /***
+     * Refresco solamenta los datos de compra afectados por cambios en pauta comerciales.
+     * Xpande. Created by Gabriel Vila on 7/5/17.
+     * @param precisionDecimalCompra
+     * @param pautaComercial
+     * @param useLineSegments
+     * @param multiplyRate
+     */
+    public void orgsRefreshPautaPO(int precisionDecimalCompra, MZPautaComercial pautaComercial, boolean useLineSegments, BigDecimal multiplyRate) {
+        try{
+            List<MZPreciosProvLinOrg> preciosProvLinOrgs = this.getOrganizaciones();
+            for (MZPreciosProvLinOrg preciosProvLinOrg: preciosProvLinOrgs){
+                preciosProvLinOrg.calculatePricesPO(precisionDecimalCompra, pautaComercial, useLineSegments);
+                preciosProvLinOrg.calculateMargins(multiplyRate);
+                preciosProvLinOrg.saveEx();
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
+
+    /***
+     * Obtiene y retorna lista de organizaciones asociadas a esta linea.
+     * Xpande. Created by Gabriel Vila on 7/5/17.
+     * @return
+     */
+    private List<MZPreciosProvLinOrg> getOrganizaciones() {
+
+        String whereClause = X_Z_PreciosProvLinOrg.COLUMNNAME_Z_PreciosProvLin_ID + " =" + this.get_ID();
+
+        List<MZPreciosProvLinOrg> lines = new Query(getCtx(), I_Z_PreciosProvLinOrg.Table_Name, whereClause, get_TrxName()).setOnlyActiveRecords(true).list();
+
+        return lines;
     }
 
 
@@ -570,5 +668,98 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
             throw new AdempiereException(e);
         }
 
+    }
+
+    /***
+     * Exploto linea en organizaciones del proceso.
+     * Xpande. Created by Gabriel Vila on 7/5/17.
+     */
+    public void orgsCreate() {
+
+        try{
+            MZPreciosProvCab preciosProvCab = (MZPreciosProvCab) this.getZ_PreciosProvCab();
+            List<MZPreciosProvOrg> preciosProvOrgs = preciosProvCab.getOrgsSelected();
+            for (MZPreciosProvOrg preciosProvOrg: preciosProvOrgs){
+                MZPreciosProvLinOrg preciosProvLinOrg = new MZPreciosProvLinOrg(getCtx(), 0, get_TrxName());
+                preciosProvLinOrg.setZ_PreciosProvLin_ID(this.get_ID());
+                preciosProvLinOrg.setAD_OrgTrx_ID(preciosProvOrg.getAD_OrgTrx_ID());
+                preciosProvLinOrg.setC_Currency_ID(this.getC_Currency_ID());
+                preciosProvLinOrg.setC_Currency_ID_SO(this.getC_Currency_ID_SO());
+                preciosProvLinOrg.setNewPriceSO(this.getNewPriceSO());
+                preciosProvLinOrg.setPriceFinal(this.getPriceFinal());
+                preciosProvLinOrg.setPriceFinalMargin(this.getPriceFinalMargin());
+                preciosProvLinOrg.setPriceList(this.getPriceList());
+                preciosProvLinOrg.setPriceSO(this.getPriceSO());
+                preciosProvLinOrg.setPricePO(this.getPricePO());
+                preciosProvLinOrg.setPricePOMargin(this.getPricePOMargin());
+                preciosProvLinOrg.saveEx();
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
+
+
+    /***
+     * Exploto linea en organizaciones del proceso.
+     * Xpande. Created by Gabriel Vila on 7/5/17.
+     */
+    public void orgsCreateFromProductoSocio(MZProductoSocio productoSocio) {
+
+        try{
+            MZPreciosProvCab preciosProvCab = (MZPreciosProvCab) this.getZ_PreciosProvCab();
+            List<MZPreciosProvOrg> preciosProvOrgs = preciosProvCab.getOrgsSelected();
+            for (MZPreciosProvOrg preciosProvOrg: preciosProvOrgs){
+                MZPreciosProvLinOrg preciosProvLinOrg = new MZPreciosProvLinOrg(getCtx(), 0, get_TrxName());
+                preciosProvLinOrg.setZ_PreciosProvLin_ID(this.get_ID());
+                preciosProvLinOrg.setAD_OrgTrx_ID(preciosProvOrg.getAD_OrgTrx_ID());
+
+                MZProductoSocioOrg productoSocioOrg = productoSocio.getOrg(preciosProvOrg.getAD_OrgTrx_ID());
+
+                preciosProvLinOrg.setC_Currency_ID(productoSocio.getC_Currency_ID());
+                preciosProvLinOrg.setC_Currency_ID_SO(productoSocio.getC_Currency_ID_SO());
+                preciosProvLinOrg.setNewPriceSO(productoSocio.getPriceSO());
+                preciosProvLinOrg.setPriceFinal(productoSocio.getPriceFinal());
+                preciosProvLinOrg.setPriceFinalMargin(productoSocio.getPriceFinalMargin());
+                preciosProvLinOrg.setPriceList(productoSocio.getPriceList());
+                preciosProvLinOrg.setPriceSO(productoSocio.getPriceSO());
+                preciosProvLinOrg.setPricePO(productoSocio.getPricePO());
+                preciosProvLinOrg.setPricePOMargin(productoSocio.getPricePOMargin());
+                preciosProvLinOrg.saveEx();
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
+
+
+    /***
+     * Obtiene y retorna modelo segun organización recibida.
+     * Xpande. Created by Gabriel Vila on 7/5/17.
+     * @param adOrgTrxID
+     * @return
+     */
+    public MZPreciosProvLinOrg getOrganizacion(int adOrgTrxID) {
+
+        String whereClause = X_Z_PreciosProvLinOrg.COLUMNNAME_Z_PreciosProvLin_ID + " =" + this.get_ID() +
+                " AND " + X_Z_PreciosProvLinOrg.COLUMNNAME_AD_OrgTrx_ID + " =" + adOrgTrxID;
+
+        MZPreciosProvLinOrg model = new Query(getCtx(), I_Z_PreciosProvLinOrg.Table_Name, whereClause, get_TrxName()).first();
+
+        return model;
+    }
+
+    @Override
+    protected boolean afterSave(boolean newRecord, boolean success) {
+
+        if (!success) return success;
+
+        if (newRecord){
+            this.orgsCreate();
+        }
+
+        return true;
     }
 }

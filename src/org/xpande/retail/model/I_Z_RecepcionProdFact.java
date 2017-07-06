@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_PreciosProvOrg
+/** Generated Interface for Z_RecepcionProdFact
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_PreciosProvOrg 
+public interface I_Z_RecepcionProdFact 
 {
 
-    /** TableName=Z_PreciosProvOrg */
-    public static final String Table_Name = "Z_PreciosProvOrg";
+    /** TableName=Z_RecepcionProdFact */
+    public static final String Table_Name = "Z_RecepcionProdFact";
 
-    /** AD_Table_ID=1000049 */
+    /** AD_Table_ID=1000059 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -63,18 +63,35 @@ public interface I_Z_PreciosProvOrg
 	  */
 	public int getAD_Org_ID();
 
-    /** Column name AD_OrgTrx_ID */
-    public static final String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
-	/** Set Trx Organization.
-	  * Performing or initiating organization
+	/** Set Currency.
+	  * The Currency for this record
 	  */
-	public void setAD_OrgTrx_ID(int AD_OrgTrx_ID);
+	public void setC_Currency_ID(int C_Currency_ID);
 
-	/** Get Trx Organization.
-	  * Performing or initiating organization
+	/** Get Currency.
+	  * The Currency for this record
 	  */
-	public int getAD_OrgTrx_ID();
+	public int getC_Currency_ID();
+
+	public I_C_Currency getC_Currency() throws RuntimeException;
+
+    /** Column name C_Invoice_ID */
+    public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
+
+	/** Set Invoice.
+	  * Invoice Identifier
+	  */
+	public void setC_Invoice_ID(int C_Invoice_ID);
+
+	/** Get Invoice.
+	  * Invoice Identifier
+	  */
+	public int getC_Invoice_ID();
+
+	public I_C_Invoice getC_Invoice() throws RuntimeException;
 
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
@@ -92,6 +109,32 @@ public interface I_Z_PreciosProvOrg
 	  */
 	public int getCreatedBy();
 
+    /** Column name DateDoc */
+    public static final String COLUMNNAME_DateDoc = "DateDoc";
+
+	/** Set Document Date.
+	  * Date of the Document
+	  */
+	public void setDateDoc(Timestamp DateDoc);
+
+	/** Get Document Date.
+	  * Date of the Document
+	  */
+	public Timestamp getDateDoc();
+
+    /** Column name DocumentSerie */
+    public static final String COLUMNNAME_DocumentSerie = "DocumentSerie";
+
+	/** Set DocumentSerie.
+	  * Serie de un Documento
+	  */
+	public void setDocumentSerie(String DocumentSerie);
+
+	/** Get DocumentSerie.
+	  * Serie de un Documento
+	  */
+	public String getDocumentSerie();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -105,40 +148,46 @@ public interface I_Z_PreciosProvOrg
 	  */
 	public boolean isActive();
 
-    /** Column name IsSelected */
-    public static final String COLUMNNAME_IsSelected = "IsSelected";
+    /** Column name ManualDocumentNo */
+    public static final String COLUMNNAME_ManualDocumentNo = "ManualDocumentNo";
 
-	/** Set Selected	  */
-	public void setIsSelected(boolean IsSelected);
-
-	/** Get Selected	  */
-	public boolean isSelected();
-
-    /** Column name M_PriceList_ID_SO */
-    public static final String COLUMNNAME_M_PriceList_ID_SO = "M_PriceList_ID_SO";
-
-	/** Set M_PriceList_ID_SO.
-	  * Lista de Precios de Venta
+	/** Set ManualDocumentNo.
+	  * Número de documento manual, sin secuencial automático del sistema
 	  */
-	public void setM_PriceList_ID_SO(int M_PriceList_ID_SO);
+	public void setManualDocumentNo(String ManualDocumentNo);
 
-	/** Get M_PriceList_ID_SO.
-	  * Lista de Precios de Venta
+	/** Get ManualDocumentNo.
+	  * Número de documento manual, sin secuencial automático del sistema
 	  */
-	public int getM_PriceList_ID_SO();
+	public String getManualDocumentNo();
 
-    /** Column name M_PriceList_Version_ID_SO */
-    public static final String COLUMNNAME_M_PriceList_Version_ID_SO = "M_PriceList_Version_ID_SO";
+    /** Column name M_InOut_ID */
+    public static final String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
-	/** Set M_PriceList_Version_ID_SO.
-	  * Version de Lista de Precios de Venta
+	/** Set Shipment/Receipt.
+	  * Material Shipment Document
 	  */
-	public void setM_PriceList_Version_ID_SO(int M_PriceList_Version_ID_SO);
+	public void setM_InOut_ID(int M_InOut_ID);
 
-	/** Get M_PriceList_Version_ID_SO.
-	  * Version de Lista de Precios de Venta
+	/** Get Shipment/Receipt.
+	  * Material Shipment Document
 	  */
-	public int getM_PriceList_Version_ID_SO();
+	public int getM_InOut_ID();
+
+	public I_M_InOut getM_InOut() throws RuntimeException;
+
+    /** Column name SerieNumberDoc */
+    public static final String COLUMNNAME_SerieNumberDoc = "SerieNumberDoc";
+
+	/** Set SerieNumberDoc.
+	  * Concatenación de serie + numero de documento
+	  */
+	public void setSerieNumberDoc(String SerieNumberDoc);
+
+	/** Get SerieNumberDoc.
+	  * Concatenación de serie + numero de documento
+	  */
+	public String getSerieNumberDoc();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -156,23 +205,12 @@ public interface I_Z_PreciosProvOrg
 	  */
 	public int getUpdatedBy();
 
-    /** Column name Z_PreciosProvCab_ID */
-    public static final String COLUMNNAME_Z_PreciosProvCab_ID = "Z_PreciosProvCab_ID";
+    /** Column name Z_RecepcionProdFact_ID */
+    public static final String COLUMNNAME_Z_RecepcionProdFact_ID = "Z_RecepcionProdFact_ID";
 
-	/** Set Z_PreciosProvCab ID	  */
-	public void setZ_PreciosProvCab_ID(int Z_PreciosProvCab_ID);
+	/** Set Z_RecepcionProdFact ID	  */
+	public void setZ_RecepcionProdFact_ID(int Z_RecepcionProdFact_ID);
 
-	/** Get Z_PreciosProvCab ID	  */
-	public int getZ_PreciosProvCab_ID();
-
-	public I_Z_PreciosProvCab getZ_PreciosProvCab() throws RuntimeException;
-
-    /** Column name Z_PreciosProvOrg_ID */
-    public static final String COLUMNNAME_Z_PreciosProvOrg_ID = "Z_PreciosProvOrg_ID";
-
-	/** Set Z_PreciosProvOrg ID	  */
-	public void setZ_PreciosProvOrg_ID(int Z_PreciosProvOrg_ID);
-
-	/** Get Z_PreciosProvOrg ID	  */
-	public int getZ_PreciosProvOrg_ID();
+	/** Get Z_RecepcionProdFact ID	  */
+	public int getZ_RecepcionProdFact_ID();
 }

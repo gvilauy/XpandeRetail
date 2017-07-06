@@ -274,11 +274,19 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			// Sete de producto de la linea, en caso de ser un nuevo producto se crea en este momento.
 			line.setProduct();
 
-			// Actualizo lista de precios de compra del documento para el producto de esta linea
+			// Actualizo lista de precios de compra del documento para el producto de esta linea, es una lista unica por proveedor-moneda
 			this.updateProductPriceListPO(plCompra, plVersionCompra, line);
 
  			// Actualizo lista de precios de venta del documento para el producto de esta linea
 			this.updateProductPriceListSO(plVenta, plVersionVenta, line);
+
+			// Si estoy procesando multiples organizaciones, debo actualizar lista de venta de cada organizacion participante
+			if (!this.isOnlyOneOrg()){
+				List<MZPreciosProvOrg> preciosProvOrgs = this.getOrgsSelected();
+				for (MZPreciosProvOrg preciosProvOrg: preciosProvOrgs){
+					preciosProvOrg.updateProductPriceListSO(line, plVenta.getC_Currency_ID());
+				}
+			}
 
 			// Actualizo segmentos especiales en pauta comercial para el producto de esta linea
 			this.updateProductPautaComercial(line);
@@ -631,6 +639,10 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			prodbp.setPricePOMargin(line.getPricePOMargin());
 			prodbp.setPriceFinal(line.getPriceFinal());
 			prodbp.setPriceFinalMargin(line.getPriceFinalMargin());
+
+			prodbp.setDistinctPricePO(line.isDistinctPricePO());
+			prodbp.setDistinctPriceSO(line.isDistinctPriceSO());
+
 			if (this.getZ_PautaComercial_ID() > 0){
 				prodbp.setZ_PautaComercial_ID(this.getZ_PautaComercial_ID());
 				prodbp.setTotalDiscountsPO(line.getTotalDiscountsPO());
@@ -700,6 +712,10 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			// Proceso cada organización seleccionada para procesar
 			List<MZPreciosProvOrg> pporgs = this.getOrgsSelected();
 			for (MZPreciosProvOrg pporg: pporgs){
+
+				// Obtengo para esta linea de documento recibida, el modelo de organización con datos de precios de compra y venta
+				MZPreciosProvLinOrg preciosProvLinOrg = line.getOrganizacion(pporg.getAD_OrgTrx_ID());
+
 				// Si no tengo precio para esta organización dentro del producto-socio, la creo en este momento
 				MZProductoSocioOrg prodbpOrg = prodbp.getOrg(pporg.getAD_OrgTrx_ID());
 				if ((prodbpOrg == null) || (prodbpOrg.get_ID() <= 0)){
@@ -708,33 +724,33 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 					prodbpOrg.setAD_OrgTrx_ID(pporg.getAD_OrgTrx_ID());
 					prodbpOrg.setDateValidPO(fechaHoy);
 					prodbpOrg.setDateValidSO(fechaHoy);
-					prodbpOrg.setPriceList(line.getPriceList());
-					prodbpOrg.setPriceSO(line.getNewPriceSO());
+					prodbpOrg.setPriceList(preciosProvLinOrg.getPriceList());
+					prodbpOrg.setPriceSO(preciosProvLinOrg.getNewPriceSO());
 				}
 				else{
 					// Si precio de lista compra cambia
-					if (prodbpOrg.getPriceList().compareTo(line.getPriceList()) != 0){
+					if (prodbpOrg.getPriceList().compareTo(preciosProvLinOrg.getPriceList()) != 0){
 						// Actualizo info precios compra para este producto-socio-organizacion
 						prodbpOrg.setDateValidPO(fechaHoy);
-						prodbpOrg.setPriceList(line.getPriceList());
+						prodbpOrg.setPriceList(preciosProvLinOrg.getPriceList());
 					}
 
 					// Si precio de lista venta cambia
-					if (prodbpOrg.getPriceSO().compareTo(line.getNewPriceSO()) != 0){
+					if (prodbpOrg.getPriceSO().compareTo(preciosProvLinOrg.getNewPriceSO()) != 0){
 						prodbpOrg.setDateValidSO(fechaHoy);
-						prodbpOrg.setPriceSO(line.getNewPriceSO());
+						prodbpOrg.setPriceSO(preciosProvLinOrg.getNewPriceSO());
 					}
 				}
 				prodbpOrg.setM_PriceList_ID(plCompra.get_ID());
 				prodbpOrg.setM_PriceList_Version_ID(plVersionCompra.get_ID());
-				prodbpOrg.setM_PriceList_ID_SO(plVenta.get_ID());
-				prodbpOrg.setM_PriceList_Version_ID_SO(plVersionVenta.get_ID());
+				prodbpOrg.setM_PriceList_ID_SO(pporg.getM_PriceList_ID_SO());
+				prodbpOrg.setM_PriceList_Version_ID_SO(pporg.getM_PriceList_Version_ID_SO());
 				prodbpOrg.setC_Currency_ID(plCompra.getC_Currency_ID());
 				prodbpOrg.setC_Currency_ID_SO(this.getC_Currency_ID_SO());
-				prodbpOrg.setPricePO(line.getPricePO());
-				prodbpOrg.setPricePOMargin(line.getPricePOMargin());
-				prodbpOrg.setPriceFinal(line.getPriceFinal());
-				prodbpOrg.setPriceFinalMargin(line.getPriceFinalMargin());
+				prodbpOrg.setPricePO(preciosProvLinOrg.getPricePO());
+				prodbpOrg.setPricePOMargin(preciosProvLinOrg.getPricePOMargin());
+				prodbpOrg.setPriceFinal(preciosProvLinOrg.getPriceFinal());
+				prodbpOrg.setPriceFinalMargin(preciosProvLinOrg.getPriceFinalMargin());
 				prodbpOrg.saveEx();
 			}
 
@@ -1077,6 +1093,8 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				plinea.setInternalCode(prod.getValue());
 				plinea.setName(prod.getName());
 				plinea.setDescription(prod.getDescription());
+				plinea.setDistinctPricePO(productoSocio.isDistinctPricePO());
+				plinea.setDistinctPriceSO(productoSocio.isDistinctPriceSO());
 				plinea.setIsNew(false);
 
 				// Ultimo código de barras asociado al producto (en caso de tenerlo)
@@ -1116,6 +1134,10 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				plinea.calculateMargins(this.getRate());
 
 				plinea.saveEx();
+
+				// Carga organizaciones para esta linea tomando datos de las organizaciones del producto-socio
+				plinea.orgsCreateFromProductoSocio(productoSocio);
+
 			}
 
 		}
@@ -1451,6 +1473,10 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				plinea.calculateMargins(this.getRate());
 
 				plinea.saveEx();
+
+				// Exploto valores de linea en organizaciones seleccionadas para este proceso.
+				plinea.orgsCreate();
+
 				lineaArchivo.setIsConfirmed(true);
 				lineaArchivo.setErrorMsg(null);
 				lineaArchivo.saveEx();
@@ -1678,17 +1704,23 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 		try{
 
+			MZPautaComercial pautaComercial = (MZPautaComercial) this.getZ_PautaComercial();
+
 			// Obtengo y recorro lineas de este documento
 			List<MZPreciosProvLin> preciosProvLins = this.getLines();
 			for (MZPreciosProvLin preciosProvLin: preciosProvLins){
 
 				// Refresco valores de precio de compra de este linea
-				preciosProvLin.calculatePricesPO(preciosProvLin.getPriceList(), this.getPrecisionPO(), (MZPautaComercial) this.getZ_PautaComercial(), false);
+				preciosProvLin.calculatePricesPO(preciosProvLin.getPriceList(), this.getPrecisionPO(), pautaComercial, false);
 
 				// Calculo y seteo márgenes de linea
 				preciosProvLin.calculateMargins(this.getRate());
 
 				preciosProvLin.saveEx();
+
+				// Refreso datos de compra de las organizaciones de esta linea (solo por cambios en pautas comerciales)
+				preciosProvLin.orgsRefreshPautaPO(this.getPrecisionPO(), pautaComercial, false, this.getRate());
+
 			}
 
 		}

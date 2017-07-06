@@ -4,9 +4,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.core.model.MZProductoUPC;
 import org.zkoss.zhtml.Big;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Product: Adempiere ERP & CRM Smart Business Solution. Localization : Uruguay - Xpande
@@ -24,8 +26,10 @@ public class ValidatorRetail implements ModelValidator {
             this.adClientID = client.get_ID();
         }
 
+        // Document Validations
+        engine.addDocValidate(I_M_InOut.Table_Name, this);
+
         // DB Validations
-        //engine.addModelChange(I_M_Product.Table_Name, this);
         engine.addModelChange(I_C_Order.Table_Name, this);
         engine.addModelChange(I_C_OrderLine.Table_Name, this);
         engine.addModelChange(I_C_Invoice.Table_Name, this);
@@ -64,6 +68,11 @@ public class ValidatorRetail implements ModelValidator {
 
     @Override
     public String docValidate(PO po, int timing) {
+
+        if (po.get_TableName().equalsIgnoreCase(I_M_InOut.Table_Name)){
+            return docValidate((MInOut) po, timing);
+        }
+
         return null;
     }
 
@@ -321,8 +330,7 @@ public class ValidatorRetail implements ModelValidator {
      *	@param orderLine
      *	@return product pricing
      */
-    private MProductPricing getProductPricing (MOrderLine orderLine, MOrder order)
-    {
+    private MProductPricing getProductPricing (MOrderLine orderLine, MOrder order) {
         MProductPricing productPricing = null;
 
         try{
@@ -337,6 +345,71 @@ public class ValidatorRetail implements ModelValidator {
             throw new AdempiereException(e);
         }
         return productPricing;
+    }
+
+
+    /***
+     * Validaciones para documentos de la tabla M_InOut en Retail
+     * Xpande. Created by Gabriel Vila on 7/4/17.
+     * @param model
+     * @param timing
+     * @return
+     */
+    private String docValidate(MInOut model, int timing) {
+
+        String message = null;
+
+        if (timing == TIMING_BEFORE_COMPLETE){
+
+            // En recepciones de productos
+            if (model.getMovementType().equalsIgnoreCase(X_M_InOut.MOVEMENTTYPE_VendorReceipts)){
+
+                // Obtengo y recorro lineas
+                MInOutLine[] mInOutLines = model.getLines();
+                for (int i = 0; i < mInOutLines.length; i++){
+                    MInOutLine mInOutLine = mInOutLines[i];
+
+                    // Asocio posibles nuevos códigos de barra a los productos del socio de negocio
+                    if (mInOutLine.get_Value("UPC") != null){
+                        String upc = mInOutLine.get_ValueAsString("UPC").toString().trim();
+                        if (!upc.equalsIgnoreCase("")){
+                            MZProductoUPC pupc = MZProductoUPC.getByUPC(model.getCtx(), upc, model.get_TrxName());
+                            if ((pupc == null) || (pupc.get_ID() <= 0)){
+                                // Asocio nuevo UPC a este producto
+                                pupc = new MZProductoUPC(model.getCtx(), 0, model.get_TrxName());
+                                pupc.setUPC(upc);
+                                pupc.setM_Product_ID(mInOutLine.getM_Product_ID());
+                                pupc.saveEx();
+                            }
+                            else{
+                                if (pupc.getM_Product_ID() != mInOutLine.getM_Product_ID()){
+                                    MProduct prod = (MProduct)pupc.getM_Product();
+                                    return "El Código de Barras ingresado (" + upc + ") esta asociado a otro Producto : " + prod.getValue() + " - " + prod.getName();
+                                }
+                            }
+                        }
+                    }
+
+                    // Asocio posible nuevo codigo de producto del proveedor al producto
+                    if (mInOutLine.get_Value("VendorProductNo") != null){
+                        String vendorProductNo = mInOutLine.get_Value("VendorProductNo").toString().trim();
+                        if (!vendorProductNo.equalsIgnoreCase("")){
+                            MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(model.getCtx(), model.getC_BPartner_ID(), mInOutLine.getM_Product_ID(), model.get_TrxName());
+                            if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+                                productoSocio.setVendorProductNo(vendorProductNo);
+                                productoSocio.saveEx();
+                            }
+                            else{
+                                MProduct prod = (MProduct) mInOutLine.getM_Product();
+                                return "No se pudo obtener información de producto-socio para el producto : " + prod.getValue() + " - " + prod.getName();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
 }
