@@ -284,7 +284,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			if (!this.isOnlyOneOrg()){
 				List<MZPreciosProvOrg> preciosProvOrgs = this.getOrgsSelected();
 				for (MZPreciosProvOrg preciosProvOrg: preciosProvOrgs){
-					preciosProvOrg.updateProductPriceListSO(line, plVenta.getC_Currency_ID());
+					preciosProvOrg.updateProductPriceListSO(line, plVenta.getC_Currency_ID(), this.getDateValidPO());
 				}
 			}
 
@@ -316,7 +316,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				}
 
 				// Actualizo precios de compra de este producto en lista de precios de compra del distribuidor
-				lineaProductoDistri.updateProductPriceListPO(this.getC_Currency_ID(), line.getM_Product_ID(), line.getPriceList());
+				lineaProductoDistri.updateProductPriceListPO(this.getC_Currency_ID(), line.getM_Product_ID(), line.getPriceList(), this.getDateValidPO());
 
 				// Asocio producto a distribuidor y organizaciones
 				this.setProductSocioOrgs(lineaProductoDistri.getC_BPartner_ID(), lineaProductoDistri.getZ_LineaProductoSocioRelated_ID(), line, fechaHoy,
@@ -414,6 +414,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				pprice.setPriceStd(line.getPriceList());
 				pprice.setPriceLimit(line.getPriceList());
 			}
+			pprice.set_ValueOfColumn("ValidFrom", this.getDateValidPO());
 			pprice.saveEx();
 
 		}
@@ -446,6 +447,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				pprice.setPriceStd(line.getNewPriceSO());
 				pprice.setPriceLimit(line.getNewPriceSO());
 			}
+			pprice.set_ValueOfColumn("ValidFrom", this.getDateValidPO());
 			pprice.saveEx();
 
 		}

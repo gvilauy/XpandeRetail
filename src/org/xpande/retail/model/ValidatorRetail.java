@@ -4,7 +4,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.core.model.I_Z_ProductoUPC;
 import org.xpande.core.model.MZProductoUPC;
+import org.xpande.stech.model.MZStechInterfaceOut;
+import org.xpande.stech.model.X_Z_StechInterfaceOut;
 import org.zkoss.zhtml.Big;
 
 import java.math.BigDecimal;
@@ -35,6 +38,10 @@ public class ValidatorRetail implements ModelValidator {
         engine.addModelChange(I_C_Invoice.Table_Name, this);
         engine.addModelChange(I_C_InvoiceLine.Table_Name, this);
 
+        engine.addModelChange(I_M_Product.Table_Name, this);
+        engine.addModelChange(I_Z_ProductoUPC.Table_Name, this);
+        engine.addModelChange(I_M_ProductPrice.Table_Name, this);
+
     }
 
     @Override
@@ -61,6 +68,15 @@ public class ValidatorRetail implements ModelValidator {
         }
         else if (po.get_TableName().equalsIgnoreCase(I_C_InvoiceLine.Table_Name)){
             return modelChange((MInvoiceLine) po, type);
+        }
+        else if (po.get_TableName().equalsIgnoreCase(I_M_Product.Table_Name)){
+            return modelChange((MProduct) po, type);
+        }
+        else if (po.get_TableName().equalsIgnoreCase(I_Z_ProductoUPC.Table_Name)){
+            return modelChange((MZProductoUPC) po, type);
+        }
+        else if (po.get_TableName().equalsIgnoreCase(I_M_ProductPrice.Table_Name)){
+            return modelChange((MProductPrice) po, type);
         }
 
         return null;
@@ -410,6 +426,161 @@ public class ValidatorRetail implements ModelValidator {
         }
 
         return null;
+    }
+
+    /***
+     * Validaciones para el modelo de Productos
+     * Xpande. Created by Gabriel Vila on 6/30/17.
+     * @param model
+     * @param type
+     * @return
+     * @throws Exception
+     */
+    public String modelChange(MProduct model, int type) throws Exception {
+
+        String mensaje = null;
+
+        // Retail. Interface salida POS
+        if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)){
+
+            if (model.get_ValueAsInt("Z_PosVendor_ID") <= 0){
+                return mensaje;
+            }
+
+            MZPosVendor posVendor = new MZPosVendor(model.getCtx(), model.get_ValueAsInt("Z_PosVendor_ID"), null);
+
+            if (type == ModelValidator.TYPE_AFTER_NEW){
+                if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
+                    MZStechInterfaceOut stechInterfaceOut = new MZStechInterfaceOut(model.getCtx(), 0, model.get_TrxName());
+                    stechInterfaceOut.setCRUDType(X_Z_StechInterfaceOut.CRUDTYPE_CREATE);
+                    stechInterfaceOut.setSeqNo(10);
+                    stechInterfaceOut.setAD_Table_ID(I_M_Product.Table_ID);
+                    stechInterfaceOut.setRecord_ID(model.get_ID());
+                    stechInterfaceOut.saveEx();
+                }
+                else if (posVendor.getValue().equalsIgnoreCase("SISTECO")){
+
+                }
+            }
+            else if (type == ModelValidator.TYPE_AFTER_CHANGE){
+                if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
+
+                    // Si ya tengo una accion de UPDATE sobre este producto, no hago nada y salgo.
+                    MZStechInterfaceOut stechInterfaceOut = MZStechInterfaceOut.getRecord(model.getCtx(), X_Z_StechInterfaceOut.CRUDTYPE_UPDATE, I_M_Product.Table_ID, model.get_ID(), false, model.get_TrxName());
+                    if ((stechInterfaceOut != null) && (stechInterfaceOut.get_ID() > 0)){
+                        return mensaje;
+                    }
+
+                    // No existe aun marca de UPDATE sobre este producto, la creo ahora.
+                    stechInterfaceOut = new MZStechInterfaceOut(model.getCtx(), 0, model.get_TrxName());
+                    stechInterfaceOut.setCRUDType(X_Z_StechInterfaceOut.CRUDTYPE_UPDATE);
+                    stechInterfaceOut.setAD_Table_ID(I_M_Product.Table_ID);
+                    stechInterfaceOut.setSeqNo(20);
+                    stechInterfaceOut.setRecord_ID(model.get_ID());
+                    stechInterfaceOut.setIsPriceChanged(false);
+                    stechInterfaceOut.saveEx();
+                }
+                else if (posVendor.getValue().equalsIgnoreCase("SISTECO")){
+
+                }
+            }
+        }
+
+        return mensaje;
+    }
+
+
+    /***
+     * Validaciones para el modelo de Códigos de Barras de Productos.
+     * Xpande. Created by Gabriel Vila on 6/30/17.
+     * @param model
+     * @param type
+     * @return
+     * @throws Exception
+     */
+    public String modelChange(MZProductoUPC model, int type) throws Exception {
+
+        String mensaje = null;
+
+        // Retail. Interface salida POS
+        if (type == ModelValidator.TYPE_AFTER_NEW){
+
+            MProduct product = (MProduct)model.getM_Product();
+            if (product.get_ValueAsInt("Z_PosVendor_ID") <= 0){
+                return mensaje;
+            }
+
+            MZPosVendor posVendor = new MZPosVendor(model.getCtx(), product.get_ValueAsInt("Z_PosVendor_ID"), null);
+
+            if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
+                MZStechInterfaceOut stechInterfaceOut = new MZStechInterfaceOut(model.getCtx(), 0, model.get_TrxName());
+                stechInterfaceOut.setCRUDType(X_Z_StechInterfaceOut.CRUDTYPE_CREATE);
+                stechInterfaceOut.setAD_Table_ID(I_Z_ProductoUPC.Table_ID);
+                stechInterfaceOut.setRecord_ID(model.get_ID());
+                stechInterfaceOut.setSeqNo(15);
+                stechInterfaceOut.saveEx();
+            }
+            else if (posVendor.getValue().equalsIgnoreCase("SISTECO")){
+
+            }
+        }
+
+        return mensaje;
+    }
+
+    /***
+     * Validaciones para el modelo de Precios de Productos
+     * Xpande. Created by Gabriel Vila on 6/30/17.
+     * @param model
+     * @param type
+     * @return
+     * @throws Exception
+     */
+    public String modelChange(MProductPrice model, int type) throws Exception {
+
+        String mensaje = null;
+
+        // Retail. Interface salida POS
+        if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
+
+            // Solo listas de ventas con organización distinto de *
+            MPriceListVersion priceListVersion = new MPriceListVersion(model.getCtx(), model.getM_PriceList_Version_ID(), null);
+            MPriceList priceList = priceListVersion.getPriceList();
+            if (!priceList.isSOPriceList()) return mensaje;
+            if (priceList.getAD_Org_ID() == 0) return mensaje;
+
+            MProduct product = (MProduct)model.getM_Product();
+            if (product.get_ValueAsInt("Z_PosVendor_ID") <= 0){
+                return mensaje;
+            }
+
+            MZPosVendor posVendor = new MZPosVendor(model.getCtx(), product.get_ValueAsInt("Z_PosVendor_ID"), null);
+
+            if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
+
+                MZStechInterfaceOut stechInterfaceOut = null;
+
+                if (type == ModelValidator.TYPE_BEFORE_CHANGE){
+                    stechInterfaceOut = MZStechInterfaceOut.getRecord(model.getCtx(), X_Z_StechInterfaceOut.CRUDTYPE_UPDATE, I_M_Product.Table_ID, model.get_ID(),
+                            priceList.getAD_Org_ID(),true, model.get_TrxName());
+                    if ((stechInterfaceOut != null) && (stechInterfaceOut.get_ID() > 0)){
+                        return mensaje;
+                    }
+                }
+
+                stechInterfaceOut = new MZStechInterfaceOut(model.getCtx(), 0, model.get_TrxName());
+
+                stechInterfaceOut.setCRUDType(X_Z_StechInterfaceOut.CRUDTYPE_UPDATE);
+                stechInterfaceOut.setAD_Table_ID(I_M_Product.Table_ID);
+                stechInterfaceOut.setRecord_ID(product.get_ID());
+                stechInterfaceOut.setSeqNo(30);
+                stechInterfaceOut.setIsPriceChanged(true);
+                stechInterfaceOut.setAD_OrgTrx_ID(priceList.getAD_Org_ID());
+                stechInterfaceOut.saveEx();
+            }
+        }
+
+        return mensaje;
     }
 
 }

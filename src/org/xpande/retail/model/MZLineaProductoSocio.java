@@ -104,7 +104,7 @@ public class MZLineaProductoSocio extends X_Z_LineaProductoSocio {
             for (MZProductoSocio productoSocio: productoSocios){
 
                 // Actualizo lista de precios de compra del distribuidor para este producto (creo lista si no existe)
-                lineaProductoDistri.updateProductPriceListPO(plCompra.getC_Currency_ID(), productoSocio.getM_Product_ID(), productoSocio.getPriceList());
+                lineaProductoDistri.updateProductPriceListPO(plCompra.getC_Currency_ID(), productoSocio.getM_Product_ID(), productoSocio.getPriceList(), productoSocio.getDateValidPO());
 
                 // Nuevo modelo producto-socio para el distribuidor
                 MZProductoSocio productoDistribuidor = new MZProductoSocio(getCtx(), 0, get_TrxName());

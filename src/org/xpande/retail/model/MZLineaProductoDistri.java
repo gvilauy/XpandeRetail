@@ -6,6 +6,7 @@ import org.xpande.core.model.MZSocioListaPrecio;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.Properties;
 
 /**
@@ -69,7 +70,7 @@ public class MZLineaProductoDistri extends X_Z_LineaProductoDistri {
      * @param mProductID
      * @param priceList
      */
-    public void updateProductPriceListPO (int cCurrencyID, int mProductID, BigDecimal priceList) {
+    public void updateProductPriceListPO (int cCurrencyID, int mProductID, BigDecimal priceList, Timestamp validFrom) {
 
         try{
 
@@ -122,6 +123,7 @@ public class MZLineaProductoDistri extends X_Z_LineaProductoDistri {
                 pprice.setPriceStd(priceList);
                 pprice.setPriceLimit(priceList);
             }
+            pprice.set_ValueOfColumn("ValidFrom", validFrom);
             pprice.saveEx();
 
         }

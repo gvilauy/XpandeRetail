@@ -8,6 +8,7 @@ import org.compiere.model.MProductPrice;
 import org.xpande.core.utils.PriceListUtils;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.Properties;
 
 /**
@@ -32,8 +33,9 @@ public class MZPreciosProvOrg extends X_Z_PreciosProvOrg {
      * @param plVenta
      * @param plVersionVenta
      * @param line
+     * @param validFrom
      */
-    public void updateProductPriceListSO(MZPreciosProvLin line, int cCurrencyID) {
+    public void updateProductPriceListSO(MZPreciosProvLin line, int cCurrencyID, Timestamp validFrom ) {
 
         try{
 
@@ -74,6 +76,7 @@ public class MZPreciosProvOrg extends X_Z_PreciosProvOrg {
                 pprice.setPriceStd(line.getNewPriceSO());
                 pprice.setPriceLimit(line.getNewPriceSO());
             }
+            pprice.set_ValueOfColumn("ValidFrom", validFrom);
             pprice.saveEx();
 
         }
