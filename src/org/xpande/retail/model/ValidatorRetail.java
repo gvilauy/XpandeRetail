@@ -443,45 +443,82 @@ public class ValidatorRetail implements ModelValidator {
         // Retail. Interface salida POS
         if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)){
 
+            // Si el producto no tiene información del proveedor de pos a considerar, no hago nada.
             if (model.get_ValueAsInt("Z_PosVendor_ID") <= 0){
+                return mensaje;
+            }
+
+            // Si el producto no se vende, no hago nada
+            if (!model.isSold()){
                 return mensaje;
             }
 
             MZPosVendor posVendor = new MZPosVendor(model.getCtx(), model.get_ValueAsInt("Z_PosVendor_ID"), null);
 
             if (type == ModelValidator.TYPE_AFTER_NEW){
-                if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
-                    MZStechInterfaceOut stechInterfaceOut = new MZStechInterfaceOut(model.getCtx(), 0, model.get_TrxName());
-                    stechInterfaceOut.setCRUDType(X_Z_StechInterfaceOut.CRUDTYPE_CREATE);
-                    stechInterfaceOut.setSeqNo(10);
-                    stechInterfaceOut.setAD_Table_ID(I_M_Product.Table_ID);
-                    stechInterfaceOut.setRecord_ID(model.get_ID());
-                    stechInterfaceOut.saveEx();
-                }
-                else if (posVendor.getValue().equalsIgnoreCase("SISTECO")){
 
-                }
+                // Para proveedores de POS, los nuevos productos deben pasar por un etapa de impresión de etiquetas, antes
+                // de ser enviados a las cajas. Es por eso que solo se genera la marca y nada mas en este momento.
+                MZStechInterfaceOut stechInterfaceOut = new MZStechInterfaceOut(model.getCtx(), 0, model.get_TrxName());
+                stechInterfaceOut.setCRUDType(X_Z_StechInterfaceOut.CRUDTYPE_CREATE);
+                stechInterfaceOut.setSeqNo(10);
+                stechInterfaceOut.setAD_Table_ID(I_M_Product.Table_ID);
+                stechInterfaceOut.setRecord_ID(model.get_ID());
+                stechInterfaceOut.saveEx();
+
             }
             else if (type == ModelValidator.TYPE_AFTER_CHANGE){
-                if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
 
-                    // Si ya tengo una accion de UPDATE sobre este producto, no hago nada y salgo.
-                    MZStechInterfaceOut stechInterfaceOut = MZStechInterfaceOut.getRecord(model.getCtx(), X_Z_StechInterfaceOut.CRUDTYPE_UPDATE, I_M_Product.Table_ID, model.get_ID(), false, model.get_TrxName());
-                    if ((stechInterfaceOut != null) && (stechInterfaceOut.get_ID() > 0)){
+                // Ante una actualización de un producto, verifico si hay una marca anterior para este producto.
+                // Si es asi, se procede según dicha marca anterior.
+                MZStechInterfaceOut stechInterfaceOut = MZStechInterfaceOut.getRecord(model.getCtx(), I_M_Product.Table_ID, model.get_ID(), model.get_TrxName());
+                if ((stechInterfaceOut != null) && (stechInterfaceOut.get_ID() > 0)){
+                    // Proceso segun marca que ya tenía este producto antes de su actualización.
+                    // Si marca anterior es CREATE
+                    if (stechInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_StechInterfaceOut.CRUDTYPE_CREATE)){
+                        // No hago nada y respeto primer marca
                         return mensaje;
                     }
+                    else if (stechInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_StechInterfaceOut.CRUDTYPE_DELETE)){
+                        // Si marca anterior es DELETEAR, es porque el producto se inactivo anteriormente.
+                        // Si este producto sigue estando inactivo
+                        if (!model.isActive()){
+                            // No hago nada y respeto primer marca.
+                            return mensaje;
+                        }
+                    }
+                }
+                // Proceso según proveedor de POS
+                if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
 
-                    // No existe aun marca de UPDATE sobre este producto, la creo ahora.
-                    stechInterfaceOut = new MZStechInterfaceOut(model.getCtx(), 0, model.get_TrxName());
-                    stechInterfaceOut.setCRUDType(X_Z_StechInterfaceOut.CRUDTYPE_UPDATE);
-                    stechInterfaceOut.setAD_Table_ID(I_M_Product.Table_ID);
-                    stechInterfaceOut.setSeqNo(20);
-                    stechInterfaceOut.setRecord_ID(model.get_ID());
-                    stechInterfaceOut.setIsPriceChanged(false);
-                    stechInterfaceOut.saveEx();
+                    // Las actualizaciones de producto deben viajar inmediatamente a las cajas cuando el pos es Scanntech.
+                    // Envio actualización a las cajas en este momento.
+                    if ((stechInterfaceOut == null) || (stechInterfaceOut.get_ID() <= 0)){
+                        // No existe aun marca de UPDATE sobre este producto, la creo ahora.
+                        stechInterfaceOut = new MZStechInterfaceOut(model.getCtx(), 0, model.get_TrxName());
+                        stechInterfaceOut.setCRUDType(X_Z_StechInterfaceOut.CRUDTYPE_UPDATE);
+                        stechInterfaceOut.setAD_Table_ID(I_M_Product.Table_ID);
+                        stechInterfaceOut.setSeqNo(20);
+                        stechInterfaceOut.setRecord_ID(model.get_ID());
+                        stechInterfaceOut.setIsPriceChanged(false);
+                        stechInterfaceOut.saveEx();
+                    }
+                    mensaje = stechInterfaceOut.execute(); // Info a cajas del pos en este momento.
                 }
                 else if (posVendor.getValue().equalsIgnoreCase("SISTECO")){
-
+                    // Para Sisteco, las actualizaciones de producto se guardan como marcas para en un proceso posterior
+                    // considerarse en la generación de un archivo plano de interface.
+                    // Si no tengo marca de update, la creo ahora.
+                    if ((stechInterfaceOut == null) || (stechInterfaceOut.get_ID() <= 0)){
+                        // No existe aun marca de UPDATE sobre este producto, la creo ahora.
+                        stechInterfaceOut = new MZStechInterfaceOut(model.getCtx(), 0, model.get_TrxName());
+                        stechInterfaceOut.setCRUDType(X_Z_StechInterfaceOut.CRUDTYPE_UPDATE);
+                        stechInterfaceOut.setAD_Table_ID(I_M_Product.Table_ID);
+                        stechInterfaceOut.setSeqNo(20);
+                        stechInterfaceOut.setRecord_ID(model.get_ID());
+                        stechInterfaceOut.setIsPriceChanged(false);
+                        stechInterfaceOut.saveEx();
+                    }
                 }
             }
         }
@@ -510,8 +547,14 @@ public class ValidatorRetail implements ModelValidator {
                 return mensaje;
             }
 
+            // Si el producto no se vende, no hago nada
+            if (!product.isSold()){
+                return mensaje;
+            }
+
             MZPosVendor posVendor = new MZPosVendor(model.getCtx(), product.get_ValueAsInt("Z_PosVendor_ID"), null);
 
+            // Para Scanntech, los nuevos códigos de barra deben enviarse inmediatamente a las cajas.
             if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
                 MZStechInterfaceOut stechInterfaceOut = new MZStechInterfaceOut(model.getCtx(), 0, model.get_TrxName());
                 stechInterfaceOut.setCRUDType(X_Z_StechInterfaceOut.CRUDTYPE_CREATE);
@@ -519,10 +562,54 @@ public class ValidatorRetail implements ModelValidator {
                 stechInterfaceOut.setRecord_ID(model.get_ID());
                 stechInterfaceOut.setSeqNo(15);
                 stechInterfaceOut.saveEx();
+
+                stechInterfaceOut.execute(); // Envío inmediato a las cajas del pos
             }
             else if (posVendor.getValue().equalsIgnoreCase("SISTECO")){
-
+                // Para Sisteco, solo se crea la marca de nuevo y para luego considerarse en la generación del archivo plano.
+                MZStechInterfaceOut stechInterfaceOut = new MZStechInterfaceOut(model.getCtx(), 0, model.get_TrxName());
+                stechInterfaceOut.setCRUDType(X_Z_StechInterfaceOut.CRUDTYPE_CREATE);
+                stechInterfaceOut.setAD_Table_ID(I_Z_ProductoUPC.Table_ID);
+                stechInterfaceOut.setRecord_ID(model.get_ID());
+                stechInterfaceOut.setSeqNo(15);
+                stechInterfaceOut.saveEx();
             }
+        }
+        else if (type == ModelValidator.TYPE_AFTER_DELETE){
+
+            MProduct product = (MProduct)model.getM_Product();
+            if (product.get_ValueAsInt("Z_PosVendor_ID") <= 0){
+                return mensaje;
+            }
+
+            // Si el producto no se vende, no hago nada
+            if (!product.isSold()){
+                return mensaje;
+            }
+
+            MZPosVendor posVendor = new MZPosVendor(model.getCtx(), product.get_ValueAsInt("Z_PosVendor_ID"), null);
+
+            // Para Scanntech, la eliminación de códigos de barra deben enviarse inmediatamente a las cajas.
+            if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
+                MZStechInterfaceOut stechInterfaceOut = new MZStechInterfaceOut(model.getCtx(), 0, model.get_TrxName());
+                stechInterfaceOut.setCRUDType(X_Z_StechInterfaceOut.CRUDTYPE_DELETE);
+                stechInterfaceOut.setAD_Table_ID(I_Z_ProductoUPC.Table_ID);
+                stechInterfaceOut.setRecord_ID(model.get_ID());
+                stechInterfaceOut.setSeqNo(13);
+                stechInterfaceOut.saveEx();
+
+                stechInterfaceOut.execute(); // Envío inmediato a las cajas del pos
+            }
+            else if (posVendor.getValue().equalsIgnoreCase("SISTECO")){
+                // Para Sisteco, solo se crea la marca de eliminación y para luego considerarse en la generación del archivo plano.
+                MZStechInterfaceOut stechInterfaceOut = new MZStechInterfaceOut(model.getCtx(), 0, model.get_TrxName());
+                stechInterfaceOut.setCRUDType(X_Z_StechInterfaceOut.CRUDTYPE_DELETE);
+                stechInterfaceOut.setAD_Table_ID(I_Z_ProductoUPC.Table_ID);
+                stechInterfaceOut.setRecord_ID(model.get_ID());
+                stechInterfaceOut.setSeqNo(13);
+                stechInterfaceOut.saveEx();
+            }
+
         }
 
         return mensaje;
@@ -554,22 +641,17 @@ public class ValidatorRetail implements ModelValidator {
                 return mensaje;
             }
 
+            // Si el producto no se vende, no hago nada
+            if (!product.isSold()){
+                return mensaje;
+            }
+
             MZPosVendor posVendor = new MZPosVendor(model.getCtx(), product.get_ValueAsInt("Z_PosVendor_ID"), null);
 
-            if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
-
-                MZStechInterfaceOut stechInterfaceOut = null;
-
-                if (type == ModelValidator.TYPE_BEFORE_CHANGE){
-                    stechInterfaceOut = MZStechInterfaceOut.getRecord(model.getCtx(), X_Z_StechInterfaceOut.CRUDTYPE_UPDATE, I_M_Product.Table_ID, model.get_ID(),
-                            priceList.getAD_Org_ID(),true, model.get_TrxName());
-                    if ((stechInterfaceOut != null) && (stechInterfaceOut.get_ID() > 0)){
-                        return mensaje;
-                    }
-                }
-
-                stechInterfaceOut = new MZStechInterfaceOut(model.getCtx(), 0, model.get_TrxName());
-
+            if (type == ModelValidator.TYPE_AFTER_NEW){
+                // Para proveedores de POS, los nuevos productos deben pasar por un etapa de impresión de etiquetas, antes
+                // de ser enviados a las cajas. Es por eso que solo se genera la marca y nada mas en este momento.
+                MZStechInterfaceOut stechInterfaceOut = new MZStechInterfaceOut(model.getCtx(), 0, model.get_TrxName());
                 stechInterfaceOut.setCRUDType(X_Z_StechInterfaceOut.CRUDTYPE_UPDATE);
                 stechInterfaceOut.setAD_Table_ID(I_M_Product.Table_ID);
                 stechInterfaceOut.setRecord_ID(product.get_ID());
@@ -578,6 +660,46 @@ public class ValidatorRetail implements ModelValidator {
                 stechInterfaceOut.setAD_OrgTrx_ID(priceList.getAD_Org_ID());
                 stechInterfaceOut.saveEx();
             }
+            else if (type == ModelValidator.TYPE_AFTER_CHANGE){
+
+                // Ante una actualización de precio de un producto, verifico si hay una marca anterior para este producto.
+                // Si es asi, se procede según dicha marca anterior.
+                MZStechInterfaceOut stechInterfaceOut = MZStechInterfaceOut.getRecord(model.getCtx(), I_M_Product.Table_ID, model.get_ID(), model.get_TrxName());
+                if ((stechInterfaceOut != null) && (stechInterfaceOut.get_ID() > 0)){
+                    // Proceso segun marca que ya tenía este producto antes de su actualización.
+                    // Si marca anterior es CREATE
+                    if (stechInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_StechInterfaceOut.CRUDTYPE_CREATE)){
+                        // No hago nada y respeto primer marca
+                        return mensaje;
+                    }
+                    else if (stechInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_StechInterfaceOut.CRUDTYPE_DELETE)){
+                        // Si marca anterior es DELETEAR, es porque el producto se inactivo anteriormente.
+                        // Si este producto sigue estando inactivo
+                        if (!model.isActive()){
+                            // No hago nada y respeto primer marca.
+                            return mensaje;
+                        }
+                    }
+                    else if (stechInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_StechInterfaceOut.CRUDTYPE_UPDATE)){
+                        // Si tenia marca anterior de cambio de precio para este producto, no hago nada
+                        if (stechInterfaceOut.isPriceChanged()){
+                            return  mensaje;
+                        }
+                    }
+                }
+
+                // Para proveedores de pos, los cambios de precios se marcan pero se procesan luego (primero se imprimen etiquetas antes de enviar
+                // cambios de precios a las cajas).
+                stechInterfaceOut = new MZStechInterfaceOut(model.getCtx(), 0, model.get_TrxName());
+                stechInterfaceOut.setCRUDType(X_Z_StechInterfaceOut.CRUDTYPE_UPDATE);
+                stechInterfaceOut.setAD_Table_ID(I_M_Product.Table_ID);
+                stechInterfaceOut.setRecord_ID(product.get_ID());
+                stechInterfaceOut.setSeqNo(30);
+                stechInterfaceOut.setIsPriceChanged(true);
+                stechInterfaceOut.setAD_OrgTrx_ID(priceList.getAD_Org_ID());
+                stechInterfaceOut.saveEx();
+            }
+
         }
 
         return mensaje;
