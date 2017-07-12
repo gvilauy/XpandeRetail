@@ -32,7 +32,7 @@ public class X_Z_ProductoRubro extends PO implements I_Z_ProductoRubro, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170613L;
+	private static final long serialVersionUID = 20170711L;
 
     /** Standard Constructor */
     public X_Z_ProductoRubro (Properties ctx, int Z_ProductoRubro_ID, String trxName)
@@ -73,6 +73,23 @@ public class X_Z_ProductoRubro extends PO implements I_Z_ProductoRubro, I_Persis
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set CodigoRubroPos.
+		@param CodigoRubroPos 
+		Código Rubro para interface POS
+	  */
+	public void setCodigoRubroPos (String CodigoRubroPos)
+	{
+		set_Value (COLUMNNAME_CodigoRubroPos, CodigoRubroPos);
+	}
+
+	/** Get CodigoRubroPos.
+		@return Código Rubro para interface POS
+	  */
+	public String getCodigoRubroPos () 
+	{
+		return (String)get_Value(COLUMNNAME_CodigoRubroPos);
+	}
 
 	/** Set Description.
 		@param Description 

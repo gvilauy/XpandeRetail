@@ -63,6 +63,19 @@ public interface I_Z_ProductoRubro
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name CodigoRubroPos */
+    public static final String COLUMNNAME_CodigoRubroPos = "CodigoRubroPos";
+
+	/** Set CodigoRubroPos.
+	  * Código Rubro para interface POS
+	  */
+	public void setCodigoRubroPos(String CodigoRubroPos);
+
+	/** Get CodigoRubroPos.
+	  * Código Rubro para interface POS
+	  */
+	public String getCodigoRubroPos();
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 

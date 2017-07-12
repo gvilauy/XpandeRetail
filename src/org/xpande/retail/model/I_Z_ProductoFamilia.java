@@ -63,6 +63,19 @@ public interface I_Z_ProductoFamilia
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name CodigoFamiliaPos */
+    public static final String COLUMNNAME_CodigoFamiliaPos = "CodigoFamiliaPos";
+
+	/** Set CodigoFamiliaPos.
+	  * Código de familia para interface POS
+	  */
+	public void setCodigoFamiliaPos(String CodigoFamiliaPos);
+
+	/** Get CodigoFamiliaPos.
+	  * Código de familia para interface POS
+	  */
+	public String getCodigoFamiliaPos();
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -165,7 +178,7 @@ public interface I_Z_ProductoFamilia
 	/** Get Z_ProductoRubro ID	  */
 	public int getZ_ProductoRubro_ID();
 
-	public org.xpande.retail.model.I_Z_ProductoRubro getZ_ProductoRubro() throws RuntimeException;
+	public I_Z_ProductoRubro getZ_ProductoRubro() throws RuntimeException;
 
     /** Column name Z_ProductoSeccion_ID */
     public static final String COLUMNNAME_Z_ProductoSeccion_ID = "Z_ProductoSeccion_ID";
@@ -176,5 +189,5 @@ public interface I_Z_ProductoFamilia
 	/** Get Z_ProductoSeccion ID	  */
 	public int getZ_ProductoSeccion_ID();
 
-	public org.xpande.retail.model.I_Z_ProductoSeccion getZ_ProductoSeccion() throws RuntimeException;
+	public I_Z_ProductoSeccion getZ_ProductoSeccion() throws RuntimeException;
 }
