@@ -287,7 +287,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					MZConfirmacionEtiquetaPrint etiquetaPrint = new MZConfirmacionEtiquetaPrint(getCtx(), 0, get_TrxName());
 					etiquetaPrint.setZ_ConfirmacionEtiqueta_ID(this.get_ID());
 					etiquetaPrint.setM_Product_ID(etiquetaProd.getM_Product_ID());
-					etiquetaPrint.setPriceSO(etiquetaProd.getPriceSO());
+					etiquetaPrint.setPriceSO(etiquetaProd.getPriceSO().setScale(2, BigDecimal.ROUND_HALF_UP));
 					etiquetaPrint.setDateValidSO(etiquetaProd.getDateValidSO());
 					etiquetaPrint.setC_Currency_ID_SO(etiquetaProd.getC_Currency_ID_SO());
 					etiquetaPrint.saveEx();
