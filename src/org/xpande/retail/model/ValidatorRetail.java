@@ -667,10 +667,10 @@ public class ValidatorRetail implements ModelValidator {
         String mensaje = null;
 
         // Retail. Interface salida POS
-        if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
+        if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)){
 
             // Solo listas de ventas con organización distinto de *
-            MPriceListVersion priceListVersion = new MPriceListVersion(model.getCtx(), model.getM_PriceList_Version_ID(), null);
+            MPriceListVersion priceListVersion = new MPriceListVersion(model.getCtx(), model.getM_PriceList_Version_ID(), model.get_TrxName());
             MPriceList priceList = priceListVersion.getPriceList();
             if (!priceList.isSOPriceList()) return mensaje;
             if (priceList.getAD_Org_ID() == 0) return mensaje;
