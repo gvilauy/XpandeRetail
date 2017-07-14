@@ -30,7 +30,7 @@ public class X_Z_LineaProductoSocio extends PO implements I_Z_LineaProductoSocio
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170713L;
+	private static final long serialVersionUID = 20170714L;
 
     /** Standard Constructor */
     public X_Z_LineaProductoSocio (Properties ctx, int Z_LineaProductoSocio_ID, String trxName)
@@ -43,6 +43,7 @@ public class X_Z_LineaProductoSocio extends PO implements I_Z_LineaProductoSocio
 // N
 			setIsOwn (true);
 // Y
+			setM_PriceList_ID (0);
 			setZ_LineaProductoGral_ID (0);
 			setZ_LineaProductoSocio_ID (0);
         } */
@@ -246,9 +247,9 @@ public class X_Z_LineaProductoSocio extends PO implements I_Z_LineaProductoSocio
 		return (String)get_Value(COLUMNNAME_ProcessButton);
 	}
 
-	public org.xpande.retail.model.I_Z_LineaProductoGral getZ_LineaProductoGral() throws RuntimeException
+	public I_Z_LineaProductoGral getZ_LineaProductoGral() throws RuntimeException
     {
-		return (org.xpande.retail.model.I_Z_LineaProductoGral)MTable.get(getCtx(), org.xpande.retail.model.I_Z_LineaProductoGral.Table_Name)
+		return (I_Z_LineaProductoGral)MTable.get(getCtx(), I_Z_LineaProductoGral.Table_Name)
 			.getPO(getZ_LineaProductoGral_ID(), get_TrxName());	}
 
 	/** Set Z_LineaProductoGral ID.
@@ -300,7 +301,11 @@ public class X_Z_LineaProductoSocio extends PO implements I_Z_LineaProductoSocio
 		@param Z_PautaComercial_ID Z_PautaComercial ID	  */
 	public void setZ_PautaComercial_ID (int Z_PautaComercial_ID)
 	{
-		throw new IllegalArgumentException ("Z_PautaComercial_ID is virtual column");	}
+		if (Z_PautaComercial_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Z_PautaComercial_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Z_PautaComercial_ID, Integer.valueOf(Z_PautaComercial_ID));
+	}
 
 	/** Get Z_PautaComercial ID.
 		@return Z_PautaComercial ID	  */

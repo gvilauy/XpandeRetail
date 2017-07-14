@@ -212,7 +212,7 @@ public interface I_Z_LineaProductoSocio
 	/** Get Z_LineaProductoGral ID	  */
 	public int getZ_LineaProductoGral_ID();
 
-	public org.xpande.retail.model.I_Z_LineaProductoGral getZ_LineaProductoGral() throws RuntimeException;
+	public I_Z_LineaProductoGral getZ_LineaProductoGral() throws RuntimeException;
 
     /** Column name Z_LineaProductoSocio_ID */
     public static final String COLUMNNAME_Z_LineaProductoSocio_ID = "Z_LineaProductoSocio_ID";

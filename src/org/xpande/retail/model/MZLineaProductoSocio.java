@@ -101,6 +101,7 @@ public class MZLineaProductoSocio extends X_Z_LineaProductoSocio {
             lineaProductoSocioDistri.setIsOwn(false);
             lineaProductoSocioDistri.setC_BPartnerRelation_ID(this.getC_BPartner_ID());
             lineaProductoSocioDistri.setM_PriceList_ID(lineaProductoDistri.getPlCompra(plCompra.getC_Currency_ID()).get_ID());
+            if (this.getZ_PautaComercial_ID() > 0) lineaProductoSocioDistri.setZ_PautaComercial_ID(this.getZ_PautaComercial_ID());
             lineaProductoSocioDistri.setIsLockedPO(false);
             lineaProductoSocioDistri.saveEx();
 

@@ -260,6 +260,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			lineaProductoSocio.setIsOwn(true);
 			lineaProductoSocio.setIsLockedPO(false);
 			lineaProductoSocio.setM_PriceList_ID(plCompra.get_ID());
+			if (this.getZ_PautaComercial_ID() > 0) lineaProductoSocio.setZ_PautaComercial_ID(this.getZ_PautaComercial_ID());
 			lineaProductoSocio.saveEx();
 
 			this.setZ_LineaProductoSocio_ID(lineaProductoSocio.get_ID());
@@ -328,6 +329,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 					lineaProductoSocioDistri.setC_BPartnerRelation_ID(this.getC_BPartner_ID());
 					lineaProductoSocioDistri.setIsLockedPO(false);
 					lineaProductoSocioDistri.setM_PriceList_ID(lineaProductoDistri.getPlCompra(plCompra.getC_Currency_ID()).get_ID());
+					if (this.getZ_PautaComercial_ID() > 0) lineaProductoSocioDistri.setZ_PautaComercial_ID(this.getZ_PautaComercial_ID());
 					lineaProductoSocioDistri.saveEx();
 
 					preciosProvDistri.setZ_LineaProductoDistri_ID(lineaProductoDistri.get_ID());
