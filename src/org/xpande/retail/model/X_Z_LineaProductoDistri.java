@@ -30,7 +30,7 @@ public class X_Z_LineaProductoDistri extends PO implements I_Z_LineaProductoDist
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170702L;
+	private static final long serialVersionUID = 20170713L;
 
     /** Standard Constructor */
     public X_Z_LineaProductoDistri (Properties ctx, int Z_LineaProductoDistri_ID, String trxName)
@@ -166,34 +166,6 @@ public class X_Z_LineaProductoDistri extends PO implements I_Z_LineaProductoDist
 	public int getZ_LineaProductoSocio_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_LineaProductoSocio_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	public I_Z_LineaProductoSocio getZ_LineaProductoSocioRelated() throws RuntimeException
-    {
-		return (I_Z_LineaProductoSocio)MTable.get(getCtx(), I_Z_LineaProductoSocio.Table_Name)
-			.getPO(getZ_LineaProductoSocioRelated_ID(), get_TrxName());	}
-
-	/** Set Z_LineaProductoSocioRelated_ID.
-		@param Z_LineaProductoSocioRelated_ID 
-		Linea de producto relacionada de otro socio de negocio
-	  */
-	public void setZ_LineaProductoSocioRelated_ID (int Z_LineaProductoSocioRelated_ID)
-	{
-		if (Z_LineaProductoSocioRelated_ID < 1) 
-			set_Value (COLUMNNAME_Z_LineaProductoSocioRelated_ID, null);
-		else 
-			set_Value (COLUMNNAME_Z_LineaProductoSocioRelated_ID, Integer.valueOf(Z_LineaProductoSocioRelated_ID));
-	}
-
-	/** Get Z_LineaProductoSocioRelated_ID.
-		@return Linea de producto relacionada de otro socio de negocio
-	  */
-	public int getZ_LineaProductoSocioRelated_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_LineaProductoSocioRelated_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

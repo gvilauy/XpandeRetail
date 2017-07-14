@@ -21,10 +21,10 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import org.compiere.model.*;
 
-/** Generated Model for Z_LineaProducto
+/** Generated Model for Z_LineaProductoGral
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0 - $Id$ */
-public class X_Z_LineaProducto extends PO implements I_Z_LineaProducto, I_Persistent 
+public class X_Z_LineaProductoGral extends PO implements I_Z_LineaProductoGral, I_Persistent 
 {
 
 	/**
@@ -33,18 +33,18 @@ public class X_Z_LineaProducto extends PO implements I_Z_LineaProducto, I_Persis
 	private static final long serialVersionUID = 20170713L;
 
     /** Standard Constructor */
-    public X_Z_LineaProducto (Properties ctx, int Z_LineaProducto_ID, String trxName)
+    public X_Z_LineaProductoGral (Properties ctx, int Z_LineaProductoGral_ID, String trxName)
     {
-      super (ctx, Z_LineaProducto_ID, trxName);
-      /** if (Z_LineaProducto_ID == 0)
+      super (ctx, Z_LineaProductoGral_ID, trxName);
+      /** if (Z_LineaProductoGral_ID == 0)
         {
 			setName (null);
-			setZ_LineaProducto_ID (0);
+			setZ_LineaProductoGral_ID (0);
         } */
     }
 
     /** Load Constructor */
-    public X_Z_LineaProducto (Properties ctx, ResultSet rs, String trxName)
+    public X_Z_LineaProductoGral (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -66,7 +66,7 @@ public class X_Z_LineaProducto extends PO implements I_Z_LineaProducto, I_Persis
 
     public String toString()
     {
-      StringBuffer sb = new StringBuffer ("X_Z_LineaProducto[")
+      StringBuffer sb = new StringBuffer ("X_Z_LineaProductoGral[")
         .append(get_ID()).append("]");
       return sb.toString();
     }
@@ -105,21 +105,21 @@ public class X_Z_LineaProducto extends PO implements I_Z_LineaProducto, I_Persis
 		return (String)get_Value(COLUMNNAME_Name);
 	}
 
-	/** Set Z_LineaProducto ID.
-		@param Z_LineaProducto_ID Z_LineaProducto ID	  */
-	public void setZ_LineaProducto_ID (int Z_LineaProducto_ID)
+	/** Set Z_LineaProductoGral ID.
+		@param Z_LineaProductoGral_ID Z_LineaProductoGral ID	  */
+	public void setZ_LineaProductoGral_ID (int Z_LineaProductoGral_ID)
 	{
-		if (Z_LineaProducto_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Z_LineaProducto_ID, null);
+		if (Z_LineaProductoGral_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Z_LineaProductoGral_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_Z_LineaProducto_ID, Integer.valueOf(Z_LineaProducto_ID));
+			set_ValueNoCheck (COLUMNNAME_Z_LineaProductoGral_ID, Integer.valueOf(Z_LineaProductoGral_ID));
 	}
 
-	/** Get Z_LineaProducto ID.
-		@return Z_LineaProducto ID	  */
-	public int getZ_LineaProducto_ID () 
+	/** Get Z_LineaProductoGral ID.
+		@return Z_LineaProductoGral ID	  */
+	public int getZ_LineaProductoGral_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_LineaProducto_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_LineaProductoGral_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

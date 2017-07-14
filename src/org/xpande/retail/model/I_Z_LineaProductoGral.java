@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_LineaProducto
+/** Generated Interface for Z_LineaProductoGral
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_LineaProducto 
+public interface I_Z_LineaProductoGral 
 {
 
-    /** TableName=Z_LineaProducto */
-    public static final String Table_Name = "Z_LineaProducto";
+    /** TableName=Z_LineaProductoGral */
+    public static final String Table_Name = "Z_LineaProductoGral";
 
-    /** AD_Table_ID=1000077 */
+    /** AD_Table_ID=1000078 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -134,14 +134,14 @@ public interface I_Z_LineaProducto
 	  */
 	public int getUpdatedBy();
 
-    /** Column name Z_LineaProducto_ID */
-    public static final String COLUMNNAME_Z_LineaProducto_ID = "Z_LineaProducto_ID";
+    /** Column name Z_LineaProductoGral_ID */
+    public static final String COLUMNNAME_Z_LineaProductoGral_ID = "Z_LineaProductoGral_ID";
 
-	/** Set Z_LineaProducto ID	  */
-	public void setZ_LineaProducto_ID(int Z_LineaProducto_ID);
+	/** Set Z_LineaProductoGral ID	  */
+	public void setZ_LineaProductoGral_ID(int Z_LineaProductoGral_ID);
 
-	/** Get Z_LineaProducto ID	  */
-	public int getZ_LineaProducto_ID();
+	/** Get Z_LineaProductoGral ID	  */
+	public int getZ_LineaProductoGral_ID();
 
     /** Column name Z_PautaComercial_ID */
     public static final String COLUMNNAME_Z_PautaComercial_ID = "Z_PautaComercial_ID";

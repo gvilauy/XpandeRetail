@@ -29,41 +29,8 @@ public class MZLineaProductoDistri extends X_Z_LineaProductoDistri {
 
 
     /***
-     * Estoy parado en el modelo de un distribuidor de linea de productos de otro socio padre.
-     * En este metodo se crea una linea de producto nueva para este distribuidor y se asocian
-     * ambas lineas: la linea del padre con la linea que se crea para este distribuidor.
-     * Xpande. Created by Gabriel Vila on 7/2/17.
-     */
-    public void setLineaProductoDistribuidor(){
-
-        try{
-            // Si ya tengo una linea de producto relacionada de este distribuidor, no hago nada.
-            if (this.getZ_LineaProductoSocioRelated_ID() > 0) return;
-
-            MZLineaProductoSocio lineaProductoSocioPadre = (MZLineaProductoSocio) this.getZ_LineaProductoSocio();
-
-            // Creo nueva linea de productos para este distribuidor asociada a la linea de producto que esta distribuyendo
-            MZLineaProductoSocio lineaProductoSocio = new MZLineaProductoSocio(getCtx(), 0, get_TrxName());
-            lineaProductoSocio.setC_BPartner_ID(this.getC_BPartner_ID());
-            lineaProductoSocio.setName(lineaProductoSocioPadre.getName());
-            lineaProductoSocio.setIsOwn(false);
-            lineaProductoSocio.setC_BPartnerRelation_ID(lineaProductoSocioPadre.getC_BPartner_ID());
-            lineaProductoSocio.setZ_LineaProductoSocioRelated_ID(lineaProductoSocioPadre.get_ID());
-            lineaProductoSocio.setIsLockedPO(false);
-            lineaProductoSocio.saveEx();
-
-            this.setZ_LineaProductoSocioRelated_ID(lineaProductoSocio.get_ID());
-
-        }
-        catch (Exception e){
-            throw new AdempiereException(e);
-        }
-    }
-
-
-    /***
      * Dada una moneda y un producto, se actualiza precio del mismo en la lista de precios correspondiente a
-     * este socio de negocio. En caso de no existir lista de precio de compra para este socio y moneda recibida,
+     * este socio de negocio.
      * se crea en este momento.
      * Xpande. Created by Gabriel Vila on 7/2/17.
      * @param cCurrencyID
@@ -74,40 +41,9 @@ public class MZLineaProductoDistri extends X_Z_LineaProductoDistri {
 
         try{
 
-            this.plCompra = null;
-            this.plVersionCompra = null;
-
-            // Veo si hay una lista existente para socio de negocio y moneda de compra
-            MZSocioListaPrecio bpl = MZSocioListaPrecio.getByPartnerCurrency(getCtx(), this.getC_BPartner_ID(), cCurrencyID, get_TrxName());
-
-            // No existe lista para este socio de negocio y moneda de compra, la creo y seteo al socio de negocio.
-            if ((bpl == null) || (bpl.get_ID() <= 0)){
-                MBPartner bp = (MBPartner) this.getC_BPartner();
-                MCurrency cur = new MCurrency(getCtx(), cCurrencyID, null);
-                plCompra = new MPriceList(getCtx(), 0, get_TrxName());
-                plCompra.setName("LISTA " + bp.getName().toUpperCase() + " " + cur.getISO_Code());
-                plCompra.setC_Currency_ID(cCurrencyID);
-                plCompra.setIsSOPriceList(false);
-                plCompra.setIsTaxIncluded(true);
-                plCompra.setIsNetPrice(false);
-                plCompra.setPricePrecision(cur.getStdPrecision());
-                plCompra.setAD_Org_ID(0);
-                plCompra.saveEx();
-
-                plVersionCompra = new MPriceListVersion(plCompra);
-                plVersionCompra.setName("VIGENTE");
-                plVersionCompra.setM_DiscountSchema_ID(1000000);
-                plVersionCompra.saveEx();
-
-                bpl =  new MZSocioListaPrecio(getCtx(), 0, get_TrxName());
-                bpl.setC_BPartner_ID(this.getC_BPartner_ID());
-                bpl.setC_Currency_ID(cCurrencyID);
-                bpl.setM_PriceList_ID(plCompra.get_ID());
-                bpl.saveEx();
-            }
-            else{
-                plCompra = (MPriceList) bpl.getM_PriceList();
-                plVersionCompra = plCompra.getPriceListVersion(null);
+            // Si no tengo lista, la creo en este momento
+            if (this.plCompra == null){
+                this.getPlCompra(cCurrencyID);
             }
 
             // Intento obtener precio de lista actual para el producto recibido en la lista de precios del socio
@@ -132,11 +68,54 @@ public class MZLineaProductoDistri extends X_Z_LineaProductoDistri {
         }
     }
 
-    public MPriceList getPlCompra() {
+    /***
+     * Obtiene y retorna lista de precios de compra para este distribuidor en la moneda recibida.
+     * Si no existe la crea en este momento.
+     * @return
+     */
+    public MPriceList getPlCompra(int cCurrencyID) {
+
+        if (plCompra == null){
+            // Veo si hay una lista existente para socio de negocio y moneda de compra
+            MZSocioListaPrecio bpl = MZSocioListaPrecio.getByPartnerCurrency(getCtx(), this.getC_BPartner_ID(), cCurrencyID, get_TrxName());
+
+            // No existe lista para este socio de negocio y moneda de compra, la creo y seteo al socio de negocio.
+            if ((bpl == null) || (bpl.get_ID() <= 0)){
+                MBPartner bp = (MBPartner) this.getC_BPartner();
+                MCurrency cur = new MCurrency(getCtx(), cCurrencyID, null);
+                plCompra = new MPriceList(getCtx(), 0, get_TrxName());
+                plCompra.setName("LISTA " + bp.getName().toUpperCase() + " " + cur.getISO_Code());
+                plCompra.setC_Currency_ID(cCurrencyID);
+                plCompra.setIsSOPriceList(false);
+                plCompra.setIsTaxIncluded(true);
+                plCompra.setIsNetPrice(false);
+                plCompra.setPricePrecision(cur.getStdPrecision());
+                plCompra.setAD_Org_ID(0);
+                plCompra.saveEx();
+
+                plVersionCompra = new MPriceListVersion(plCompra);
+                plVersionCompra.setName("VIGENTE " + bp.getName().toUpperCase() + " " + cur.getISO_Code());
+                plVersionCompra.setM_DiscountSchema_ID(1000000);
+                plVersionCompra.saveEx();
+
+                bpl =  new MZSocioListaPrecio(getCtx(), 0, get_TrxName());
+                bpl.setC_BPartner_ID(this.getC_BPartner_ID());
+                bpl.setC_Currency_ID(cCurrencyID);
+                bpl.setM_PriceList_ID(plCompra.get_ID());
+                bpl.saveEx();
+            }
+            else{
+                plCompra = (MPriceList) bpl.getM_PriceList();
+                plVersionCompra = plCompra.getPriceListVersion(null);
+            }
+
+        }
+
         return plCompra;
     }
 
     public MPriceListVersion getPlVersionCompra() {
+
         return plVersionCompra;
     }
 

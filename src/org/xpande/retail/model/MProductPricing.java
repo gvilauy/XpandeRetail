@@ -750,15 +750,6 @@ public class MProductPricing
 					priceStd = ppi.getPricePO();
 				}
 			}
-			/*
-			// Si además de los descuentos por pautas comerciales, tengo descuento manual
-			if ((manualDiscount != null) && (manualDiscount.compareTo(Env.ZERO) != 0)){
-				// Aplico descuento manual al precio
-				BigDecimal multiplier = (Env.ONEHUNDRED).subtract(manualDiscount);
-				multiplier = multiplier.divide(Env.ONEHUNDRED, 6, BigDecimal.ROUND_HALF_UP);
-				priceStd = priceStd.multiply(multiplier).setScale(precision, BigDecimal.ROUND_HALF_UP);
-			}
-			*/
 		}
 		// Xpande.
 	}

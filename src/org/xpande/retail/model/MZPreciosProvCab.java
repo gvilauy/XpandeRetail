@@ -241,20 +241,27 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		MPriceList plVenta = new MPriceList(getCtx(), this.getM_PriceList_ID_SO(), get_TrxName());
 		MPriceListVersion plVersionVenta = new MPriceListVersion(getCtx(), this.getM_PriceList_Version_ID_SO(), get_TrxName());
 
-		// Obtengo modelo para linea de productos del socio, si es nueva la creo en este momento y la asocio al socio del documento.
+		// Obtengo modelo para linea de productos del socio
+		MZLineaProductoGral lineaProductoGral = null;
 		MZLineaProductoSocio lineaProductoSocio = null;
 		if (this.getZ_LineaProductoSocio_ID() > 0){
 			lineaProductoSocio = (MZLineaProductoSocio) this.getZ_LineaProductoSocio();
+			lineaProductoGral = (MZLineaProductoGral)lineaProductoSocio.getZ_LineaProductoGral();
 		}
 		else{
 			// Nueva linea, la creo y la asocio al socio de negocios de este documento
+			lineaProductoGral = new MZLineaProductoGral(getCtx(), 0, get_TrxName());
+			lineaProductoGral.setName(this.getNombreLineaManual());
+			lineaProductoGral.saveEx();
+
 			lineaProductoSocio = new MZLineaProductoSocio(getCtx(), 0, get_TrxName());
 			lineaProductoSocio.setC_BPartner_ID(this.getC_BPartner_ID());
-			lineaProductoSocio.setName(this.getNombreLineaManual());
+			lineaProductoSocio.setZ_LineaProductoGral_ID(lineaProductoGral.get_ID());
 			lineaProductoSocio.setIsOwn(true);
 			lineaProductoSocio.setIsLockedPO(false);
 			lineaProductoSocio.setM_PriceList_ID(plCompra.get_ID());
 			lineaProductoSocio.saveEx();
+
 			this.setZ_LineaProductoSocio_ID(lineaProductoSocio.get_ID());
 
 			// Si tengo pauta comercial, le asocio la nueva linea de productos en este momento y aplico
@@ -301,16 +308,28 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 				// Obtengo o creo distribuidor del socio de negocio del documento
 				MZLineaProductoDistri lineaProductoDistri = null;
+				MZLineaProductoSocio lineaProductoSocioDistri = null;
 				if (preciosProvDistri.getZ_LineaProductoDistri_ID() > 0){
 					lineaProductoDistri = (MZLineaProductoDistri) preciosProvDistri.getZ_LineaProductoDistri();
+					lineaProductoSocioDistri = MZLineaProductoSocio.getByLineaBPartner(getCtx(), lineaProductoGral.get_ID(), preciosProvDistri.getC_BPartner_ID(), get_TrxName());
 				}
 				else{
 					lineaProductoDistri = new MZLineaProductoDistri(getCtx(), 0, get_TrxName());
 					lineaProductoDistri.setZ_LineaProductoSocio_ID(this.getZ_LineaProductoSocio_ID());
 					lineaProductoDistri.setC_BPartner_ID(preciosProvDistri.getC_BPartner_ID());
 					lineaProductoDistri.setIsLockedPO(false);
-					lineaProductoDistri.setLineaProductoDistribuidor();
 					lineaProductoDistri.saveEx();
+
+					// Creo asociacion de distribuidor con linea de negocio
+					lineaProductoSocioDistri = new MZLineaProductoSocio(getCtx(), 0, get_TrxName());
+					lineaProductoSocioDistri.setZ_LineaProductoGral_ID(lineaProductoGral.get_ID());
+					lineaProductoSocioDistri.setC_BPartner_ID(preciosProvDistri.getC_BPartner_ID());
+					lineaProductoSocioDistri.setIsOwn(false);
+					lineaProductoSocioDistri.setC_BPartnerRelation_ID(this.getC_BPartner_ID());
+					lineaProductoSocioDistri.setIsLockedPO(false);
+					lineaProductoSocioDistri.setM_PriceList_ID(lineaProductoDistri.getPlCompra(plCompra.getC_Currency_ID()).get_ID());
+					lineaProductoSocioDistri.saveEx();
+
 					preciosProvDistri.setZ_LineaProductoDistri_ID(lineaProductoDistri.get_ID());
 					preciosProvDistri.saveEx();
 				}
@@ -319,8 +338,8 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				lineaProductoDistri.updateProductPriceListPO(this.getC_Currency_ID(), line.getM_Product_ID(), line.getPriceList(), this.getDateValidPO());
 
 				// Asocio producto a distribuidor y organizaciones
-				this.setProductSocioOrgs(lineaProductoDistri.getC_BPartner_ID(), lineaProductoDistri.getZ_LineaProductoSocioRelated_ID(), line, fechaHoy,
-						lineaProductoDistri.getPlCompra(), lineaProductoDistri.getPlVersionCompra(), plVenta, plVersionVenta);
+				this.setProductSocioOrgs(lineaProductoDistri.getC_BPartner_ID(), lineaProductoSocioDistri.get_ID(), line, fechaHoy,
+						lineaProductoDistri.getPlCompra(plCompra.getC_Currency_ID()), lineaProductoDistri.getPlVersionCompra(), plVenta, plVersionVenta);
 			}
 
 			line.saveEx();
@@ -500,7 +519,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				pl.saveEx();
 
 				MPriceListVersion plv = new MPriceListVersion(pl);
-				plv.setName("VIGENTE");
+				plv.setName("VIGENTE " + bp.getName().toUpperCase() + " " + cur.getISO_Code());
 				plv.setM_DiscountSchema_ID(1000000);
 				plv.saveEx();
 

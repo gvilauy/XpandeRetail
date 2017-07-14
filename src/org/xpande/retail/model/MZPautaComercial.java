@@ -190,7 +190,6 @@ public class MZPautaComercial extends X_Z_PautaComercial {
         String message = null;
 
         try{
-
             message = this.validate();
             if (message != null){
                 return message;
@@ -201,67 +200,17 @@ public class MZPautaComercial extends X_Z_PautaComercial {
             // Si tengo que recalcular descuentos y tengo linea de producto asociada
             if ((recalculate) && (this.getZ_LineaProductoSocio_ID() > 0)){
 
-                // Recalculo descuentos en productos que pertenecen al socio-linea.
+                MZLineaProductoSocio lineaProductoSocio = (MZLineaProductoSocio)this.getZ_LineaProductoSocio();
+                MZLineaProductoGral lineaProductoGral = (MZLineaProductoGral) lineaProductoSocio.getZ_LineaProductoGral();
 
-                // Obtengo y recorro lista de modelos de producto-socio para este socio y linea de productos
-                List<MZProductoSocio> productoSocios = MZProductoSocio.getByBPartnerLinea(getCtx(), this.getC_BPartner_ID(), this.getZ_LineaProductoSocio_ID(), get_TrxName());
-                for (MZProductoSocio productoSocio: productoSocios){
+                // Recalculo descuentos en productos que pertenecen al socio dueño de la linea de productos asociada a esta pauta
+                this.recalculateLineaSocioPrices(lineaProductoSocio);
 
-                    // Instancio modelo de producto y aplico pauta en la lista de precios que viene en la relacion producto-socio
-                    MProduct prod = (MProduct) productoSocio.getM_Product();
-
-                    MPriceList priceList = (MPriceList) productoSocio.getM_PriceList();
-                    if ((priceList == null) || (priceList.get_ID() <= 0)){
-                        return "No se obtuvo Lista de Precios para Producto : " + prod.getValue() + " - " + prod.getName();
-                    }
-
-                    MPriceListVersion priceListVersion = priceList.getPriceListVersion(null);
-                    if ((priceListVersion == null) || (priceListVersion.get_ID() <= 0)){
-                        return "No se obtuvo Versión Lista de Precios para Producto : " + prod.getValue() + " - " + prod.getName() +
-                                " , Lista de Precios : " + priceList.getName();
-                    }
-
-                    MProductPrice productPrice = MProductPrice.get(getCtx(), priceListVersion.get_ID(), prod.get_ID(), get_TrxName());
-                    if (productPrice == null){
-                        return "No se obtuvo Precios para Producto : " + prod.getValue() + " - " + prod.getName() +
-                                " en la Lista de Precios : " + priceList.getName();
-                    }
-
-                    ProductPricesInfo ppi = this.calculatePrices(prod.get_ID(), productPrice.getPriceList(), priceList.getPricePrecision());
-                    if (ppi != null){
-
-                        // Seteo precios de compra y segmentos si es necesario en producto-socio
-                        productoSocio.setPricePO(ppi.getPricePO());
-                        productoSocio.setPriceFinal(ppi.getPriceFinal());
-                        if (ppi.getSumPercentageDiscountsOC() != null) {
-                            productoSocio.setTotalDiscountsPO(ppi.getSumPercentageDiscountsOC());
-                        }
-                        else{
-                            productoSocio.setTotalDiscountsPO(Env.ZERO);
-                        }
-                        if (ppi.getSumPercentageDiscountsFinal() != null) {
-                            productoSocio.setTotalDiscountsFinal(ppi.getSumPercentageDiscountsFinal());
-                        }
-                        else{
-                            productoSocio.setTotalDiscountsFinal(Env.ZERO);
-                        }
-
-                        productoSocio.setZ_PautaComercial_ID(this.get_ID());
-                        if (ppi.getSegmentoGral_ID() > 0) productoSocio.setZ_PautaComercialSet_ID_Gen(ppi.getSegmentoGral_ID());
-                        if (ppi.getSegmentoEspecial1_ID() > 0) productoSocio.setZ_PautaComercialSet_ID_1(ppi.getSegmentoEspecial1_ID());
-                        if (ppi.getSegmentoEspecial2_ID() > 0) productoSocio.setZ_PautaComercialSet_ID_2(ppi.getSegmentoEspecial2_ID());
-
-                        productoSocio.calculateMargins();
-
-                        productoSocio.saveEx();
-
-                        productoSocio.orgsRefreshPO(prod.getM_Product_ID(), priceList.getPricePrecision(), this);
-
-                    }
-                    else{
-                        return "No se pudo Aplicar la Pauta Comercial al producto : " + prod.getValue() + " - " + prod.getName();
-                    }
-
+                // Hago lo mismo para cada distribuidor de la linea de productos pertenciente al socio de negocio de esta pauta
+                // Obtengo distribuidores, los recorro y les recalculo descuentos en productos
+                List<MZLineaProductoSocio> lineaProductoDistris = lineaProductoGral.getDistribuidores();
+                for (MZLineaProductoSocio lineaProductoDistri: lineaProductoDistris){
+                    this.recalculateLineaSocioPrices(lineaProductoDistri);
                 }
             }
 
@@ -274,6 +223,67 @@ public class MZPautaComercial extends X_Z_PautaComercial {
         }
 
         return message;
+    }
+
+    /***
+     * Recalcula descuentos y precios de productos que pertenecen a una linea de productos de un socio de negocios.
+     * Xpande. Created by Gabriel Vila on 7/13/17.
+     * @param lineaProductoSocio
+     */
+    private void recalculateLineaSocioPrices(MZLineaProductoSocio lineaProductoSocio) {
+
+        try{
+
+            // Instancio lista de precios de compra y versión vigente asociados a la linea de productos-socio
+            MPriceList priceList = (MPriceList) lineaProductoSocio.getM_PriceList();
+            MPriceListVersion priceListVersion = priceList.getPriceListVersion(null);
+
+            // Obtengo y recorro lista de modelos de producto-socio para este socio y linea recibidos
+            List<MZProductoSocio> productoSocios = MZProductoSocio.getByBPartnerLinea(getCtx(), lineaProductoSocio.getC_BPartner_ID(), lineaProductoSocio.get_ID(), get_TrxName());
+            for (MZProductoSocio productoSocio: productoSocios){
+
+                // Instancio modelo de producto y aplico pauta en la lista de precios que viene en la relacion producto-socio
+                MProduct prod = (MProduct) productoSocio.getM_Product();
+
+                MProductPrice productPrice = MProductPrice.get(getCtx(), priceListVersion.get_ID(), prod.get_ID(), get_TrxName());
+                if (productPrice == null) return;
+
+                ProductPricesInfo ppi = this.calculatePrices(prod.get_ID(), productPrice.getPriceList(), priceList.getPricePrecision());
+                if (ppi != null){
+
+                    // Seteo precios de compra y segmentos si es necesario en producto-socio
+                    productoSocio.setPricePO(ppi.getPricePO());
+                    productoSocio.setPriceFinal(ppi.getPriceFinal());
+                    if (ppi.getSumPercentageDiscountsOC() != null) {
+                        productoSocio.setTotalDiscountsPO(ppi.getSumPercentageDiscountsOC());
+                    }
+                    else{
+                        productoSocio.setTotalDiscountsPO(Env.ZERO);
+                    }
+                    if (ppi.getSumPercentageDiscountsFinal() != null) {
+                        productoSocio.setTotalDiscountsFinal(ppi.getSumPercentageDiscountsFinal());
+                    }
+                    else{
+                        productoSocio.setTotalDiscountsFinal(Env.ZERO);
+                    }
+
+                    productoSocio.setZ_PautaComercial_ID(this.get_ID());
+                    if (ppi.getSegmentoGral_ID() > 0) productoSocio.setZ_PautaComercialSet_ID_Gen(ppi.getSegmentoGral_ID());
+                    if (ppi.getSegmentoEspecial1_ID() > 0) productoSocio.setZ_PautaComercialSet_ID_1(ppi.getSegmentoEspecial1_ID());
+                    if (ppi.getSegmentoEspecial2_ID() > 0) productoSocio.setZ_PautaComercialSet_ID_2(ppi.getSegmentoEspecial2_ID());
+
+                    productoSocio.calculateMargins();
+
+                    productoSocio.saveEx();
+
+                    productoSocio.orgsRefreshPO(prod.getM_Product_ID(), priceList.getPricePrecision(), this);
+
+                }
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
     }
 
 

@@ -93,6 +93,21 @@ public interface I_Z_LineaProductoSocio
 
 	public I_C_BPartner getC_BPartnerRelation() throws RuntimeException;
 
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/** Set Currency.
+	  * The Currency for this record
+	  */
+	public void setC_Currency_ID(int C_Currency_ID);
+
+	/** Get Currency.
+	  * The Currency for this record
+	  */
+	public int getC_Currency_ID();
+
+	public I_C_Currency getC_Currency() throws RuntimeException;
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -108,19 +123,6 @@ public interface I_Z_LineaProductoSocio
 	  * User who created this records
 	  */
 	public int getCreatedBy();
-
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
-
-	/** Set Description.
-	  * Optional short description of the record
-	  */
-	public void setDescription(String Description);
-
-	/** Get Description.
-	  * Optional short description of the record
-	  */
-	public String getDescription();
 
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
@@ -176,19 +178,6 @@ public interface I_Z_LineaProductoSocio
 
 	public I_M_PriceList getM_PriceList() throws RuntimeException;
 
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
-
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public void setName(String Name);
-
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public String getName();
-
     /** Column name ProcessButton */
     public static final String COLUMNNAME_ProcessButton = "ProcessButton";
 
@@ -214,6 +203,17 @@ public interface I_Z_LineaProductoSocio
 	  */
 	public int getUpdatedBy();
 
+    /** Column name Z_LineaProductoGral_ID */
+    public static final String COLUMNNAME_Z_LineaProductoGral_ID = "Z_LineaProductoGral_ID";
+
+	/** Set Z_LineaProductoGral ID	  */
+	public void setZ_LineaProductoGral_ID(int Z_LineaProductoGral_ID);
+
+	/** Get Z_LineaProductoGral ID	  */
+	public int getZ_LineaProductoGral_ID();
+
+	public org.xpande.retail.model.I_Z_LineaProductoGral getZ_LineaProductoGral() throws RuntimeException;
+
     /** Column name Z_LineaProductoSocio_ID */
     public static final String COLUMNNAME_Z_LineaProductoSocio_ID = "Z_LineaProductoSocio_ID";
 
@@ -223,18 +223,14 @@ public interface I_Z_LineaProductoSocio
 	/** Get Z_LineaProductoSocio ID	  */
 	public int getZ_LineaProductoSocio_ID();
 
-    /** Column name Z_LineaProductoSocioRelated_ID */
-    public static final String COLUMNNAME_Z_LineaProductoSocioRelated_ID = "Z_LineaProductoSocioRelated_ID";
+    /** Column name Z_PautaComercial_ID */
+    public static final String COLUMNNAME_Z_PautaComercial_ID = "Z_PautaComercial_ID";
 
-	/** Set Z_LineaProductoSocioRelated_ID.
-	  * Linea de producto relacionada de otro socio de negocio
-	  */
-	public void setZ_LineaProductoSocioRelated_ID(int Z_LineaProductoSocioRelated_ID);
+	/** Set Z_PautaComercial ID	  */
+	public void setZ_PautaComercial_ID(int Z_PautaComercial_ID);
 
-	/** Get Z_LineaProductoSocioRelated_ID.
-	  * Linea de producto relacionada de otro socio de negocio
-	  */
-	public int getZ_LineaProductoSocioRelated_ID();
+	/** Get Z_PautaComercial ID	  */
+	public int getZ_PautaComercial_ID();
 
-	public I_Z_LineaProductoSocio getZ_LineaProductoSocioRelated() throws RuntimeException;
+	public I_Z_PautaComercial getZ_PautaComercial() throws RuntimeException;
 }

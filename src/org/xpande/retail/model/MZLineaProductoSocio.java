@@ -26,20 +26,18 @@ public class MZLineaProductoSocio extends X_Z_LineaProductoSocio {
 
 
     /***
-     * Obtiene y retorna linea de productos de un distribuidor que esta relacionada a una lista de productos de otro socio de negocio (dueño de la linea).
+     * Obtiene y retorna modelo para linea de producto y socio de negocio.
      * Xpande. Created by Gabriel Vila on 7/2/17.
      * @param ctx
-     * @param cBPartnerDistriID
-     * @param cBPartnerRelatedID
-     * @param zLineaProductoSocioRelatedID
+     * @param zLineaProductoGralID
+     * @param cBPartnerID
      * @param trxName
      * @return
      */
-    public static MZLineaProductoSocio getByDistriRelatedPartnerLinea(Properties ctx, int cBPartnerDistriID, int cBPartnerRelatedID, int zLineaProductoSocioRelatedID, String trxName) {
+    public static MZLineaProductoSocio getByLineaBPartner(Properties ctx, int zLineaProductoGralID, int cBPartnerID, String trxName) {
 
-        String whereClause = X_Z_LineaProductoSocio.COLUMNNAME_C_BPartner_ID + " =" + cBPartnerDistriID +
-                " AND " + X_Z_LineaProductoSocio.COLUMNNAME_C_BPartnerRelation_ID + " =" + cBPartnerRelatedID +
-                " AND " + X_Z_LineaProductoSocio.COLUMNNAME_Z_LineaProductoSocioRelated_ID + " =" + zLineaProductoSocioRelatedID;
+        String whereClause = X_Z_LineaProductoSocio.COLUMNNAME_Z_LineaProductoGral_ID + " =" + zLineaProductoGralID +
+                " AND " + X_Z_LineaProductoSocio.COLUMNNAME_C_BPartner_ID + " =" + cBPartnerID;
 
         MZLineaProductoSocio model = new Query(ctx, I_Z_LineaProductoSocio.Table_Name, whereClause, trxName).first();
 
@@ -63,7 +61,7 @@ public class MZLineaProductoSocio extends X_Z_LineaProductoSocio {
 
 
     /***
-     * Metodo para crear un nuevo distribuidor de esta linea de productos.
+     * Metodo para crear un nuevo distribuidor de la linea de productos que tiene este socio como dueño.
      * Clona modelos prducto-socio del socio dueño de esta linea, para el ditribuidor.
      * Clona modelos de organizaciones de los prducto-socio antes mencionados.
      * Xpande. Created by Gabriel Vila on 7/2/17.
@@ -82,23 +80,36 @@ public class MZLineaProductoSocio extends X_Z_LineaProductoSocio {
                 return "Este distribuidor ya esta asociado a esta Linea de Productos del Socio de Negocio.";
             }
 
-            // Nuevo distribuidor
+            // Instancio modelo de lista de precios de compra y versión vigente de la misma
+            MPriceList plCompra = (MPriceList) this.getM_PriceList();
+            MPriceListVersion plVersionCompra = plCompra.getPriceListVersion(null);
+
+            // Obtengo Linea de producto de este socio
+            MZLineaProductoGral lineaProductoGral = (MZLineaProductoGral)this.getZ_LineaProductoGral();
+
+            // Creo asociación con nuevo distribuidor
             lineaProductoDistri = new MZLineaProductoDistri(getCtx(), 0, get_TrxName());
             lineaProductoDistri.setZ_LineaProductoSocio_ID(this.get_ID());
             lineaProductoDistri.setC_BPartner_ID(cBPartnerDistribuidorID);
             lineaProductoDistri.setIsLockedPO(false);
-            lineaProductoDistri.setLineaProductoDistribuidor();
             lineaProductoDistri.saveEx();
 
-            // Obtengo lista de productos de esta linea de negocios
+            // Creo asociacion nuevo distribuidor de linea de productos
+            MZLineaProductoSocio lineaProductoSocioDistri = new MZLineaProductoSocio(getCtx(), 0, get_TrxName());
+            lineaProductoSocioDistri.setZ_LineaProductoGral_ID(lineaProductoGral.get_ID());
+            lineaProductoSocioDistri.setC_BPartner_ID(cBPartnerDistribuidorID);
+            lineaProductoSocioDistri.setIsOwn(false);
+            lineaProductoSocioDistri.setC_BPartnerRelation_ID(this.getC_BPartner_ID());
+            lineaProductoSocioDistri.setM_PriceList_ID(lineaProductoDistri.getPlCompra(plCompra.getC_Currency_ID()).get_ID());
+            lineaProductoSocioDistri.setIsLockedPO(false);
+            lineaProductoSocioDistri.saveEx();
+
+            // Obtengo lista de producto-socio para socio-linea de productos-lista de precios.
             List<MZProductoSocio> productoSocios = MZProductoSocio.getByBPartnerLineaPriceList(getCtx(), this.getC_BPartner_ID(), this.get_ID(), this.getM_PriceList_ID(), get_TrxName());
             if ((productoSocios == null) || (productoSocios.size() <= 0)){
                 throw new AdempiereException("No se obtuvieron Productos para la Linea, Socio de Negocios y Lista de Precios de Compra.");
             }
 
-            // Instancio modelo de lista de precios de compra y versión vigente de la misma
-            MPriceList plCompra = (MPriceList) this.getM_PriceList();
-            MPriceListVersion plVersionCompra = plCompra.getPriceListVersion(null);
 
             // Recorro lista de modelos producto-socio para socio y linea de productos
             for (MZProductoSocio productoSocio: productoSocios){
@@ -112,14 +123,14 @@ public class MZLineaProductoSocio extends X_Z_LineaProductoSocio {
                 productoDistribuidor.setC_BPartner_ID(lineaProductoDistri.getC_BPartner_ID());
                 productoDistribuidor.setDateValidPO(productoSocio.getDateValidPO());
                 productoDistribuidor.setDateValidSO(productoSocio.getDateValidSO());
-                productoDistribuidor.setZ_LineaProductoSocio_ID(lineaProductoDistri.getZ_LineaProductoSocioRelated_ID());
+                productoDistribuidor.setZ_LineaProductoSocio_ID(lineaProductoSocioDistri.get_ID());
                 productoDistribuidor.setPriceList(productoSocio.getPriceList());
                 productoDistribuidor.setPriceSO(productoSocio.getPriceSO());
-                productoDistribuidor.setM_PriceList_ID(lineaProductoDistri.getPlCompra().get_ID());
+                productoDistribuidor.setM_PriceList_ID(lineaProductoDistri.getPlCompra(plCompra.getC_Currency_ID()).get_ID());
                 productoDistribuidor.setM_PriceList_Version_ID(lineaProductoDistri.getPlVersionCompra().get_ID());
                 productoDistribuidor.setM_PriceList_ID_SO(productoSocio.getM_PriceList_ID_SO());
                 productoDistribuidor.setM_PriceList_Version_ID_SO(productoSocio.getM_PriceList_Version_ID_SO());
-                productoDistribuidor.setC_Currency_ID(lineaProductoDistri.getPlCompra().getC_Currency_ID());
+                productoDistribuidor.setC_Currency_ID(plCompra.getC_Currency_ID());
                 productoDistribuidor.setC_Currency_ID_SO(productoSocio.getC_Currency_ID_SO());
                 productoDistribuidor.setPricePO(productoSocio.getPricePO());
                 productoDistribuidor.setPricePOMargin(productoSocio.getPricePOMargin());
@@ -153,11 +164,11 @@ public class MZLineaProductoSocio extends X_Z_LineaProductoSocio {
                     productoDistriOrg.setDateValidSO(productoSocioOrg.getDateValidSO());
                     productoDistriOrg.setPriceList(productoSocioOrg.getPriceList());
                     productoDistriOrg.setPriceSO(productoSocioOrg.getPriceSO());
-                    productoDistriOrg.setM_PriceList_ID(lineaProductoDistri.getPlCompra().get_ID());
+                    productoDistriOrg.setM_PriceList_ID(lineaProductoDistri.getPlCompra(plCompra.getC_Currency_ID()).get_ID());
                     productoDistriOrg.setM_PriceList_Version_ID(lineaProductoDistri.getPlVersionCompra().get_ID());
                     productoDistriOrg.setM_PriceList_ID_SO(productoSocioOrg.getM_PriceList_ID_SO());
                     productoDistriOrg.setM_PriceList_Version_ID_SO(productoSocioOrg.getM_PriceList_Version_ID_SO());
-                    productoDistriOrg.setC_Currency_ID(lineaProductoDistri.getPlCompra().getC_Currency_ID());
+                    productoDistriOrg.setC_Currency_ID(plCompra.getC_Currency_ID());
                     productoDistriOrg.setC_Currency_ID_SO(productoSocioOrg.getC_Currency_ID_SO());
                     productoDistriOrg.setPricePO(productoSocioOrg.getPricePO());
                     productoDistriOrg.setPricePOMargin(productoSocioOrg.getPricePOMargin());

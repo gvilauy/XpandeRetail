@@ -155,19 +155,4 @@ public interface I_Z_LineaProductoDistri
 	public int getZ_LineaProductoSocio_ID();
 
 	public I_Z_LineaProductoSocio getZ_LineaProductoSocio() throws RuntimeException;
-
-    /** Column name Z_LineaProductoSocioRelated_ID */
-    public static final String COLUMNNAME_Z_LineaProductoSocioRelated_ID = "Z_LineaProductoSocioRelated_ID";
-
-	/** Set Z_LineaProductoSocioRelated_ID.
-	  * Linea de producto relacionada de otro socio de negocio
-	  */
-	public void setZ_LineaProductoSocioRelated_ID(int Z_LineaProductoSocioRelated_ID);
-
-	/** Get Z_LineaProductoSocioRelated_ID.
-	  * Linea de producto relacionada de otro socio de negocio
-	  */
-	public int getZ_LineaProductoSocioRelated_ID();
-
-	public I_Z_LineaProductoSocio getZ_LineaProductoSocioRelated() throws RuntimeException;
 }

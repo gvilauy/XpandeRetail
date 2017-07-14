@@ -30,7 +30,7 @@ public class X_Z_LineaProductoSocio extends PO implements I_Z_LineaProductoSocio
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170702L;
+	private static final long serialVersionUID = 20170713L;
 
     /** Standard Constructor */
     public X_Z_LineaProductoSocio (Properties ctx, int Z_LineaProductoSocio_ID, String trxName)
@@ -43,7 +43,7 @@ public class X_Z_LineaProductoSocio extends PO implements I_Z_LineaProductoSocio
 // N
 			setIsOwn (true);
 // Y
-			setName (null);
+			setZ_LineaProductoGral_ID (0);
 			setZ_LineaProductoSocio_ID (0);
         } */
     }
@@ -132,21 +132,28 @@ public class X_Z_LineaProductoSocio extends PO implements I_Z_LineaProductoSocio
 		return ii.intValue();
 	}
 
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
-	  */
-	public void setDescription (String Description)
-	{
-		set_Value (COLUMNNAME_Description, Description);
-	}
+	public I_C_Currency getC_Currency() throws RuntimeException
+    {
+		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
+			.getPO(getC_Currency_ID(), get_TrxName());	}
 
-	/** Get Description.
-		@return Optional short description of the record
+	/** Set Currency.
+		@param C_Currency_ID 
+		The Currency for this record
 	  */
-	public String getDescription () 
+	public void setC_Currency_ID (int C_Currency_ID)
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		throw new IllegalArgumentException ("C_Currency_ID is virtual column");	}
+
+	/** Get Currency.
+		@return The Currency for this record
+	  */
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set IsLockedPO.
@@ -225,23 +232,6 @@ public class X_Z_LineaProductoSocio extends PO implements I_Z_LineaProductoSocio
 		return ii.intValue();
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
-	public void setName (String Name)
-	{
-		set_Value (COLUMNNAME_Name, Name);
-	}
-
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
-	public String getName () 
-	{
-		return (String)get_Value(COLUMNNAME_Name);
-	}
-
 	/** Set ProcessButton.
 		@param ProcessButton ProcessButton	  */
 	public void setProcessButton (String ProcessButton)
@@ -254,6 +244,31 @@ public class X_Z_LineaProductoSocio extends PO implements I_Z_LineaProductoSocio
 	public String getProcessButton () 
 	{
 		return (String)get_Value(COLUMNNAME_ProcessButton);
+	}
+
+	public org.xpande.retail.model.I_Z_LineaProductoGral getZ_LineaProductoGral() throws RuntimeException
+    {
+		return (org.xpande.retail.model.I_Z_LineaProductoGral)MTable.get(getCtx(), org.xpande.retail.model.I_Z_LineaProductoGral.Table_Name)
+			.getPO(getZ_LineaProductoGral_ID(), get_TrxName());	}
+
+	/** Set Z_LineaProductoGral ID.
+		@param Z_LineaProductoGral_ID Z_LineaProductoGral ID	  */
+	public void setZ_LineaProductoGral_ID (int Z_LineaProductoGral_ID)
+	{
+		if (Z_LineaProductoGral_ID < 1) 
+			set_Value (COLUMNNAME_Z_LineaProductoGral_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_LineaProductoGral_ID, Integer.valueOf(Z_LineaProductoGral_ID));
+	}
+
+	/** Get Z_LineaProductoGral ID.
+		@return Z_LineaProductoGral ID	  */
+	public int getZ_LineaProductoGral_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_LineaProductoGral_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Z_LineaProductoSocio ID.
@@ -276,29 +291,22 @@ public class X_Z_LineaProductoSocio extends PO implements I_Z_LineaProductoSocio
 		return ii.intValue();
 	}
 
-	public I_Z_LineaProductoSocio getZ_LineaProductoSocioRelated() throws RuntimeException
+	public I_Z_PautaComercial getZ_PautaComercial() throws RuntimeException
     {
-		return (I_Z_LineaProductoSocio)MTable.get(getCtx(), I_Z_LineaProductoSocio.Table_Name)
-			.getPO(getZ_LineaProductoSocioRelated_ID(), get_TrxName());	}
+		return (I_Z_PautaComercial)MTable.get(getCtx(), I_Z_PautaComercial.Table_Name)
+			.getPO(getZ_PautaComercial_ID(), get_TrxName());	}
 
-	/** Set Z_LineaProductoSocioRelated_ID.
-		@param Z_LineaProductoSocioRelated_ID 
-		Linea de producto relacionada de otro socio de negocio
-	  */
-	public void setZ_LineaProductoSocioRelated_ID (int Z_LineaProductoSocioRelated_ID)
+	/** Set Z_PautaComercial ID.
+		@param Z_PautaComercial_ID Z_PautaComercial ID	  */
+	public void setZ_PautaComercial_ID (int Z_PautaComercial_ID)
 	{
-		if (Z_LineaProductoSocioRelated_ID < 1) 
-			set_Value (COLUMNNAME_Z_LineaProductoSocioRelated_ID, null);
-		else 
-			set_Value (COLUMNNAME_Z_LineaProductoSocioRelated_ID, Integer.valueOf(Z_LineaProductoSocioRelated_ID));
-	}
+		throw new IllegalArgumentException ("Z_PautaComercial_ID is virtual column");	}
 
-	/** Get Z_LineaProductoSocioRelated_ID.
-		@return Linea de producto relacionada de otro socio de negocio
-	  */
-	public int getZ_LineaProductoSocioRelated_ID () 
+	/** Get Z_PautaComercial ID.
+		@return Z_PautaComercial ID	  */
+	public int getZ_PautaComercial_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_LineaProductoSocioRelated_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_PautaComercial_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
