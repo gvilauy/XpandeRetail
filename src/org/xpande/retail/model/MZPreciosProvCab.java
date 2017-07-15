@@ -242,38 +242,30 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		MPriceListVersion plVersionVenta = new MPriceListVersion(getCtx(), this.getM_PriceList_Version_ID_SO(), get_TrxName());
 
 		// Obtengo modelo para linea de productos del socio
-		MZLineaProductoGral lineaProductoGral = null;
-		MZLineaProductoSocio lineaProductoSocio = null;
-		if (this.getZ_LineaProductoSocio_ID() > 0){
-			lineaProductoSocio = (MZLineaProductoSocio) this.getZ_LineaProductoSocio();
-			lineaProductoGral = (MZLineaProductoGral)lineaProductoSocio.getZ_LineaProductoGral();
-		}
-		else{
-			// Nueva linea, la creo y la asocio al socio de negocios de este documento
-			lineaProductoGral = new MZLineaProductoGral(getCtx(), 0, get_TrxName());
-			lineaProductoGral.setName(this.getNombreLineaManual());
-			lineaProductoGral.saveEx();
+		MZLineaProductoSocio lineaProductoSocio = (MZLineaProductoSocio) this.getZ_LineaProductoSocio();
+		MZLineaProductoGral lineaProductoGral = (MZLineaProductoGral)lineaProductoSocio.getZ_LineaProductoGral();
 
-			lineaProductoSocio = new MZLineaProductoSocio(getCtx(), 0, get_TrxName());
-			lineaProductoSocio.setC_BPartner_ID(this.getC_BPartner_ID());
-			lineaProductoSocio.setZ_LineaProductoGral_ID(lineaProductoGral.get_ID());
-			lineaProductoSocio.setIsOwn(true);
-			lineaProductoSocio.setIsLockedPO(false);
+		// Si en este documento se creo la linea de producto
+		if (this.isNewLineaProducto()){
+
+			// Seteo datos faltantes en la linea creada y en su asociación con el socio de negocio
 			lineaProductoSocio.setM_PriceList_ID(plCompra.get_ID());
-			if (this.getZ_PautaComercial_ID() > 0) lineaProductoSocio.setZ_PautaComercial_ID(this.getZ_PautaComercial_ID());
-			lineaProductoSocio.saveEx();
-
-			this.setZ_LineaProductoSocio_ID(lineaProductoSocio.get_ID());
 
 			// Si tengo pauta comercial, le asocio la nueva linea de productos en este momento y aplico
 			if (this.getZ_PautaComercial_ID() > 0){
+				lineaProductoGral.setZ_PautaComercial_ID(this.getZ_PautaComercial_ID());
+				lineaProductoSocio.setZ_PautaComercial_ID(this.getZ_PautaComercial_ID());
+
 				MZPautaComercial pautaComercial = (MZPautaComercial)this.getZ_PautaComercial();
 				pautaComercial.updateLineaProducto(this.getZ_LineaProductoSocio_ID());
 				m_processMsg = pautaComercial.applyPauta(false);
 				if (m_processMsg != null){
 					return DocAction.STATUS_Invalid;
 				}
+
 			}
+			lineaProductoGral.saveEx();
+			lineaProductoSocio.saveEx();
 		}
 
 		// Recorro y proceso lineas (ya fueron validadas)
@@ -549,12 +541,6 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 	private String validateDocument(List<MZPreciosProvLin> lines) {
 
 		String message = null;
-
-		if (this.getZ_LineaProductoSocio_ID() <= 0){
-			if ((this.getNombreLineaManual() == null) || (this.getNombreLineaManual().trim().equalsIgnoreCase(""))){
-				return "Debe indicar Linea de Producto del Socio de Negocio a considerar, o ingresar Nombre para crear una Nueva.";
-			}
-		}
 
 		if (lines.size() <= 0){
 			return "El documento no tiene productos para procesar.";
@@ -1754,4 +1740,56 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		return message;
 	}
 
+	/***
+	 * Crea nueva linea de producto y crea asociación con el socio de negocio al cual pertenece.
+	 * Xpande. Created by Gabriel Vila on 7/15/17.
+	 * @param nombreLinea
+	 * @param descripcionLinea
+	 * @return
+	 */
+	public String crearLineaProducto(String nombreLinea, String descripcionLinea) {
+
+		String message = null;
+
+		try{
+			// Nueva linea, la creo y la asocio al socio de negocios de este documento
+			MZLineaProductoGral lineaProductoGral = new MZLineaProductoGral(getCtx(), 0, get_TrxName());
+			lineaProductoGral.setName(nombreLinea);
+			lineaProductoGral.setDescription(descripcionLinea);
+			lineaProductoGral.saveEx();
+
+			MZLineaProductoSocio lineaProductoSocio = new MZLineaProductoSocio(getCtx(), 0, get_TrxName());
+			lineaProductoSocio.setC_BPartner_ID(this.getC_BPartner_ID());
+			lineaProductoSocio.setZ_LineaProductoGral_ID(lineaProductoGral.get_ID());
+			lineaProductoSocio.setIsOwn(true);
+			lineaProductoSocio.setIsLockedPO(false);
+			lineaProductoSocio.saveEx();
+
+			this.setZ_LineaProductoSocio_ID(lineaProductoSocio.get_ID());
+			this.setIsNewLineaProducto(true);
+			this.saveEx();
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return message;
+	}
+
+	@Override
+	protected boolean beforeSave(boolean newRecord) {
+
+		// Me aseguro que tengo la pauta correcta para la linea
+		if (this.getZ_LineaProductoSocio_ID() > 0){
+			String sql = " select z_pautacomercial_id from z_pautacomercial where z_lineaproductosocio_id =" + this.getZ_LineaProductoSocio_ID();
+			int zPautaComercialID = DB.getSQLValueEx(null, sql);
+			if (zPautaComercialID > 0){
+				if (this.getZ_PautaComercial_ID() != zPautaComercialID){
+					this.setZ_PautaComercial_ID(zPautaComercialID);
+				}
+			}
+		}
+
+		return true;
+	}
 }

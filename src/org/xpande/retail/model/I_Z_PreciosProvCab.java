@@ -272,6 +272,19 @@ public interface I_Z_PreciosProvCab
 	/** Get IsExecuted	  */
 	public boolean isExecuted();
 
+    /** Column name IsNewLineaProducto */
+    public static final String COLUMNNAME_IsNewLineaProducto = "IsNewLineaProducto";
+
+	/** Set IsNewLineaProducto.
+	  * Es una nueva linea de producto en modulo de Retail
+	  */
+	public void setIsNewLineaProducto(boolean IsNewLineaProducto);
+
+	/** Get IsNewLineaProducto.
+	  * Es una nueva linea de producto en modulo de Retail
+	  */
+	public boolean isNewLineaProducto();
+
     /** Column name IsTaxIncluded */
     public static final String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
 
@@ -353,15 +366,6 @@ public interface I_Z_PreciosProvCab
 	  * Version de Lista de Precios de Venta
 	  */
 	public int getM_PriceList_Version_ID_SO();
-
-    /** Column name NombreLineaManual */
-    public static final String COLUMNNAME_NombreLineaManual = "NombreLineaManual";
-
-	/** Set NombreLineaManual	  */
-	public void setNombreLineaManual(String NombreLineaManual);
-
-	/** Get NombreLineaManual	  */
-	public String getNombreLineaManual();
 
     /** Column name OnlyOneOrg */
     public static final String COLUMNNAME_OnlyOneOrg = "OnlyOneOrg";
@@ -462,6 +466,19 @@ public interface I_Z_PreciosProvCab
 	  * Botón de Proceso
 	  */
 	public String getProcessButton5();
+
+    /** Column name ProcessButton6 */
+    public static final String COLUMNNAME_ProcessButton6 = "ProcessButton6";
+
+	/** Set ProcessButton6.
+	  * Botón de Proceso
+	  */
+	public void setProcessButton6(String ProcessButton6);
+
+	/** Get ProcessButton6.
+	  * Botón de Proceso
+	  */
+	public String getProcessButton6();
 
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";

@@ -1,6 +1,7 @@
 package org.xpande.retail.callout;
 
 import org.compiere.model.*;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.core.model.MZSocioListaPrecio;
 import org.xpande.core.utils.PriceListUtils;
@@ -326,5 +327,34 @@ public class CalloutPrecios extends CalloutEngine {
 
         return "";
     }
+
+    /***
+     * Setea pauta comercial para linea de producto seleccionada.
+     * Xpande. Created by Gabriel Vila on 7/15/17.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String pautaByLineaProducto(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if ((value == null) || (((Integer) value).intValue() <= 0)){
+            return "";
+        }
+
+        int zlineaProductoSocioID = ((Integer) value).intValue();
+
+        String sql = " select z_pautacomercial_id from z_pautacomercial where z_lineaproductosocio_id =" + zlineaProductoSocioID;
+        int zPautaComercialID = DB.getSQLValueEx(null, sql);
+
+        if (zPautaComercialID > 0){
+            mTab.setValue("Z_PautaComercial_ID", zPautaComercialID);
+        }
+
+        return "";
+    }
+
 
 }

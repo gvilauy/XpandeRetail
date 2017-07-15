@@ -33,7 +33,7 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170627L;
+	private static final long serialVersionUID = 20170715L;
 
     /** Standard Constructor */
     public X_Z_PreciosProvCab (Properties ctx, int Z_PreciosProvCab_ID, String trxName)
@@ -58,6 +58,8 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 			setIsApproved (false);
 // N
 			setIsExecuted (false);
+// N
+			setIsNewLineaProducto (false);
 // N
 			setIsTaxIncluded (true);
 // Y
@@ -446,6 +448,30 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 		return false;
 	}
 
+	/** Set IsNewLineaProducto.
+		@param IsNewLineaProducto 
+		Es una nueva linea de producto en modulo de Retail
+	  */
+	public void setIsNewLineaProducto (boolean IsNewLineaProducto)
+	{
+		set_Value (COLUMNNAME_IsNewLineaProducto, Boolean.valueOf(IsNewLineaProducto));
+	}
+
+	/** Get IsNewLineaProducto.
+		@return Es una nueva linea de producto en modulo de Retail
+	  */
+	public boolean isNewLineaProducto () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsNewLineaProducto);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Price includes Tax.
 		@param IsTaxIncluded 
 		Tax is included in the price 
@@ -592,20 +618,6 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 		return ii.intValue();
 	}
 
-	/** Set NombreLineaManual.
-		@param NombreLineaManual NombreLineaManual	  */
-	public void setNombreLineaManual (String NombreLineaManual)
-	{
-		set_Value (COLUMNNAME_NombreLineaManual, NombreLineaManual);
-	}
-
-	/** Get NombreLineaManual.
-		@return NombreLineaManual	  */
-	public String getNombreLineaManual () 
-	{
-		return (String)get_Value(COLUMNNAME_NombreLineaManual);
-	}
-
 	/** Set OnlyOneOrg.
 		@param OnlyOneOrg 
 		Flag para indicar si estoy procesando una sola una organización
@@ -750,6 +762,23 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 	public String getProcessButton5 () 
 	{
 		return (String)get_Value(COLUMNNAME_ProcessButton5);
+	}
+
+	/** Set ProcessButton6.
+		@param ProcessButton6 
+		Botón de Proceso
+	  */
+	public void setProcessButton6 (String ProcessButton6)
+	{
+		set_Value (COLUMNNAME_ProcessButton6, ProcessButton6);
+	}
+
+	/** Get ProcessButton6.
+		@return Botón de Proceso
+	  */
+	public String getProcessButton6 () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton6);
 	}
 
 	/** Set Processed.

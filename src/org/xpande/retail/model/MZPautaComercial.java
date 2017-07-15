@@ -212,6 +212,9 @@ public class MZPautaComercial extends X_Z_PautaComercial {
                 for (MZLineaProductoSocio lineaProductoDistri: lineaProductoDistris){
                     this.recalculateLineaSocioPrices(lineaProductoDistri);
                 }
+
+                lineaProductoGral.setZ_PautaComercial_ID(this.get_ID());
+                lineaProductoGral.saveEx();
             }
 
             this.setIsConfirmed(true);
@@ -233,6 +236,10 @@ public class MZPautaComercial extends X_Z_PautaComercial {
     private void recalculateLineaSocioPrices(MZLineaProductoSocio lineaProductoSocio) {
 
         try{
+
+            // Asocio pauta a linea de producto del socio
+            lineaProductoSocio.setZ_PautaComercial_ID(this.get_ID());
+            lineaProductoSocio.saveEx();
 
             // Instancio lista de precios de compra y versión vigente asociados a la linea de productos-socio
             MPriceList priceList = (MPriceList) lineaProductoSocio.getM_PriceList();
