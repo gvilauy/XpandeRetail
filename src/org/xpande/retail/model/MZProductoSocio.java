@@ -3,10 +3,12 @@ package org.xpande.retail.model;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.model.Query;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.retail.utils.ProductPricesInfo;
 
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
@@ -230,6 +232,89 @@ public class MZProductoSocio extends X_Z_ProductoSocio {
         catch (Exception e){
             throw new AdempiereException(e);
         }
+    }
+
+
+    /***
+     * Obtiene y retorna modelo para un determinado producto y ultima factura realizada.
+     * Xpande. Created by Gabriel Vila on 7/19/17.
+     * @param ctx
+     * @param mProductID
+     * @param trxName
+     * @return
+     */
+    public static MZProductoSocio getByLastInvoice(Properties ctx, int mProductID, String trxName) {
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        MZProductoSocio productoSocio = null;
+
+        try{
+            sql = " select z_productosocio_id " +
+                    " from z_productosocio " +
+                    " where m_product_id =" + mProductID +
+                    " and dateinvoiced is not null " +
+                    " order by dateinvoiced desc";
+
+        	pstmt = DB.prepareStatement(sql, trxName);
+        	rs = pstmt.executeQuery();
+
+        	if(rs.next()){
+        	    productoSocio = new MZProductoSocio(ctx, rs.getInt("z_productosocio_id"), trxName);
+        	}
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
+        }
+
+        return productoSocio;
+    }
+
+    /***
+     * Obtiene y retorna modelo para un determinado producto y ultima actualizacion de precio OC.
+     * Xpande. Created by Gabriel Vila on 7/19/17.
+     * @param ctx
+     * @param mProductID
+     * @param trxName
+     * @return
+     */
+    public static MZProductoSocio getByLastPriceOC(Properties ctx, int mProductID, String trxName) {
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        MZProductoSocio productoSocio = null;
+
+        try{
+            sql = " select z_productosocio_id " +
+                    " from z_productosocio " +
+                    " where m_product_id =" + mProductID +
+                    " and datevalidpo is not null " +
+                    " order by datevalidpo desc";
+
+            pstmt = DB.prepareStatement(sql, trxName);
+            rs = pstmt.executeQuery();
+
+            if(rs.next()){
+                productoSocio = new MZProductoSocio(ctx, rs.getInt("z_productosocio_id"), trxName);
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+
+        return productoSocio;
     }
 
 }

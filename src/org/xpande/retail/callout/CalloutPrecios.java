@@ -3,6 +3,7 @@ package org.xpande.retail.callout;
 import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.core.model.MZProductoUPC;
 import org.xpande.core.model.MZSocioListaPrecio;
 import org.xpande.core.utils.PriceListUtils;
 import org.xpande.retail.model.*;
@@ -19,7 +20,7 @@ public class CalloutPrecios extends CalloutEngine {
 
 
     /***
-     * Al cambiar moneda se carga lista de precios adecuada.
+     * Al cambiar moneda de compra o de venta se carga lista de precios adecuada.
      * Xpande. Created by Gabriel Vila on 6/15/17.
      * @param ctx
      * @param WindowNo
@@ -90,6 +91,50 @@ public class CalloutPrecios extends CalloutEngine {
             }
         }
 
+        return "";
+    }
+
+
+    /***
+     * Al cambiar moneda se carga lista de precios de venta para moneda y organizacion
+     * Xpande. Created by Gabriel Vila on 6/15/17.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String priceListSO_ByOrgCurrency(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (value == null) return "";
+
+        String column = mField.getColumnName();
+
+        int cCurrencyID = ((Integer)value).intValue();
+        int adClientID = Env.getContextAsInt(ctx, WindowNo, "AD_Client_ID");
+        int adOrgID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
+
+        // Obtengo lista de precios para organización y moneda de este documento
+        MPriceList priceList = PriceListUtils.getPriceListByOrg(ctx, adClientID, adOrgID, cCurrencyID, true, null);
+
+        if ((priceList != null) && (priceList.get_ID() > 0)){
+
+            mTab.setValue("M_PriceList_ID", priceList.getM_PriceList_ID());
+
+            // Obtengo versión de lista vigente
+            MPriceListVersion plv = priceList.getPriceListVersion(null);
+            if ((plv != null) && (plv.get_ID() > 0)){
+                mTab.setValue("M_PriceList_Version_ID", plv.get_ID());
+            }
+            else{
+                mTab.setValue("M_PriceList_Version_ID", null);
+            }
+        }
+        else{
+            mTab.setValue("M_PriceList_ID", null);
+
+        }
         return "";
     }
 
@@ -351,6 +396,120 @@ public class CalloutPrecios extends CalloutEngine {
 
         if (zPautaComercialID > 0){
             mTab.setValue("Z_PautaComercial_ID", zPautaComercialID);
+        }
+
+        return "";
+    }
+
+
+    /***
+     * Al ingresar código de barras, o el producto directamente, se deben setear demás campos asociados.
+     * Xpande. Created by Gabriel Vila on 6/25/17.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String upcProduct(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (isCalloutActive()) return "";
+
+        if ((value == null) || (value.toString().trim().equalsIgnoreCase(""))){
+            mTab.setValue("UPC", null);
+            mTab.setValue("M_Product_ID", null);
+            return "";
+        }
+
+        MProduct prod = null;
+
+        String column = mField.getColumnName();
+
+        if (column.equalsIgnoreCase("UPC")){
+            MZProductoUPC pupc = MZProductoUPC.getByUPC(ctx, value.toString().trim(), null);
+            if ((pupc != null) && (pupc.get_ID() > 0)){
+                prod = (MProduct) pupc.getM_Product();
+                mTab.setValue("M_Product_ID", prod.get_ID());
+            }
+            else{
+                mTab.setValue("M_Product_ID", null);
+            }
+        }
+        else if (column.equalsIgnoreCase("M_Product_ID")){
+
+            int mProductID = ((Integer) value).intValue();
+            prod = new MProduct(ctx, mProductID, null);
+
+            MZProductoUPC pupc = MZProductoUPC.getByProduct(ctx, mProductID, null);
+            if ((pupc != null) & (pupc.get_ID() > 0)){
+                mTab.setValue("UPC", pupc.getUPC());
+            }
+            else{
+                mTab.setValue("UPC", null);
+            }
+        }
+
+        // Seteo atrbutos asociados al producto
+        if ((prod != null) && (prod.get_ID() > 0)){
+
+            // Atributos del producto
+            mTab.setValue("Z_ProductoSeccion_ID", prod.get_ValueAsInt(X_Z_ProductoSeccion.COLUMNNAME_Z_ProductoSeccion_ID));
+            mTab.setValue("Z_ProductoRubro_ID", prod.get_ValueAsInt(X_Z_ProductoRubro.COLUMNNAME_Z_ProductoRubro_ID));
+            mTab.setValue("C_UOM_ID", prod.getC_UOM_ID());
+            mTab.setValue("C_TaxCategory_ID", prod.getC_TaxCategory_ID());
+
+            if (prod.get_ValueAsInt(X_Z_ProductoFamilia.COLUMNNAME_Z_ProductoFamilia_ID) > 0){
+                mTab.setValue("Z_ProductoFamilia_ID", prod.get_ValueAsInt(X_Z_ProductoFamilia.COLUMNNAME_Z_ProductoFamilia_ID));
+            }
+
+            if (prod.get_ValueAsInt(X_Z_ProductoSubfamilia.COLUMNNAME_Z_ProductoSubfamilia_ID) > 0){
+                mTab.setValue("Z_ProductoSubfamilia_ID", prod.get_ValueAsInt(X_Z_ProductoSubfamilia.COLUMNNAME_Z_ProductoSubfamilia_ID));
+            }
+
+            // Precios de compra
+            // Obtengo socio de negocio de la ultima factura, sino hay facturas, obtengo socio de ultima gestión de precios de proveedor.
+            MZProductoSocio productoSocio = MZProductoSocio.getByLastInvoice(ctx, prod.get_ID(), null);
+            if ((productoSocio == null) || (productoSocio.get_ID() <= 0)){
+                productoSocio = MZProductoSocio.getByLastPriceOC(ctx, prod.get_ID(), null);
+            }
+
+            if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+                mTab.setValue("PriceFinal", productoSocio.getPriceFinal());
+                mTab.setValue("PriceInvoiced", productoSocio.getPriceInvoiced());
+                mTab.setValue("PricePO", productoSocio.getPricePO());
+            }
+            else{
+                mTab.setValue("PriceFinal", Env.ZERO);
+                mTab.setValue("PriceInvoiced", Env.ZERO);
+                mTab.setValue("PricePO", Env.ZERO);
+            }
+
+            // Obtengo y seteo precio de venta actual desde lista de precios de venta del cabezal
+            int mPriceListID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_ID");
+            int mPriceListVersionID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_Version_ID");
+            MProductPrice productPrice = MProductPrice.get(ctx, mPriceListVersionID, prod.get_ID(), null);
+            if (productPrice != null){
+                mTab.setValue("PriceSO", productPrice.getPriceList());
+                mTab.setValue("NewPriceSO", productPrice.getPriceList());
+            }
+            else{
+                mTab.setValue("PriceSO", Env.ZERO);
+                mTab.setValue("NewPriceSO", Env.ZERO);
+            }
+        }
+        else{
+            mTab.setValue("Z_ProductoSeccion_ID", null);
+            mTab.setValue("Z_ProductoRubro_ID", null);
+            mTab.setValue("Z_ProductoFamilia_ID", null);
+            mTab.setValue("Z_ProductoSubfamilia_ID", null);
+            mTab.setValue("C_UOM_ID", null);
+            mTab.setValue("C_TaxCategory_ID", null);
+            mTab.setValue("PriceFinal", Env.ZERO);
+            mTab.setValue("PriceInvoiced", Env.ZERO);
+            mTab.setValue("PricePO", Env.ZERO);
+            mTab.setValue("PriceSO", Env.ZERO);
+            mTab.setValue("NewPriceSO", Env.ZERO);
         }
 
         return "";

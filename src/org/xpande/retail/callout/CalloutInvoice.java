@@ -22,6 +22,7 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.xpande.core.model.MZProductoUPC;
+import org.xpande.core.model.MZSocioListaPrecio;
 import org.xpande.retail.model.MZProductoSocio;
 
 import java.math.BigDecimal;
@@ -936,7 +937,7 @@ public class CalloutInvoice extends CalloutEngine
 		else if (column.equalsIgnoreCase("M_Product_ID")){
 			int mProductID = ((Integer) value).intValue();
 			MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(ctx, cBPartnerID, mProductID, null);
-			if ((productoSocio != null) || (productoSocio.get_ID() > 0)){
+			if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
 				if (productoSocio.getVendorProductNo() != null){
 					if (!productoSocio.getVendorProductNo().trim().equalsIgnoreCase("")){
 						mTab.setValue("VendorProductNo", productoSocio.getVendorProductNo().trim());
@@ -959,6 +960,90 @@ public class CalloutInvoice extends CalloutEngine
 		}
 
 		return "";
+	}
+
+	/***
+	 * Dado un socio de negocio y una moneda, obtengo lista de precios de compra y atributos de la misma.
+	 * Xpande. Created by Gabriel Vila on 7/15/17.
+	 * @param ctx
+	 * @param WindowNo
+	 * @param mTab
+	 * @param mField
+	 * @param value
+	 * @return
+	 */
+	public String priceListPOByPartnerCurrency(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+		if (isCalloutActive()) return "";
+
+		if ((value == null) || (((Integer)value).intValue()) <= 0) return "";
+
+		// Solo aplica a documentos de compra
+		boolean isSOTrx = Env.getContext(ctx, WindowNo, "IsSOTrx").equals("Y");
+		if (isSOTrx) return "";
+
+		int cCurrencyID = 0;
+		int cBPartnerID = 0;
+
+		String column = mField.getColumnName();
+
+		if (column.equalsIgnoreCase("C_BPartner_ID")){
+			cBPartnerID = ((Integer)value).intValue();
+			if (mTab.getValue("C_Currency_ID") != null){
+				cCurrencyID = (Integer)mTab.getValue("C_Currency_ID");
+			}
+		}
+		else if (column.equalsIgnoreCase("C_Currency_ID")){
+			cCurrencyID = ((Integer)value).intValue();
+			if (mTab.getValue("C_BPartner_ID") != null){
+				cBPartnerID = (Integer)mTab.getValue("C_BPartner_ID");
+			}
+		}
+
+		// Si no tengo partner o moneda, no hago nada
+		if ((cCurrencyID <= 0) || (cBPartnerID <= 0)){
+			mTab.setValue("M_PriceList_ID", null);
+			return "";
+		}
+
+		// Obtengo lista de precios de compra para socio de negocio y moneda
+		MZSocioListaPrecio socioListaPrecio = MZSocioListaPrecio.getByPartnerCurrency(ctx, cBPartnerID, cCurrencyID, null);
+		if ((socioListaPrecio == null) || (socioListaPrecio.get_ID() <= 0)){
+			/*
+			// Si no tengo, obtengo lista por defecto
+			int i = Env.getContextAsInt(ctx, "#M_PriceList_ID");
+			if (i != 0){
+				mTab.setValue("M_PriceList_ID", new Integer(i));
+			}
+			else{
+				mTab.setValue("M_PriceList_ID", null);
+			}
+			*/
+
+			mTab.setValue("M_PriceList_ID", null);
+
+			return "";
+		}
+
+		MPriceList priceList = (MPriceList) socioListaPrecio.getM_PriceList();
+		MPriceListVersion priceListVersion = priceList.getPriceListVersion(null);
+
+		// Seteo datos con datos de la lista
+
+		// PriceList
+		mTab.setValue("M_PriceList_ID", priceList.get_ID());
+
+		//	Tax Included
+		mTab.setValue("IsTaxIncluded", priceList.isTaxIncluded());
+
+		//	Price Limit Enforce
+		Env.setContext(ctx, WindowNo, "EnforcePriceLimit", priceList.isEnforcePriceLimit());
+
+		//	PriceList Version
+		Env.setContext(ctx, WindowNo, "M_PriceList_Version_ID", priceListVersion.get_ID());
+
+		return "";
+
 	}
 
 }	//	CalloutInvoice

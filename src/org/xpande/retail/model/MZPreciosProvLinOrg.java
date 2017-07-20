@@ -2,6 +2,7 @@ package org.xpande.retail.model;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
+import org.compiere.model.Query;
 import org.compiere.util.Env;
 import org.xpande.retail.utils.ProductPricesInfo;
 
@@ -133,6 +134,29 @@ public class MZPreciosProvLinOrg extends X_Z_PreciosProvLinOrg {
             throw new AdempiereException(e);
         }
 
+    }
+
+    @Override
+    protected boolean beforeSave(boolean newRecord) {
+
+        // Si se modifica precio de lista
+        if ((!newRecord) && (is_ValueChanged(X_Z_PreciosProvLin.COLUMNNAME_PriceList))){
+
+            // Si la linea de este producto es *PC
+            MZPreciosProvLin preciosProvLin = (MZPreciosProvLin) this.getZ_PreciosProvLin();
+            if (preciosProvLin.isDistinctPricePO()){
+
+                MZPreciosProvCab cab = (MZPreciosProvCab) preciosProvLin.getZ_PreciosProvCab();
+
+                // Recalculo precios de compra de esta linea ya que se modifico el precio de lista base
+                this.calculatePricesPO(cab.getPrecisionPO(), (MZPautaComercial) cab.getZ_PautaComercial(), true);
+
+                // Recalculo márgenes
+                this.calculateMargins(cab.getRate());
+            }
+        }
+
+        return true;
     }
 
 }

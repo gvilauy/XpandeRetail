@@ -897,6 +897,8 @@ public class CalloutOrder extends CalloutEngine {
      */
     public String priceList (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
     {
+        if (isCalloutActive()) return "";
+
         Integer M_PriceList_ID = (Integer) mTab.getValue("M_PriceList_ID");
         if (M_PriceList_ID == null || M_PriceList_ID.intValue()== 0)
             return "";

@@ -711,21 +711,26 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
             MZPreciosProvCab preciosProvCab = (MZPreciosProvCab) this.getZ_PreciosProvCab();
             List<MZPreciosProvOrg> preciosProvOrgs = preciosProvCab.getOrgsSelected();
             for (MZPreciosProvOrg preciosProvOrg: preciosProvOrgs){
-                MZPreciosProvLinOrg preciosProvLinOrg = new MZPreciosProvLinOrg(getCtx(), 0, get_TrxName());
-                preciosProvLinOrg.setZ_PreciosProvLin_ID(this.get_ID());
-                preciosProvLinOrg.setAD_OrgTrx_ID(preciosProvOrg.getAD_OrgTrx_ID());
 
+                // Si no esta creada esta organizacion para esta linea, la creo ahora
+                MZPreciosProvLinOrg preciosProvLinOrg = this.getOrganizacion(preciosProvOrg.getAD_OrgTrx_ID());
+                if ((preciosProvLinOrg == null) || (preciosProvLinOrg.get_ID() <= 0)){
+                    preciosProvLinOrg = new MZPreciosProvLinOrg(getCtx(), 0, get_TrxName());
+                    preciosProvLinOrg.setZ_PreciosProvLin_ID(this.get_ID());
+                    preciosProvLinOrg.setAD_OrgTrx_ID(preciosProvOrg.getAD_OrgTrx_ID());
+                }
+
+                // Seteo datos de este producto-socio-org
                 MZProductoSocioOrg productoSocioOrg = productoSocio.getOrg(preciosProvOrg.getAD_OrgTrx_ID());
-
                 preciosProvLinOrg.setC_Currency_ID(productoSocio.getC_Currency_ID());
                 preciosProvLinOrg.setC_Currency_ID_SO(productoSocio.getC_Currency_ID_SO());
-                preciosProvLinOrg.setNewPriceSO(productoSocio.getPriceSO());
-                preciosProvLinOrg.setPriceFinal(productoSocio.getPriceFinal());
-                preciosProvLinOrg.setPriceFinalMargin(productoSocio.getPriceFinalMargin());
-                preciosProvLinOrg.setPriceList(productoSocio.getPriceList());
-                preciosProvLinOrg.setPriceSO(productoSocio.getPriceSO());
-                preciosProvLinOrg.setPricePO(productoSocio.getPricePO());
-                preciosProvLinOrg.setPricePOMargin(productoSocio.getPricePOMargin());
+                preciosProvLinOrg.setNewPriceSO(productoSocioOrg.getPriceSO());
+                preciosProvLinOrg.setPriceFinal(productoSocioOrg.getPriceFinal());
+                preciosProvLinOrg.setPriceFinalMargin(productoSocioOrg.getPriceFinalMargin());
+                preciosProvLinOrg.setPriceList(productoSocioOrg.getPriceList());
+                preciosProvLinOrg.setPriceSO(productoSocioOrg.getPriceSO());
+                preciosProvLinOrg.setPricePO(productoSocioOrg.getPricePO());
+                preciosProvLinOrg.setPricePOMargin(productoSocioOrg.getPricePOMargin());
                 preciosProvLinOrg.saveEx();
             }
         }
@@ -762,4 +767,6 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
 
         return true;
     }
+
+
 }

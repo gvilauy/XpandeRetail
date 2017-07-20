@@ -284,7 +284,12 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			if (!this.isOnlyOneOrg()){
 				List<MZPreciosProvOrg> preciosProvOrgs = this.getOrgsSelected();
 				for (MZPreciosProvOrg preciosProvOrg: preciosProvOrgs){
-					preciosProvOrg.updateProductPriceListSO(line, plVenta.getC_Currency_ID(), this.getDateValidPO());
+					BigDecimal newPriceSO = line.getNewPriceSO();
+					if (line.isDistinctPriceSO()){
+						MZPreciosProvLinOrg provLinOrg = line.getOrganizacion(preciosProvOrg.getAD_OrgTrx_ID());
+						newPriceSO = provLinOrg.getNewPriceSO();
+					}
+					preciosProvOrg.updateProductPriceListSO(line.getM_Product_ID(), plVenta.getC_Currency_ID(), newPriceSO, this.getDateValidPO());
 				}
 			}
 
@@ -572,13 +577,15 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				hayInconcistencias = true;
 				line.setIsConfirmed(false);
 				line.setErrorMsg(messageLine);
+				line.saveEx(null);
 			}
 			else {
 				// Linea validada, proceso.
 				line.setIsConfirmed(true);
 				line.setErrorMsg(null);
+				line.saveEx();
 			}
-			line.saveEx();
+
 		}
 
 		if (hayInconcistencias){
@@ -685,6 +692,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				prodbp.setZ_PautaComercialSet_ID_2(0);
 			}
 
+			prodbp.setVendorProductNo(line.getVendorProductNo());
 			prodbp.saveEx();
 
 			// No dejo ids de pauta en cero en el producto-socio
@@ -1458,7 +1466,6 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 					// Precios de venta en producto existente
 					plinea.calculatePricesSO(lineaArchivo.getPriceSO(), this.getPrecisionSO());
 
-					/*
 					// Valido que tenga cambios en precio de lista, precio OC y precio de venta.
 					// Si estos valores son iguales, no debo considerar esta linea, entonces la marco como inváida,
 					// indico motivo, pero la marco para Omitir.
@@ -1467,24 +1474,50 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 							MProductPrice productPrice = MProductPrice.get(getCtx(), plVersionCompra.get_ID(), plinea.getM_Product_ID(), get_TrxName());
 							if (productPrice != null){
 								if (productPrice.getPriceList() != null){
+									// Mismo precio de lista
 									if (productPrice.getPriceList().compareTo(plinea.getPriceList()) == 0){
-
+										MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(getCtx(), this.getC_BPartner_ID(), prod.get_ID(), get_TrxName());
+										if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+											if (plinea.getC_Currency_ID() == productoSocio.getC_Currency_ID()){
+												// Mismo precio OC
+												if (plinea.getPricePO().compareTo(productoSocio.getPricePO()) == 0){
+													if (plinea.getC_Currency_ID_SO() == productoSocio.getC_Currency_ID_SO()){
+														// Mismo precio de venta
+														if (plinea.getNewPriceSO().compareTo(productoSocio.getPriceSO()) == 0){
+															// Sin cambio de precios
+															hayIncosistencias = true;
+															lineaArchivo.setIsConfirmed(false);
+															lineaArchivo.setErrorMsg("No hay cambio en precios de lista, OC y venta : " + lineaArchivo.getLineNumber());
+															lineaArchivo.setIsOmitted(true);
+															lineaArchivo.saveEx();
+															continue;
+														}
+														else{
+															// Nuevo precio de venta que viene en el archivo es cero y precios lista y oc vienen iguales
+															if (plinea.getNewPriceSO().compareTo(Env.ZERO) == 0){
+																hayIncosistencias = true;
+																lineaArchivo.setIsConfirmed(false);
+																lineaArchivo.setErrorMsg("No hay cambio en precios de lista, OC y nuevo precio de venta CERO : " + lineaArchivo.getLineNumber());
+																lineaArchivo.setIsOmitted(true);
+																lineaArchivo.saveEx();
+																continue;
+															}
+														}
+													}
+												}
+											}
+										}
 									}
 								}
 							}
 						}
 					}
-					*/
-
 				}
 
 				// Calculo y seteo márgenes de linea
 				plinea.calculateMargins(this.getRate());
 
 				plinea.saveEx();
-
-				// Exploto valores de linea en organizaciones seleccionadas para este proceso.
-				plinea.orgsCreate();
 
 				lineaArchivo.setIsConfirmed(true);
 				lineaArchivo.setErrorMsg(null);

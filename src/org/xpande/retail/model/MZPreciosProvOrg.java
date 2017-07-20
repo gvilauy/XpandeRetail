@@ -7,6 +7,7 @@ import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProductPrice;
 import org.xpande.core.utils.PriceListUtils;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
@@ -35,7 +36,7 @@ public class MZPreciosProvOrg extends X_Z_PreciosProvOrg {
      * @param line
      * @param validFrom
      */
-    public void updateProductPriceListSO(MZPreciosProvLin line, int cCurrencyID, Timestamp validFrom ) {
+    public void updateProductPriceListSO(int mProductID, int cCurrencyID, BigDecimal newPriceSO, Timestamp validFrom ) {
 
         try{
 
@@ -45,7 +46,7 @@ public class MZPreciosProvOrg extends X_Z_PreciosProvOrg {
             MPriceListVersion plVersionVenta = null;
 
             if (this.getM_PriceList_ID_SO() <= 0){
-                plVenta = PriceListUtils.getPriceListByOrg(getCtx(), line.getAD_Client_ID(), this.getAD_OrgTrx_ID(), cCurrencyID, true, get_TrxName());
+                plVenta = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), this.getAD_OrgTrx_ID(), cCurrencyID, true, get_TrxName());
                 if ((plVenta == null) || (plVenta.get_ID() <= 0)){
                     throw new AdempiereException("No se pudo obtener Lista de Precios de Venta para organización : " + this.getAD_OrgTrx_ID() + ", moneda : " + cCurrencyID);
                 }
@@ -64,17 +65,17 @@ public class MZPreciosProvOrg extends X_Z_PreciosProvOrg {
 
             // Intento obtener precio de lista actual para el producto de esta linea, en la versión de lista
             // de precios de venta recibida.
-            MProductPrice pprice = MProductPrice.get(getCtx(), plVersionVenta.get_ID(), line.getM_Product_ID(), get_TrxName());
+            MProductPrice pprice = MProductPrice.get(getCtx(), plVersionVenta.get_ID(), mProductID, get_TrxName());
 
             // Si no tengo precio para este producto, lo creo.
             if ((pprice == null) || (pprice.getM_Product_ID() <= 0)){
-                pprice = new MProductPrice(plVersionVenta, line.getM_Product_ID(), line.getNewPriceSO(), line.getNewPriceSO(), line.getNewPriceSO());
+                pprice = new MProductPrice(plVersionVenta, mProductID, newPriceSO, newPriceSO, newPriceSO);
             }
             else{
                 // Actualizo precios
-                pprice.setPriceList(line.getNewPriceSO());
-                pprice.setPriceStd(line.getNewPriceSO());
-                pprice.setPriceLimit(line.getNewPriceSO());
+                pprice.setPriceList(newPriceSO);
+                pprice.setPriceStd(newPriceSO);
+                pprice.setPriceLimit(newPriceSO);
             }
             pprice.set_ValueOfColumn("ValidFrom", validFrom);
             pprice.saveEx();

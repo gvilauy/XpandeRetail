@@ -81,6 +81,12 @@ public class GenerarFacturasRecibidas extends SvrProcess {
                 }
                 invoice.setM_PriceList_ID(socioListaPrecio.getM_PriceList_ID());
 
+
+                MPriceList priceList = (MPriceList)socioListaPrecio.getM_PriceList();
+
+                // Seteo impuestos incluidos segun lista de precios
+                invoice.setIsTaxIncluded(priceList.isTaxIncluded());
+
                 invoice.saveEx();
 
                 // Seteo lineas de nueva factura según lineas de recepcion
