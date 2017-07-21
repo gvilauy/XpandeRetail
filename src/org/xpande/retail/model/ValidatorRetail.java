@@ -351,7 +351,7 @@ public class ValidatorRetail implements ModelValidator {
         MProductPricing productPricing = null;
 
         try{
-            productPricing = new MProductPricing (orderLine.getM_Product_ID(), order.getC_BPartner_ID(), orderLine.getQtyOrdered(), false, null);
+            productPricing = new MProductPricing (orderLine.getM_Product_ID(), order.getC_BPartner_ID(), order.getAD_Org_ID(), orderLine.getQtyOrdered(), false, null);
             productPricing.setM_PriceList_ID(order.getM_PriceList_ID());
             productPricing.setPriceDate(order.getDateOrdered());
 

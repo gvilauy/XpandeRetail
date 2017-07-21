@@ -271,7 +271,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					" inner join z_confirmacionetiqueta cab on cdoc.z_confirmacionetiqueta_id = cab.z_confirmacionetiqueta_id " +
 					" inner join m_product prod on cprod.m_product_id = prod.m_product_id " +
 					" where cab.z_confirmacionetiqueta_id =" + this.get_ID() +
-					" and cdoc.isconfirmed='Y' " +
+					//" and cdoc.isconfirmed='Y' " +
 					" and cprod.isprinted='Y' " +
 					" order by prod.z_productoseccion_id, prod.z_productorubro_id, prod.z_productofamilia_id, prod.z_productosubfamilia_id, " +
 					" cdoc.c_bpartner_id, cdoc.z_lineaproductosocio_id ";
@@ -478,13 +478,84 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 
 		try{
 
+			// Obtiene documentos de gestión de precios
 			this.getDocPrecios();
+
+			// Obtiene documentos de actualizacion pvp
+			this.getDocActualizacionPVP();
 
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);
 		}
 		return message;
+	}
+
+	private void getDocActualizacionPVP() {
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+			int zActualizacionPVPID = 0;
+			MZConfirmacionEtiquetaDoc etiquetaDoc = null;
+			int adTableID = MTable.getTable_ID(I_Z_ActualizacionPVP.Table_Name);
+
+			sql = " select cab.z_actualizacionpvp_id, cab.c_doctype_id, cab.documentno, cab.datedoc, cab.updated, cab.updatedby, " +
+					" lin.c_currency_id, lin.m_product_id, linorg.newpriceso, linorg.ad_orgtrx_id " +
+					" from z_actualizacionpvplinorg linorg " +
+					" inner join z_actualizacionpvplin lin on linorg.z_actualizacionpvplin_id = lin.z_actualizacionpvplin_id " +
+					" inner join z_actualizacionpvp cab on lin.z_actualizacionpvp_id = cab.z_actualizacionpvp_id " +
+					" where linorg.ad_orgtrx_id =" + this.getAD_Org_ID() +
+					" and linorg.newpriceso <> linorg.priceso " +
+					" and cab.docstatus='CO' " +
+					" and cab.z_actualizacionpvp_id not in " +
+					" (select confdoc.record_id from z_confirmacionetiquetadoc confdoc " +
+					" inner join z_confirmacionetiqueta conf on confdoc.z_confirmacionetiqueta_id = conf.z_confirmacionetiqueta_id " +
+					" where confdoc.ad_table_id =" + adTableID + " and conf.ad_org_id =" + this.getAD_Org_ID() + ") " +
+					" order by cab.updated, cab.z_actualizacionpvp_id";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+
+				// Corte por id de documento de gestión de precios
+				if (rs.getInt("z_actualizacionpvp_id") != zActualizacionPVPID){
+					// Nuevo documento
+					etiquetaDoc = new MZConfirmacionEtiquetaDoc(getCtx(), 0, get_TrxName());
+					etiquetaDoc.setZ_ConfirmacionEtiqueta_ID(this.get_ID());
+					etiquetaDoc.setAD_Table_ID(adTableID);
+					etiquetaDoc.setRecord_ID(rs.getInt("z_actualizacionpvp_id"));
+					etiquetaDoc.setAD_User_ID(rs.getInt("updatedby"));
+					etiquetaDoc.setC_DocTypeTarget_ID(rs.getInt("c_doctype_id"));
+					etiquetaDoc.setDateDoc(rs.getTimestamp("updated"));
+					etiquetaDoc.setDocumentNoRef(rs.getString("documentno"));
+					etiquetaDoc.save();
+
+					zActualizacionPVPID = rs.getInt("z_actualizacionpvp_id");
+				}
+
+				// Nuevo producto
+				MZConfirmacionEtiquetaProd etiquetaProd = new MZConfirmacionEtiquetaProd(getCtx(), 0, get_TrxName());
+				etiquetaProd.setZ_ConfirmacionEtiquetaDoc_ID(etiquetaDoc.get_ID());
+				etiquetaProd.setM_Product_ID(rs.getInt("m_product_id"));
+				etiquetaProd.setPriceSO(rs.getBigDecimal("newpriceso"));
+				etiquetaProd.setDateValidSO(rs.getTimestamp("datedoc"));
+				etiquetaProd.setC_Currency_ID_SO(rs.getInt("c_currency_id"));
+				etiquetaProd.setQtyCount(1);
+				etiquetaProd.saveEx();
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
 	}
 
 	/***
@@ -570,7 +641,8 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 	public List<MZConfirmacionEtiquetaDoc> getConfirmedEtiquetaDocs(){
 
     	String whereClause = X_Z_ConfirmacionEtiquetaDoc.COLUMNNAME_Z_ConfirmacionEtiqueta_ID + " =" + this.get_ID() +
-				" AND " + X_Z_ConfirmacionEtiquetaDoc.COLUMNNAME_IsConfirmed + " ='Y'";
+				" AND " + X_Z_ConfirmacionEtiquetaDoc.COLUMNNAME_IsSelected + " ='Y'";
+				//" AND " + X_Z_ConfirmacionEtiquetaDoc.COLUMNNAME_IsConfirmed + " ='Y'";
 
     	List<MZConfirmacionEtiquetaDoc> lines = new Query(getCtx(), I_Z_ConfirmacionEtiquetaDoc.Table_Name, whereClause, get_TrxName()).list();
 

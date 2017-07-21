@@ -4,6 +4,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MInOutLine;
 import org.compiere.model.Query;
 import org.compiere.model.X_M_InOutLine;
+import org.compiere.util.DB;
 import org.xpande.core.utils.StringUtils;
 
 import java.sql.ResultSet;
@@ -43,6 +44,16 @@ public class MZRecepcionProdFact extends X_Z_RecepcionProdFact {
         // Valido numero de factura
         if (numeroFactura.equalsIgnoreCase("")){
             log.saveError("ATENCIÓN", "Número de Factura ingresado no es válido. Verifique que solo contenga números");
+            return false;
+        }
+
+        // Valido que no se repita serie y numero de factura
+        String sql = "select count(*) from z_recepcionprodfact where m_inout_id =" + this.getM_InOut_ID() +
+                " and documentserie ='" + this.getDocumentSerie() + "' " +
+                " and manualdocumentno ='" + numeroFactura + "'";
+        int contador = DB.getSQLValueEx(null, sql);
+        if (contador > 0){
+            log.saveError("ATENCIÓN", "Factura ya fue ingresada con ese Serie-Numero");
             return false;
         }
 

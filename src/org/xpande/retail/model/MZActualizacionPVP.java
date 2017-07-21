@@ -22,11 +22,14 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 import org.xpande.core.utils.PriceListUtils;
 
 /** Generated Model for Z_ActualizacionPVP
@@ -223,7 +226,40 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 			approveIt();
 		log.info(toString());
 		//
-		
+
+
+		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
+		// Obtengo lineas del documento
+		List<MZActualizacionPVPLin> pvpLineas = this.getLines();
+
+		// Instancio modelo de lista de precios del documento
+		MPriceList priceList = (MPriceList) this.getM_PriceList();
+		MPriceListVersion priceListVersion = priceList.getPriceListVersion(null);
+
+		// Recorro y proceso lineas
+		for (MZActualizacionPVPLin pvpLinea: pvpLineas){
+
+			// Actualizo lista de precios de venta del documento para el producto de esta linea
+			this.updateProductPriceListSO(priceList, priceListVersion, pvpLinea, fechaHoy);
+
+			// Si estoy procesando multiples organizaciones, debo actualizar lista de venta de cada organizacion participante
+			if (!this.isOnlyOneOrg()){
+
+				List<MZActualizacionPVPOrg> pvpOrgs = this.getSelectedOrgs();
+
+				for (MZActualizacionPVPOrg pvpOrg: pvpOrgs){
+					BigDecimal newPriceSO = pvpLinea.getNewPriceSO();
+					if (pvpLinea.isDistinctPriceSO()){
+						MZActualizacionPVPLinOrg pvpLinOrg = pvpLinea.getOrg(pvpOrg.getAD_OrgTrx_ID());
+						newPriceSO = pvpLinOrg.getNewPriceSO();
+					}
+					pvpOrg.updateProductPriceListSO(pvpLinea.getM_Product_ID(), priceList.getC_Currency_ID(), newPriceSO, fechaHoy);
+				}
+			}
+		}
+
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -238,7 +274,50 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
-	
+
+
+	/***
+	 * Actualiza lista de precios de venta para el producto de la linea recibida.
+	 * Xpande. Created by Gabriel Vila on 7/20/17.
+ 	 * @param priceList
+	 * @param priceListVersion
+	 * @param pvpLinea
+	 */
+	private void updateProductPriceListSO(MPriceList priceList, MPriceListVersion priceListVersion, MZActualizacionPVPLin pvpLinea, Timestamp fechaVigencia) {
+
+		try{
+			// Intento obtener precio de lista actual para el producto de esta linea, en la versión de lista
+			// de precios de venta recibida.
+			MProductPrice pprice = MProductPrice.get(getCtx(), priceListVersion.get_ID(), pvpLinea.getM_Product_ID(), get_TrxName());
+
+			// Si no tengo precio para este producto, lo creo.
+			if ((pprice == null) || (pprice.getM_Product_ID() <= 0)){
+				pprice = new MProductPrice(priceListVersion, pvpLinea.getM_Product_ID(), pvpLinea.getNewPriceSO(), pvpLinea.getNewPriceSO(), pvpLinea.getNewPriceSO());
+			}
+			else{
+				// Actualizo precios
+				pprice.setPriceList(pvpLinea.getNewPriceSO());
+				pprice.setPriceStd(pvpLinea.getNewPriceSO());
+				pprice.setPriceLimit(pvpLinea.getNewPriceSO());
+			}
+			pprice.set_ValueOfColumn("ValidFrom", fechaVigencia);
+			pprice.saveEx();
+
+			// Actualizo datos venta para el producto en esta lista en asociaciones producto-socio
+			String action = " update z_productosocio " +
+							" set priceso =" + pvpLinea.getNewPriceSO() + ", " +
+							" datevalidso ='" + fechaVigencia + "' " +
+							" where m_product_id =" + pvpLinea.getM_Product_ID() +
+							" and m_pricelist_id_so =" + priceList.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+	}
+
 	/**
 	 * 	Set the definite document number after completed
 	 */
@@ -449,7 +528,6 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 		return true;
 	}
 
-
 	/***
 	 * Obtiene y retorna organizaciones a procesar (no discrimina si estan o no seleccionadas).
 	 * Xpande. Created by Gabriel Vila on 7/19/17.
@@ -463,6 +541,37 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 
 		return lines;
 
+	}
+
+
+	/***
+	 * Obtiene y retorna organizaciones a procesar que esten seleccionadas.
+	 * Xpande. Created by Gabriel Vila on 7/19/17.
+	 * @return
+	 */
+	public List<MZActualizacionPVPOrg> getSelectedOrgs(){
+
+		String whereClause = X_Z_ActualizacionPVPOrg.COLUMNNAME_Z_ActualizacionPVP_ID + " =" + this.get_ID() +
+				" AND " + X_Z_ActualizacionPVPOrg.COLUMNNAME_IsSelected + " ='Y'";
+
+		List<MZActualizacionPVPOrg> lines =  new Query(getCtx(), I_Z_ActualizacionPVPOrg.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+
+	/***
+	 * Obtiene y retorna lineas del documento.
+	 * Xpande. Created by Gabriel Vila on 7/20/17.
+	 * @return
+	 */
+	public List<MZActualizacionPVPLin> getLines(){
+
+		String whereClause = X_Z_ActualizacionPVPLin.COLUMNNAME_Z_ActualizacionPVP_ID + " =" + this.get_ID();
+
+		List<MZActualizacionPVPLin> lines = new Query(getCtx(), I_Z_ActualizacionPVPLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
 	}
 
 }

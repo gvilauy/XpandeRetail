@@ -70,6 +70,8 @@ public class CalloutOrder extends CalloutEngine {
         }
         if (steps) log.warning("init");
 
+        int adOrgID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
+
         MProduct product = MProduct.get (ctx, M_Product_ID.intValue());
         I_M_AttributeSetInstance asi = product.getM_AttributeSetInstance();
         //
@@ -88,7 +90,7 @@ public class CalloutOrder extends CalloutEngine {
         int C_BPartner_ID = Env.getContextAsInt(ctx, WindowNo, "C_BPartner_ID");
         BigDecimal Qty = (BigDecimal)mTab.getValue("QtyOrdered");
         boolean IsSOTrx = Env.getContext(ctx, WindowNo, "IsSOTrx").equals("Y");
-        org.xpande.retail.model.MProductPricing pp = new org.xpande.retail.model.MProductPricing (M_Product_ID.intValue(), C_BPartner_ID, Qty, IsSOTrx, null);
+        org.xpande.retail.model.MProductPricing pp = new org.xpande.retail.model.MProductPricing (M_Product_ID.intValue(), C_BPartner_ID, adOrgID, Qty, IsSOTrx, null);
         //
         int M_PriceList_ID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_ID");
         pp.setM_PriceList_ID(M_PriceList_ID);
@@ -363,6 +365,7 @@ public class CalloutOrder extends CalloutEngine {
         if (steps) log.warning("init");
         int C_UOM_To_ID = Env.getContextAsInt(ctx, WindowNo, "C_UOM_ID");
         int M_Product_ID = Env.getContextAsInt(ctx, WindowNo, "M_Product_ID");
+        int adOrgID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
         int M_PriceList_ID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_ID");
         int StdPrecision = MPriceList.getPricePrecision(ctx, M_PriceList_ID);
         BigDecimal QtyEntered, QtyOrdered, PriceEntered, PriceActual, PriceLimit, Discount, PriceList, Discount2;
@@ -431,7 +434,7 @@ public class CalloutOrder extends CalloutEngine {
             if (QtyOrdered == null)
                 QtyOrdered = QtyEntered;
             boolean IsSOTrx = Env.getContext(ctx, WindowNo, "IsSOTrx").equals("Y");
-            org.xpande.retail.model.MProductPricing pp = new org.xpande.retail.model.MProductPricing (M_Product_ID, C_BPartner_ID, QtyOrdered, IsSOTrx, null);
+            org.xpande.retail.model.MProductPricing pp = new org.xpande.retail.model.MProductPricing (M_Product_ID, C_BPartner_ID, adOrgID, QtyOrdered, IsSOTrx, null);
             pp.setM_PriceList_ID(M_PriceList_ID);
             int M_PriceList_Version_ID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_Version_ID");
             pp.setM_PriceList_Version_ID(M_PriceList_Version_ID);

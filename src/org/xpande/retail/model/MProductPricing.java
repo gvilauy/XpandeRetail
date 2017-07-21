@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.xpande.retail.model;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MDiscountSchema;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MProduct;
@@ -51,18 +52,19 @@ public class MProductPricing
 	 */
 	
 	@Deprecated
-	public MProductPricing(int productId, int partnerId,
+	public MProductPricing(int productId, int partnerId, int adOrgTrxID,
                            BigDecimal quantity, boolean isSOTrx)
 	{
-		 this(productId, partnerId, quantity, isSOTrx, null);
+		 this(productId, partnerId, adOrgTrxID, quantity, isSOTrx, null);
 	}
 	
 	
-	public MProductPricing(int productId, int partnerId,
+	public MProductPricing(int productId, int partnerId, int adOrgTrxID,
                            BigDecimal quantity, boolean isSOTrx, String trxName)
 	{
 		this.productId = productId;
 		this.partnerId = partnerId;
+		this.adOrgTrxID = adOrgTrxID;
 		this.trxName = trxName;
 
 		if (quantity != null && Env.ZERO.compareTo(quantity) != 0)
@@ -76,6 +78,7 @@ public class MProductPricing
 
 	private int 		productId;
 	private int 		partnerId;
+	private int	adOrgTrxID;
 	private BigDecimal 	quantity = Env.ONE;
 	private boolean 	isSOTrx = true;
 	//
@@ -135,7 +138,11 @@ public class MProductPricing
 					vendorBreak = true;
 			}
 		}
-		
+
+		// Por organización-producto-socio
+		if (!calculated)
+			calculated = calculatePriceBasedOnOrg();
+
 		//	Price List Version known
 		if (!calculated)
 			calculated = calculatePriceBasedOnPriceListVersion();
@@ -156,6 +163,41 @@ public class MProductPricing
 		found = new Boolean (calculated);
 		return calculated;
 	}	//	calculatePrice
+
+	private boolean calculatePriceBasedOnOrg() {
+
+		boolean calculated = false;
+
+		try{
+
+			if (this.adOrgTrxID <= 0) return false;
+
+			MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(Env.getCtx(), partnerId, productId, null);
+			if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+
+				MProduct product = (MProduct)productoSocio.getM_Product();
+
+				MZProductoSocioOrg productoSocioOrg = productoSocio.getOrg(this.adOrgTrxID);
+				if ((productoSocioOrg != null) && (productoSocioOrg.get_ID() > 0)){
+					priceStd = productoSocioOrg.getPriceList();
+					priceList = productoSocioOrg.getPriceList();
+					priceLimit = productoSocioOrg.getPriceList();
+					uomId = product.getC_UOM_ID();
+					currencyId = productoSocio.getC_Currency_ID();
+					productCategoryId = product.getM_Product_Category_ID();
+					isEnforcePriceLimit = false;
+					isTaxIncluded = true;
+					calculated = true;
+				}
+			}
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return calculated;
+	}
 
 	/**
 	 * 	Calculate Price based on Price List Version
