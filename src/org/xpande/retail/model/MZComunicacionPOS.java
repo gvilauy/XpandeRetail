@@ -21,7 +21,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -31,24 +30,24 @@ import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 
-/** Generated Model for Z_ConfirmacionEtiqueta
+/** Generated Model for Z_ComunicacionPOS
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0 - $Id$ */
-public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements DocAction, DocOptions {
+public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction, DocOptions {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170712L;
+	private static final long serialVersionUID = 20170722L;
 
     /** Standard Constructor */
-    public MZConfirmacionEtiqueta (Properties ctx, int Z_ConfirmacionEtiqueta_ID, String trxName)
+    public MZComunicacionPOS (Properties ctx, int Z_ComunicacionPOS_ID, String trxName)
     {
-      super (ctx, Z_ConfirmacionEtiqueta_ID, trxName);
+      super (ctx, Z_ComunicacionPOS_ID, trxName);
     }
 
     /** Load Constructor */
-    public MZConfirmacionEtiqueta (Properties ctx, ResultSet rs, String trxName)
+    public MZComunicacionPOS (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -170,6 +169,12 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 		
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 
+		//	Std Period open?
+		if (!MPeriod.isOpen(getCtx(), getDateDoc(), dt.getDocBaseType(), getAD_Org_ID()))
+		{
+			m_processMsg = "@PeriodClosed@";
+			return DocAction.STATUS_Invalid;
+		}
 		//	Add up Amounts
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
@@ -225,19 +230,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 			approveIt();
 		log.info(toString());
 		//
-
-		// Obtengo documentos confirmados para procesar
-		List<MZConfirmacionEtiquetaDoc> etiquetaDocs = this.getConfirmedEtiquetaDocs();
-
-		// Valido condiciones para completar este documento
-		m_processMsg = this.validateDocument(etiquetaDocs);
-		if (m_processMsg != null){
-			return DocAction.STATUS_Invalid;
-		}
-
-		// Genero registros para impresión de etiquetas
-		this.generatePrintRecords();
-
+		
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -252,77 +245,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
-
-
-	/***
-	 * Genera registros para impresión de etiquetas.
-	 * Xpande. Created by Gabriel Vila on 7/12/17.
-	 */
-	private void generatePrintRecords() {
-
-		String sql = "";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-
-		try{
-		    sql = " select cprod.z_confirmacionetiquetaprod_id " +
-					" from z_confirmacionetiquetaprod cprod " +
-					" inner join z_confirmacionetiquetadoc cdoc on cprod.z_confirmacionetiquetadoc_id = cdoc.z_confirmacionetiquetadoc_id " +
-					" inner join z_confirmacionetiqueta cab on cdoc.z_confirmacionetiqueta_id = cab.z_confirmacionetiqueta_id " +
-					" inner join m_product prod on cprod.m_product_id = prod.m_product_id " +
-					" where cab.z_confirmacionetiqueta_id =" + this.get_ID() +
-					//" and cdoc.isconfirmed='Y' " +
-					" and cprod.isprinted='Y' " +
-					" order by prod.z_productoseccion_id, prod.z_productorubro_id, prod.z_productofamilia_id, prod.z_productosubfamilia_id, " +
-					" cdoc.c_bpartner_id, cdoc.z_lineaproductosocio_id ";
-
-			pstmt = DB.prepareStatement(sql, get_TrxName());
-			rs = pstmt.executeQuery();
-
-			while(rs.next()){
-
-				// Para este producto debo agregar tantos registros de impresión como cantidad de etiquetas a imprimir
-				MZConfirmacionEtiquetaProd etiquetaProd = new MZConfirmacionEtiquetaProd(getCtx(), rs.getInt("z_confirmacionetiquetaprod_id"), get_TrxName());
-				for (int i = 1; i <= etiquetaProd.getQtyCount(); i++){
-					MZConfirmacionEtiquetaPrint etiquetaPrint = new MZConfirmacionEtiquetaPrint(getCtx(), 0, get_TrxName());
-					etiquetaPrint.setZ_ConfirmacionEtiqueta_ID(this.get_ID());
-					etiquetaPrint.setM_Product_ID(etiquetaProd.getM_Product_ID());
-					etiquetaPrint.setPriceSO(etiquetaProd.getPriceSO().setScale(2, BigDecimal.ROUND_HALF_UP));
-					etiquetaPrint.setDateValidSO(etiquetaProd.getDateValidSO());
-					etiquetaPrint.setC_Currency_ID_SO(etiquetaProd.getC_Currency_ID_SO());
-					etiquetaPrint.saveEx();
-				}
-
-			}
-		}
-		catch (Exception e){
-		    throw new AdempiereException(e);
-		}
-		finally {
-		    DB.close(rs, pstmt);
-			rs = null; pstmt = null;
-		}
-
-	}
-
-
-	/***
-	 * Validaciones al momento de completar este documento.
-	 * Xpande. Created by Gabriel Vila on 7/12/17.
-	 * @param etiquetaDocs
-	 * @return
-	 */
-	private String validateDocument(List<MZConfirmacionEtiquetaDoc> etiquetaDocs) {
-
-		String message = null;
-
-		if (etiquetaDocs.size() <= 0){
-			return "No hay Documentos confirmados para procesar";
-		}
-
-		return message;
-	}
-
+	
 	/**
 	 * 	Set the definite document number after completed
 	 */
@@ -462,13 +385,14 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
     @Override
     public String toString()
     {
-      StringBuffer sb = new StringBuffer ("MZConfirmacionEtiqueta[")
+      StringBuffer sb = new StringBuffer ("MZComunicacionPOS[")
         .append(getSummary()).append("]");
       return sb.toString();
     }
 
+
 	/***
-	 * Obtiene y carga documentos y cambios de precios para el proceso de confirmación de etiquetas.
+	 * Obtiene y carga documentos a considerarse en este documento.
 	 * Xpande. Created by Gabriel Vila on 7/12/17.
 	 * @return
 	 */
@@ -478,24 +402,101 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 
 		try{
 
-			// Obtiene documentos de gestión de precios
-			this.getDocPrecios();
+			// Obtiene documentos que pasaron por la confirmacion de precios al local.
+			this.getDocumentosConfirmadosAlLocal();
 
-			// Obtiene documentos de actualizacion pvp
-			this.getDocActualizacionPVP();
+			// Obtiene marcas restantes a enviar al POS que no tienen que ver con cambios de precio y alta de productos.
+			this.getMarcasNoPrecios();
 
 		}
 		catch (Exception e){
-		    throw new AdempiereException(e);
+			throw new AdempiereException(e);
 		}
 		return message;
 	}
 
 	/***
-	 * Obtiene documentos de Actualización de PVP a considerarse en este proceso.
+	 * Obtiene y carga documentos y productos con cambios de precios ya confirmados al local.
+	 * Xpande. Created by Gabriel Vila on 7/12/17.
+	 */
+	private void getDocumentosConfirmadosAlLocal(){
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+			int zPreciosProvCabID = 0;
+			MZComunicacionPOSDoc comunicacionDoc = null;
+			int adTableID = MTable.getTable_ID(I_Z_PreciosProvCab.Table_Name);
+
+			sql = " select cab.z_preciosprovcab_id, cab.c_doctype_id, cab.documentno, cab.datevalidpo, cab.updated, cab.updatedby, " +
+					" cab.c_bpartner_id, cab.z_lineaproductosocio_id, " +
+					" lin.c_currency_id_so, lin.m_product_id, linorg.newpriceso, linorg.ad_orgtrx_id " +
+					" from z_preciosprovlinorg linorg " +
+					" inner join z_preciosprovlin lin on linorg.z_preciosprovlin_id = lin.z_preciosprovlin_id " +
+					" inner join z_preciosprovcab cab on lin.z_preciosprovcab_id = cab.z_preciosprovcab_id " +
+					" where linorg.ad_orgtrx_id =" + this.getAD_Org_ID() +
+					" and linorg.newpriceso <> linorg.priceso " +
+					" and cab.docstatus='CO' " +
+					" and cab.z_preciosprovcab_id not in " +
+					" (select confdoc.record_id from z_confirmacionetiquetadoc confdoc " +
+					" inner join z_confirmacionetiqueta conf on confdoc.z_confirmacionetiqueta_id = conf.z_confirmacionetiqueta_id " +
+					" where confdoc.ad_table_id =" + adTableID + " and conf.ad_org_id =" + this.getAD_Org_ID() + ") " +
+					" order by cab.updated, cab.z_preciosprovcab_id";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+
+				// Corte por id de documento de gestión de precios
+				if (rs.getInt("z_preciosprovcab_id") != zPreciosProvCabID){
+					// Nuevo documento
+					comunicacionDoc = new MZComunicacionPOSDoc(getCtx(), 0, get_TrxName());
+					comunicacionDoc.setZ_ComunicacionPOS_ID(this.get_ID());
+					comunicacionDoc.setAD_Table_ID(adTableID);
+					comunicacionDoc.setRecord_ID(rs.getInt("z_preciosprovcab_id"));
+					comunicacionDoc.setAD_User_ID(rs.getInt("updatedby"));
+					comunicacionDoc.setC_DocTypeTarget_ID(rs.getInt("c_doctype_id"));
+					comunicacionDoc.setDateDoc(rs.getTimestamp("updated"));
+					comunicacionDoc.setDocumentNoRef(rs.getString("documentno"));
+					comunicacionDoc.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+					comunicacionDoc.setZ_LineaProductoSocio_ID(rs.getInt("z_lineaproductosocio_id"));
+					comunicacionDoc.saveEx();
+
+					zPreciosProvCabID = rs.getInt("z_preciosprovcab_id");
+				}
+
+				// Nuevo producto
+				/*
+				MZConfirmacionEtiquetaProd etiquetaProd = new MZConfirmacionEtiquetaProd(getCtx(), 0, get_TrxName());
+				etiquetaProd.setZ_ConfirmacionEtiquetaDoc_ID(etiquetaDoc.get_ID());
+				etiquetaProd.setM_Product_ID(rs.getInt("m_product_id"));
+				etiquetaProd.setPriceSO(rs.getBigDecimal("newpriceso"));
+				etiquetaProd.setDateValidSO(rs.getTimestamp("datevalidpo"));
+				etiquetaProd.setC_Currency_ID_SO(rs.getInt("c_currency_id_so"));
+				etiquetaProd.setQtyCount(1);
+				etiquetaProd.saveEx();
+				*/
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+	}
+
+
+	/***
+	 * Obtiene marcas a enviar al POS que NO involucran cambios de precios.
 	 * Xpande. Created by Gabriel Vila on 7/22/17.
 	 */
-	private void getDocActualizacionPVP() {
+	private void getMarcasNoPrecios() {
 
 		String sql = "";
 		PreparedStatement pstmt = null;
@@ -560,97 +561,6 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 			rs = null; pstmt = null;
 		}
 
-	}
-
-	/***
-	 * Obtiene y carga documentos y productos con cambios de precios, para gestiones de precios de proveedor.
-	 * Xpande. Created by Gabriel Vila on 7/12/17.
-	 */
-    private void getDocPrecios(){
-
-		String sql = "";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-
-		try{
-			int zPreciosProvCabID = 0;
-			MZConfirmacionEtiquetaDoc etiquetaDoc = null;
-			int adTableID = MTable.getTable_ID(I_Z_PreciosProvCab.Table_Name);
-
-		    sql = " select cab.z_preciosprovcab_id, cab.c_doctype_id, cab.documentno, cab.datevalidpo, cab.updated, cab.updatedby, " +
-					" cab.c_bpartner_id, cab.z_lineaproductosocio_id, " +
-					" lin.c_currency_id_so, lin.m_product_id, linorg.newpriceso, linorg.ad_orgtrx_id " +
-					" from z_preciosprovlinorg linorg " +
-					" inner join z_preciosprovlin lin on linorg.z_preciosprovlin_id = lin.z_preciosprovlin_id " +
-					" inner join z_preciosprovcab cab on lin.z_preciosprovcab_id = cab.z_preciosprovcab_id " +
-					" where linorg.ad_orgtrx_id =" + this.getAD_Org_ID() +
-					" and linorg.newpriceso <> linorg.priceso " +
-					" and cab.docstatus='CO' " +
-					" and cab.z_preciosprovcab_id not in " +
-					" (select confdoc.record_id from z_confirmacionetiquetadoc confdoc " +
-					" inner join z_confirmacionetiqueta conf on confdoc.z_confirmacionetiqueta_id = conf.z_confirmacionetiqueta_id " +
-					" where confdoc.ad_table_id =" + adTableID + " and conf.ad_org_id =" + this.getAD_Org_ID() + ") " +
-					" order by cab.updated, cab.z_preciosprovcab_id";
-
-			pstmt = DB.prepareStatement(sql, get_TrxName());
-			rs = pstmt.executeQuery();
-
-			while(rs.next()){
-
-				// Corte por id de documento de gestión de precios
-				if (rs.getInt("z_preciosprovcab_id") != zPreciosProvCabID){
-					// Nuevo documento
-					etiquetaDoc = new MZConfirmacionEtiquetaDoc(getCtx(), 0, get_TrxName());
-					etiquetaDoc.setZ_ConfirmacionEtiqueta_ID(this.get_ID());
-					etiquetaDoc.setAD_Table_ID(adTableID);
-					etiquetaDoc.setRecord_ID(rs.getInt("z_preciosprovcab_id"));
-					etiquetaDoc.setAD_User_ID(rs.getInt("updatedby"));
-					etiquetaDoc.setC_DocTypeTarget_ID(rs.getInt("c_doctype_id"));
-					etiquetaDoc.setDateDoc(rs.getTimestamp("updated"));
-					etiquetaDoc.setDocumentNoRef(rs.getString("documentno"));
-					etiquetaDoc.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
-					etiquetaDoc.setZ_LineaProductoSocio_ID(rs.getInt("z_lineaproductosocio_id"));
-					etiquetaDoc.saveEx();
-
-					zPreciosProvCabID = rs.getInt("z_preciosprovcab_id");
-				}
-
-				// Nuevo producto
-				MZConfirmacionEtiquetaProd etiquetaProd = new MZConfirmacionEtiquetaProd(getCtx(), 0, get_TrxName());
-				etiquetaProd.setZ_ConfirmacionEtiquetaDoc_ID(etiquetaDoc.get_ID());
-				etiquetaProd.setM_Product_ID(rs.getInt("m_product_id"));
-				etiquetaProd.setPriceSO(rs.getBigDecimal("newpriceso"));
-				etiquetaProd.setDateValidSO(rs.getTimestamp("datevalidpo"));
-				etiquetaProd.setC_Currency_ID_SO(rs.getInt("c_currency_id_so"));
-				etiquetaProd.setQtyCount(1);
-				etiquetaProd.saveEx();
-			}
-		}
-		catch (Exception e){
-		    throw new AdempiereException(e);
-		}
-		finally {
-		    DB.close(rs, pstmt);
-			rs = null; pstmt = null;
-		}
-
-	}
-
-
-	/***
-	 * Obtiene y retorna lineas de documentos de este modelo.
-	 * Xpande. Created by Gabriel Vila on 7/12/17.
-	 * @return
-	 */
-	public List<MZConfirmacionEtiquetaDoc> getConfirmedEtiquetaDocs(){
-
-    	String whereClause = X_Z_ConfirmacionEtiquetaDoc.COLUMNNAME_Z_ConfirmacionEtiqueta_ID + " =" + this.get_ID() +
-				" AND " + X_Z_ConfirmacionEtiquetaDoc.COLUMNNAME_IsSelected + " ='Y'";
-				//" AND " + X_Z_ConfirmacionEtiquetaDoc.COLUMNNAME_IsConfirmed + " ='Y'";
-
-    	List<MZConfirmacionEtiquetaDoc> lines = new Query(getCtx(), I_Z_ConfirmacionEtiquetaDoc.Table_Name, whereClause, get_TrxName()).list();
-
-    	return lines;
 	}
 
 }
