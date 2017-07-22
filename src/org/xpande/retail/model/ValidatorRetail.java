@@ -444,6 +444,14 @@ public class ValidatorRetail implements ModelValidator {
                 nombreCorto = nombreCorto.substring(0,30);
                 model.setDescription(nombreCorto);
             }
+
+            // En retail, si la unidad del producto es Kilogramo, me aseguro de setear producto de balanza
+            if (model.getC_UOM_ID() > 0){
+                MUOM uom = (MUOM)model.getC_UOM();
+                if (uom.getUOMSymbol().toLowerCase().equalsIgnoreCase("kg")){
+                    model.set_ValueOfColumn("EsProductoBalanza", true);
+                }
+            }
         }
 
         return mensaje;
