@@ -73,11 +73,13 @@ public class MZPreciosProvOrg extends X_Z_PreciosProvOrg {
             }
             else{
                 // Actualizo precios
-                pprice.setPriceList(newPriceSO);
-                pprice.setPriceStd(newPriceSO);
-                pprice.setPriceLimit(newPriceSO);
+                if (pprice.getPriceList().compareTo(newPriceSO) != 0){
+                    pprice.setPriceList(newPriceSO);
+                    pprice.setPriceStd(newPriceSO);
+                    pprice.setPriceLimit(newPriceSO);
+                    pprice.set_ValueOfColumn("ValidFrom", validFrom);
+                }
             }
-            pprice.set_ValueOfColumn("ValidFrom", validFrom);
             pprice.saveEx();
 
         }

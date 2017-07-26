@@ -23,6 +23,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.core.model.MZSocioListaPrecio;
+import org.xpande.core.utils.TaxUtils;
 import org.xpande.retail.model.MZProductoSocio;
 
 import java.math.BigDecimal;
@@ -195,8 +196,11 @@ public class CalloutInvoice extends CalloutEngine
 				if (C_BPartner_ID.toString().equals(Env.getContext(ctx, WindowNo, Env.TAB_INFO, "C_BPartner_ID")))
 				{
 					String loc = Env.getContext(ctx, WindowNo, Env.TAB_INFO, "C_BPartner_Location_ID");
-					if (loc.length() > 0)
-						locID = Integer.parseInt(loc);
+					if (loc.length() > 0){
+						if ((Integer.parseInt(loc)) > 0 ){
+							locID = Integer.parseInt(loc);
+						}
+					}
 				}
 				if (locID == 0)
 					mTab.setValue("C_BPartner_Location_ID", null);
@@ -324,6 +328,21 @@ public class CalloutInvoice extends CalloutEngine
 
 		int adOrgID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
 
+		int cInvoiceID = ((Integer)mTab.getValue("C_Invoice_ID")).intValue();
+		if (cInvoiceID <= 0) {
+			return "No se obtuvo ID interno de Orden";
+		}
+
+		MInvoice invoice = new MInvoice(ctx, cInvoiceID, null);
+		int M_PriceList_ID = invoice.getM_PriceList_ID();
+		if (M_PriceList_ID <= 0) {
+			return "No se obtuvo ID interno de Lista de Precios de la Orden";
+		}
+
+		int M_PriceList_Version_ID = ((MPriceList)invoice.getM_PriceList()).getPriceListVersion(null).get_ID();
+		int StdPrecision = MPriceList.getPricePrecision(ctx, M_PriceList_ID);
+
+
 		//	Get Model and check the Attribute Set Instance from the context
 		MProduct m_product = MProduct.get(Env.getCtx(), M_Product_ID);
 		mTab.setValue("M_AttributeSetInstance_ID", m_product.getEnvAttributeSetInstance(ctx, WindowNo));
@@ -334,12 +353,10 @@ public class CalloutInvoice extends CalloutEngine
 		BigDecimal Qty = (BigDecimal)mTab.getValue("QtyInvoiced");
 		org.xpande.retail.model.MProductPricing pp = new org.xpande.retail.model.MProductPricing (M_Product_ID.intValue(), C_BPartner_ID, adOrgID, Qty, IsSOTrx, null);
 		//
-		int M_PriceList_ID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_ID");
 		pp.setM_PriceList_ID(M_PriceList_ID);
 
 		Timestamp invoiceDate = Env.getContextAsDate(ctx, WindowNo, "DateInvoiced");
 		/** PLV is only accurate if PL selected in header */
-		int M_PriceList_Version_ID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_Version_ID");
 		if ( M_PriceList_Version_ID == 0 && M_PriceList_ID > 0)
 		{
 			String sql = "SELECT plv.M_PriceList_Version_ID "
@@ -409,6 +426,8 @@ public class CalloutInvoice extends CalloutEngine
 		mTab.setValue("C_UOM_ID", new Integer(100));	//	EA
 
 		Env.setContext(ctx, WindowNo, "DiscountSchema", "N");
+		Env.setContext(Env.getCtx(), WindowNo, "IsTaxIncluded", "Y");
+
 		String sql = "SELECT ChargeAmt FROM C_Charge WHERE C_Charge_ID=?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -498,6 +517,21 @@ public class CalloutInvoice extends CalloutEngine
 		int C_Tax_ID = Tax.get(ctx, M_Product_ID, C_Charge_ID, billDate, shipDate,
 			AD_Org_ID, M_Warehouse_ID, billC_BPartner_Location_ID, shipC_BPartner_Location_ID,
 			Env.getContext(ctx, WindowNo, "IsSOTrx").equals("Y"));
+
+		// Xpande. Gabriel Vila.
+		// Para ordenes de compra en Retail, puede suceder que el producto tenga un impuesto especial de compra.
+		// Por lo tanto aca considero esta posibilidad.
+		if ("N".equals(Env.getContext(ctx, WindowNo, "IsSOTrx"))){
+			MProduct product = new MProduct(ctx, M_Product_ID, null);
+			if (product.get_ValueAsInt("C_TaxCategory_ID_2") > 0){
+				MTax taxAux = TaxUtils.getLastTaxByCategory(ctx, product.get_ValueAsInt("C_TaxCategory_ID_2"), null);
+				if ((taxAux != null) && (taxAux.get_ID() > 0)){
+					C_Tax_ID = taxAux.get_ID();
+				}
+			}
+		}
+		// Xpande
+
 		log.info("Tax ID=" + C_Tax_ID);
 		//
 		if (C_Tax_ID == 0)
@@ -528,9 +562,16 @@ public class CalloutInvoice extends CalloutEngine
 	//	log.log(Level.WARNING,"amt - init");
 		int C_UOM_To_ID = Env.getContextAsInt(ctx, WindowNo, "C_UOM_ID");
 		int M_Product_ID = Env.getContextAsInt(ctx, WindowNo, "M_Product_ID");
-		int M_PriceList_ID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_ID");
 		int adOrgID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
-		int StdPrecision = MPriceList.getStandardPrecision(ctx, M_PriceList_ID);
+
+		int cInvoiceID = ((Integer)mTab.getValue("C_Invoice_ID")).intValue();
+		if (cInvoiceID <= 0) {
+			return "No se obtuvo ID interno de Comprobante";
+		}
+		MInvoice invoice = new MInvoice(ctx, cInvoiceID, null);
+		int M_PriceList_ID = invoice.getM_PriceList_ID();
+		int StdPrecision = MPriceList.getPricePrecision(ctx, M_PriceList_ID);
+
 		BigDecimal QtyEntered, QtyInvoiced, PriceEntered, PriceActual, PriceLimit, Discount, PriceList;
 		//	get values
 		QtyEntered = (BigDecimal)mTab.getValue("QtyEntered");
@@ -954,7 +995,7 @@ public class CalloutInvoice extends CalloutEngine
 				}
 			}
 			MZProductoUPC pupc = MZProductoUPC.getByProduct(ctx, mProductID, null);
-			if ((pupc != null) & (pupc.get_ID() > 0)){
+			if ((pupc != null) && (pupc.get_ID() > 0)){
 				mTab.setValue("UPC", pupc.getUPC());
 			}
 			else{

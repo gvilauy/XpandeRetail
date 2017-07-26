@@ -216,17 +216,34 @@ public class ValidatorRetail implements ModelValidator {
      */
     public String modelChange(MInvoice model, int type) throws Exception {
 
-        String mensaje = null;
+        String mensaje = null, action = "";
 
-        if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
+        if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)){
 
-            // Para comprobantes de compra en Retail, no considero una única orden de compra a nivel de cabezal.
-            // ADempiere tiene una validacion en MInvoice.beforeDelete() que impide eliminar por ejemplo
-            // facturas de compra cuando hay un valor en c_invoice.c_order_id.
-            // Por esta razón seteo siempre c_order_id en null en el cabezal de este comprobante. ya que
-            // ademas se pueden seleccionar lineas desde múltiples ordenes de compra.
-            if (model.getC_Order_ID() > 0){
-                model.setC_Order_ID(0);
+            // Para comprobantes de compra en Retail, debo considerar la posibilidad de que el usuario haya ingresado
+            // de manera manual un monto de Redondeo para el comprobante.
+            // Si es asi, debo reflejarlo en el total del comprobante.
+            if (!model.isSOTrx()){
+                if ((model.is_ValueChanged("AmtRounding") || (model.is_ValueChanged("AmtSubtotal"))
+                    || (model.is_ValueChanged("Grandtotal")))){
+                    BigDecimal amtRounding = (BigDecimal) model.get_Value("AmtRounding");
+                    if (amtRounding == null) amtRounding = Env.ZERO;
+                    action = " update c_invoice set grandtotal = Totallines + (" + amtRounding + ") "   +
+                            " where c_invoice_id =" + model.get_ID();
+                    DB.executeUpdateEx(action, model.get_TrxName());
+                }
+
+                // Para comprobantes de compra en Retail, no considero una única orden de compra a nivel de cabezal.
+                // ADempiere tiene una validacion en MInvoice.beforeDelete() que impide eliminar por ejemplo
+                // facturas de compra cuando hay un valor en c_invoice.c_order_id.
+                // Por esta razón seteo siempre c_order_id en null en el cabezal de este comprobante. ya que
+                // ademas se pueden seleccionar lineas desde múltiples ordenes de compra.
+                if (model.getC_Order_ID() > 0){
+                    action = " update c_invoice set c_order_id = null "   +
+                            " where c_invoice_id =" + model.get_ID();
+                    DB.executeUpdateEx(action, model.get_TrxName());
+                }
+
             }
         }
 

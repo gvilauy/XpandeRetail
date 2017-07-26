@@ -18,6 +18,7 @@
 package org.xpande.retail.process;
 
 import org.xpande.retail.model.MZPautaComercialSet;
+import org.xpande.retail.model.MZProductoSocio;
 
 import java.util.List;
 
@@ -46,10 +47,10 @@ public class SeleccionProductosPauta extends SeleccionProductosPautaAbstract
 		//	Recorro filas de selección de productos que fueron seleccionadas por el usuario
 		recordIds.stream().forEach( key -> {
 
-			int mProductId = getSelectionAsInt(key, "PP_M_Product_ID");
+			MZProductoSocio productoSocio = new MZProductoSocio(getCtx(), key.intValue(), get_TrxName());
 
 			// Inserto producto en este segmento.
-			this.pautaComercialSet.insertProduct(mProductId);
+			this.pautaComercialSet.insertProduct(productoSocio.getM_Product_ID());
 
 		});
 

@@ -27,6 +27,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.retail.model.MProductPricing;
+import org.xpande.retail.model.MZLineaProductoSocio;
 import org.xpande.retail.model.MZProductoSocio;
 
 import java.math.BigDecimal;
@@ -61,13 +62,12 @@ public class SeleccionProductosOC extends SeleccionProductosOCAbstract
 			//	Recorro filas de selección de productos que fueron seleccionadas por el usuario
 			recordIds.stream().forEach( key -> {
 
-				int mProductId = getSelectionAsInt(key, "PP_M_Product_ID");
-
-				MProduct prod = new MProduct(getCtx(), mProductId, get_TrxName());
+				MZProductoSocio productoSocio = new MZProductoSocio(getCtx(), key.intValue(), get_TrxName());
+				MProduct prod = (MProduct) productoSocio.getM_Product();
 
 				// Inserto producto en nueva linea de orden de compra
 				MOrderLine orderLine = new MOrderLine(order);
-				orderLine.setM_Product_ID(mProductId);
+				orderLine.setM_Product_ID(prod.get_ID());
 				orderLine.setQtyEntered(Env.ONE);
 				orderLine.setQtyOrdered(Env.ONE);
 				orderLine.set_ValueOfColumn("Discount2", Env.ZERO);
@@ -97,17 +97,14 @@ public class SeleccionProductosOC extends SeleccionProductosOCAbstract
 				}
 
 				// Si tengo codigo de barras del producto, lo inserto en la linea
-				MZProductoUPC productoUPC = MZProductoUPC.getByProduct(getCtx(), mProductId, null);
+				MZProductoUPC productoUPC = MZProductoUPC.getByProduct(getCtx(), prod.get_ID(), null);
 				if ((productoUPC != null) && (productoUPC.get_ID() > 0)){
 					orderLine.set_ValueOfColumn("UPC", productoUPC.getUPC());
 				}
 
 				// Si tengo codigo de producto del proveedor, lo inserto en la linea
-				MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(getCtx(), this.order.getC_BPartner_ID(), mProductId, null);
-				if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
-					if (productoSocio.getVendorProductNo() != null){
-						orderLine.set_ValueOfColumn("VendorProductNo", productoSocio.getVendorProductNo());
-					}
+				if (productoSocio.getVendorProductNo() != null){
+					orderLine.set_ValueOfColumn("VendorProductNo", productoSocio.getVendorProductNo());
 				}
 
 				orderLine.saveEx();

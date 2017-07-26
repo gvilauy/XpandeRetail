@@ -48,7 +48,6 @@ public class MProductPricing
 	 * 	@param partnerId partner
 	 * @param quantity quantity
 	 * @param isSOTrx SO or PO
-	 * @param trxName
 	 */
 	
 	@Deprecated

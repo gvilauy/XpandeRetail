@@ -458,14 +458,18 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			// Si no tengo precio para este producto, lo creo.
 			if ((pprice == null) || (pprice.getM_Product_ID() <= 0)){
 				pprice = new MProductPrice(plVersionVenta, line.getM_Product_ID(), line.getNewPriceSO(), line.getNewPriceSO(), line.getNewPriceSO());
+				pprice.set_ValueOfColumn("ValidFrom", this.getDateValidPO());
 			}
 			else{
-				// Actualizo precios
-				pprice.setPriceList(line.getNewPriceSO());
-				pprice.setPriceStd(line.getNewPriceSO());
-				pprice.setPriceLimit(line.getNewPriceSO());
+				// Actualizo precios si hay cambios
+				if (pprice.getPriceList().compareTo(line.getNewPriceSO()) != 0){
+					pprice.setPriceList(line.getNewPriceSO());
+					pprice.setPriceStd(line.getNewPriceSO());
+					pprice.setPriceLimit(line.getNewPriceSO());
+					pprice.set_ValueOfColumn("ValidFrom", this.getDateValidPO());
+				}
 			}
-			pprice.set_ValueOfColumn("ValidFrom", this.getDateValidPO());
+
 			pprice.saveEx();
 
 		}
@@ -1464,7 +1468,16 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 					plinea.calculatePricesPO(lineaArchivo.getPriceList(), this.getPrecisionPO(), (MZPautaComercial) this.getZ_PautaComercial(), false);
 
 					// Precios de venta en producto existente
-					plinea.calculatePricesSO(lineaArchivo.getPriceSO(), this.getPrecisionSO());
+					MProductPrice productPriceSO = MProductPrice.get(getCtx(), plVersionVenta.get_ID(), plinea.getM_Product_ID(), get_TrxName());
+					if (productPriceSO != null){
+						plinea.setPriceSO(productPriceSO.getPriceList());
+					}
+					else{
+						plinea.setPriceSO(Env.ZERO);
+					}
+					plinea.setNewPriceSO(lineaArchivo.getPriceSO());
+
+					//plinea.calculatePricesSO(lineaArchivo.getPriceSO(), this.getPrecisionSO());
 
 					// Valido que tenga cambios en precio de lista, precio OC y precio de venta.
 					// Si estos valores son iguales, no debo considerar esta linea, entonces la marco como inváida,
@@ -1511,6 +1524,11 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 								}
 							}
 						}
+					}
+
+					// Me aseguro que si no tiene nuevo precio de venta, le pongo el precio actual de venta
+					if ((plinea.getNewPriceSO() == null) || (plinea.getNewPriceSO().compareTo(Env.ZERO) <= 0)){
+						plinea.setNewPriceSO(plinea.getPriceSO());
 					}
 				}
 
@@ -1821,6 +1839,25 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 					this.setZ_PautaComercial_ID(zPautaComercialID);
 				}
 			}
+		}
+
+		return true;
+	}
+
+	@Override
+	protected boolean beforeDelete() {
+
+		// Me aseguro de no dejar linea de productos creada sin lista y moneda.
+		try{
+			MZLineaProductoSocio lineaProductoSocio = (MZLineaProductoSocio) this.getZ_LineaProductoSocio();
+			if ((lineaProductoSocio != null) && (lineaProductoSocio.get_ID() > 0)){
+				if (lineaProductoSocio.getM_PriceList_ID() <= 0){
+					lineaProductoSocio.deleteEx(true);
+				}
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
 		}
 
 		return true;

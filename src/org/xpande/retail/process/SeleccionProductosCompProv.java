@@ -54,15 +54,13 @@ public class SeleccionProductosCompProv extends SeleccionProductosCompProvAbstra
 			//	Recorro filas de selección de productos que fueron seleccionadas por el usuario
 			recordIds.stream().forEach( key -> {
 
-				int mProductId = getSelectionAsInt(key, "PP_M_Product_ID");
-				int mPriceListID = getSelectionAsInt(key, "PP_M_PriceList_ID");
-
-				MProduct prod = new MProduct(getCtx(), mProductId, get_TrxName());
-				MPriceList priceList = new MPriceList(getCtx(), mPriceListID, get_TrxName());
+				MZProductoSocio productoSocio = new MZProductoSocio(getCtx(), key.intValue(), get_TrxName());
+				MProduct prod = (MProduct) productoSocio.getM_Product();
+				MPriceList priceList = (MPriceList) productoSocio.getM_PriceList();
 
 				// Inserto producto en nueva linea de comprobante
 				MInvoiceLine invoiceLine = new MInvoiceLine(this.invoice);
-				invoiceLine.setM_Product_ID(mProductId);
+				invoiceLine.setM_Product_ID(prod.get_ID());
 				invoiceLine.setQtyEntered(Env.ONE);
 				invoiceLine.setQtyInvoiced(Env.ONE);
 				invoiceLine.setC_UOM_ID(prod.getC_UOM_ID());
@@ -93,17 +91,14 @@ public class SeleccionProductosCompProv extends SeleccionProductosCompProvAbstra
 				}
 
 				// Si tengo codigo de barras del producto, lo inserto en la linea
-				MZProductoUPC productoUPC = MZProductoUPC.getByProduct(getCtx(), mProductId, null);
+				MZProductoUPC productoUPC = MZProductoUPC.getByProduct(getCtx(), prod.get_ID(), null);
 				if ((productoUPC != null) && (productoUPC.get_ID() > 0)){
 					invoiceLine.set_ValueOfColumn("UPC", productoUPC.getUPC());
 				}
 
 				// Si tengo codigo de producto del proveedor, lo inserto en la linea
-				MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(getCtx(), this.invoice.getC_BPartner_ID(), mProductId, null);
-				if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
-					if (productoSocio.getVendorProductNo() != null){
-						invoiceLine.set_ValueOfColumn("VendorProductNo", productoSocio.getVendorProductNo());
-					}
+				if (productoSocio.getVendorProductNo() != null){
+					invoiceLine.set_ValueOfColumn("VendorProductNo", productoSocio.getVendorProductNo());
 				}
 
 				invoiceLine.saveEx();

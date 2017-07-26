@@ -4,6 +4,7 @@ import org.compiere.model.*;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.*;
 import org.xpande.core.model.MZProductoUPC;
+import org.xpande.core.utils.TaxUtils;
 import org.xpande.retail.model.MZProductoSocio;
 
 import java.math.BigDecimal;
@@ -71,6 +72,20 @@ public class CalloutOrder extends CalloutEngine {
         if (steps) log.warning("init");
 
         int adOrgID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
+        int cOrderID = ((Integer)mTab.getValue("C_Order_ID")).intValue();
+        if (cOrderID <= 0) {
+            return "No se obtuvo ID interno de Orden";
+        }
+
+        MOrder order = new MOrder(ctx, cOrderID, null);
+        int M_PriceList_ID = order.getM_PriceList_ID();
+        if (M_PriceList_ID <= 0) {
+            return "No se obtuvo ID interno de Lista de Precios de la Orden";
+        }
+
+        int M_PriceList_Version_ID = ((MPriceList)order.getM_PriceList()).getPriceListVersion(null).get_ID();
+
+        int StdPrecision = MPriceList.getPricePrecision(ctx, M_PriceList_ID);
 
         MProduct product = MProduct.get (ctx, M_Product_ID.intValue());
         I_M_AttributeSetInstance asi = product.getM_AttributeSetInstance();
@@ -92,11 +107,10 @@ public class CalloutOrder extends CalloutEngine {
         boolean IsSOTrx = Env.getContext(ctx, WindowNo, "IsSOTrx").equals("Y");
         org.xpande.retail.model.MProductPricing pp = new org.xpande.retail.model.MProductPricing (M_Product_ID.intValue(), C_BPartner_ID, adOrgID, Qty, IsSOTrx, null);
         //
-        int M_PriceList_ID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_ID");
         pp.setM_PriceList_ID(M_PriceList_ID);
         Timestamp orderDate = (Timestamp)mTab.getValue("DateOrdered");
+
         /** PLV is only accurate if PL selected in header */
-        int M_PriceList_Version_ID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_Version_ID");
         if ( M_PriceList_Version_ID == 0 && M_PriceList_ID > 0)
         {
             String sql = "SELECT plv.M_PriceList_Version_ID "
@@ -129,9 +143,7 @@ public class CalloutOrder extends CalloutEngine {
 
         // Xpande.Gabriel Vila.
         // Si estoy en orden de compra y tengo tasa de cambio que aplicar, la aplico.
-        MOrder order = null;
         if (mTab.getValue("C_Order_ID") != null){
-            int cOrderID = ((Integer)mTab.getValue("C_Order_ID")).intValue();
             order = new MOrder(ctx, cOrderID, null);
             BigDecimal multiplyRate = (BigDecimal) order.get_Value("MultiplyRate");
             if (!order.isSOTrx()){
@@ -332,6 +344,21 @@ public class CalloutOrder extends CalloutEngine {
         int C_Tax_ID = Tax.get (ctx, M_Product_ID, C_Charge_ID, billDate, shipDate,
                 AD_Org_ID, M_Warehouse_ID, billC_BPartner_Location_ID, shipC_BPartner_Location_ID,
                 "Y".equals(Env.getContext(ctx, WindowNo, "IsSOTrx")));
+
+        // Xpande. Gabriel Vila.
+        // Para ordenes de compra en Retail, puede suceder que el producto tenga un impuesto especial de compra.
+        // Por lo tanto aca considero esta posibilidad.
+        if ("N".equals(Env.getContext(ctx, WindowNo, "IsSOTrx"))){
+            MProduct product = new MProduct(ctx, M_Product_ID, null);
+            if (product.get_ValueAsInt("C_TaxCategory_ID_2") > 0){
+                MTax taxAux = TaxUtils.getLastTaxByCategory(ctx, product.get_ValueAsInt("C_TaxCategory_ID_2"), null);
+                if ((taxAux != null) && (taxAux.get_ID() > 0)){
+                    C_Tax_ID = taxAux.get_ID();
+                }
+            }
+        }
+        // Xpande
+
         log.info("Tax ID=" + C_Tax_ID);
         //
         if (C_Tax_ID == 0)
@@ -366,8 +393,16 @@ public class CalloutOrder extends CalloutEngine {
         int C_UOM_To_ID = Env.getContextAsInt(ctx, WindowNo, "C_UOM_ID");
         int M_Product_ID = Env.getContextAsInt(ctx, WindowNo, "M_Product_ID");
         int adOrgID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
-        int M_PriceList_ID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_ID");
+
+        int cOrderID = ((Integer)mTab.getValue("C_Order_ID")).intValue();
+        if (cOrderID <= 0) {
+            return "No se obtuvo ID interno de Orden";
+        }
+
+        MOrder order = new MOrder(ctx, cOrderID, null);
+        int M_PriceList_ID = order.getM_PriceList_ID();
         int StdPrecision = MPriceList.getPricePrecision(ctx, M_PriceList_ID);
+
         BigDecimal QtyEntered, QtyOrdered, PriceEntered, PriceActual, PriceLimit, Discount, PriceList, Discount2;
         //	get values
         QtyEntered = (BigDecimal)mTab.getValue("QtyEntered");
@@ -386,11 +421,8 @@ public class CalloutOrder extends CalloutEngine {
 
         // Xpande.Gabriel Vila.
         // Obtengo tasa multiplicadora por conversión entre moneda de lista y moneda de compra
-        MOrder order = null;
         BigDecimal multiplyRate = null;
         if (mTab.getValue("C_Order_ID") != null){
-            int cOrderID = ((Integer)mTab.getValue("C_Order_ID")).intValue();
-            order = new MOrder(ctx, cOrderID, null);
             multiplyRate = (BigDecimal) order.get_Value("MultiplyRate");
             if (!order.isSOTrx()){
                 if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) != 0)){
@@ -871,7 +903,7 @@ public class CalloutOrder extends CalloutEngine {
                 }
             }
             MZProductoUPC pupc = MZProductoUPC.getByProduct(ctx, mProductID, null);
-            if ((pupc != null) & (pupc.get_ID() > 0)){
+            if ((pupc != null) && (pupc.get_ID() > 0)){
                 mTab.setValue("UPC", pupc.getUPC());
             }
             else{

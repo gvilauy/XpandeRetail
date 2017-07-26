@@ -583,11 +583,13 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
 
             // Para nuevo producto, tengo o no asociado uno existente
             if (this.isNew()){
-                // Agrego nuevo UPC al producto
-                MZProductoUPC pupc = new MZProductoUPC(getCtx(), 0, get_TrxName());
-                pupc.setM_Product_ID(prod.get_ID());
-                pupc.setUPC(this.getUPC());
-                pupc.saveEx();
+                // Agrego nuevo UPC al producto en caso de tener
+                if ((this.getUPC() != null) && (!this.getUPC().trim().equalsIgnoreCase(""))){
+                    MZProductoUPC pupc = new MZProductoUPC(getCtx(), 0, get_TrxName());
+                    pupc.setM_Product_ID(prod.get_ID());
+                    pupc.setUPC(this.getUPC());
+                    pupc.saveEx();
+                }
             }
 
             // Me aseguro de dejar el m_product_id seteado en este linea de documento
@@ -768,5 +770,14 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
         return true;
     }
 
+    @Override
+    protected boolean beforeDelete() {
 
+        if (!this.isNew()){
+            log.saveError("ATENCIÓN", "No es posible Eliminar un Producto Existente.");
+            return false;
+        }
+
+        return true;
+    }
 }
