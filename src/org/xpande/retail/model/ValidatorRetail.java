@@ -233,6 +233,7 @@ public class ValidatorRetail implements ModelValidator {
                     DB.executeUpdateEx(action, model.get_TrxName());
                 }
 
+                /*
                 // Para comprobantes de compra en Retail, no considero una única orden de compra a nivel de cabezal.
                 // ADempiere tiene una validacion en MInvoice.beforeDelete() que impide eliminar por ejemplo
                 // facturas de compra cuando hay un valor en c_invoice.c_order_id.
@@ -243,7 +244,7 @@ public class ValidatorRetail implements ModelValidator {
                             " where c_invoice_id =" + model.get_ID();
                     DB.executeUpdateEx(action, model.get_TrxName());
                 }
-
+                */
             }
         }
 
