@@ -354,6 +354,7 @@ public class CalloutInvoice extends CalloutEngine
 		org.xpande.retail.model.MProductPricing pp = new org.xpande.retail.model.MProductPricing (M_Product_ID.intValue(), C_BPartner_ID, adOrgID, Qty, IsSOTrx, null);
 		//
 		pp.setM_PriceList_ID(M_PriceList_ID);
+		pp.setForcedPrecision(StdPrecision);
 
 		Timestamp invoiceDate = Env.getContextAsDate(ctx, WindowNo, "DateInvoiced");
 		/** PLV is only accurate if PL selected in header */
@@ -618,6 +619,7 @@ public class CalloutInvoice extends CalloutEngine
 			boolean IsSOTrx = Env.getContext(ctx, WindowNo, "IsSOTrx").equals("Y");
 			org.xpande.retail.model.MProductPricing pp = new org.xpande.retail.model.MProductPricing (M_Product_ID, C_BPartner_ID, adOrgID, QtyInvoiced, IsSOTrx, null);
 			pp.setM_PriceList_ID(M_PriceList_ID);
+			pp.setForcedPrecision(StdPrecision);
 			int	M_PriceList_Version_ID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_Version_ID");
 			pp.setM_PriceList_Version_ID(M_PriceList_Version_ID);
 			Timestamp date = (Timestamp)mTab.getValue("DateInvoiced");
@@ -967,7 +969,7 @@ public class CalloutInvoice extends CalloutEngine
 			if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
 				MProduct prod = (MProduct) productoSocio.getM_Product();
 				MZProductoUPC pupc = MZProductoUPC.getByProduct(ctx, prod.get_ID(), null);
-				if ((pupc != null) & (pupc.get_ID() > 0)){
+				if ((pupc != null) && (pupc.get_ID() > 0)){
 					mTab.setValue("UPC", pupc.getUPC());
 				}
 				mTab.setValue("M_Product_ID", prod.get_ID());

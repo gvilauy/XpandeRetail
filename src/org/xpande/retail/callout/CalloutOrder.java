@@ -108,6 +108,7 @@ public class CalloutOrder extends CalloutEngine {
         org.xpande.retail.model.MProductPricing pp = new org.xpande.retail.model.MProductPricing (M_Product_ID.intValue(), C_BPartner_ID, adOrgID, Qty, IsSOTrx, null);
         //
         pp.setM_PriceList_ID(M_PriceList_ID);
+        pp.setForcedPrecision(StdPrecision);
         Timestamp orderDate = (Timestamp)mTab.getValue("DateOrdered");
 
         /** PLV is only accurate if PL selected in header */
@@ -134,9 +135,9 @@ public class CalloutOrder extends CalloutEngine {
         mTab.setValue("PriceLimit", pp.getPriceLimit());
         mTab.setValue("PriceActual", pp.getPriceStd());
         mTab.setValue("PriceEntered", pp.getPriceStd());
-        mTab.setValue("C_Currency_ID", new Integer(pp.getC_Currency_ID()));
+        mTab.setValue("C_Currency_ID", pp.getC_Currency_ID());
         mTab.setValue("Discount", pp.getDiscount());
-        mTab.setValue("C_UOM_ID", new Integer(pp.getC_UOM_ID()));
+        mTab.setValue("C_UOM_ID", product.getC_UOM_ID());
         mTab.setValue("QtyOrdered", mTab.getValue("QtyEntered"));
         Env.setContext(ctx, WindowNo, "EnforcePriceLimit", pp.isEnforcePriceLimit() ? "Y" : "N");
         Env.setContext(ctx, WindowNo, "DiscountSchema", pp.isDiscountSchema() ? "Y" : "N");
@@ -149,10 +150,10 @@ public class CalloutOrder extends CalloutEngine {
             if (!order.isSOTrx()){
                 if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) != 0)){
                     if (!mTab.getValueAsBoolean("IsConverted")){
-                        BigDecimal priceList = ((BigDecimal)mTab.getValue("PriceList")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
-                        BigDecimal priceActual = ((BigDecimal)mTab.getValue("PriceActual")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
-                        BigDecimal priceLimit = ((BigDecimal)mTab.getValue("PriceLimit")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
-                        BigDecimal priceEntered = ((BigDecimal)mTab.getValue("PriceEntered")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                        BigDecimal priceList = ((BigDecimal)mTab.getValue("PriceList")).multiply(multiplyRate).setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
+                        BigDecimal priceActual = ((BigDecimal)mTab.getValue("PriceActual")).multiply(multiplyRate).setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
+                        BigDecimal priceLimit = ((BigDecimal)mTab.getValue("PriceLimit")).multiply(multiplyRate).setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
+                        BigDecimal priceEntered = ((BigDecimal)mTab.getValue("PriceEntered")).multiply(multiplyRate).setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
                         mTab.setValue("PriceList", priceList);
                         mTab.setValue("PriceLimit", priceLimit);
                         mTab.setValue("PriceActual", priceActual);
@@ -241,7 +242,7 @@ public class CalloutOrder extends CalloutEngine {
         }
         mTab.setValue("M_AttributeSetInstance_ID", null);
         mTab.setValue("S_ResourceAssignment_ID", null);
-        mTab.setValue("C_UOM_ID", new Integer(100));	//	EA
+        mTab.setValue("C_UOM_ID", 100);	//	EA
 
         Env.setContext(ctx, WindowNo, "DiscountSchema", "N");
         String sql = "SELECT ChargeAmt FROM C_Charge WHERE C_Charge_ID=?";
@@ -427,7 +428,7 @@ public class CalloutOrder extends CalloutEngine {
             if (!order.isSOTrx()){
                 if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) != 0)){
                     if (!mTab.getValueAsBoolean("IsConverted")){
-                        BigDecimal priceLimit = ((BigDecimal)mTab.getValue("PriceLimit")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                        BigDecimal priceLimit = ((BigDecimal)mTab.getValue("PriceLimit")).multiply(multiplyRate).setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
                         PriceLimit = priceLimit;
                         mTab.setValue("IsConverted", true);
                     }
@@ -468,6 +469,7 @@ public class CalloutOrder extends CalloutEngine {
             boolean IsSOTrx = Env.getContext(ctx, WindowNo, "IsSOTrx").equals("Y");
             org.xpande.retail.model.MProductPricing pp = new org.xpande.retail.model.MProductPricing (M_Product_ID, C_BPartner_ID, adOrgID, QtyOrdered, IsSOTrx, null);
             pp.setM_PriceList_ID(M_PriceList_ID);
+            pp.setForcedPrecision(StdPrecision);
             int M_PriceList_Version_ID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_Version_ID");
             pp.setM_PriceList_Version_ID(M_PriceList_Version_ID);
             Timestamp date = (Timestamp)mTab.getValue("DateOrdered");
@@ -492,8 +494,8 @@ public class CalloutOrder extends CalloutEngine {
             if ((order != null) && (!order.isSOTrx())){
                 if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) != 0)){
                     if (!mTab.getValueAsBoolean("IsConverted")){
-                        BigDecimal priceActual = ((BigDecimal)mTab.getValue("PriceActual")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
-                        BigDecimal priceEntered = ((BigDecimal)mTab.getValue("PriceEntered")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                        BigDecimal priceActual = ((BigDecimal)mTab.getValue("PriceActual")).multiply(multiplyRate).setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
+                        BigDecimal priceEntered = ((BigDecimal)mTab.getValue("PriceEntered")).multiply(multiplyRate).setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
                         mTab.setValue("PriceActual", priceActual);
                         mTab.setValue("PriceEntered", priceEntered);
                         mTab.setValue("IsConverted", true);
@@ -518,7 +520,7 @@ public class CalloutOrder extends CalloutEngine {
             if ((order != null) && (!order.isSOTrx())){
                 if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) != 0)){
                     if (!mTab.getValueAsBoolean("IsConverted")){
-                        BigDecimal priceEntered = ((BigDecimal)mTab.getValue("PriceEntered")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                        BigDecimal priceEntered = ((BigDecimal)mTab.getValue("PriceEntered")).multiply(multiplyRate).setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
                         mTab.setValue("PriceEntered", priceEntered);
                         mTab.setValue("IsConverted", true);
                     }
@@ -542,7 +544,7 @@ public class CalloutOrder extends CalloutEngine {
             if ((order != null) && (!order.isSOTrx())){
                 if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) != 0)){
                     if (!mTab.getValueAsBoolean("IsConverted")){
-                        BigDecimal priceActual = ((BigDecimal)mTab.getValue("PriceActual")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                        BigDecimal priceActual = ((BigDecimal)mTab.getValue("PriceActual")).multiply(multiplyRate).setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
                         mTab.setValue("PriceActual", priceActual);
                         mTab.setValue("IsConverted", true);
                     }
@@ -568,8 +570,8 @@ public class CalloutOrder extends CalloutEngine {
             if ((order != null) && (!order.isSOTrx())){
                 if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) != 0)){
                     if (!mTab.getValueAsBoolean("IsConverted")){
-                        BigDecimal priceActual = ((BigDecimal)mTab.getValue("PriceActual")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
-                        BigDecimal priceEntered = ((BigDecimal)mTab.getValue("PriceEntered")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                        BigDecimal priceActual = ((BigDecimal)mTab.getValue("PriceActual")).multiply(multiplyRate).setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
+                        BigDecimal priceEntered = ((BigDecimal)mTab.getValue("PriceEntered")).multiply(multiplyRate).setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
                         mTab.setValue("PriceActual", priceActual);
                         mTab.setValue("PriceEntered", priceEntered);
                         mTab.setValue("IsConverted", true);
@@ -597,8 +599,8 @@ public class CalloutOrder extends CalloutEngine {
             if ((order != null) && (!order.isSOTrx())){
                 if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) != 0)){
                     if (!mTab.getValueAsBoolean("IsConverted")){
-                        BigDecimal priceActual = ((BigDecimal)mTab.getValue("PriceActual")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
-                        BigDecimal priceEntered = ((BigDecimal)mTab.getValue("PriceEntered")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                        BigDecimal priceActual = ((BigDecimal)mTab.getValue("PriceActual")).multiply(multiplyRate).setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
+                        BigDecimal priceEntered = ((BigDecimal)mTab.getValue("PriceEntered")).multiply(multiplyRate).setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
                         mTab.setValue("PriceActual", priceActual);
                         mTab.setValue("PriceEntered", priceEntered);
                         mTab.setValue("IsConverted", true);
@@ -875,7 +877,7 @@ public class CalloutOrder extends CalloutEngine {
             if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
                 MProduct prod = (MProduct) productoSocio.getM_Product();
                 MZProductoUPC pupc = MZProductoUPC.getByProduct(ctx, prod.get_ID(), null);
-                if ((pupc != null) & (pupc.get_ID() > 0)){
+                if ((pupc != null) && (pupc.get_ID() > 0)){
                     mTab.setValue("UPC", pupc.getUPC());
                 }
                 mTab.setValue("M_Product_ID", prod.get_ID());

@@ -113,6 +113,17 @@ public class ValidatorRetail implements ModelValidator {
                 throw new AdempiereException("No se pudo calcular precios y montos para esta linea de Orden de Compra");
             }
 
+            // Precisión de la lista de precios
+            MPriceList priceList = (MPriceList) order.getM_PriceList();
+            int precisionDecimal = priceList.getPricePrecision();
+
+            // Si moneda de orden es distinta a moneda de lista
+            if (order.getC_Currency_ID() != priceList.getC_Currency_ID()){
+                // Precision decimal de la moneda
+                precisionDecimal = ((MCurrency) order.getC_Currency()).getStdPrecision();
+            }
+            productPricing.setForcedPrecision(precisionDecimal);
+
             model.setPriceActual(productPricing.getPriceStd());
             model.setPriceList(productPricing.getPriceList());
             model.setPriceLimit(productPricing.getPriceLimit());
@@ -139,7 +150,7 @@ public class ValidatorRetail implements ModelValidator {
             }
             PriceActual = new BigDecimal ((100.0 - Discount2.doubleValue()) / 100.0 * PriceActual.doubleValue());
             if (PriceActual.scale() > 2)
-                PriceActual = PriceActual.setScale(2, BigDecimal.ROUND_HALF_UP);
+                PriceActual = PriceActual.setScale(precisionDecimal, BigDecimal.ROUND_HALF_UP);
             BigDecimal PriceEntered = MUOMConversion.convertProductFrom (model.getCtx(), model.getM_Product_ID(),
                     model.getC_UOM_ID(), PriceActual);
             if (PriceEntered == null)
@@ -159,7 +170,6 @@ public class ValidatorRetail implements ModelValidator {
                 if (!model.get_ValueAsBoolean("IsConverted")){
                     if (order.get_Value("MultiplyRate") != null){
                         BigDecimal multiplyRate = (BigDecimal) order.get_Value("MultiplyRate");
-                        int precisionDecimal = ((MCurrency) order.getC_Currency()).getStdPrecision(); // Precision decimal compra de moneda de compra
                         if (multiplyRate.compareTo(Env.ZERO) != 0){
 
                             // Actualizo montos de esta linea de orden de compra

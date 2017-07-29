@@ -104,10 +104,22 @@ public class MProductPricing
 	private boolean 	isTaxIncluded = false;
 	private String		trxName = null;
 
+
+	private int forcedPrecision = -1;
+
 	/**	Logger			*/
 	protected CLogger	log = CLogger.getCLogger(getClass());
-	
-	
+
+
+	/***
+	 * Fuerzo precision decimal por encima de la precision decimal de la lista de precios que recibe esta clase.
+	 * @param forcedPrecision
+	 */
+	public void setForcedPrecision(int forcedPrecision) {
+		this.forcedPrecision = forcedPrecision;
+	}
+
+
 	/**
 	 * 	Calculate Price
 	 * 	@return true if calculated
@@ -885,8 +897,15 @@ public class MProductPricing
 	 */
 	private void setPrecision ()
 	{
-		if (priceListId != 0)
-			precision = MPriceList.getPricePrecision(Env.getCtx(), getM_PriceList_ID());
+		if (this.forcedPrecision >=0){
+			precision = this.forcedPrecision;
+		}
+		else{
+			if (priceListId != 0){
+				precision = MPriceList.getPricePrecision(Env.getCtx(), getM_PriceList_ID());
+			}
+		}
+
 	}	//	setPrecision
 	
 	/**
