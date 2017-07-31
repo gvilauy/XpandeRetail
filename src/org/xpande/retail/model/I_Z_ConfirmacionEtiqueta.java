@@ -159,6 +159,19 @@ public interface I_Z_ConfirmacionEtiqueta
 	  */
 	public String getDocumentNo();
 
+    /** Column name Impresion_ID */
+    public static final String COLUMNNAME_Impresion_ID = "Impresion_ID";
+
+	/** Set Impresion_ID.
+	  * ID general de impresión
+	  */
+	public void setImpresion_ID(int Impresion_ID);
+
+	/** Get Impresion_ID.
+	  * ID general de impresión
+	  */
+	public int getImpresion_ID();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -228,6 +241,15 @@ public interface I_Z_ConfirmacionEtiqueta
 	  * The document has been processed
 	  */
 	public boolean isProcessed();
+
+    /** Column name Processing */
+    public static final String COLUMNNAME_Processing = "Processing";
+
+	/** Set Process Now	  */
+	public void setProcessing(boolean Processing);
+
+	/** Get Process Now	  */
+	public boolean isProcessing();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";

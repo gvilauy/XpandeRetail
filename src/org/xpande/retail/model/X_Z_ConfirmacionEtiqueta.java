@@ -31,7 +31,7 @@ public class X_Z_ConfirmacionEtiqueta extends PO implements I_Z_ConfirmacionEtiq
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170712L;
+	private static final long serialVersionUID = 20170731L;
 
     /** Standard Constructor */
     public X_Z_ConfirmacionEtiqueta (Properties ctx, int Z_ConfirmacionEtiqueta_ID, String trxName)
@@ -47,6 +47,7 @@ public class X_Z_ConfirmacionEtiqueta extends PO implements I_Z_ConfirmacionEtiq
 			setDocStatus (null);
 // DR
 			setDocumentNo (null);
+			setImpresion_ID (0);
 			setIsApproved (false);
 // N
 			setIsExecuted (false);
@@ -257,6 +258,29 @@ public class X_Z_ConfirmacionEtiqueta extends PO implements I_Z_ConfirmacionEtiq
 		return (String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
+	/** Set Impresion_ID.
+		@param Impresion_ID 
+		ID general de impresión
+	  */
+	public void setImpresion_ID (int Impresion_ID)
+	{
+		if (Impresion_ID < 1) 
+			set_Value (COLUMNNAME_Impresion_ID, null);
+		else 
+			set_Value (COLUMNNAME_Impresion_ID, Integer.valueOf(Impresion_ID));
+	}
+
+	/** Get Impresion_ID.
+		@return ID general de impresión
+	  */
+	public int getImpresion_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Impresion_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Approved.
 		@param IsApproved 
 		Indicates if this document requires approval
@@ -348,6 +372,27 @@ public class X_Z_ConfirmacionEtiqueta extends PO implements I_Z_ConfirmacionEtiq
 	public boolean isProcessed () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Process Now.
+		@param Processing Process Now	  */
+	public void setProcessing (boolean Processing)
+	{
+		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+	}
+
+	/** Get Process Now.
+		@return Process Now	  */
+	public boolean isProcessing () 
+	{
+		Object oo = get_Value(COLUMNNAME_Processing);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

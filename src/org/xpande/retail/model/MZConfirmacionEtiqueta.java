@@ -30,6 +30,7 @@ import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
+import org.xpande.core.utils.SequenceUtils;
 
 /** Generated Model for Z_ConfirmacionEtiqueta
  *  @author Adempiere (generated) 
@@ -286,6 +287,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 				for (int i = 1; i <= etiquetaProd.getQtyCount(); i++){
 					MZConfirmacionEtiquetaPrint etiquetaPrint = new MZConfirmacionEtiquetaPrint(getCtx(), 0, get_TrxName());
 					etiquetaPrint.setZ_ConfirmacionEtiqueta_ID(this.get_ID());
+					etiquetaPrint.setImpresion_ID(this.getImpresion_ID());
 					etiquetaPrint.setM_Product_ID(etiquetaProd.getM_Product_ID());
 					etiquetaPrint.setPriceSO(etiquetaProd.getPriceSO().setScale(2, BigDecimal.ROUND_HALF_UP));
 					etiquetaPrint.setDateValidSO(etiquetaProd.getDateValidSO());
@@ -653,4 +655,22 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
     	return lines;
 	}
 
+	@Override
+	protected boolean beforeSave(boolean newRecord) {
+
+		try{
+
+			if (newRecord){
+				// Genera ID para impresión de etiquetas. Este ID es el que se pasa por parametro al reporte.
+				int impresionID = SequenceUtils.getNextID_NoTable(get_TrxName(), "impresion_id");
+				this.setImpresion_ID(impresionID);
+			}
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return true;
+	}
 }

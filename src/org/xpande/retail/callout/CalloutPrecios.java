@@ -9,6 +9,7 @@ import org.xpande.core.utils.PriceListUtils;
 import org.xpande.retail.model.*;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Properties;
 
 /**
@@ -134,6 +135,39 @@ public class CalloutPrecios extends CalloutEngine {
         else{
             mTab.setValue("M_PriceList_ID", null);
 
+        }
+        return "";
+    }
+
+
+    /***
+     * Setea version de lista para lista de precios recibida.
+     * Xpande. Created by Gabriel Vila on 7/31/17.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String priceVersionByList(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (value == null) return "";
+
+        int mPriceListID = ((Integer)value).intValue();
+
+        // Obtengo versión de lista de precios para lista recibida
+        MPriceList priceList = MPriceList.get(ctx, mPriceListID, null);
+        if ((priceList != null) && (priceList.get_ID() > 0)){
+
+            // Obtengo versión de lista vigente
+            MPriceListVersion plv = priceList.getPriceListVersion(null);
+            if ((plv != null) && (plv.get_ID() > 0)){
+                mTab.setValue("M_PriceList_Version_ID", plv.get_ID());
+            }
+            else{
+                mTab.setValue("M_PriceList_Version_ID", null);
+            }
         }
         return "";
     }
@@ -492,10 +526,12 @@ public class CalloutPrecios extends CalloutEngine {
             if (productPrice != null){
                 mTab.setValue("PriceSO", productPrice.getPriceList());
                 mTab.setValue("NewPriceSO", productPrice.getPriceList());
+                mTab.setValue("DateValidSO", (Timestamp)productPrice.get_Value("ValidFrom"));
             }
             else{
                 mTab.setValue("PriceSO", Env.ZERO);
                 mTab.setValue("NewPriceSO", Env.ZERO);
+                mTab.setValue("DateValidSO",null);
             }
         }
         else{
@@ -511,6 +547,31 @@ public class CalloutPrecios extends CalloutEngine {
             mTab.setValue("PriceSO", Env.ZERO);
             mTab.setValue("NewPriceSO", Env.ZERO);
         }
+
+        return "";
+    }
+
+
+    /***
+     * Setea moneda segun lista de precios recibida.
+     * Xpande. Created by Gabriel Vila on 7/31/17.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String currencyByPriceList(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if ((value == null) || (((Integer) value).intValue() <= 0)){
+            return "";
+        }
+
+        int mPriceListID = ((Integer) value).intValue();
+
+        MPriceList priceList = MPriceList.get(ctx, mPriceListID, null);
+        mTab.setValue("C_Currency_ID", priceList.getC_Currency_ID());
 
         return "";
     }

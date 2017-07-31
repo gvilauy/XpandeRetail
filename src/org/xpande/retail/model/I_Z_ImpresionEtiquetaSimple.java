@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_ConfirmacionEtiquetaPrint
+/** Generated Interface for Z_ImpresionEtiquetaSimple
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_ConfirmacionEtiquetaPrint 
+public interface I_Z_ImpresionEtiquetaSimple 
 {
 
-    /** TableName=Z_ConfirmacionEtiquetaPrint */
-    public static final String Table_Name = "Z_ConfirmacionEtiquetaPrint";
+    /** TableName=Z_ImpresionEtiquetaSimple */
+    public static final String Table_Name = "Z_ImpresionEtiquetaSimple";
 
-    /** AD_Table_ID=1000076 */
+    /** AD_Table_ID=1000088 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -63,18 +63,20 @@ public interface I_Z_ConfirmacionEtiquetaPrint
 	  */
 	public int getAD_Org_ID();
 
-    /** Column name C_Currency_ID_SO */
-    public static final String COLUMNNAME_C_Currency_ID_SO = "C_Currency_ID_SO";
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
-	/** Set C_Currency_ID_SO.
-	  * Moneda de Venta
+	/** Set Currency.
+	  * The Currency for this record
 	  */
-	public void setC_Currency_ID_SO(int C_Currency_ID_SO);
+	public void setC_Currency_ID(int C_Currency_ID);
 
-	/** Get C_Currency_ID_SO.
-	  * Moneda de Venta
+	/** Get Currency.
+	  * The Currency for this record
 	  */
-	public int getC_Currency_ID_SO();
+	public int getC_Currency_ID();
+
+	public I_C_Currency getC_Currency() throws RuntimeException;
 
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
@@ -91,19 +93,6 @@ public interface I_Z_ConfirmacionEtiquetaPrint
 	  * User who created this records
 	  */
 	public int getCreatedBy();
-
-    /** Column name DateValidSO */
-    public static final String COLUMNNAME_DateValidSO = "DateValidSO";
-
-	/** Set DateValidSO.
-	  * Fecha Vigencia Venta
-	  */
-	public void setDateValidSO(Timestamp DateValidSO);
-
-	/** Get DateValidSO.
-	  * Fecha Vigencia Venta
-	  */
-	public Timestamp getDateValidSO();
 
     /** Column name Impresion_ID */
     public static final String COLUMNNAME_Impresion_ID = "Impresion_ID";
@@ -131,33 +120,44 @@ public interface I_Z_ConfirmacionEtiquetaPrint
 	  */
 	public boolean isActive();
 
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+    /** Column name M_PriceList_ID */
+    public static final String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
 
-	/** Set Product.
-	  * Product, Service, Item
+	/** Set Price List.
+	  * Unique identifier of a Price List
 	  */
-	public void setM_Product_ID(int M_Product_ID);
+	public void setM_PriceList_ID(int M_PriceList_ID);
 
-	/** Get Product.
-	  * Product, Service, Item
+	/** Get Price List.
+	  * Unique identifier of a Price List
 	  */
-	public int getM_Product_ID();
+	public int getM_PriceList_ID();
 
-	public I_M_Product getM_Product() throws RuntimeException;
+	public I_M_PriceList getM_PriceList() throws RuntimeException;
 
-    /** Column name PriceSO */
-    public static final String COLUMNNAME_PriceSO = "PriceSO";
+    /** Column name M_PriceList_Version_ID */
+    public static final String COLUMNNAME_M_PriceList_Version_ID = "M_PriceList_Version_ID";
 
-	/** Set PriceSO.
-	  * PriceSO
+	/** Set Price List Version.
+	  * Identifies a unique instance of a Price List
 	  */
-	public void setPriceSO(BigDecimal PriceSO);
+	public void setM_PriceList_Version_ID(int M_PriceList_Version_ID);
 
-	/** Get PriceSO.
-	  * PriceSO
+	/** Get Price List Version.
+	  * Identifies a unique instance of a Price List
 	  */
-	public BigDecimal getPriceSO();
+	public int getM_PriceList_Version_ID();
+
+	public I_M_PriceList_Version getM_PriceList_Version() throws RuntimeException;
+
+    /** Column name ProcessButton */
+    public static final String COLUMNNAME_ProcessButton = "ProcessButton";
+
+	/** Set ProcessButton	  */
+	public void setProcessButton(String ProcessButton);
+
+	/** Get ProcessButton	  */
+	public String getProcessButton();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -175,25 +175,14 @@ public interface I_Z_ConfirmacionEtiquetaPrint
 	  */
 	public int getUpdatedBy();
 
-    /** Column name Z_ConfirmacionEtiqueta_ID */
-    public static final String COLUMNNAME_Z_ConfirmacionEtiqueta_ID = "Z_ConfirmacionEtiqueta_ID";
+    /** Column name Z_FormatoEtiqueta_ID */
+    public static final String COLUMNNAME_Z_FormatoEtiqueta_ID = "Z_FormatoEtiqueta_ID";
 
-	/** Set Z_ConfirmacionEtiqueta ID	  */
-	public void setZ_ConfirmacionEtiqueta_ID(int Z_ConfirmacionEtiqueta_ID);
+	/** Set Z_FormatoEtiqueta ID	  */
+	public void setZ_FormatoEtiqueta_ID(int Z_FormatoEtiqueta_ID);
 
-	/** Get Z_ConfirmacionEtiqueta ID	  */
-	public int getZ_ConfirmacionEtiqueta_ID();
-
-	public I_Z_ConfirmacionEtiqueta getZ_ConfirmacionEtiqueta() throws RuntimeException;
-
-    /** Column name Z_ConfirmacionEtiquetaPrint_ID */
-    public static final String COLUMNNAME_Z_ConfirmacionEtiquetaPrint_ID = "Z_ConfirmacionEtiquetaPrint_ID";
-
-	/** Set Z_ConfirmacionEtiquetaPrint ID	  */
-	public void setZ_ConfirmacionEtiquetaPrint_ID(int Z_ConfirmacionEtiquetaPrint_ID);
-
-	/** Get Z_ConfirmacionEtiquetaPrint ID	  */
-	public int getZ_ConfirmacionEtiquetaPrint_ID();
+	/** Get Z_FormatoEtiqueta ID	  */
+	public int getZ_FormatoEtiqueta_ID();
 
     /** Column name Z_ImpresionEtiquetaSimple_ID */
     public static final String COLUMNNAME_Z_ImpresionEtiquetaSimple_ID = "Z_ImpresionEtiquetaSimple_ID";
@@ -203,6 +192,4 @@ public interface I_Z_ConfirmacionEtiquetaPrint
 
 	/** Get Z_ImpresionEtiquetaSimple ID	  */
 	public int getZ_ImpresionEtiquetaSimple_ID();
-
-	public I_Z_ImpresionEtiquetaSimple getZ_ImpresionEtiquetaSimple() throws RuntimeException;
 }

@@ -24,10 +24,10 @@ import java.util.Properties;
 import org.compiere.model.*;
 import org.compiere.util.Env;
 
-/** Generated Model for Z_ConfirmacionEtiquetaPrint
+/** Generated Model for Z_ImpEtiqSimpleLin
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0 - $Id$ */
-public class X_Z_ConfirmacionEtiquetaPrint extends PO implements I_Z_ConfirmacionEtiquetaPrint, I_Persistent 
+public class X_Z_ImpEtiqSimpleLin extends PO implements I_Z_ImpEtiqSimpleLin, I_Persistent 
 {
 
 	/**
@@ -36,22 +36,20 @@ public class X_Z_ConfirmacionEtiquetaPrint extends PO implements I_Z_Confirmacio
 	private static final long serialVersionUID = 20170731L;
 
     /** Standard Constructor */
-    public X_Z_ConfirmacionEtiquetaPrint (Properties ctx, int Z_ConfirmacionEtiquetaPrint_ID, String trxName)
+    public X_Z_ImpEtiqSimpleLin (Properties ctx, int Z_ImpEtiqSimpleLin_ID, String trxName)
     {
-      super (ctx, Z_ConfirmacionEtiquetaPrint_ID, trxName);
-      /** if (Z_ConfirmacionEtiquetaPrint_ID == 0)
+      super (ctx, Z_ImpEtiqSimpleLin_ID, trxName);
+      /** if (Z_ImpEtiqSimpleLin_ID == 0)
         {
-			setC_Currency_ID_SO (0);
-			setDateValidSO (new Timestamp( System.currentTimeMillis() ));
-			setImpresion_ID (0);
 			setM_Product_ID (0);
 			setPriceSO (Env.ZERO);
-			setZ_ConfirmacionEtiquetaPrint_ID (0);
+			setZ_ImpEtiqSimpleLin_ID (0);
+			setZ_ImpresionEtiquetaSimple_ID (0);
         } */
     }
 
     /** Load Constructor */
-    public X_Z_ConfirmacionEtiquetaPrint (Properties ctx, ResultSet rs, String trxName)
+    public X_Z_ImpEtiqSimpleLin (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -73,26 +71,34 @@ public class X_Z_ConfirmacionEtiquetaPrint extends PO implements I_Z_Confirmacio
 
     public String toString()
     {
-      StringBuffer sb = new StringBuffer ("X_Z_ConfirmacionEtiquetaPrint[")
+      StringBuffer sb = new StringBuffer ("X_Z_ImpEtiqSimpleLin[")
         .append(get_ID()).append("]");
       return sb.toString();
     }
 
-	/** Set C_Currency_ID_SO.
-		@param C_Currency_ID_SO 
-		Moneda de Venta
+	public I_C_Currency getC_Currency() throws RuntimeException
+    {
+		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
+			.getPO(getC_Currency_ID(), get_TrxName());	}
+
+	/** Set Currency.
+		@param C_Currency_ID 
+		The Currency for this record
 	  */
-	public void setC_Currency_ID_SO (int C_Currency_ID_SO)
+	public void setC_Currency_ID (int C_Currency_ID)
 	{
-		set_Value (COLUMNNAME_C_Currency_ID_SO, Integer.valueOf(C_Currency_ID_SO));
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
 	}
 
-	/** Get C_Currency_ID_SO.
-		@return Moneda de Venta
+	/** Get Currency.
+		@return The Currency for this record
 	  */
-	public int getC_Currency_ID_SO () 
+	public int getC_Currency_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID_SO);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -113,29 +119,6 @@ public class X_Z_ConfirmacionEtiquetaPrint extends PO implements I_Z_Confirmacio
 	public Timestamp getDateValidSO () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_DateValidSO);
-	}
-
-	/** Set Impresion_ID.
-		@param Impresion_ID 
-		ID general de impresión
-	  */
-	public void setImpresion_ID (int Impresion_ID)
-	{
-		if (Impresion_ID < 1) 
-			set_Value (COLUMNNAME_Impresion_ID, null);
-		else 
-			set_Value (COLUMNNAME_Impresion_ID, Integer.valueOf(Impresion_ID));
-	}
-
-	/** Get Impresion_ID.
-		@return ID general de impresión
-	  */
-	public int getImpresion_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Impresion_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	public I_M_Product getM_Product() throws RuntimeException
@@ -186,46 +169,58 @@ public class X_Z_ConfirmacionEtiquetaPrint extends PO implements I_Z_Confirmacio
 		return bd;
 	}
 
-	public I_Z_ConfirmacionEtiqueta getZ_ConfirmacionEtiqueta() throws RuntimeException
-    {
-		return (I_Z_ConfirmacionEtiqueta)MTable.get(getCtx(), I_Z_ConfirmacionEtiqueta.Table_Name)
-			.getPO(getZ_ConfirmacionEtiqueta_ID(), get_TrxName());	}
-
-	/** Set Z_ConfirmacionEtiqueta ID.
-		@param Z_ConfirmacionEtiqueta_ID Z_ConfirmacionEtiqueta ID	  */
-	public void setZ_ConfirmacionEtiqueta_ID (int Z_ConfirmacionEtiqueta_ID)
+	/** Set Quantity count.
+		@param QtyCount 
+		Counted Quantity
+	  */
+	public void setQtyCount (int QtyCount)
 	{
-		if (Z_ConfirmacionEtiqueta_ID < 1) 
-			set_Value (COLUMNNAME_Z_ConfirmacionEtiqueta_ID, null);
-		else 
-			set_Value (COLUMNNAME_Z_ConfirmacionEtiqueta_ID, Integer.valueOf(Z_ConfirmacionEtiqueta_ID));
+		set_Value (COLUMNNAME_QtyCount, Integer.valueOf(QtyCount));
 	}
 
-	/** Get Z_ConfirmacionEtiqueta ID.
-		@return Z_ConfirmacionEtiqueta ID	  */
-	public int getZ_ConfirmacionEtiqueta_ID () 
+	/** Get Quantity count.
+		@return Counted Quantity
+	  */
+	public int getQtyCount () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ConfirmacionEtiqueta_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_QtyCount);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
 	}
 
-	/** Set Z_ConfirmacionEtiquetaPrint ID.
-		@param Z_ConfirmacionEtiquetaPrint_ID Z_ConfirmacionEtiquetaPrint ID	  */
-	public void setZ_ConfirmacionEtiquetaPrint_ID (int Z_ConfirmacionEtiquetaPrint_ID)
+	/** Set UPC/EAN.
+		@param UPC 
+		Bar Code (Universal Product Code or its superset European Article Number)
+	  */
+	public void setUPC (String UPC)
 	{
-		if (Z_ConfirmacionEtiquetaPrint_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Z_ConfirmacionEtiquetaPrint_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_Z_ConfirmacionEtiquetaPrint_ID, Integer.valueOf(Z_ConfirmacionEtiquetaPrint_ID));
+		set_Value (COLUMNNAME_UPC, UPC);
 	}
 
-	/** Get Z_ConfirmacionEtiquetaPrint ID.
-		@return Z_ConfirmacionEtiquetaPrint ID	  */
-	public int getZ_ConfirmacionEtiquetaPrint_ID () 
+	/** Get UPC/EAN.
+		@return Bar Code (Universal Product Code or its superset European Article Number)
+	  */
+	public String getUPC () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ConfirmacionEtiquetaPrint_ID);
+		return (String)get_Value(COLUMNNAME_UPC);
+	}
+
+	/** Set Z_ImpEtiqSimpleLin ID.
+		@param Z_ImpEtiqSimpleLin_ID Z_ImpEtiqSimpleLin ID	  */
+	public void setZ_ImpEtiqSimpleLin_ID (int Z_ImpEtiqSimpleLin_ID)
+	{
+		if (Z_ImpEtiqSimpleLin_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Z_ImpEtiqSimpleLin_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Z_ImpEtiqSimpleLin_ID, Integer.valueOf(Z_ImpEtiqSimpleLin_ID));
+	}
+
+	/** Get Z_ImpEtiqSimpleLin ID.
+		@return Z_ImpEtiqSimpleLin ID	  */
+	public int getZ_ImpEtiqSimpleLin_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ImpEtiqSimpleLin_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

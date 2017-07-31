@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_ConfirmacionEtiquetaPrint
+/** Generated Interface for Z_ImpEtiqSimpleLin
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_ConfirmacionEtiquetaPrint 
+public interface I_Z_ImpEtiqSimpleLin 
 {
 
-    /** TableName=Z_ConfirmacionEtiquetaPrint */
-    public static final String Table_Name = "Z_ConfirmacionEtiquetaPrint";
+    /** TableName=Z_ImpEtiqSimpleLin */
+    public static final String Table_Name = "Z_ImpEtiqSimpleLin";
 
-    /** AD_Table_ID=1000076 */
+    /** AD_Table_ID=1000090 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -63,18 +63,20 @@ public interface I_Z_ConfirmacionEtiquetaPrint
 	  */
 	public int getAD_Org_ID();
 
-    /** Column name C_Currency_ID_SO */
-    public static final String COLUMNNAME_C_Currency_ID_SO = "C_Currency_ID_SO";
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
-	/** Set C_Currency_ID_SO.
-	  * Moneda de Venta
+	/** Set Currency.
+	  * The Currency for this record
 	  */
-	public void setC_Currency_ID_SO(int C_Currency_ID_SO);
+	public void setC_Currency_ID(int C_Currency_ID);
 
-	/** Get C_Currency_ID_SO.
-	  * Moneda de Venta
+	/** Get Currency.
+	  * The Currency for this record
 	  */
-	public int getC_Currency_ID_SO();
+	public int getC_Currency_ID();
+
+	public I_C_Currency getC_Currency() throws RuntimeException;
 
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
@@ -104,19 +106,6 @@ public interface I_Z_ConfirmacionEtiquetaPrint
 	  * Fecha Vigencia Venta
 	  */
 	public Timestamp getDateValidSO();
-
-    /** Column name Impresion_ID */
-    public static final String COLUMNNAME_Impresion_ID = "Impresion_ID";
-
-	/** Set Impresion_ID.
-	  * ID general de impresión
-	  */
-	public void setImpresion_ID(int Impresion_ID);
-
-	/** Get Impresion_ID.
-	  * ID general de impresión
-	  */
-	public int getImpresion_ID();
 
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
@@ -159,6 +148,32 @@ public interface I_Z_ConfirmacionEtiquetaPrint
 	  */
 	public BigDecimal getPriceSO();
 
+    /** Column name QtyCount */
+    public static final String COLUMNNAME_QtyCount = "QtyCount";
+
+	/** Set Quantity count.
+	  * Counted Quantity
+	  */
+	public void setQtyCount(int QtyCount);
+
+	/** Get Quantity count.
+	  * Counted Quantity
+	  */
+	public int getQtyCount();
+
+    /** Column name UPC */
+    public static final String COLUMNNAME_UPC = "UPC";
+
+	/** Set UPC/EAN.
+	  * Bar Code (Universal Product Code or its superset European Article Number)
+	  */
+	public void setUPC(String UPC);
+
+	/** Get UPC/EAN.
+	  * Bar Code (Universal Product Code or its superset European Article Number)
+	  */
+	public String getUPC();
+
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -175,25 +190,14 @@ public interface I_Z_ConfirmacionEtiquetaPrint
 	  */
 	public int getUpdatedBy();
 
-    /** Column name Z_ConfirmacionEtiqueta_ID */
-    public static final String COLUMNNAME_Z_ConfirmacionEtiqueta_ID = "Z_ConfirmacionEtiqueta_ID";
+    /** Column name Z_ImpEtiqSimpleLin_ID */
+    public static final String COLUMNNAME_Z_ImpEtiqSimpleLin_ID = "Z_ImpEtiqSimpleLin_ID";
 
-	/** Set Z_ConfirmacionEtiqueta ID	  */
-	public void setZ_ConfirmacionEtiqueta_ID(int Z_ConfirmacionEtiqueta_ID);
+	/** Set Z_ImpEtiqSimpleLin ID	  */
+	public void setZ_ImpEtiqSimpleLin_ID(int Z_ImpEtiqSimpleLin_ID);
 
-	/** Get Z_ConfirmacionEtiqueta ID	  */
-	public int getZ_ConfirmacionEtiqueta_ID();
-
-	public I_Z_ConfirmacionEtiqueta getZ_ConfirmacionEtiqueta() throws RuntimeException;
-
-    /** Column name Z_ConfirmacionEtiquetaPrint_ID */
-    public static final String COLUMNNAME_Z_ConfirmacionEtiquetaPrint_ID = "Z_ConfirmacionEtiquetaPrint_ID";
-
-	/** Set Z_ConfirmacionEtiquetaPrint ID	  */
-	public void setZ_ConfirmacionEtiquetaPrint_ID(int Z_ConfirmacionEtiquetaPrint_ID);
-
-	/** Get Z_ConfirmacionEtiquetaPrint ID	  */
-	public int getZ_ConfirmacionEtiquetaPrint_ID();
+	/** Get Z_ImpEtiqSimpleLin ID	  */
+	public int getZ_ImpEtiqSimpleLin_ID();
 
     /** Column name Z_ImpresionEtiquetaSimple_ID */
     public static final String COLUMNNAME_Z_ImpresionEtiquetaSimple_ID = "Z_ImpresionEtiquetaSimple_ID";
