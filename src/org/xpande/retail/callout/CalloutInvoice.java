@@ -795,7 +795,7 @@ public class CalloutInvoice extends CalloutEngine
 				"SELECT IsTaxIncluded FROM M_PriceList WHERE M_PriceList_ID=?", 
 				M_PriceList_ID);
 			if (ss == null)
-				ss = "N";
+				ss = "Y";
 			Env.setContext(Env.getCtx(), WindowNo, "IsTaxIncluded", ss);
 		}
 		return "Y".equals(ss);

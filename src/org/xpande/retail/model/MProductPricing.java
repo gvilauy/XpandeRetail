@@ -101,7 +101,7 @@ public class MProductPricing
 	private int 		uomId = 0;
 	private int 		productCategoryId;
 	private boolean 	discountSchema = false;
-	private boolean 	isTaxIncluded = false;
+	private boolean 	isTaxIncluded = true;
 	private String		trxName = null;
 
 
