@@ -12,6 +12,7 @@ import org.xpande.stech.model.X_Z_StechInterfaceOut;
 import org.zkoss.zhtml.Big;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -39,7 +40,7 @@ public class ValidatorRetail implements ModelValidator {
         engine.addModelChange(I_C_OrderLine.Table_Name, this);
         engine.addModelChange(I_C_Invoice.Table_Name, this);
         engine.addModelChange(I_C_InvoiceLine.Table_Name, this);
-
+        engine.addModelChange(I_M_ProductPrice.Table_Name, this);
         engine.addModelChange(I_M_Product.Table_Name, this);
     }
 
@@ -70,6 +71,9 @@ public class ValidatorRetail implements ModelValidator {
         }
         else if (po.get_TableName().equalsIgnoreCase(I_M_Product.Table_Name)){
             return modelChange((MProduct) po, type);
+        }
+        else if (po.get_TableName().equalsIgnoreCase(I_M_ProductPrice.Table_Name)){
+            return modelChange((MProductPrice) po, type);
         }
 
         return null;
@@ -243,18 +247,6 @@ public class ValidatorRetail implements ModelValidator {
                     DB.executeUpdateEx(action, model.get_TrxName());
                 }
 
-                /*
-                // Para comprobantes de compra en Retail, no considero una única orden de compra a nivel de cabezal.
-                // ADempiere tiene una validacion en MInvoice.beforeDelete() que impide eliminar por ejemplo
-                // facturas de compra cuando hay un valor en c_invoice.c_order_id.
-                // Por esta razón seteo siempre c_order_id en null en el cabezal de este comprobante. ya que
-                // ademas se pueden seleccionar lineas desde múltiples ordenes de compra.
-                if (model.getC_Order_ID() > 0){
-                    action = " update c_invoice set c_order_id = null "   +
-                            " where c_invoice_id =" + model.get_ID();
-                    DB.executeUpdateEx(action, model.get_TrxName());
-                }
-                */
             }
         }
 
@@ -480,6 +472,57 @@ public class ValidatorRetail implements ModelValidator {
                     model.set_ValueOfColumn("EsProductoBalanza", true);
                 }
             }
+        }
+
+        return mensaje;
+    }
+
+
+    /***
+     * Validaciones para el modelo de Precios de Productos en Retail
+     * Xpande. Created by Gabriel Vila on 8/8/17.
+     * @param model
+     * @param type
+     * @return
+     * @throws Exception
+     */
+    public String modelChange(MProductPrice model, int type) throws Exception {
+
+        String mensaje = null;
+
+        if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
+
+            // Obtengo lista de precios asociada a este precio de producto
+            MPriceListVersion priceListVersion = (MPriceListVersion) model.getM_PriceList_Version();
+            MPriceList priceList = priceListVersion.getPriceList();
+
+            // Si lista de precio no es de venta, no hago nada
+            if (!priceList.isSOPriceList()){
+                return mensaje;
+            }
+
+            // Si lista de precio no tiene organización asociada, no hago nada.
+            if (priceList.getAD_Org_ID() <= 0){
+                return mensaje;
+            }
+
+            // Si es modificacion pero no se modifica el precio o la vigencia, no hago nada
+            if (type == ModelValidator.TYPE_BEFORE_CHANGE){
+                if (!model.is_ValueChanged(X_M_ProductPrice.COLUMNNAME_PriceList) && (!model.is_ValueChanged("ValidFrom"))){
+                    return mensaje;
+                }
+            }
+
+            // Genero registro en evolución de precio de venta para este producto-organizacion
+            MZEvolPrecioVtaProdOrg evolPrecioVtaProdOrg = new MZEvolPrecioVtaProdOrg(model.getCtx(), 0, model.get_TrxName());
+            evolPrecioVtaProdOrg.setM_Product_ID(model.getM_Product_ID());
+            evolPrecioVtaProdOrg.setM_PriceList_ID(priceList.get_ID());
+            evolPrecioVtaProdOrg.setC_Currency_ID(priceList.getC_Currency_ID());
+            evolPrecioVtaProdOrg.setAD_OrgTrx_ID(priceList.getAD_Org_ID());
+            evolPrecioVtaProdOrg.setDateValidSO((Timestamp) model.get_Value("ValidFrom"));
+            evolPrecioVtaProdOrg.setPriceSO(model.getPriceList());
+            evolPrecioVtaProdOrg.setAD_User_ID(Env.getAD_User_ID(model.getCtx()));
+            evolPrecioVtaProdOrg.saveEx();
         }
 
         return mensaje;
