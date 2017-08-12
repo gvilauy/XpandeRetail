@@ -237,7 +237,7 @@ public class ValidatorRetail implements ModelValidator {
             // Para comprobantes de compra en Retail, debo considerar la posibilidad de que el usuario haya ingresado
             // de manera manual un monto de Redondeo para el comprobante.
             // Si es asi, debo reflejarlo en el total del comprobante.
-            if (!model.isSOTrx()){
+            //if (!model.isSOTrx()){
                 if ((model.is_ValueChanged("AmtRounding") || (model.is_ValueChanged("AmtSubtotal"))
                     || (model.is_ValueChanged("Grandtotal")))){
                     BigDecimal amtRounding = (BigDecimal) model.get_Value("AmtRounding");
@@ -247,7 +247,7 @@ public class ValidatorRetail implements ModelValidator {
                     DB.executeUpdateEx(action, model.get_TrxName());
                 }
 
-            }
+            //}
         }
 
         return mensaje;
@@ -306,7 +306,7 @@ public class ValidatorRetail implements ModelValidator {
             MInvoice invoice = (MInvoice)model.getC_Invoice();
 
             // No hago nada para comprobantes a clientes
-            if (invoice.isSOTrx()) return mensaje;
+            //if (invoice.isSOTrx()) return mensaje;
 
             // Cuando modifico linea de comprobante, me aseguro que se calcule bien el campo del cabezal
             // para subtotal en retail. Esto es porque Adempiere de fábrica, cuando maneja lista de precios con
