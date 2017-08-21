@@ -520,15 +520,13 @@ public class CalloutInvoice extends CalloutEngine
 			Env.getContext(ctx, WindowNo, "IsSOTrx").equals("Y"));
 
 		// Xpande. Gabriel Vila.
-		// Para ordenes de compra en Retail, puede suceder que el producto tenga un impuesto especial de compra.
+		// Para invoices compra/venta en Retail, puede suceder que el producto tenga un impuesto especial de compra/venta.
 		// Por lo tanto aca considero esta posibilidad.
-		if ("N".equals(Env.getContext(ctx, WindowNo, "IsSOTrx"))){
-			MProduct product = new MProduct(ctx, M_Product_ID, null);
-			if (product.get_ValueAsInt("C_TaxCategory_ID_2") > 0){
-				MTax taxAux = TaxUtils.getLastTaxByCategory(ctx, product.get_ValueAsInt("C_TaxCategory_ID_2"), null);
-				if ((taxAux != null) && (taxAux.get_ID() > 0)){
-					C_Tax_ID = taxAux.get_ID();
-				}
+		MProduct product = new MProduct(ctx, M_Product_ID, null);
+		if (product.get_ValueAsInt("C_TaxCategory_ID_2") > 0){
+			MTax taxAux = TaxUtils.getLastTaxByCategory(ctx, product.get_ValueAsInt("C_TaxCategory_ID_2"), null);
+			if ((taxAux != null) && (taxAux.get_ID() > 0)){
+				C_Tax_ID = taxAux.get_ID();
 			}
 		}
 		// Xpande
