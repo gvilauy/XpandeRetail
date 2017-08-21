@@ -321,14 +321,17 @@ public class ValidatorRetail implements ModelValidator {
                 invoice.saveEx();
             }
             else{
-                // Obtengo suma de impuestos para esta orden
+                // Obtengo suma de impuestos para esta invoice
                 String sql = " select sum(coalesce(taxamt,0)) as taxamt from c_invoicetax where c_invoice_id =" + invoice.get_ID();
                 BigDecimal sumImpuestos = DB.getSQLValueBDEx(model.get_TrxName(), sql);
-                if (sumImpuestos != null){
-                    sumImpuestos = sumImpuestos.setScale(2, BigDecimal.ROUND_HALF_UP);
-                    invoice.set_ValueOfColumn("AmtSubtotal", grandTotal.subtract(sumImpuestos));
-                    invoice.saveEx();
+                if (sumImpuestos == null){
+                    sumImpuestos = Env.ZERO;
                 }
+                else{
+                    sumImpuestos = sumImpuestos.setScale(2, BigDecimal.ROUND_HALF_UP);
+                }
+                invoice.set_ValueOfColumn("AmtSubtotal", grandTotal.subtract(sumImpuestos));
+                invoice.saveEx();
             }
         }
 
