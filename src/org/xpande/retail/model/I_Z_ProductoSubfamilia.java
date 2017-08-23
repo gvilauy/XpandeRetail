@@ -63,6 +63,19 @@ public interface I_Z_ProductoSubfamilia
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name CodigoBalanza */
+    public static final String COLUMNNAME_CodigoBalanza = "CodigoBalanza";
+
+	/** Set CodigoBalanza.
+	  * Código para el sistema de Balanzas en Retail
+	  */
+	public void setCodigoBalanza(String CodigoBalanza);
+
+	/** Get CodigoBalanza.
+	  * Código para el sistema de Balanzas en Retail
+	  */
+	public String getCodigoBalanza();
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -156,7 +169,7 @@ public interface I_Z_ProductoSubfamilia
 	/** Get Z_ProductoFamilia ID	  */
 	public int getZ_ProductoFamilia_ID();
 
-	public org.xpande.retail.model.I_Z_ProductoFamilia getZ_ProductoFamilia() throws RuntimeException;
+	public I_Z_ProductoFamilia getZ_ProductoFamilia() throws RuntimeException;
 
     /** Column name Z_ProductoRubro_ID */
     public static final String COLUMNNAME_Z_ProductoRubro_ID = "Z_ProductoRubro_ID";
@@ -167,7 +180,7 @@ public interface I_Z_ProductoSubfamilia
 	/** Get Z_ProductoRubro ID	  */
 	public int getZ_ProductoRubro_ID();
 
-	public org.xpande.retail.model.I_Z_ProductoRubro getZ_ProductoRubro() throws RuntimeException;
+	public I_Z_ProductoRubro getZ_ProductoRubro() throws RuntimeException;
 
     /** Column name Z_ProductoSeccion_ID */
     public static final String COLUMNNAME_Z_ProductoSeccion_ID = "Z_ProductoSeccion_ID";
@@ -178,7 +191,7 @@ public interface I_Z_ProductoSubfamilia
 	/** Get Z_ProductoSeccion ID	  */
 	public int getZ_ProductoSeccion_ID();
 
-	public org.xpande.retail.model.I_Z_ProductoSeccion getZ_ProductoSeccion() throws RuntimeException;
+	public I_Z_ProductoSeccion getZ_ProductoSeccion() throws RuntimeException;
 
     /** Column name Z_ProductoSubfamilia_ID */
     public static final String COLUMNNAME_Z_ProductoSubfamilia_ID = "Z_ProductoSubfamilia_ID";

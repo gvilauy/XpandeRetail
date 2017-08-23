@@ -63,6 +63,19 @@ public interface I_Z_ProductoRubro
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name CodigoBalanza */
+    public static final String COLUMNNAME_CodigoBalanza = "CodigoBalanza";
+
+	/** Set CodigoBalanza.
+	  * Código para el sistema de Balanzas en Retail
+	  */
+	public void setCodigoBalanza(String CodigoBalanza);
+
+	/** Get CodigoBalanza.
+	  * Código para el sistema de Balanzas en Retail
+	  */
+	public String getCodigoBalanza();
+
     /** Column name CodigoRubroPos */
     public static final String COLUMNNAME_CodigoRubroPos = "CodigoRubroPos";
 

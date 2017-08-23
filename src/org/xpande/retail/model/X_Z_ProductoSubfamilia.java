@@ -32,7 +32,7 @@ public class X_Z_ProductoSubfamilia extends PO implements I_Z_ProductoSubfamilia
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170613L;
+	private static final long serialVersionUID = 20170822L;
 
     /** Standard Constructor */
     public X_Z_ProductoSubfamilia (Properties ctx, int Z_ProductoSubfamilia_ID, String trxName)
@@ -75,6 +75,23 @@ public class X_Z_ProductoSubfamilia extends PO implements I_Z_ProductoSubfamilia
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set CodigoBalanza.
+		@param CodigoBalanza 
+		Código para el sistema de Balanzas en Retail
+	  */
+	public void setCodigoBalanza (String CodigoBalanza)
+	{
+		set_Value (COLUMNNAME_CodigoBalanza, CodigoBalanza);
+	}
+
+	/** Get CodigoBalanza.
+		@return Código para el sistema de Balanzas en Retail
+	  */
+	public String getCodigoBalanza () 
+	{
+		return (String)get_Value(COLUMNNAME_CodigoBalanza);
+	}
 
 	/** Set Description.
 		@param Description 
@@ -130,9 +147,9 @@ public class X_Z_ProductoSubfamilia extends PO implements I_Z_ProductoSubfamilia
 		return (String)get_Value(COLUMNNAME_Name);
 	}
 
-	public org.xpande.retail.model.I_Z_ProductoFamilia getZ_ProductoFamilia() throws RuntimeException
+	public I_Z_ProductoFamilia getZ_ProductoFamilia() throws RuntimeException
     {
-		return (org.xpande.retail.model.I_Z_ProductoFamilia)MTable.get(getCtx(), org.xpande.retail.model.I_Z_ProductoFamilia.Table_Name)
+		return (I_Z_ProductoFamilia)MTable.get(getCtx(), I_Z_ProductoFamilia.Table_Name)
 			.getPO(getZ_ProductoFamilia_ID(), get_TrxName());	}
 
 	/** Set Z_ProductoFamilia ID.
@@ -155,9 +172,9 @@ public class X_Z_ProductoSubfamilia extends PO implements I_Z_ProductoSubfamilia
 		return ii.intValue();
 	}
 
-	public org.xpande.retail.model.I_Z_ProductoRubro getZ_ProductoRubro() throws RuntimeException
+	public I_Z_ProductoRubro getZ_ProductoRubro() throws RuntimeException
     {
-		return (org.xpande.retail.model.I_Z_ProductoRubro)MTable.get(getCtx(), org.xpande.retail.model.I_Z_ProductoRubro.Table_Name)
+		return (I_Z_ProductoRubro)MTable.get(getCtx(), I_Z_ProductoRubro.Table_Name)
 			.getPO(getZ_ProductoRubro_ID(), get_TrxName());	}
 
 	/** Set Z_ProductoRubro ID.
@@ -180,9 +197,9 @@ public class X_Z_ProductoSubfamilia extends PO implements I_Z_ProductoSubfamilia
 		return ii.intValue();
 	}
 
-	public org.xpande.retail.model.I_Z_ProductoSeccion getZ_ProductoSeccion() throws RuntimeException
+	public I_Z_ProductoSeccion getZ_ProductoSeccion() throws RuntimeException
     {
-		return (org.xpande.retail.model.I_Z_ProductoSeccion)MTable.get(getCtx(), org.xpande.retail.model.I_Z_ProductoSeccion.Table_Name)
+		return (I_Z_ProductoSeccion)MTable.get(getCtx(), I_Z_ProductoSeccion.Table_Name)
 			.getPO(getZ_ProductoSeccion_ID(), get_TrxName());	}
 
 	/** Set Z_ProductoSeccion ID.

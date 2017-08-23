@@ -32,7 +32,7 @@ public class X_Z_ProductoSeccion extends PO implements I_Z_ProductoSeccion, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170613L;
+	private static final long serialVersionUID = 20170822L;
 
     /** Standard Constructor */
     public X_Z_ProductoSeccion (Properties ctx, int Z_ProductoSeccion_ID, String trxName)
@@ -72,6 +72,23 @@ public class X_Z_ProductoSeccion extends PO implements I_Z_ProductoSeccion, I_Pe
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set CodigoBalanza.
+		@param CodigoBalanza 
+		Código para el sistema de Balanzas en Retail
+	  */
+	public void setCodigoBalanza (String CodigoBalanza)
+	{
+		set_Value (COLUMNNAME_CodigoBalanza, CodigoBalanza);
+	}
+
+	/** Get CodigoBalanza.
+		@return Código para el sistema de Balanzas en Retail
+	  */
+	public String getCodigoBalanza () 
+	{
+		return (String)get_Value(COLUMNNAME_CodigoBalanza);
+	}
 
 	/** Set Description.
 		@param Description 
