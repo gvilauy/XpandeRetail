@@ -173,15 +173,34 @@ public class BalanceServicios extends SvrProcess {
         	while(rs.next()){
 
         	    // Precio Promedio Venta
-        	    BigDecimal precioPromedioVta = ComercialUtils.getPrecioPromedioVta(getCtx(), this.adOrgID, rs.getInt("m_product_id"),
-                        this.cCurrencyID, this.startDate, this.endDate, null);
+        	    BigDecimal precioPromedioVta = ComercialUtils.getPrecioPromedioVta(getCtx(), this.getAD_Client_ID(), this.adOrgID,
+                        rs.getInt("m_product_id"), this.cCurrencyID, this.startDate, this.endDate, null);
 
+                // Cantidad comprada
+                BigDecimal cantComprada = ComercialUtils.getCantidadComprada(getCtx(), this.getAD_Client_ID(), this.adOrgID,
+                        rs.getInt("m_product_id"), this.startDate, this.endDate, null);
 
+                // Importe comprado
+                BigDecimal amtComprado = ComercialUtils.getImporteComprado(getCtx(), this.getAD_Client_ID(), this.adOrgID,
+                        rs.getInt("m_product_id"), cCurrencyID, this.startDate, this.endDate, null);
 
-        	    String action = " update " + TABLA_REPORTE +
-                        " set PriceSO =" + precioPromedioVta +
+                // Cantidad vendida
+                BigDecimal cantVendida = ComercialUtils.getCantidadVendida(getCtx(), this.getAD_Client_ID(), this.adOrgID,
+                        rs.getInt("m_product_id"), this.startDate, this.endDate, null);
+
+                // Importe vendido
+                BigDecimal amtVendido = ComercialUtils.getImporteVendido(getCtx(), this.getAD_Client_ID(), this.adOrgID,
+                        rs.getInt("m_product_id"), cCurrencyID, this.startDate, this.endDate, null);
+
+                String action = " update " + TABLA_REPORTE +
+                        " set PriceSO =" + precioPromedioVta + ", " +
+                        " qtypurchased =" + cantComprada + ", " +
+                        " amtpurchased =" + amtComprado + ", " +
+                        " qtysold =" + cantVendida + ", " +
+                        " amtsold =" + amtVendido +
                         " where m_product_id =" + rs.getInt("m_product_id");
         	    DB.executeUpdateEx(action, null);
+
         	}
         }
         catch (Exception e){
