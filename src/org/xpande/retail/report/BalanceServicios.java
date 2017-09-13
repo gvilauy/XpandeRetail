@@ -136,7 +136,7 @@ public class BalanceServicios extends SvrProcess {
             }
 
             sql = " select p.ad_client_id, " + this.adOrgID + ", " + this.getAD_User_ID() + ", "
-                    + ((cBPartnerID > 0) ? String.valueOf(this.cBPartnerID) : "null") + ", " +
+                    + ((cBPartnerID > 0) ? String.valueOf(this.cBPartnerID) : "null") + "::numeric(10,0), " +
                     " p.m_product_id, p.value, p.name, '" +  this.startDate + "', p.z_productoseccion_id, p.z_productorubro_id,  " +
                     " p.z_productofamilia_id, p.z_productosubfamilia_id " +
                     " from m_product p " +

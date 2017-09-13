@@ -17,4 +17,20 @@ public class MZConfirmacionEtiquetaProd extends X_Z_ConfirmacionEtiquetaProd {
     public MZConfirmacionEtiquetaProd(Properties ctx, ResultSet rs, String trxName) {
         super(ctx, rs, trxName);
     }
+
+
+    @Override
+    protected boolean beforeSave(boolean newRecord) {
+
+        // Validación de no seleccionar IMPRIMIR Y OMITIR este producto al mismo tiempo. Ya que solo una accion es posible.
+        if (!newRecord){
+            if (this.isPrinted() && this.isOmitted()){
+                log.saveError("ATENCIÓN", "Solo se permite seleccionar una acción: Omitir o Imprimir");
+                return false;
+
+            }
+        }
+
+        return true;
+    }
 }

@@ -227,6 +227,13 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 		log.info(toString());
 		//
 
+		// Recorro documentos y productos, y confirmo documentos.
+		// Para los documentos marcados para procesar, recorro sus productos.
+		// Si todos los productos tienen una accion seleccionada entonces el documento esta confirmado y asi lo marco.
+		// Si alguno de sus productos no tiene una accion seleccionada, entonces el documento queda como NO confirmado.
+		// Esta situacion controla que el usuario siempre indique una acción en los productos de los documentos marcados a procesar.
+		this.confirmarDocumentos();
+
 		// Obtengo documentos confirmados para procesar
 		List<MZConfirmacionEtiquetaDoc> etiquetaDocs = this.getConfirmedEtiquetaDocs();
 
@@ -253,6 +260,47 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
+
+
+	/***
+	 * Recorro documentos y productos, y confirmo documentos.
+	 * Para los documentos marcados para procesar, recorro sus productos.
+	 * Si todos los productos tienen una accion seleccionada entonces el documento esta confirmado y asi lo marco.
+	 * Si alguno de sus productos no tiene una accion seleccionada, entonces el documento queda como NO confirmado.
+	 * Esta situacion controla que el usuario siempre indique una acción en los productos de los documentos marcados a procesar.
+	 * Xpande. Created by Gabriel Vila on 9/13/17.
+	 */
+	private void confirmarDocumentos() {
+
+		String sql = "";
+
+		try{
+			// Obtengo y recorro documentos marcados para procesar
+			List<MZConfirmacionEtiquetaDoc> etiquetaDocs = this.getSelectedEtiquetaDocs();
+			for (MZConfirmacionEtiquetaDoc etiquetaDoc: etiquetaDocs){
+
+				// Obtengo cantidad de productos de este documento que no tienen accion seleccionada (omitir o imprimir)
+				sql = " select count(*) from Z_ConfirmacionEtiquetaProd " +
+						" where Z_ConfirmacionEtiquetaDoc_ID =" + etiquetaDoc.get_ID() +
+						" and isprinter='N' and isomitted='N'";
+				int contador = DB.getSQLValueEx(get_TrxName(), sql);
+
+				// Si hay productos de este documento que no tienen accion seleccionada, este documento queda como no confirmado
+				if (contador > 0){
+					etiquetaDoc.setIsConfirmed(false);
+				}
+				else {
+					// Todos los productos de este documentos tienen accion seleccionada, este documento queda como confirmado
+					etiquetaDoc.setIsConfirmed(true);
+				}
+				etiquetaDoc.saveEx();
+			}
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+	}
 
 
 	/***
@@ -320,6 +368,12 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 
 		if (etiquetaDocs.size() <= 0){
 			return "No hay Documentos confirmados para procesar";
+		}
+
+		// Valido que no hayan documentos marcados para procesar pero que no hayan quedado confirmados
+		List<MZConfirmacionEtiquetaDoc> notConfirmedDocs = this.getNotConfirmedEtiquetaDocs();
+		if ((notConfirmedDocs != null) && (notConfirmedDocs.size() > 0)){
+			return "Hay documentos seleccionados para Procesar, pero que no fueron Confirmados en su totalidad de Productos";
 		}
 
 		return message;
@@ -640,20 +694,54 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 
 
 	/***
-	 * Obtiene y retorna lineas de documentos de este modelo.
+	 * Obtiene y retorna lineas de documentos marcados para procesar y que estan confirmados para este modelo.
 	 * Xpande. Created by Gabriel Vila on 7/12/17.
 	 * @return
 	 */
 	public List<MZConfirmacionEtiquetaDoc> getConfirmedEtiquetaDocs(){
 
     	String whereClause = X_Z_ConfirmacionEtiquetaDoc.COLUMNNAME_Z_ConfirmacionEtiqueta_ID + " =" + this.get_ID() +
-				" AND " + X_Z_ConfirmacionEtiquetaDoc.COLUMNNAME_IsSelected + " ='Y'";
-				//" AND " + X_Z_ConfirmacionEtiquetaDoc.COLUMNNAME_IsConfirmed + " ='Y'";
+				" AND " + X_Z_ConfirmacionEtiquetaDoc.COLUMNNAME_IsSelected + " ='Y'" +
+				" AND " + X_Z_ConfirmacionEtiquetaDoc.COLUMNNAME_IsConfirmed + " ='Y'";
 
     	List<MZConfirmacionEtiquetaDoc> lines = new Query(getCtx(), I_Z_ConfirmacionEtiquetaDoc.Table_Name, whereClause, get_TrxName()).list();
 
     	return lines;
 	}
+
+
+	/***
+	 * Obtiene y retorna lineas de documentos marcados para procesar y que no estan confirmados para este modelo.
+	 * Xpande. Created by Gabriel Vila on 7/12/17.
+	 * @return
+	 */
+	public List<MZConfirmacionEtiquetaDoc> getNotConfirmedEtiquetaDocs(){
+
+		String whereClause = X_Z_ConfirmacionEtiquetaDoc.COLUMNNAME_Z_ConfirmacionEtiqueta_ID + " =" + this.get_ID() +
+				" AND " + X_Z_ConfirmacionEtiquetaDoc.COLUMNNAME_IsSelected + " ='Y'" +
+				" AND " + X_Z_ConfirmacionEtiquetaDoc.COLUMNNAME_IsConfirmed + " ='N'";
+
+		List<MZConfirmacionEtiquetaDoc> lines = new Query(getCtx(), I_Z_ConfirmacionEtiquetaDoc.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+
+	/***
+	 * Obtiene y retorna lineas de documentos marcados para procesar de este modelo.
+	 * Xpande. Created by Gabriel Vila on 7/12/17.
+	 * @return
+	 */
+	public List<MZConfirmacionEtiquetaDoc> getSelectedEtiquetaDocs(){
+
+		String whereClause = X_Z_ConfirmacionEtiquetaDoc.COLUMNNAME_Z_ConfirmacionEtiqueta_ID + " =" + this.get_ID() +
+				" AND " + X_Z_ConfirmacionEtiquetaDoc.COLUMNNAME_IsSelected + " ='Y'";
+
+		List<MZConfirmacionEtiquetaDoc> lines = new Query(getCtx(), I_Z_ConfirmacionEtiquetaDoc.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
 
 	@Override
 	protected boolean beforeSave(boolean newRecord) {

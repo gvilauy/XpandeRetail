@@ -2,6 +2,7 @@ package org.xpande.retail.model;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.Query;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.retail.utils.ProductPricesInfo;
 
@@ -162,4 +163,28 @@ public class MZPautaComercialSet extends X_Z_PautaComercialSet {
 
     }
 
+    @Override
+    protected boolean beforeSave(boolean newRecord) {
+
+        // Validacion para que no se definan dos segmentos de descuentos generales en una misma pauta comercial.
+        if ((newRecord) || ((!newRecord) && (is_ValueChanged(X_Z_PautaComercialSet.COLUMNNAME_IsGeneral)))){
+            if (this.isGeneral()){
+                String whereClause = "";
+                if (!newRecord){
+                    whereClause = " and z_pautacomercialset_id !=" + this.get_ID();
+                }
+                String sql = " select count(*) " +
+                        " from z_pautacomercialset " +
+                        " where z_pautacomercial_id =" + this.getZ_PautaComercial_ID() +
+                        " and isgeneral ='Y' " + whereClause;
+                int contador = DB.getSQLValueEx(get_TrxName(), sql);
+                if (contador > 0){
+                    log.saveError("ATENCIÓN", "Ya existe un Segmento de Descuentos Generales en esta Pauta Comercial.");
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 }
