@@ -31,7 +31,7 @@ public class X_Z_ConfirmacionEtiqueta extends PO implements I_Z_ConfirmacionEtiq
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170731L;
+	private static final long serialVersionUID = 20170913L;
 
     /** Standard Constructor */
     public X_Z_ConfirmacionEtiqueta (Properties ctx, int Z_ConfirmacionEtiqueta_ID, String trxName)
@@ -400,6 +400,31 @@ public class X_Z_ConfirmacionEtiqueta extends PO implements I_Z_ConfirmacionEtiq
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	public I_Z_ComunicacionPOS getZ_ComunicacionPOS() throws RuntimeException
+    {
+		return (I_Z_ComunicacionPOS)MTable.get(getCtx(), I_Z_ComunicacionPOS.Table_Name)
+			.getPO(getZ_ComunicacionPOS_ID(), get_TrxName());	}
+
+	/** Set Z_ComunicacionPOS ID.
+		@param Z_ComunicacionPOS_ID Z_ComunicacionPOS ID	  */
+	public void setZ_ComunicacionPOS_ID (int Z_ComunicacionPOS_ID)
+	{
+		if (Z_ComunicacionPOS_ID < 1) 
+			set_Value (COLUMNNAME_Z_ComunicacionPOS_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_ComunicacionPOS_ID, Integer.valueOf(Z_ComunicacionPOS_ID));
+	}
+
+	/** Get Z_ComunicacionPOS ID.
+		@return Z_ComunicacionPOS ID	  */
+	public int getZ_ComunicacionPOS_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ComunicacionPOS_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Z_ConfirmacionEtiqueta ID.

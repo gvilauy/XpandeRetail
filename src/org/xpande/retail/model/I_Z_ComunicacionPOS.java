@@ -194,6 +194,19 @@ public interface I_Z_ComunicacionPOS
 	/** Get IsExecuted	  */
 	public boolean isExecuted();
 
+    /** Column name OnlyBasicData */
+    public static final String COLUMNNAME_OnlyBasicData = "OnlyBasicData";
+
+	/** Set OnlyBasicData.
+	  * Solo información básica
+	  */
+	public void setOnlyBasicData(boolean OnlyBasicData);
+
+	/** Get OnlyBasicData.
+	  * Solo información básica
+	  */
+	public boolean isOnlyBasicData();
+
     /** Column name ProcessButton */
     public static final String COLUMNNAME_ProcessButton = "ProcessButton";
 

@@ -12,7 +12,6 @@
     <orderEntry type="module" module-name="XpandeCore" exported="" />
     <orderEntry type="module" module-name="XpandeComercial" exported="" />
     <orderEntry type="module" module-name="XpandeFinancial" exported="" />
-    <orderEntry type="module" module-name="XpandeScanntech" exported="" />
     <orderEntry type="module" module-name="XpandeSisteco" exported="" />
   </component>
 </module>

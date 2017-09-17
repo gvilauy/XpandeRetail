@@ -555,6 +555,10 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			return "El documento no tiene productos para procesar.";
 		}
 
+		if (this.getZ_LineaProductoSocio_ID() <= 0){
+			return "Debe indicar Linea de Productos. Seleccione una Linea o cree una nueva.";
+		}
+
 		Timestamp today = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 		Timestamp validFrom = TimeUtil.trunc(this.getDateValidPO(), TimeUtil.TRUNC_DAY);
 

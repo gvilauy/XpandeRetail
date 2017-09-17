@@ -267,6 +267,17 @@ public interface I_Z_ConfirmacionEtiqueta
 	  */
 	public int getUpdatedBy();
 
+    /** Column name Z_ComunicacionPOS_ID */
+    public static final String COLUMNNAME_Z_ComunicacionPOS_ID = "Z_ComunicacionPOS_ID";
+
+	/** Set Z_ComunicacionPOS ID	  */
+	public void setZ_ComunicacionPOS_ID(int Z_ComunicacionPOS_ID);
+
+	/** Get Z_ComunicacionPOS ID	  */
+	public int getZ_ComunicacionPOS_ID();
+
+	public I_Z_ComunicacionPOS getZ_ComunicacionPOS() throws RuntimeException;
+
     /** Column name Z_ConfirmacionEtiqueta_ID */
     public static final String COLUMNNAME_Z_ConfirmacionEtiqueta_ID = "Z_ConfirmacionEtiqueta_ID";
 

@@ -29,6 +29,7 @@ import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
+import org.xpande.sisteco.utils.ProcesadorInterfaceOut;
 
 /** Generated Model for Z_ComunicacionPOS
  *  @author Adempiere (generated) 
@@ -230,7 +231,21 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 			approveIt();
 		log.info(toString());
 		//
-		
+
+		// No comunico precios si eso se indica en proceso de comunicacion de datos al pos.
+		boolean processPrices = true;
+		if (this.isOnlyBasicData()){
+			processPrices = false;
+		}
+
+
+		// Proceso interface de salida por ahora sisteco.
+		ProcesadorInterfaceOut procesadorInterfaceOut = new ProcesadorInterfaceOut(getCtx(), get_TrxName());
+		m_processMsg = procesadorInterfaceOut.executeInterfaceOut(this.getAD_Org_ID(), this.get_ID(),processPrices, true, true);
+		if (m_processMsg != null)
+			return DocAction.STATUS_Invalid;
+
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -393,6 +408,7 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 
 	/***
 	 * Obtiene y carga documentos a considerarse en este documento.
+	 * Estos son documentos existentes en procesos completos de Confirmación de Precios al Local.
 	 * Xpande. Created by Gabriel Vila on 7/12/17.
 	 * @return
 	 */
@@ -400,167 +416,74 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 
 		String message = null;
 
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
 		try{
 
-			// Obtiene documentos que pasaron por la confirmacion de precios al local.
-			this.getDocumentosConfirmadosAlLocal();
+			// Elimino datos anteriores antes de cargar
+			this.deleteDocuments();
 
-			// Obtiene marcas restantes a enviar al POS que no tienen que ver con cambios de precio y alta de productos.
-			this.getMarcasNoPrecios();
+		    sql = " select z_confirmacionetiqueta_id " +
+					" from z_confirmacionetiqueta " +
+					" where docstatus='CO' " +
+					" and z_comunicacionpos_id is null " +
+					" order by datedoc";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+				MZConfirmacionEtiqueta confirmacionEtiqueta = new MZConfirmacionEtiqueta(getCtx(), rs.getInt("z_confirmacionetiqueta_id"), get_TrxName());
+				confirmacionEtiqueta.setZ_ComunicacionPOS_ID(this.get_ID());
+				confirmacionEtiqueta.saveEx();
+			}
 
 		}
 		catch (Exception e){
-			throw new AdempiereException(e);
+		    throw new AdempiereException(e);
 		}
+		finally {
+		    DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
 		return message;
 	}
 
 	/***
-	 * Obtiene y carga documentos y productos con cambios de precios ya confirmados al local.
-	 * Xpande. Created by Gabriel Vila on 7/12/17.
+	 * Elimina información de documentos asociados a este modelo.
+	 * Xpande. Created by Gabriel Vila on 9/13/17.
 	 */
-	private void getDocumentosConfirmadosAlLocal(){
-
-		String sql = "";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
+	private void deleteDocuments(){
 
 		try{
-			int zPreciosProvCabID = 0;
-			MZComunicacionPOSDoc comunicacionDoc = null;
-			int adTableID = MTable.getTable_ID(I_Z_PreciosProvCab.Table_Name);
-
-			sql = " select cab.z_preciosprovcab_id, cab.c_doctype_id, cab.documentno, cab.datevalidpo, cab.updated, cab.updatedby, " +
-					" cab.c_bpartner_id, cab.z_lineaproductosocio_id, " +
-					" lin.c_currency_id_so, lin.m_product_id, linorg.newpriceso, linorg.ad_orgtrx_id " +
-					" from z_preciosprovlinorg linorg " +
-					" inner join z_preciosprovlin lin on linorg.z_preciosprovlin_id = lin.z_preciosprovlin_id " +
-					" inner join z_preciosprovcab cab on lin.z_preciosprovcab_id = cab.z_preciosprovcab_id " +
-					" where linorg.ad_orgtrx_id =" + this.getAD_Org_ID() +
-					" and linorg.newpriceso <> linorg.priceso " +
-					" and cab.docstatus='CO' " +
-					" and cab.z_preciosprovcab_id not in " +
-					" (select confdoc.record_id from z_confirmacionetiquetadoc confdoc " +
-					" inner join z_confirmacionetiqueta conf on confdoc.z_confirmacionetiqueta_id = conf.z_confirmacionetiqueta_id " +
-					" where confdoc.ad_table_id =" + adTableID + " and conf.ad_org_id =" + this.getAD_Org_ID() + ") " +
-					" order by cab.updated, cab.z_preciosprovcab_id";
-
-			pstmt = DB.prepareStatement(sql, get_TrxName());
-			rs = pstmt.executeQuery();
-
-			while(rs.next()){
-
-				// Corte por id de documento de gestión de precios
-				if (rs.getInt("z_preciosprovcab_id") != zPreciosProvCabID){
-					// Nuevo documento
-					comunicacionDoc = new MZComunicacionPOSDoc(getCtx(), 0, get_TrxName());
-					comunicacionDoc.setZ_ComunicacionPOS_ID(this.get_ID());
-					comunicacionDoc.setAD_Table_ID(adTableID);
-					comunicacionDoc.setRecord_ID(rs.getInt("z_preciosprovcab_id"));
-					comunicacionDoc.setAD_User_ID(rs.getInt("updatedby"));
-					comunicacionDoc.setC_DocTypeTarget_ID(rs.getInt("c_doctype_id"));
-					comunicacionDoc.setDateDoc(rs.getTimestamp("updated"));
-					comunicacionDoc.setDocumentNoRef(rs.getString("documentno"));
-					comunicacionDoc.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
-					comunicacionDoc.setZ_LineaProductoSocio_ID(rs.getInt("z_lineaproductosocio_id"));
-					comunicacionDoc.saveEx();
-
-					zPreciosProvCabID = rs.getInt("z_preciosprovcab_id");
-				}
-
-				// Nuevo producto
-				/*
-				MZConfirmacionEtiquetaProd etiquetaProd = new MZConfirmacionEtiquetaProd(getCtx(), 0, get_TrxName());
-				etiquetaProd.setZ_ConfirmacionEtiquetaDoc_ID(etiquetaDoc.get_ID());
-				etiquetaProd.setM_Product_ID(rs.getInt("m_product_id"));
-				etiquetaProd.setPriceSO(rs.getBigDecimal("newpriceso"));
-				etiquetaProd.setDateValidSO(rs.getTimestamp("datevalidpo"));
-				etiquetaProd.setC_Currency_ID_SO(rs.getInt("c_currency_id_so"));
-				etiquetaProd.setQtyCount(1);
-				etiquetaProd.saveEx();
-				*/
-			}
+			String action = " update z_confirmacionetiqueta set z_comunicacionpos_id = null where z_comunicacionpos_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
 		}
 		catch (Exception e){
 			throw new AdempiereException(e);
 		}
-		finally {
-			DB.close(rs, pstmt);
-			rs = null; pstmt = null;
-		}
-
 	}
 
+	@Override
+	protected boolean beforeSave(boolean newRecord) {
 
-	/***
-	 * Obtiene marcas a enviar al POS que NO involucran cambios de precios.
-	 * Xpande. Created by Gabriel Vila on 7/22/17.
-	 */
-	private void getMarcasNoPrecios() {
-
-		String sql = "";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-
-		try{
-			int zActualizacionPVPID = 0;
-			MZConfirmacionEtiquetaDoc etiquetaDoc = null;
-			int adTableID = MTable.getTable_ID(I_Z_ActualizacionPVP.Table_Name);
-
-			sql = " select cab.z_actualizacionpvp_id, cab.c_doctype_id, cab.documentno, cab.datedoc, cab.updated, cab.updatedby, " +
-					" lin.c_currency_id, lin.m_product_id, linorg.newpriceso, linorg.ad_orgtrx_id " +
-					" from z_actualizacionpvplinorg linorg " +
-					" inner join z_actualizacionpvplin lin on linorg.z_actualizacionpvplin_id = lin.z_actualizacionpvplin_id " +
-					" inner join z_actualizacionpvp cab on lin.z_actualizacionpvp_id = cab.z_actualizacionpvp_id " +
-					" where linorg.ad_orgtrx_id =" + this.getAD_Org_ID() +
-					" and linorg.newpriceso <> linorg.priceso " +
-					" and cab.docstatus='CO' " +
-					" and cab.z_actualizacionpvp_id not in " +
-					" (select confdoc.record_id from z_confirmacionetiquetadoc confdoc " +
-					" inner join z_confirmacionetiqueta conf on confdoc.z_confirmacionetiqueta_id = conf.z_confirmacionetiqueta_id " +
-					" where confdoc.ad_table_id =" + adTableID + " and conf.ad_org_id =" + this.getAD_Org_ID() + ") " +
-					" order by cab.updated, cab.z_actualizacionpvp_id";
-
-			pstmt = DB.prepareStatement(sql, get_TrxName());
-			rs = pstmt.executeQuery();
-
-			while(rs.next()){
-
-				// Corte por id de documento de gestión de precios
-				if (rs.getInt("z_actualizacionpvp_id") != zActualizacionPVPID){
-					// Nuevo documento
-					etiquetaDoc = new MZConfirmacionEtiquetaDoc(getCtx(), 0, get_TrxName());
-					etiquetaDoc.setZ_ConfirmacionEtiqueta_ID(this.get_ID());
-					etiquetaDoc.setAD_Table_ID(adTableID);
-					etiquetaDoc.setRecord_ID(rs.getInt("z_actualizacionpvp_id"));
-					etiquetaDoc.setAD_User_ID(rs.getInt("updatedby"));
-					etiquetaDoc.setC_DocTypeTarget_ID(rs.getInt("c_doctype_id"));
-					etiquetaDoc.setDateDoc(rs.getTimestamp("updated"));
-					etiquetaDoc.setDocumentNoRef(rs.getString("documentno"));
-					etiquetaDoc.save();
-
-					zActualizacionPVPID = rs.getInt("z_actualizacionpvp_id");
-				}
-
-				// Nuevo producto
-				MZConfirmacionEtiquetaProd etiquetaProd = new MZConfirmacionEtiquetaProd(getCtx(), 0, get_TrxName());
-				etiquetaProd.setZ_ConfirmacionEtiquetaDoc_ID(etiquetaDoc.get_ID());
-				etiquetaProd.setM_Product_ID(rs.getInt("m_product_id"));
-				etiquetaProd.setPriceSO(rs.getBigDecimal("newpriceso"));
-				etiquetaProd.setDateValidSO(rs.getTimestamp("datedoc"));
-				etiquetaProd.setC_Currency_ID_SO(rs.getInt("c_currency_id"));
-				etiquetaProd.setQtyCount(1);
-				etiquetaProd.saveEx();
-			}
-		}
-		catch (Exception e){
-			throw new AdempiereException(e);
-		}
-		finally {
-			DB.close(rs, pstmt);
-			rs = null; pstmt = null;
+		// Si se indica comunicar solo clientes y codigos de barra, me aseguro de no tener documentos cargados para comunicacion de precios
+		if (this.isOnlyBasicData()){
+			this.deleteDocuments();
 		}
 
+		return true;
 	}
 
+	@Override
+	protected boolean beforeDelete() {
+
+		// Al eliminar cabezal me aseguro de no tener documentos cargados para comunicacion de precios
+		this.deleteDocuments();
+
+		return true;
+	}
 }

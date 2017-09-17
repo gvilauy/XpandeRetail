@@ -31,7 +31,7 @@ public class X_Z_ComunicacionPOS extends PO implements I_Z_ComunicacionPOS, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170722L;
+	private static final long serialVersionUID = 20170913L;
 
     /** Standard Constructor */
     public X_Z_ComunicacionPOS (Properties ctx, int Z_ComunicacionPOS_ID, String trxName)
@@ -50,6 +50,8 @@ public class X_Z_ComunicacionPOS extends PO implements I_Z_ComunicacionPOS, I_Pe
 			setIsApproved (false);
 // N
 			setIsExecuted (false);
+// N
+			setOnlyBasicData (false);
 // N
 			setProcessed (false);
 // N
@@ -292,6 +294,30 @@ public class X_Z_ComunicacionPOS extends PO implements I_Z_ComunicacionPOS, I_Pe
 	public boolean isExecuted () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsExecuted);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set OnlyBasicData.
+		@param OnlyBasicData 
+		Solo información básica
+	  */
+	public void setOnlyBasicData (boolean OnlyBasicData)
+	{
+		set_Value (COLUMNNAME_OnlyBasicData, Boolean.valueOf(OnlyBasicData));
+	}
+
+	/** Get OnlyBasicData.
+		@return Solo información básica
+	  */
+	public boolean isOnlyBasicData () 
+	{
+		Object oo = get_Value(COLUMNNAME_OnlyBasicData);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

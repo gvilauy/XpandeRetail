@@ -282,7 +282,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 				// Obtengo cantidad de productos de este documento que no tienen accion seleccionada (omitir o imprimir)
 				sql = " select count(*) from Z_ConfirmacionEtiquetaProd " +
 						" where Z_ConfirmacionEtiquetaDoc_ID =" + etiquetaDoc.get_ID() +
-						" and isprinter='N' and isomitted='N'";
+						" and isprinted='N' and isomitted='N'";
 				int contador = DB.getSQLValueEx(get_TrxName(), sql);
 
 				// Si hay productos de este documento que no tienen accion seleccionada, este documento queda como no confirmado
@@ -534,6 +534,9 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 
 		try{
 
+			// Elimina documentos anteriores antes de cargar
+			this.deleteDocuments();
+
 			// Obtiene documentos de gestión de precios
 			this.getDocPrecios();
 
@@ -573,7 +576,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					" and cab.z_actualizacionpvp_id not in " +
 					" (select confdoc.record_id from z_confirmacionetiquetadoc confdoc " +
 					" inner join z_confirmacionetiqueta conf on confdoc.z_confirmacionetiqueta_id = conf.z_confirmacionetiqueta_id " +
-					" where confdoc.ad_table_id =" + adTableID + " and conf.ad_org_id =" + this.getAD_Org_ID() + ") " +
+					" where confdoc.isselected ='Y' and confdoc.ad_table_id =" + adTableID + " and conf.ad_org_id =" + this.getAD_Org_ID() + ") " +
 					" order by cab.updated, cab.z_actualizacionpvp_id";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
@@ -645,7 +648,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					" and cab.z_preciosprovcab_id not in " +
 					" (select confdoc.record_id from z_confirmacionetiquetadoc confdoc " +
 					" inner join z_confirmacionetiqueta conf on confdoc.z_confirmacionetiqueta_id = conf.z_confirmacionetiqueta_id " +
-					" where confdoc.ad_table_id =" + adTableID + " and conf.ad_org_id =" + this.getAD_Org_ID() + ") " +
+					" where confdoc.isselected ='Y' and confdoc.ad_table_id =" + adTableID + " and conf.ad_org_id =" + this.getAD_Org_ID() + ") " +
 					" order by cab.updated, cab.z_preciosprovcab_id";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
@@ -747,7 +750,6 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 	protected boolean beforeSave(boolean newRecord) {
 
 		try{
-
 			if (newRecord){
 				// Genera ID para impresión de etiquetas. Este ID es el que se pasa por parametro al reporte.
 				int impresionID = SequenceUtils.getNextID_NoTable(get_TrxName(), "impresion_id");
@@ -761,4 +763,20 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 
 		return true;
 	}
+
+	/***
+	 * Elimina información de documentos asociados a este modelo.
+	 * Xpande. Created by Gabriel Vila on 9/13/17.
+	 */
+	private void deleteDocuments(){
+
+		try{
+			String action = " delete from z_confirmacionetiquetadoc where z_confirmacionetiqueta_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+	}
+
 }
