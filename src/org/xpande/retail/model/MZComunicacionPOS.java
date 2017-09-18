@@ -241,7 +241,7 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 
 		// Proceso interface de salida por ahora sisteco.
 		ProcesadorInterfaceOut procesadorInterfaceOut = new ProcesadorInterfaceOut(getCtx(), get_TrxName());
-		m_processMsg = procesadorInterfaceOut.executeInterfaceOut(this.getAD_Org_ID(), this.get_ID(),processPrices, true, true);
+		m_processMsg = procesadorInterfaceOut.executeInterfaceOut(this.getAD_Org_ID(), this.get_ID(), processPrices, true, true);
 		if (m_processMsg != null)
 			return DocAction.STATUS_Invalid;
 

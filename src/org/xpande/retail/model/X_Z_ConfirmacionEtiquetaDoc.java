@@ -31,7 +31,7 @@ public class X_Z_ConfirmacionEtiquetaDoc extends PO implements I_Z_ConfirmacionE
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170712L;
+	private static final long serialVersionUID = 20170918L;
 
     /** Standard Constructor */
     public X_Z_ConfirmacionEtiquetaDoc (Properties ctx, int Z_ConfirmacionEtiquetaDoc_ID, String trxName)
@@ -45,6 +45,8 @@ public class X_Z_ConfirmacionEtiquetaDoc extends PO implements I_Z_ConfirmacionE
 			setDateDoc (new Timestamp( System.currentTimeMillis() ));
 			setDocumentNoRef (null);
 			setIsConfirmed (false);
+// N
+			setIsOmitted (false);
 // N
 			setIsSelected (false);
 // N
@@ -252,6 +254,30 @@ public class X_Z_ConfirmacionEtiquetaDoc extends PO implements I_Z_ConfirmacionE
 		return false;
 	}
 
+	/** Set IsOmitted.
+		@param IsOmitted 
+		Omitida si o no
+	  */
+	public void setIsOmitted (boolean IsOmitted)
+	{
+		set_Value (COLUMNNAME_IsOmitted, Boolean.valueOf(IsOmitted));
+	}
+
+	/** Get IsOmitted.
+		@return Omitida si o no
+	  */
+	public boolean isOmitted () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsOmitted);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Selected.
 		@param IsSelected Selected	  */
 	public void setIsSelected (boolean IsSelected)
@@ -361,6 +387,31 @@ public class X_Z_ConfirmacionEtiquetaDoc extends PO implements I_Z_ConfirmacionE
 	public int getZ_LineaProductoSocio_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_LineaProductoSocio_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_MotivoOmisionPOS getZ_MotivoOmisionPOS() throws RuntimeException
+    {
+		return (I_Z_MotivoOmisionPOS)MTable.get(getCtx(), I_Z_MotivoOmisionPOS.Table_Name)
+			.getPO(getZ_MotivoOmisionPOS_ID(), get_TrxName());	}
+
+	/** Set Z_MotivoOmisionPOS ID.
+		@param Z_MotivoOmisionPOS_ID Z_MotivoOmisionPOS ID	  */
+	public void setZ_MotivoOmisionPOS_ID (int Z_MotivoOmisionPOS_ID)
+	{
+		if (Z_MotivoOmisionPOS_ID < 1) 
+			set_Value (COLUMNNAME_Z_MotivoOmisionPOS_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_MotivoOmisionPOS_ID, Integer.valueOf(Z_MotivoOmisionPOS_ID));
+	}
+
+	/** Get Z_MotivoOmisionPOS ID.
+		@return Z_MotivoOmisionPOS ID	  */
+	public int getZ_MotivoOmisionPOS_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MotivoOmisionPOS_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

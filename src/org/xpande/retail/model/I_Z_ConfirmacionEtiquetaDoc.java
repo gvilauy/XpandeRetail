@@ -191,6 +191,19 @@ public interface I_Z_ConfirmacionEtiquetaDoc
 	  */
 	public boolean isConfirmed();
 
+    /** Column name IsOmitted */
+    public static final String COLUMNNAME_IsOmitted = "IsOmitted";
+
+	/** Set IsOmitted.
+	  * Omitida si o no
+	  */
+	public void setIsOmitted(boolean IsOmitted);
+
+	/** Get IsOmitted.
+	  * Omitida si o no
+	  */
+	public boolean isOmitted();
+
     /** Column name IsSelected */
     public static final String COLUMNNAME_IsSelected = "IsSelected";
 
@@ -259,4 +272,15 @@ public interface I_Z_ConfirmacionEtiquetaDoc
 	public int getZ_LineaProductoSocio_ID();
 
 	public I_Z_LineaProductoSocio getZ_LineaProductoSocio() throws RuntimeException;
+
+    /** Column name Z_MotivoOmisionPOS_ID */
+    public static final String COLUMNNAME_Z_MotivoOmisionPOS_ID = "Z_MotivoOmisionPOS_ID";
+
+	/** Set Z_MotivoOmisionPOS ID	  */
+	public void setZ_MotivoOmisionPOS_ID(int Z_MotivoOmisionPOS_ID);
+
+	/** Get Z_MotivoOmisionPOS ID	  */
+	public int getZ_MotivoOmisionPOS_ID();
+
+	public I_Z_MotivoOmisionPOS getZ_MotivoOmisionPOS() throws RuntimeException;
 }

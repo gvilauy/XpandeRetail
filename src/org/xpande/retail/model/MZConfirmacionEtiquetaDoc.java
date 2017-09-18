@@ -37,4 +37,11 @@ public class MZConfirmacionEtiquetaDoc extends X_Z_ConfirmacionEtiquetaDoc {
         return lines;
     }
 
+    @Override
+    protected boolean beforeDelete() {
+
+        log.saveError("Error", "No se permite la eliminación de este registro. Por favor indique la opción de No Procesar.");
+        return false;
+
+    }
 }
