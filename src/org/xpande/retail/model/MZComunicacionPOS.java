@@ -238,12 +238,14 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 			processPrices = false;
 		}
 
-
 		// Proceso interface de salida por ahora sisteco.
 		ProcesadorInterfaceOut procesadorInterfaceOut = new ProcesadorInterfaceOut(getCtx(), get_TrxName());
 		m_processMsg = procesadorInterfaceOut.executeInterfaceOut(this.getAD_Org_ID(), this.get_ID(), processPrices, true, true);
 		if (m_processMsg != null)
 			return DocAction.STATUS_Invalid;
+
+		// Actualizo marca de comunicado al pos en documentos comunicados
+		this.updateDocumentosComunicados();
 
 
 		//	User Validation
@@ -260,7 +262,39 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
-	
+
+
+	/***
+	 * Actualiza marca de comunicados a los documentos que participaron de este proeso y fueron comunicados al pos.
+	 * Xpande. Created by Gabriel Vila on 9/21/17.
+	 */
+	private void updateDocumentosComunicados() {
+
+		String action = "";
+
+		try{
+
+			// Actualizo marca de documentos
+			action = " update z_confirmacionetiquetadoc set comunicadopos='Y' " +
+						" where isselected='Y' and isconfirmed='Y' and z_confirmacionetiqueta_id in " +
+						" (select z_confirmacionetiqueta_id from z_confirmacionetiqueta where z_comunicacionpos_id =" + this.get_ID() + ")";
+			DB.executeUpdateEx(action, get_TrxName());
+
+			// Actualizo cabezales de confirmacion de etiquetas
+			action = " update z_confirmacionetiqueta set comunicadopos='Y' " +
+					 " where z_comunicacionpos_id =" + this.get_ID() +
+					 " and z_confirmacionetiqueta_id not in " +
+					 " (select distinct z_confirmacionetiqueta_id from z_confirmacionetiquetadoc " +
+			         " where comunicadopos ='N' " +
+					 " and z_confirmacionetiqueta_id = z_confirmacionetiqueta.z_confirmacionetiqueta_id)";
+			DB.executeUpdateEx(action, get_TrxName());
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+	}
+
 	/**
 	 * 	Set the definite document number after completed
 	 */
@@ -429,6 +463,7 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 					" from z_confirmacionetiqueta " +
 					" where docstatus='CO' " +
 					" and z_comunicacionpos_id is null " +
+					" and comunicadopos ='N' " +
 					" order by datedoc";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());

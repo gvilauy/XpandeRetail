@@ -31,7 +31,7 @@ public class X_Z_ConfirmacionEtiqueta extends PO implements I_Z_ConfirmacionEtiq
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170913L;
+	private static final long serialVersionUID = 20170921L;
 
     /** Standard Constructor */
     public X_Z_ConfirmacionEtiqueta (Properties ctx, int Z_ConfirmacionEtiqueta_ID, String trxName)
@@ -40,6 +40,8 @@ public class X_Z_ConfirmacionEtiqueta extends PO implements I_Z_ConfirmacionEtiq
       /** if (Z_ConfirmacionEtiqueta_ID == 0)
         {
 			setC_DocType_ID (0);
+			setComunicadoPOS (false);
+// N
 			setDateDoc (new Timestamp( System.currentTimeMillis() ));
 // @#Date@
 			setDocAction (null);
@@ -113,6 +115,30 @@ public class X_Z_ConfirmacionEtiqueta extends PO implements I_Z_ConfirmacionEtiq
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set ComunicadoPOS.
+		@param ComunicadoPOS 
+		Si fue o no comunicado al POS
+	  */
+	public void setComunicadoPOS (boolean ComunicadoPOS)
+	{
+		set_Value (COLUMNNAME_ComunicadoPOS, Boolean.valueOf(ComunicadoPOS));
+	}
+
+	/** Get ComunicadoPOS.
+		@return Si fue o no comunicado al POS
+	  */
+	public boolean isComunicadoPOS () 
+	{
+		Object oo = get_Value(COLUMNNAME_ComunicadoPOS);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Document Date.

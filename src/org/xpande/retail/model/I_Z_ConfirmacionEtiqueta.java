@@ -78,6 +78,19 @@ public interface I_Z_ConfirmacionEtiqueta
 
 	public I_C_DocType getC_DocType() throws RuntimeException;
 
+    /** Column name ComunicadoPOS */
+    public static final String COLUMNNAME_ComunicadoPOS = "ComunicadoPOS";
+
+	/** Set ComunicadoPOS.
+	  * Si fue o no comunicado al POS
+	  */
+	public void setComunicadoPOS(boolean ComunicadoPOS);
+
+	/** Get ComunicadoPOS.
+	  * Si fue o no comunicado al POS
+	  */
+	public boolean isComunicadoPOS();
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
