@@ -227,8 +227,8 @@ public final class ComercialUtils {
             sql = " select coalesce(sum(qtyinvoiced),0) as cantidad " +
                 " from z_bi_vtaproddia " +
                 " where ad_org_id =" + adOrgID +
-                " and dateinvoiced >= ? " +
-                " and dateinvoiced < ? " +
+                " and cast(dateinvoiced as date) >= ? " +
+                " and cast(dateinvoiced as date) <= ? " +
                 " and m_product_id =" + mProductID;
 
             pstmt = DB.prepareStatement(sql, trxName);
@@ -277,8 +277,8 @@ public final class ComercialUtils {
             sql = " select coalesce(sum(amtsubtotal),0) as importe " +
                     " from z_bi_vtaproddia " +
                     " where ad_org_id =" + adOrgID +
-                    " and dateinvoiced >= ? " +
-                    " and dateinvoiced < ? " +
+                    " and cast(dateinvoiced as date) >= ? " +
+                    " and cast(dateinvoiced as date) <= ? " +
                     " and m_product_id =" + mProductID;
 
             pstmt = DB.prepareStatement(sql, trxName);
