@@ -23,6 +23,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.core.model.MZSocioListaPrecio;
+import org.xpande.core.utils.PriceListUtils;
 import org.xpande.core.utils.TaxUtils;
 import org.xpande.retail.model.MZProductoSocio;
 
@@ -1064,8 +1065,16 @@ public class CalloutInvoice extends CalloutEngine
 			}
 			*/
 
-			mTab.setValue("M_PriceList_ID", null);
-
+			// Intento con lista de precios de compra por defecto para moneda del comprobante
+			int adClientID = ((Integer)mTab.getValue("AD_Client_ID")).intValue();
+			int adOrgID = ((Integer)mTab.getValue("AD_Org_ID")).intValue();
+			MPriceList priceList = PriceListUtils.getPriceListByOrg(ctx, adClientID, adOrgID, cCurrencyID, false, null);
+			if ((priceList != null) && (priceList.get_ID() > 0)){
+				mTab.setValue("M_PriceList_ID", priceList.get_ID());
+			}
+			else{
+				mTab.setValue("M_PriceList_ID", null);
+			}
 			return "";
 		}
 
