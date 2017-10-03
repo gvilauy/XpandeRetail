@@ -800,7 +800,9 @@ public class MProductPricing
 					this.setPrecision();
 					MZPautaComercial pautaComercial = (MZPautaComercial) productoSocio.getZ_PautaComercial();
 					ProductPricesInfo ppi = pautaComercial.calculatePrices(productId, priceStd, precision);
-					priceStd = ppi.getPricePO();
+					if (ppi != null){
+						priceStd = ppi.getPricePO();
+					}
 				}
 			}
 		}
