@@ -299,9 +299,6 @@ public class ValidatorRetail implements ModelValidator {
 
             MInvoice invoice = (MInvoice)model.getC_Invoice();
 
-            // No hago nada para comprobantes a clientes
-            //if (invoice.isSOTrx()) return mensaje;
-
             // Cuando modifico linea de comprobante, me aseguro que se calcule bien el campo del cabezal
             // para subtotal en retail. Esto es porque Adempiere de fábrica, cuando maneja lista de precios con
             // impuestos incluídos, me muestra el total de lineas = grand total en el cabezal del comprobante.
