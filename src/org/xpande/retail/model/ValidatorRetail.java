@@ -226,6 +226,18 @@ public class ValidatorRetail implements ModelValidator {
 
         String mensaje = null, action = "";
 
+        if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
+            // Para comprobantes de compra en retail, es necesario que el usuario digite un numero de documento,
+            // y que el sistema no le asigne un numero automático a pesar que el tipo de documento no tiene secuencia
+            // asignada.
+            if (!model.isSOTrx()){
+                if ((model.getDocumentNo() == null) || (model.getDocumentNo().trim().equalsIgnoreCase(""))){
+                    return "Debe indicar el Número de Documento";
+                }
+            }
+
+        }
+
         if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)){
 
             // Para comprobantes de compra en Retail, debo considerar la posibilidad de que el usuario haya ingresado
