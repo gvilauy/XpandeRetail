@@ -476,7 +476,7 @@ public class CalloutPrecios extends CalloutEngine {
             prod = new MProduct(ctx, mProductID, null);
 
             MZProductoUPC pupc = MZProductoUPC.getByProduct(ctx, mProductID, null);
-            if ((pupc != null) & (pupc.get_ID() > 0)){
+            if ((pupc != null) && (pupc.get_ID() > 0)){
                 mTab.setValue("UPC", pupc.getUPC());
             }
             else{
