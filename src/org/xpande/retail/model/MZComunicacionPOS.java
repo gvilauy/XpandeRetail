@@ -170,12 +170,15 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 		
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 
+		/*
 		//	Std Period open?
 		if (!MPeriod.isOpen(getCtx(), getDateDoc(), dt.getDocBaseType(), getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return DocAction.STATUS_Invalid;
 		}
+		*/
+
 		//	Add up Amounts
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
