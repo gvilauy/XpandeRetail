@@ -252,7 +252,6 @@ public class ValidatorRetail implements ModelValidator {
                         " from z_invoicetaxmanual " +
                         " where c_invoice_id =" + model.get_ID();
 
-
                 action = " update c_invoice set grandtotal = Totallines + (" + amtRounding + ") + (" + sql + ") " +
                         " where c_invoice_id =" + model.get_ID();
                 DB.executeUpdateEx(action, model.get_TrxName());
