@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -29,6 +30,9 @@ import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
+import org.xpande.core.model.I_Z_ProductoUPC;
+import org.xpande.sisteco.model.I_Z_SistecoInterfaceOut;
+import org.xpande.sisteco.model.MZSistecoInterfaceOut;
 import org.xpande.sisteco.utils.ProcesadorInterfaceOut;
 
 /** Generated Model for Z_ComunicacionPOS
@@ -250,6 +254,11 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 		// Actualizo marca de comunicado al pos en documentos comunicados
 		this.updateDocumentosComunicados();
 
+		// Guardo auditoria del proceso con datos de las entidades comunicadas, en caso de haber alguna
+		List<MZSistecoInterfaceOut> interfaceOuts = procesadorInterfaceOut.getMarcasProcesadas(this.get_ID());
+		if (interfaceOuts.size() > 0){
+			this.generarAuditoria(interfaceOuts);
+		}
 
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -265,6 +274,44 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
+
+
+	/***
+	 * Genera auditoria de este proceso con las marcas comunicadas al pos.
+	 * Xpande. Created by Gabriel Vila on 10/13/17.
+	 * @param interfaceOuts
+	 */
+	private void generarAuditoria(List<MZSistecoInterfaceOut> interfaceOuts) {
+
+		try{
+			for (MZSistecoInterfaceOut interfaceOut: interfaceOuts){
+				MZComunicacionPOSAud posAud = new MZComunicacionPOSAud(getCtx(), 0, get_TrxName());
+				posAud.setZ_ComunicacionPOS_ID(this.get_ID());
+				posAud.setAD_Table_ID(I_Z_SistecoInterfaceOut.Table_ID);
+				posAud.setRecord_ID(interfaceOut.get_ID());
+				posAud.setCRUDType(interfaceOut.getCRUDType());
+				if (interfaceOut.getAD_Table_ID() == I_M_Product.Table_ID){
+					posAud.setM_Product_ID(interfaceOut.getRecord_ID());
+					posAud.setPriceSO(interfaceOut.getPriceSO());
+					posAud.setTipoComunicaPOS(X_Z_ComunicacionPOSAud.TIPOCOMUNICAPOS_PRODUCTO);
+				}
+				else if (interfaceOut.getAD_Table_ID() == I_Z_ProductoUPC.Table_ID){
+					posAud.setUPC(interfaceOut.getDescription());
+					posAud.setTipoComunicaPOS(X_Z_ComunicacionPOSAud.TIPOCOMUNICAPOS_CODIGODEBARRAS);
+				}
+				else if (interfaceOut.getAD_Table_ID() == I_C_BPartner.Table_ID){
+					posAud.setC_BPartner_ID(interfaceOut.getRecord_ID());
+					posAud.setTipoComunicaPOS(X_Z_ComunicacionPOSAud.TIPOCOMUNICAPOS_SOCIODENEGOCIO);
+				}
+
+				posAud.saveEx();
+			}
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+	}
 
 
 	/***
