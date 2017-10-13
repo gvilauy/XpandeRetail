@@ -240,20 +240,24 @@ public class ValidatorRetail implements ModelValidator {
 
         if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)){
 
-            // Para comprobantes de compra en Retail, debo considerar la posibilidad de que el usuario haya ingresado
-            // de manera manual un monto de Redondeo para el comprobante.
+            // Debo considerar la posibilidad de que el usuario haya ingresado de manera manual un monto de Redondeo para el comprobante.
             // Si es asi, debo reflejarlo en el total del comprobante.
-            //if (!model.isSOTrx()){
-                if ((model.is_ValueChanged("AmtRounding") || (model.is_ValueChanged("AmtSubtotal"))
-                    || (model.is_ValueChanged("Grandtotal")))){
-                    BigDecimal amtRounding = (BigDecimal) model.get_Value("AmtRounding");
-                    if (amtRounding == null) amtRounding = Env.ZERO;
-                    action = " update c_invoice set grandtotal = Totallines + (" + amtRounding + ") "   +
-                            " where c_invoice_id =" + model.get_ID();
-                    DB.executeUpdateEx(action, model.get_TrxName());
-                }
+            if ((model.is_ValueChanged("AmtRounding") || (model.is_ValueChanged("AmtSubtotal"))
+                || (model.is_ValueChanged("Grandtotal")))){
+                BigDecimal amtRounding = (BigDecimal) model.get_Value("AmtRounding");
+                if (amtRounding == null) amtRounding = Env.ZERO;
 
-            //}
+                // Select para monto total de impuestos manuales
+                String sql = " select coalesce(sum(taxamt), 0) as total " +
+                        " from z_invoicetaxmanual " +
+                        " where c_invoice_id =" + model.get_ID();
+
+
+                action = " update c_invoice set grandtotal = Totallines + (" + amtRounding + ") + (" + sql + ") " +
+                        " where c_invoice_id =" + model.get_ID();
+                DB.executeUpdateEx(action, model.get_TrxName());
+            }
+
         }
 
         return mensaje;

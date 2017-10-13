@@ -315,14 +315,10 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
             this.setC_Currency_ID(cab.getC_Currency_ID());
             this.setC_Currency_ID_SO(cab.getC_Currency_ID_SO());
 
-            // Si tengo pauta comercial seleccionada en el cabezal
-            if (cab.getZ_PautaComercial_ID() > 0){
-
-                // Seto precio de compra
-                this.setOrgDifferentPricePO(false);
-                this.calculatePricesPO(this.getPriceList(), cab.getPrecisionPO(), (MZPautaComercial) cab.getZ_PautaComercial(), false);
-                this.calculateMargins(cab.getRate());
-            }
+            // Seto precio de compra
+            this.setOrgDifferentPricePO(false);
+            this.calculatePricesPO(this.getPriceList(), cab.getPrecisionPO(), (MZPautaComercial) cab.getZ_PautaComercial(), false);
+            this.calculateMargins(cab.getRate());
 
         }
         catch (Exception e){
