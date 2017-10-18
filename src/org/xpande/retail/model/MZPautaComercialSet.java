@@ -101,12 +101,26 @@ public class MZPautaComercialSet extends X_Z_PautaComercialSet {
                 priceFinal = ppi.getPricePO();
             }
 
+            // Precio con descuentos por Notas de Creito al Pago
+            BigDecimal priceDtoNC = ppi.getPriceList();
+            boolean hayDescuentosNC = false;
+
             for (MZPautaComercialSetDto dtoPago: dtosPago){
                 priceFinal = priceFinal.multiply(Env.ONE.subtract(dtoPago.getDiscount().divide(Env.ONEHUNDRED, 6, BigDecimal.ROUND_HALF_UP))).setScale(ppi.getPrecisionDecimal(), BigDecimal.ROUND_HALF_UP);
                 ppi.setSumPercentageDiscountsFinal(ppi.getSumPercentageDiscountsFinal().add(dtoPago.getDiscount()));
+
+                // Precio con descuentos por nota de crédito al pago
+                if (dtoPago.getDiscountType().equalsIgnoreCase(X_Z_PautaComercialSetDto.DISCOUNTTYPE_NOTADECREDITOALPAGO)){
+                    priceDtoNC = priceDtoNC.multiply(Env.ONE.subtract(dtoPago.getDiscount().divide(Env.ONEHUNDRED, 6, BigDecimal.ROUND_HALF_UP))).setScale(ppi.getPrecisionDecimal(), BigDecimal.ROUND_HALF_UP);
+                    hayDescuentosNC = true;
+                }
             }
 
             ppi.setPriceFinal(priceFinal);
+
+            if (hayDescuentosNC){
+                ppi.setPriceDtoNC(priceDtoNC);
+            }
 
         }
         catch (Exception e){

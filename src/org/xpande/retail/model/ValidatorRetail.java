@@ -1,10 +1,12 @@
 package org.xpande.retail.model;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.acct.Doc;
 import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.core.model.MZProductoUPC;
+import org.xpande.retail.utils.ProductPricesInfo;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -28,6 +30,7 @@ public class ValidatorRetail implements ModelValidator {
 
         // Document Validations
         engine.addDocValidate(I_M_InOut.Table_Name, this);
+        engine.addDocValidate(I_C_Invoice.Table_Name, this);
 
         // DB Validations
         engine.addModelChange(I_C_Order.Table_Name, this);
@@ -79,6 +82,10 @@ public class ValidatorRetail implements ModelValidator {
         if (po.get_TableName().equalsIgnoreCase(I_M_InOut.Table_Name)){
             return docValidate((MInOut) po, timing);
         }
+        else if (po.get_TableName().equalsIgnoreCase(I_C_Invoice.Table_Name)){
+            return docValidate((MInvoice) po, timing);
+        }
+
 
         return null;
     }
@@ -537,6 +544,108 @@ public class ValidatorRetail implements ModelValidator {
         }
 
         return mensaje;
+    }
+
+    /***
+     * Validaciones para documentos de la tabla C_Invoice en gestión de retail.
+     * Xpande. Created by Gabriel Vila on 8/8/17.
+     * @param model
+     * @param timing
+     * @return
+     */
+    private String docValidate(MInvoice model, int timing) {
+
+        String message = null, sql = "";
+        String action = "";
+
+        if (timing == TIMING_AFTER_COMPLETE){
+
+            // Calculo de descuentos por Notas de Credito al Pago.
+
+            // No aplica en comprobantes de venta
+            if (model.isSOTrx()){
+                return null;
+            }
+
+            // No aplica en comprobantes de venta cuyo documento no sea del tipo API (Facturas)
+            MDocType docType = (MDocType) model.getC_DocTypeTarget();
+            if (!docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
+                return null;
+            }
+
+            // Precisión decimal de lista de precios de compra, si es que tengo.
+            int precision = 2;
+            if (model.getM_PriceList_ID() > 0){
+                precision = MPriceList.getPricePrecision(model.getCtx(), model.getM_PriceList_ID());
+            }
+
+            // Recorro lineas del comprobante y si corresponde calculo precio con descuento por NC al pago
+            boolean hayDescuntoNC = false;
+            MInvoiceLine[] invoiceLines = model.getLines();
+            for (int i = 0; i < invoiceLines.length; i++){
+                MInvoiceLine invoiceLine = invoiceLines[i];
+                if (invoiceLine.getM_Product_ID() > 0){
+                    if ((invoiceLine.getPriceEntered() != null) && (invoiceLine.getPriceEntered().compareTo(Env.ZERO) > 0)){
+                        // Instancio modelo producto-socio, y si este modelo tiene pauta comercial asociada, calculo descuentos por NC al pago.
+                        MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(Env.getCtx(), model.getC_BPartner_ID(), invoiceLine.getM_Product_ID(), null);
+                        if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+                            if (productoSocio.getZ_PautaComercial_ID() > 0){
+                                MZPautaComercial pautaComercial = (MZPautaComercial) productoSocio.getZ_PautaComercial();
+                                ProductPricesInfo ppi = pautaComercial.calculatePrices(invoiceLine.getM_Product_ID(), invoiceLine.getPriceEntered(), precision);
+                                if (ppi != null){
+                                    if ((ppi.getPriceDtoNC() != null) && (ppi.getPriceDtoNC().compareTo(Env.ZERO) > 0)){
+                                        BigDecimal priceDtoNC = ppi.getPriceDtoNC();
+                                        BigDecimal amtDtoNC = priceDtoNC.multiply(invoiceLine.getQtyEntered()).setScale(precision, BigDecimal.ROUND_HALF_UP);
+
+                                        action = " update c_invoiceline set PriceDtoNC =" + priceDtoNC + ", " +
+                                                " AmtDtoNC =" + amtDtoNC + ", " +
+                                                " TieneDtosNC ='Y' " +
+                                                " where c_invoiceline_id =" + invoiceLine.get_ID();
+                                        DB.executeUpdateEx(action, model.get_TrxName());
+
+                                        hayDescuntoNC = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (hayDescuntoNC){
+                action = " update c_invoice set TieneDtosNC ='Y' " +
+                        " where c_invoice_id =" + model.get_ID();
+                DB.executeUpdateEx(action, model.get_TrxName());
+            }
+
+        }
+        else if (timing == TIMING_BEFORE_REACTIVATE){
+
+            // Cuando reactivo un documento, me aseguro de no dejar factura marcada con datos de descuentos por notas de credito al pago.
+
+            // No aplica en comprobantes de venta
+            if (model.isSOTrx()){
+                return null;
+            }
+
+            // No aplica en comprobantes de venta cuyo documento no sea del tipo API (Facturas)
+            MDocType docType = (MDocType) model.getC_DocTypeTarget();
+            if (!docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
+                return null;
+            }
+
+            action = " update c_invoiceline set PriceDtoNC = null, " +
+                     " AmtDtoNC = null, " +
+                     " TieneDtosNC ='N' " +
+                     " where c_invoice_id =" + model.get_ID();
+            DB.executeUpdateEx(action, model.get_TrxName());
+
+            action = " update c_invoice set TieneDtosNC ='N' " +
+                    " where c_invoice_id =" + model.get_ID();
+            DB.executeUpdateEx(action, model.get_TrxName());
+
+        }
+
+        return null;
     }
 
 }

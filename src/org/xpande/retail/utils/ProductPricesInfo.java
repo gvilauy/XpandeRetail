@@ -20,6 +20,8 @@ public class ProductPricesInfo {
     private BigDecimal PriceList = null;
     private BigDecimal PricePO = null;
     private BigDecimal PriceFinal = null;
+
+    private BigDecimal PriceDtoNC = null;
     private int PrecisionDecimal = 2;
 
     private BigDecimal SumPercentageDiscountsOC = null;
@@ -63,6 +65,11 @@ public class ProductPricesInfo {
     public BigDecimal getPriceFinal() {
         return PriceFinal;
     }
+
+    public BigDecimal getPriceDtoNC() {
+        return PriceDtoNC;
+    }
+
 
     public BigDecimal getSumPercentageDiscountsOC() {
         return SumPercentageDiscountsOC;
@@ -114,6 +121,10 @@ public class ProductPricesInfo {
 
     public void setPriceFinal(BigDecimal priceFinal) {
         PriceFinal = priceFinal;
+    }
+
+    public void setPriceDtoNC(BigDecimal priceDtoNC) {
+        PriceDtoNC = priceDtoNC;
     }
 
     public void setSumPercentageDiscountsOC(BigDecimal sumPercentageDiscountsOC) {

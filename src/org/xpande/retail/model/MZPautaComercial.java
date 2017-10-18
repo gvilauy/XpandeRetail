@@ -124,6 +124,7 @@ public class MZPautaComercial extends X_Z_PautaComercial {
             ppi.setPriceList(priceList);
             ppi.setPricePO(priceList);
             ppi.setPriceFinal(priceList);
+            ppi.setPriceDtoNC(null);
             ppi.setPrecisionDecimal(precisionDecimalCompra);
             ppi.setSumPercentageDiscountsOC(Env.ZERO);
             ppi.setSumPercentageDiscountsFinal(Env.ZERO);
