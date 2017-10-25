@@ -599,6 +599,7 @@ public class ValidatorRetail implements ModelValidator {
 
                                         action = " update c_invoiceline set PriceDtoNC =" + priceDtoNC + ", " +
                                                 " AmtDtoNC =" + amtDtoNC + ", " +
+                                                " PorcDtoNC =" + ppi.getSumPercentageDiscountsNC() + ", " +
                                                 " TieneDtosNC ='Y' " +
                                                 " where c_invoiceline_id =" + invoiceLine.get_ID();
                                         DB.executeUpdateEx(action, model.get_TrxName());

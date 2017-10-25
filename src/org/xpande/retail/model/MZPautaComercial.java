@@ -128,6 +128,7 @@ public class MZPautaComercial extends X_Z_PautaComercial {
             ppi.setPrecisionDecimal(precisionDecimalCompra);
             ppi.setSumPercentageDiscountsOC(Env.ZERO);
             ppi.setSumPercentageDiscountsFinal(Env.ZERO);
+            ppi.setSumPercentageDiscountsNC(Env.ZERO);
             ppi.setCascadeDiscountsFinal(false);
             ppi.setCascadeDiscountsOC(false);
 

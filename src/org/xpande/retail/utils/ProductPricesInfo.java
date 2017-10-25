@@ -26,6 +26,7 @@ public class ProductPricesInfo {
 
     private BigDecimal SumPercentageDiscountsOC = null;
     private BigDecimal SumPercentageDiscountsFinal = null;
+    private BigDecimal SumPercentageDiscountsNC = null;
 
     private boolean CascadeDiscountsOC = false;
     private boolean CascadeDiscountsFinal = false;
@@ -70,6 +71,13 @@ public class ProductPricesInfo {
         return PriceDtoNC;
     }
 
+    public BigDecimal getSumPercentageDiscountsNC() {
+        return SumPercentageDiscountsNC;
+    }
+
+    public void setSumPercentageDiscountsNC(BigDecimal sumPercentageDiscountsNC) {
+        SumPercentageDiscountsNC = sumPercentageDiscountsNC;
+    }
 
     public BigDecimal getSumPercentageDiscountsOC() {
         return SumPercentageDiscountsOC;

@@ -112,6 +112,7 @@ public class MZPautaComercialSet extends X_Z_PautaComercialSet {
                 // Precio con descuentos por nota de crédito al pago
                 if (dtoPago.getDiscountType().equalsIgnoreCase(X_Z_PautaComercialSetDto.DISCOUNTTYPE_NOTADECREDITOALPAGO)){
                     priceDtoNC = priceDtoNC.multiply(Env.ONE.subtract(dtoPago.getDiscount().divide(Env.ONEHUNDRED, 6, BigDecimal.ROUND_HALF_UP))).setScale(ppi.getPrecisionDecimal(), BigDecimal.ROUND_HALF_UP);
+                    ppi.setSumPercentageDiscountsNC(ppi.getSumPercentageDiscountsFinal().add(dtoPago.getDiscount()));
                     hayDescuentosNC = true;
                 }
             }
