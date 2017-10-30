@@ -30,7 +30,9 @@ import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.xpande.core.model.I_Z_ProductoUPC;
+import org.xpande.core.model.MZActividadDocumento;
 import org.xpande.sisteco.model.I_Z_SistecoInterfaceOut;
 import org.xpande.sisteco.model.MZSistecoInterfaceOut;
 import org.xpande.sisteco.utils.ProcesadorInterfaceOut;
@@ -259,6 +261,21 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 		if (interfaceOuts.size() > 0){
 			this.generarAuditoria(interfaceOuts);
 		}
+
+		// Guardo documento en tabla para informes de actividad por documento
+		MZActividadDocumento actividadDocumento = new MZActividadDocumento(getCtx(), 0, get_TrxName());
+		actividadDocumento.setAD_Table_ID(this.get_Table_ID());
+		actividadDocumento.setRecord_ID(this.get_ID());
+		actividadDocumento.setC_DocType_ID(this.getC_DocType_ID());
+		actividadDocumento.setDocumentNoRef(this.getDocumentNo());
+		actividadDocumento.setDocCreatedBy(this.getCreatedBy());
+		actividadDocumento.setDocDateCreated(this.getCreated());
+		actividadDocumento.setCompletedBy(Env.getAD_User_ID(getCtx()));
+		actividadDocumento.setDateCompleted(new Timestamp(System.currentTimeMillis()));
+		if (interfaceOuts != null){
+			actividadDocumento.setLineNo(interfaceOuts.size());
+		}
+		actividadDocumento.saveEx();
 
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);

@@ -5,6 +5,7 @@ import org.compiere.acct.Doc;
 import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.core.model.MZActividadDocumento;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.retail.utils.ProductPricesInfo;
 
@@ -31,6 +32,7 @@ public class ValidatorRetail implements ModelValidator {
         // Document Validations
         engine.addDocValidate(I_M_InOut.Table_Name, this);
         engine.addDocValidate(I_C_Invoice.Table_Name, this);
+        engine.addDocValidate(I_C_Order.Table_Name, this);
 
         // DB Validations
         engine.addModelChange(I_C_Order.Table_Name, this);
@@ -84,6 +86,9 @@ public class ValidatorRetail implements ModelValidator {
         }
         else if (po.get_TableName().equalsIgnoreCase(I_C_Invoice.Table_Name)){
             return docValidate((MInvoice) po, timing);
+        }
+        else if (po.get_TableName().equalsIgnoreCase(I_C_Order.Table_Name)){
+            return docValidate((MOrder) po, timing);
         }
 
 
@@ -567,6 +572,23 @@ public class ValidatorRetail implements ModelValidator {
                 return null;
             }
 
+            MInvoiceLine[] invoiceLines = model.getLines();
+
+            // Guardo documento en tabla para informes de actividad por documento
+            MZActividadDocumento actividadDocumento = new MZActividadDocumento(model.getCtx(), 0, model.get_TrxName());
+            actividadDocumento.setAD_Table_ID(model.get_Table_ID());
+            actividadDocumento.setRecord_ID(model.get_ID());
+            actividadDocumento.setC_DocType_ID(model.getC_DocTypeTarget_ID());
+            String documentSerie = model.get_ValueAsString("DocumentSerie");
+            if (documentSerie == null) documentSerie = "";
+            actividadDocumento.setDocumentNoRef(documentSerie + model.getDocumentNo());
+            actividadDocumento.setDocCreatedBy(model.getCreatedBy());
+            actividadDocumento.setDocDateCreated(model.getCreated());
+            actividadDocumento.setCompletedBy(Env.getAD_User_ID(model.getCtx()));
+            actividadDocumento.setDateCompleted(new Timestamp(System.currentTimeMillis()));
+            actividadDocumento.setLineNo(invoiceLines.length);
+            actividadDocumento.saveEx();
+
             // No aplica en comprobantes de venta cuyo documento no sea del tipo API (Facturas)
             MDocType docType = (MDocType) model.getC_DocTypeTarget();
             if (!docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
@@ -581,7 +603,7 @@ public class ValidatorRetail implements ModelValidator {
 
             // Recorro lineas del comprobante y si corresponde calculo precio con descuento por NC al pago
             boolean hayDescuntoNC = false;
-            MInvoiceLine[] invoiceLines = model.getLines();
+
             for (int i = 0; i < invoiceLines.length; i++){
                 MInvoiceLine invoiceLine = invoiceLines[i];
                 if (invoiceLine.getM_Product_ID() > 0){
@@ -628,6 +650,12 @@ public class ValidatorRetail implements ModelValidator {
                 return null;
             }
 
+            // Elimino este documento de la tabla para informes de actividades de documentos.
+            MZActividadDocumento actividadDocumento = MZActividadDocumento.getByTableRecord(model.getCtx(), model.get_Table_ID(), model.get_ID(), model.get_TrxName());
+            if ((actividadDocumento != null) && (actividadDocumento.get_ID() > 0)){
+                actividadDocumento.deleteEx(true);
+            }
+
             // No aplica en comprobantes de venta cuyo documento no sea del tipo API (Facturas)
             MDocType docType = (MDocType) model.getC_DocTypeTarget();
             if (!docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
@@ -644,6 +672,63 @@ public class ValidatorRetail implements ModelValidator {
                     " where c_invoice_id =" + model.get_ID();
             DB.executeUpdateEx(action, model.get_TrxName());
 
+        }
+
+        return null;
+    }
+
+
+    /***
+     * Validaciones para documentos de la tabla C_Invoice en gestión de retail.
+     * Xpande. Created by Gabriel Vila on 8/8/17.
+     * @param model
+     * @param timing
+     * @return
+     */
+    private String docValidate(MOrder model, int timing) {
+
+        String message = null, sql = "";
+        String action = "";
+
+        if (timing == TIMING_AFTER_COMPLETE){
+
+            // Calculo de descuentos por Notas de Credito al Pago.
+
+            // No aplica en comprobantes de venta
+            if (model.isSOTrx()){
+                return null;
+            }
+
+            MOrderLine[] orderLines = model.getLines();
+
+            // Guardo documento en tabla para informes de actividad por documento
+            MZActividadDocumento actividadDocumento = new MZActividadDocumento(model.getCtx(), 0, model.get_TrxName());
+            actividadDocumento.setAD_Table_ID(model.get_Table_ID());
+            actividadDocumento.setRecord_ID(model.get_ID());
+            actividadDocumento.setC_DocType_ID(model.getC_DocTypeTarget_ID());
+            actividadDocumento.setDocumentNoRef(model.getDocumentNo());
+            actividadDocumento.setDocCreatedBy(model.getCreatedBy());
+            actividadDocumento.setDocDateCreated(model.getCreated());
+            actividadDocumento.setCompletedBy(Env.getAD_User_ID(model.getCtx()));
+            actividadDocumento.setDateCompleted(new Timestamp(System.currentTimeMillis()));
+            actividadDocumento.setLineNo(orderLines.length);
+            actividadDocumento.saveEx();
+
+        }
+        else if (timing == TIMING_BEFORE_REACTIVATE){
+
+            // Cuando reactivo un documento, me aseguro de no dejar factura marcada con datos de descuentos por notas de credito al pago.
+
+            // No aplica en comprobantes de venta
+            if (model.isSOTrx()){
+                return null;
+            }
+
+            // Elimino este documento de la tabla para informes de actividades de documentos.
+            MZActividadDocumento actividadDocumento = MZActividadDocumento.getByTableRecord(model.getCtx(), model.get_Table_ID(), model.get_ID(), model.get_TrxName());
+            if ((actividadDocumento != null) && (actividadDocumento.get_ID() > 0)){
+                actividadDocumento.deleteEx(true);
+            }
         }
 
         return null;

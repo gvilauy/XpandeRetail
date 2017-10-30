@@ -30,6 +30,8 @@ import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.xpande.core.model.MZActividadDocumento;
 import org.xpande.core.utils.SequenceUtils;
 
 /** Generated Model for Z_ConfirmacionEtiqueta
@@ -245,6 +247,21 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 
 		// Genero registros para impresión de etiquetas
 		this.generatePrintRecords();
+
+		// Guardo documento en tabla para informes de actividad por documento
+		MZActividadDocumento actividadDocumento = new MZActividadDocumento(getCtx(), 0, get_TrxName());
+		actividadDocumento.setAD_Table_ID(this.get_Table_ID());
+		actividadDocumento.setRecord_ID(this.get_ID());
+		actividadDocumento.setC_DocType_ID(this.getC_DocType_ID());
+		actividadDocumento.setDocumentNoRef(this.getDocumentNo());
+		actividadDocumento.setDocCreatedBy(this.getCreatedBy());
+		actividadDocumento.setDocDateCreated(this.getCreated());
+		actividadDocumento.setCompletedBy(Env.getAD_User_ID(getCtx()));
+		actividadDocumento.setDateCompleted(new Timestamp(System.currentTimeMillis()));
+		if (etiquetaDocs != null){
+			actividadDocumento.setLineNo(etiquetaDocs.size());
+		}
+		actividadDocumento.saveEx();
 
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);

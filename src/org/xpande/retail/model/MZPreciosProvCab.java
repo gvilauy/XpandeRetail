@@ -36,6 +36,7 @@ import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.xpande.core.model.MZActividadDocumento;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.core.model.MZSocioListaPrecio;
 import sun.misc.MessageUtils;
@@ -343,6 +344,22 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 			line.saveEx();
 		}
+
+		// Guardo documento en tabla para informes de actividad por documento
+		MZActividadDocumento actividadDocumento = new MZActividadDocumento(getCtx(), 0, get_TrxName());
+		actividadDocumento.setAD_Table_ID(this.get_Table_ID());
+		actividadDocumento.setRecord_ID(this.get_ID());
+		actividadDocumento.setC_DocType_ID(this.getC_DocType_ID());
+		actividadDocumento.setDocumentNoRef(this.getDocumentNo());
+		actividadDocumento.setDocCreatedBy(this.getCreatedBy());
+		actividadDocumento.setDocDateCreated(this.getCreated());
+		actividadDocumento.setCompletedBy(Env.getAD_User_ID(getCtx()));
+		actividadDocumento.setDateCompleted(new Timestamp(System.currentTimeMillis()));
+		actividadDocumento.setAD_Role_ID(Env.getAD_Role_ID(getCtx()));
+		if (lines != null){
+			actividadDocumento.setLineNo(lines.size());
+		}
+		actividadDocumento.saveEx();
 
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);

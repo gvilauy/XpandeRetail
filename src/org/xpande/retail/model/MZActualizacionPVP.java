@@ -29,7 +29,9 @@ import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.xpande.core.model.MZActividadDocumento;
 import org.xpande.core.utils.PriceListUtils;
 
 /** Generated Model for Z_ActualizacionPVP
@@ -258,6 +260,21 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 				}
 			}
 		}
+
+		// Guardo documento en tabla para informes de actividad por documento
+		MZActividadDocumento actividadDocumento = new MZActividadDocumento(getCtx(), 0, get_TrxName());
+		actividadDocumento.setAD_Table_ID(this.get_Table_ID());
+		actividadDocumento.setRecord_ID(this.get_ID());
+		actividadDocumento.setC_DocType_ID(this.getC_DocType_ID());
+		actividadDocumento.setDocumentNoRef(this.getDocumentNo());
+		actividadDocumento.setDocCreatedBy(this.getCreatedBy());
+		actividadDocumento.setDocDateCreated(this.getCreated());
+		actividadDocumento.setCompletedBy(Env.getAD_User_ID(getCtx()));
+		actividadDocumento.setDateCompleted(new Timestamp(System.currentTimeMillis()));
+		if (pvpLineas != null){
+			actividadDocumento.setLineNo(pvpLineas.size());
+		}
+		actividadDocumento.saveEx();
 
 
 		//	User Validation
