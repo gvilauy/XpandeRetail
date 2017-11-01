@@ -272,9 +272,11 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 		actividadDocumento.setDocDateCreated(this.getCreated());
 		actividadDocumento.setCompletedBy(Env.getAD_User_ID(getCtx()));
 		actividadDocumento.setDateCompleted(new Timestamp(System.currentTimeMillis()));
+		actividadDocumento.setAD_Role_ID(Env.getAD_Role_ID(getCtx()));
 		if (interfaceOuts != null){
 			actividadDocumento.setLineNo(interfaceOuts.size());
 		}
+		actividadDocumento.setDiferenciaTiempo(new BigDecimal((actividadDocumento.getDateCompleted().getTime()-actividadDocumento.getDocDateCreated().getTime())/1000).divide(new BigDecimal(60),2,BigDecimal.ROUND_HALF_UP));
 		actividadDocumento.saveEx();
 
 		//	User Validation

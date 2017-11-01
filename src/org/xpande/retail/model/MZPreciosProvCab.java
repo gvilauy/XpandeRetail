@@ -359,6 +359,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		if (lines != null){
 			actividadDocumento.setLineNo(lines.size());
 		}
+		actividadDocumento.setDiferenciaTiempo(new BigDecimal((actividadDocumento.getDateCompleted().getTime()-actividadDocumento.getDocDateCreated().getTime())/1000).divide(new BigDecimal(60),2,BigDecimal.ROUND_HALF_UP));
 		actividadDocumento.saveEx();
 
 		//	User Validation

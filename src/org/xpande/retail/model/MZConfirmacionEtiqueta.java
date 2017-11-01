@@ -258,9 +258,11 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 		actividadDocumento.setDocDateCreated(this.getCreated());
 		actividadDocumento.setCompletedBy(Env.getAD_User_ID(getCtx()));
 		actividadDocumento.setDateCompleted(new Timestamp(System.currentTimeMillis()));
+		actividadDocumento.setAD_Role_ID(Env.getAD_Role_ID(getCtx()));
 		if (etiquetaDocs != null){
 			actividadDocumento.setLineNo(etiquetaDocs.size());
 		}
+		actividadDocumento.setDiferenciaTiempo(new BigDecimal((actividadDocumento.getDateCompleted().getTime()-actividadDocumento.getDocDateCreated().getTime())/1000).divide(new BigDecimal(60),2,BigDecimal.ROUND_HALF_UP));
 		actividadDocumento.saveEx();
 
 		//	User Validation

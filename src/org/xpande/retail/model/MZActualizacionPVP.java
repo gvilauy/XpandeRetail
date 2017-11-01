@@ -271,9 +271,11 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 		actividadDocumento.setDocDateCreated(this.getCreated());
 		actividadDocumento.setCompletedBy(Env.getAD_User_ID(getCtx()));
 		actividadDocumento.setDateCompleted(new Timestamp(System.currentTimeMillis()));
+		actividadDocumento.setAD_Role_ID(Env.getAD_Role_ID(getCtx()));
 		if (pvpLineas != null){
 			actividadDocumento.setLineNo(pvpLineas.size());
 		}
+		actividadDocumento.setDiferenciaTiempo(new BigDecimal((actividadDocumento.getDateCompleted().getTime()-actividadDocumento.getDocDateCreated().getTime())/1000).divide(new BigDecimal(60),2,BigDecimal.ROUND_HALF_UP));
 		actividadDocumento.saveEx();
 
 

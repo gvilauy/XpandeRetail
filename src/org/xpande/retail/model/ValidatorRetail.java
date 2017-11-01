@@ -587,6 +587,8 @@ public class ValidatorRetail implements ModelValidator {
             actividadDocumento.setCompletedBy(Env.getAD_User_ID(model.getCtx()));
             actividadDocumento.setDateCompleted(new Timestamp(System.currentTimeMillis()));
             actividadDocumento.setLineNo(invoiceLines.length);
+            actividadDocumento.setAD_Role_ID(Env.getAD_Role_ID(model.getCtx()));
+            actividadDocumento.setDiferenciaTiempo(new BigDecimal((actividadDocumento.getDateCompleted().getTime()-actividadDocumento.getDocDateCreated().getTime())/1000).divide(new BigDecimal(60),2,BigDecimal.ROUND_HALF_UP));
             actividadDocumento.saveEx();
 
             // No aplica en comprobantes de venta cuyo documento no sea del tipo API (Facturas)
@@ -712,6 +714,8 @@ public class ValidatorRetail implements ModelValidator {
             actividadDocumento.setCompletedBy(Env.getAD_User_ID(model.getCtx()));
             actividadDocumento.setDateCompleted(new Timestamp(System.currentTimeMillis()));
             actividadDocumento.setLineNo(orderLines.length);
+            actividadDocumento.setAD_Role_ID(Env.getAD_Role_ID(model.getCtx()));
+            actividadDocumento.setDiferenciaTiempo(new BigDecimal((actividadDocumento.getDateCompleted().getTime()-actividadDocumento.getDocDateCreated().getTime())/1000).divide(new BigDecimal(60),2,BigDecimal.ROUND_HALF_UP));
             actividadDocumento.saveEx();
 
         }
