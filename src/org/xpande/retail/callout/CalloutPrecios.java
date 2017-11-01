@@ -577,4 +577,36 @@ public class CalloutPrecios extends CalloutEngine {
     }
 
 
+    /***
+     * Cuando estoy en el preceso de asociacion de productos a proveedores en Gestión de Precios, seteo producto-codigo de barra, segun valor
+     * digitado.
+     * Xpande. Created by Gabriel Vila on 11/1/17.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String upcProductAsociacion(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        /*
+        if ((value == null) || (((Integer) value).intValue() <= 0)){
+            return "";
+        }
+        */
+
+        // Solo para modalida de carga de precios: Asociación de Productos Existentes.
+        int preciosProvCabID = Env.getContextAsInt(ctx, WindowNo, "Z_PreciosProvCab_ID");
+        if (preciosProvCabID > 0){
+            MZPreciosProvCab provCab = new MZPreciosProvCab(ctx, preciosProvCabID, null);
+            if (provCab.getModalidadPreciosProv().equalsIgnoreCase("ASOCIA")){
+                return upcProduct(ctx, WindowNo, mTab, mField, value);
+            }
+        }
+
+        return "";
+    }
+
+
 }
