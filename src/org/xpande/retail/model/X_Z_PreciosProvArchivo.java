@@ -32,7 +32,7 @@ public class X_Z_PreciosProvArchivo extends PO implements I_Z_PreciosProvArchivo
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170617L;
+	private static final long serialVersionUID = 20171106L;
 
     /** Standard Constructor */
     public X_Z_PreciosProvArchivo (Properties ctx, int Z_PreciosProvArchivo_ID, String trxName)
@@ -81,6 +81,23 @@ public class X_Z_PreciosProvArchivo extends PO implements I_Z_PreciosProvArchivo
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set Description.
+		@param Description 
+		Optional short description of the record
+	  */
+	public void setDescription (String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	/** Get Description.
+		@return Optional short description of the record
+	  */
+	public String getDescription () 
+	{
+		return (String)get_Value(COLUMNNAME_Description);
+	}
 
 	/** Set Error Msg.
 		@param ErrorMsg Error Msg	  */

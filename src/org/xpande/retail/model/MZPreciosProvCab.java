@@ -1465,6 +1465,12 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 					plinea.setName(lineaArchivo.getName().toUpperCase().trim());
 					plinea.setDescription(lineaArchivo.getName().toUpperCase().trim());
 
+					if (lineaArchivo.getDescription() != null){
+						if (!lineaArchivo.getDescription().trim().equalsIgnoreCase("")){
+							plinea.setDescription(lineaArchivo.getDescription().toUpperCase().trim());
+						}
+					}
+
 					// Precios de compra en nuevo producto
 					plinea.setOrgDifferentPricePO(false);
 					plinea.calculatePricesPO(lineaArchivo.getPriceList(), this.getPrecisionPO(), (MZPautaComercial) this.getZ_PautaComercial(), false);
