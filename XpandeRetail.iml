@@ -13,5 +13,14 @@
     <orderEntry type="module" module-name="XpandeComercial" exported="" />
     <orderEntry type="module" module-name="XpandeFinancial" exported="" />
     <orderEntry type="module" module-name="XpandeSisteco" exported="" />
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$USER_HOME$/Desarrollo/ExternalJars390/Retail/SPIC_Client.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>
