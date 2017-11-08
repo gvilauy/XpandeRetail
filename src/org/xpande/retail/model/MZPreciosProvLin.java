@@ -57,6 +57,14 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
                 this.setC_Currency_ID_SO(cab.getC_Currency_ID_SO());
                 if ((this.getPriceList() != null) && (this.getPriceList().compareTo(Env.ZERO) > 0)){
                     this.calculatePricesPO(this.getPriceList(), cab.getPrecisionPO(), (MZPautaComercial) cab.getZ_PautaComercial(), true);
+                    // Recalculo márgenes
+                    this.calculateMargins(cab.getRate());
+
+                    // Refresco precio de venta y margenes en organizaciones asociadas a esta linea (si no es *PC)
+                    if (!this.isDistinctPricePO()){
+                        this.orgsRefreshPO();
+                    }
+
                 }
             }
         }
