@@ -33,7 +33,7 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170715L;
+	private static final long serialVersionUID = 20171108L;
 
     /** Standard Constructor */
     public X_Z_PreciosProvCab (Properties ctx, int Z_PreciosProvCab_ID, String trxName)
@@ -504,6 +504,8 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 	public static final String MODALIDADPRECIOSPROV_LINEADEPRODUCTOS = "LINEA";
 	/** INGRESO MANUAL = MANUAL */
 	public static final String MODALIDADPRECIOSPROV_INGRESOMANUAL = "MANUAL";
+	/** ASOCIACION = ASOCIA */
+	public static final String MODALIDADPRECIOSPROV_ASOCIACION = "ASOCIA";
 	/** Set ModalidadPreciosProv.
 		@param ModalidadPreciosProv 
 		Modalidad de gestión para el mantenimiento de precios de proveedor

@@ -50,6 +50,16 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
                 this.setInfoIngresoManual(cab);
             }
         }
+        // Si estoy en modalidad de Asociación de producto existente al proveedor seleccionado
+        else if (cab.getModalidadPreciosProv().equalsIgnoreCase(X_Z_PreciosProvCab.MODALIDADPRECIOSPROV_ASOCIACION)){
+            if (newRecord){
+                this.setC_Currency_ID(cab.getC_Currency_ID());
+                this.setC_Currency_ID_SO(cab.getC_Currency_ID_SO());
+                if ((this.getPriceList() != null) && (this.getPriceList().compareTo(Env.ZERO) > 0)){
+                    this.calculatePricesPO(this.getPriceList(), cab.getPrecisionPO(), (MZPautaComercial) cab.getZ_PautaComercial(), true);
+                }
+            }
+        }
 
         // Si modifica segmentos de pauta comercial
         if ((!newRecord) && ((is_ValueChanged(X_Z_PreciosProvLin.COLUMNNAME_Z_PautaComercialSet_ID_1))
@@ -770,8 +780,13 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
     protected boolean beforeDelete() {
 
         if (!this.isNew()){
-            log.saveError("ATENCIÓN", "No es posible Eliminar un Producto Existente.");
-            return false;
+
+            MZPreciosProvCab cab = (MZPreciosProvCab)this.getZ_PreciosProvCab();
+            // No permito eliminar productos que no son nuevos y que no estan en modalidad asociación de productos existentes al proveedor seleccionado
+            if (!cab.getModalidadPreciosProv().equalsIgnoreCase(X_Z_PreciosProvCab.MODALIDADPRECIOSPROV_ASOCIACION)){
+                log.saveError("ATENCIÓN", "No es posible Eliminar un Producto Existente.");
+                return false;
+            }
         }
 
         return true;

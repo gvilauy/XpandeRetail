@@ -590,18 +590,99 @@ public class CalloutPrecios extends CalloutEngine {
      */
     public String upcProductAsociacion(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
 
-        /*
-        if ((value == null) || (((Integer) value).intValue() <= 0)){
+        if (isCalloutActive()) return "";
+
+        // Solo para modalidad de carga de precios: Asociación de Productos Existentes.
+        int preciosProvCabID = Env.getContextAsInt(ctx, WindowNo, "Z_PreciosProvCab_ID");
+        if (preciosProvCabID <= 0){
             return "";
         }
-        */
-        // Solo para modalida de carga de precios: Asociación de Productos Existentes.
-        int preciosProvCabID = Env.getContextAsInt(ctx, WindowNo, "Z_PreciosProvCab_ID");
-        if (preciosProvCabID > 0){
-            MZPreciosProvCab provCab = new MZPreciosProvCab(ctx, preciosProvCabID, null);
-            if (provCab.getModalidadPreciosProv().equalsIgnoreCase("ASOCIA")){
-                return upcProduct(ctx, WindowNo, mTab, mField, value);
+        MZPreciosProvCab provCab = new MZPreciosProvCab(ctx, preciosProvCabID, null);
+        if (!provCab.getModalidadPreciosProv().equalsIgnoreCase("ASOCIA")){
+            return "";
+        }
+
+        if ((value == null) || (value.toString().trim().equalsIgnoreCase(""))){
+            mTab.setValue("UPC", null);
+            mTab.setValue("M_Product_ID", null);
+            return "";
+        }
+
+        MProduct prod = null;
+
+        String column = mField.getColumnName();
+
+        if (column.equalsIgnoreCase("UPC")){
+            MZProductoUPC pupc = MZProductoUPC.getByUPC(ctx, value.toString().trim(), null);
+            if ((pupc != null) && (pupc.get_ID() > 0)){
+                prod = (MProduct) pupc.getM_Product();
+                mTab.setValue("M_Product_ID", prod.get_ID());
             }
+            else{
+                mTab.setValue("M_Product_ID", null);
+            }
+        }
+        else if (column.equalsIgnoreCase("M_Product_ID")){
+
+            int mProductID = ((Integer) value).intValue();
+            prod = new MProduct(ctx, mProductID, null);
+
+            MZProductoUPC pupc = MZProductoUPC.getByProduct(ctx, mProductID, null);
+            if ((pupc != null) && (pupc.get_ID() > 0)){
+                mTab.setValue("UPC", pupc.getUPC());
+            }
+            else{
+                mTab.setValue("UPC", null);
+            }
+        }
+
+        // Seteo atrbutos asociados al producto
+        if ((prod != null) && (prod.get_ID() > 0)){
+
+            // Atributos del producto
+            mTab.setValue("Z_ProductoSeccion_ID", prod.get_ValueAsInt(X_Z_ProductoSeccion.COLUMNNAME_Z_ProductoSeccion_ID));
+            mTab.setValue("Z_ProductoRubro_ID", prod.get_ValueAsInt(X_Z_ProductoRubro.COLUMNNAME_Z_ProductoRubro_ID));
+            mTab.setValue("C_UOM_ID", prod.getC_UOM_ID());
+            mTab.setValue("C_TaxCategory_ID", prod.getC_TaxCategory_ID());
+
+            if (prod.get_ValueAsInt(X_Z_ProductoFamilia.COLUMNNAME_Z_ProductoFamilia_ID) > 0){
+                mTab.setValue("Z_ProductoFamilia_ID", prod.get_ValueAsInt(X_Z_ProductoFamilia.COLUMNNAME_Z_ProductoFamilia_ID));
+            }
+
+            if (prod.get_ValueAsInt(X_Z_ProductoSubfamilia.COLUMNNAME_Z_ProductoSubfamilia_ID) > 0){
+                mTab.setValue("Z_ProductoSubfamilia_ID", prod.get_ValueAsInt(X_Z_ProductoSubfamilia.COLUMNNAME_Z_ProductoSubfamilia_ID));
+            }
+
+            // Precios de compra en ZERO ya que estoy asociando este producto al socio de negocio por primera vez
+            mTab.setValue("PriceFinal", Env.ZERO);
+            mTab.setValue("PriceInvoiced", Env.ZERO);
+            mTab.setValue("PricePO", Env.ZERO);
+
+            // Obtengo y seteo precio de venta actual desde lista de precios de venta del cabezal
+            MProductPrice productPrice = MProductPrice.get(ctx, provCab.getM_PriceList_Version_ID_SO(), prod.get_ID(), null);
+            if (productPrice != null){
+                mTab.setValue("PriceSO", productPrice.getPriceList());
+                mTab.setValue("NewPriceSO", productPrice.getPriceList());
+                mTab.setValue("DateValidSO", (Timestamp)productPrice.get_Value("ValidFrom"));
+            }
+            else{
+                mTab.setValue("PriceSO", Env.ZERO);
+                mTab.setValue("NewPriceSO", Env.ZERO);
+                mTab.setValue("DateValidSO",null);
+            }
+        }
+        else{
+            mTab.setValue("Z_ProductoSeccion_ID", null);
+            mTab.setValue("Z_ProductoRubro_ID", null);
+            mTab.setValue("Z_ProductoFamilia_ID", null);
+            mTab.setValue("Z_ProductoSubfamilia_ID", null);
+            mTab.setValue("C_UOM_ID", null);
+            mTab.setValue("C_TaxCategory_ID", null);
+            mTab.setValue("PriceFinal", Env.ZERO);
+            mTab.setValue("PriceInvoiced", Env.ZERO);
+            mTab.setValue("PricePO", Env.ZERO);
+            mTab.setValue("PriceSO", Env.ZERO);
+            mTab.setValue("NewPriceSO", Env.ZERO);
         }
 
         return "";
