@@ -591,7 +591,7 @@ public class ValidatorRetail implements ModelValidator {
             actividadDocumento.setDiferenciaTiempo(new BigDecimal((actividadDocumento.getDateCompleted().getTime()-actividadDocumento.getDocDateCreated().getTime())/1000).divide(new BigDecimal(60),2,BigDecimal.ROUND_HALF_UP));
             actividadDocumento.saveEx();
 
-            // No aplica en comprobantes de venta cuyo documento no sea del tipo API (Facturas)
+            // No aplica en comprobantes de compra cuyo documento no sea del tipo API (Facturas)
             MDocType docType = (MDocType) model.getC_DocTypeTarget();
             if (!docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
                 return null;
@@ -632,6 +632,15 @@ public class ValidatorRetail implements ModelValidator {
                                     }
                                 }
                             }
+
+                            // Guardo datos de ultima factura en ficha de producto-proveedor
+                            String serieDocumento = model.get_ValueAsString("DocumentSerie");
+                            if (serieDocumento == null) serieDocumento = "";
+
+                            productoSocio.setInvoiceNo(serieDocumento + model.getDocumentNo());
+                            productoSocio.setDateInvoiced(model.getDateInvoiced());
+                            productoSocio.setPriceInvoiced(invoiceLine.getPriceEntered());
+                            productoSocio.saveEx();
                         }
                     }
                 }

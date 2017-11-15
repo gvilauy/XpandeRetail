@@ -21,6 +21,7 @@ public class ClasificarProductosPreciosProv extends SvrProcess {
     private int zSubfamiliaID = 0;
     private int cTaxCategoryID = 0;
     private int cTaxCategoryEspecialID = 0;
+    private int cUomID = 0;
     private boolean clasificarTodosExistentes = false;
     private boolean clasificarTodosNuevos = false;
 
@@ -57,6 +58,9 @@ public class ClasificarProductosPreciosProv extends SvrProcess {
                     else if (name.trim().equalsIgnoreCase(X_Z_PreciosProvLin.COLUMNNAME_C_TaxCategory_ID_2)){
                         this.cTaxCategoryEspecialID = ((BigDecimal)para[i].getParameter()).intValueExact();
                     }
+                    else if (name.trim().equalsIgnoreCase(X_Z_PreciosProvLin.COLUMNNAME_C_UOM_ID)){
+                        this.cUomID = ((BigDecimal)para[i].getParameter()).intValueExact();
+                    }
                     else if (name.trim().equalsIgnoreCase("IsClassified")){
                         this.clasificarTodosExistentes = ((String)para[i].getParameter()).equalsIgnoreCase("Y") ? true : false;
                     }
@@ -85,6 +89,7 @@ public class ClasificarProductosPreciosProv extends SvrProcess {
             if (this.zSubfamiliaID > 0) preciosProvLin.setZ_ProductoSubfamilia_ID(this.zSubfamiliaID);
             if (this.cTaxCategoryID > 0) preciosProvLin.setC_TaxCategory_ID(this.cTaxCategoryID);
             if (this.cTaxCategoryEspecialID > 0) preciosProvLin.setC_TaxCategory_ID_2(this.cTaxCategoryEspecialID);
+            if (this.cUomID > 0) preciosProvLin.setC_UOM_ID(this.cUomID);
 
             if (preciosProvLin.is_Changed()){
                 preciosProvLin.saveEx();
@@ -100,6 +105,7 @@ public class ClasificarProductosPreciosProv extends SvrProcess {
             if (this.zSubfamiliaID > 0) preciosProvLin.setZ_ProductoSubfamilia_ID(this.zSubfamiliaID);
             if (this.cTaxCategoryID > 0) preciosProvLin.setC_TaxCategory_ID(this.cTaxCategoryID);
             if (this.cTaxCategoryEspecialID > 0) preciosProvLin.setC_TaxCategory_ID_2(this.cTaxCategoryEspecialID);
+            if (this.cUomID > 0) preciosProvLin.setC_UOM_ID(this.cUomID);
 
             if (preciosProvLin.is_Changed()){
                 preciosProvLin.saveEx();
