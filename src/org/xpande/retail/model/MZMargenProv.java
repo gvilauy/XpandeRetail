@@ -1,5 +1,7 @@
 package org.xpande.retail.model;
 
+import org.xpande.comercial.model.MZComercialConfig;
+
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -17,4 +19,17 @@ public class MZMargenProv extends X_Z_MargenProv {
     public MZMargenProv(Properties ctx, ResultSet rs, String trxName) {
         super(ctx, rs, trxName);
     }
+
+    @Override
+    protected boolean beforeSave(boolean newRecord) {
+
+        if (newRecord){
+            // Copio tolerancia de margenes desde parametros comerciales
+            MZComercialConfig comercialConfig = MZComercialConfig.getDefault(getCtx(), get_TrxName());
+            this.setMarginTolerance(comercialConfig.getMarginTolerance());
+        }
+
+        return true;
+    }
+
 }

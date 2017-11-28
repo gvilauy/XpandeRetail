@@ -120,6 +120,28 @@ public interface I_Z_MargenProv
 	  */
 	public BigDecimal getMargin();
 
+    /** Column name MarginTolerance */
+    public static final String COLUMNNAME_MarginTolerance = "MarginTolerance";
+
+	/** Set MarginTolerance.
+	  * Porcentaje de tolerancia para márgenes
+	  */
+	public void setMarginTolerance(BigDecimal MarginTolerance);
+
+	/** Get MarginTolerance.
+	  * Porcentaje de tolerancia para márgenes
+	  */
+	public BigDecimal getMarginTolerance();
+
+    /** Column name ProcessButton */
+    public static final String COLUMNNAME_ProcessButton = "ProcessButton";
+
+	/** Set ProcessButton	  */
+	public void setProcessButton(String ProcessButton);
+
+	/** Get ProcessButton	  */
+	public String getProcessButton();
+
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 

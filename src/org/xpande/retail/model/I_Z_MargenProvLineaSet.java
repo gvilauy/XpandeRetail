@@ -105,6 +105,19 @@ public interface I_Z_MargenProvLineaSet
 	  */
 	public BigDecimal getMargin();
 
+    /** Column name MarginTolerance */
+    public static final String COLUMNNAME_MarginTolerance = "MarginTolerance";
+
+	/** Set MarginTolerance.
+	  * Porcentaje de tolerancia para márgenes
+	  */
+	public void setMarginTolerance(BigDecimal MarginTolerance);
+
+	/** Get MarginTolerance.
+	  * Porcentaje de tolerancia para márgenes
+	  */
+	public BigDecimal getMarginTolerance();
+
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
 
@@ -140,6 +153,19 @@ public interface I_Z_MargenProvLineaSet
 	  */
 	public String getProcessButton2();
 
+    /** Column name ProcessButton3 */
+    public static final String COLUMNNAME_ProcessButton3 = "ProcessButton3";
+
+	/** Set ProcessButton3.
+	  * Botón para proceso
+	  */
+	public void setProcessButton3(String ProcessButton3);
+
+	/** Get ProcessButton3.
+	  * Botón para proceso
+	  */
+	public String getProcessButton3();
+
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -165,7 +191,7 @@ public interface I_Z_MargenProvLineaSet
 	/** Get Z_MargenProvLinea ID	  */
 	public int getZ_MargenProvLinea_ID();
 
-	public org.xpande.retail.model.I_Z_MargenProvLinea getZ_MargenProvLinea() throws RuntimeException;
+	public I_Z_MargenProvLinea getZ_MargenProvLinea() throws RuntimeException;
 
     /** Column name Z_MargenProvLineaSet_ID */
     public static final String COLUMNNAME_Z_MargenProvLineaSet_ID = "Z_MargenProvLineaSet_ID";

@@ -3,6 +3,7 @@ package org.xpande.retail.model;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
+import org.xpande.comercial.model.MZComercialConfig;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -99,4 +100,18 @@ public class MZMargenProvLineaSet extends X_Z_MargenProvLineaSet {
 
         return message;
     }
+
+    @Override
+    protected boolean beforeSave(boolean newRecord) {
+
+        if (newRecord){
+            // Copio tolerancia de margenes desde parametros comerciales
+            MZComercialConfig comercialConfig = MZComercialConfig.getDefault(getCtx(), get_TrxName());
+            this.setMarginTolerance(comercialConfig.getMarginTolerance());
+        }
+
+        return true;
+    }
+
+
 }

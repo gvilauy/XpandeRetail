@@ -32,7 +32,7 @@ public class X_Z_MargenProvLineaSetProd extends PO implements I_Z_MargenProvLine
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20171122L;
+	private static final long serialVersionUID = 20171128L;
 
     /** Standard Constructor */
     public X_Z_MargenProvLineaSetProd (Properties ctx, int Z_MargenProvLineaSetProd_ID, String trxName)
@@ -94,6 +94,26 @@ public class X_Z_MargenProvLineaSetProd extends PO implements I_Z_MargenProvLine
 		return bd;
 	}
 
+	/** Set MarginTolerance.
+		@param MarginTolerance 
+		Porcentaje de tolerancia para márgenes
+	  */
+	public void setMarginTolerance (BigDecimal MarginTolerance)
+	{
+		set_Value (COLUMNNAME_MarginTolerance, MarginTolerance);
+	}
+
+	/** Get MarginTolerance.
+		@return Porcentaje de tolerancia para márgenes
+	  */
+	public BigDecimal getMarginTolerance () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MarginTolerance);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
 	public I_M_Product getM_Product() throws RuntimeException
     {
 		return (I_M_Product)MTable.get(getCtx(), I_M_Product.Table_Name)
@@ -122,9 +142,23 @@ public class X_Z_MargenProvLineaSetProd extends PO implements I_Z_MargenProvLine
 		return ii.intValue();
 	}
 
-	public org.xpande.retail.model.I_Z_MargenProvLineaSet getZ_MargenProvLineaSet() throws RuntimeException
+	/** Set ProcessButton.
+		@param ProcessButton ProcessButton	  */
+	public void setProcessButton (String ProcessButton)
+	{
+		set_Value (COLUMNNAME_ProcessButton, ProcessButton);
+	}
+
+	/** Get ProcessButton.
+		@return ProcessButton	  */
+	public String getProcessButton () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton);
+	}
+
+	public I_Z_MargenProvLineaSet getZ_MargenProvLineaSet() throws RuntimeException
     {
-		return (org.xpande.retail.model.I_Z_MargenProvLineaSet)MTable.get(getCtx(), org.xpande.retail.model.I_Z_MargenProvLineaSet.Table_Name)
+		return (I_Z_MargenProvLineaSet)MTable.get(getCtx(), I_Z_MargenProvLineaSet.Table_Name)
 			.getPO(getZ_MargenProvLineaSet_ID(), get_TrxName());	}
 
 	/** Set Z_MargenProvLineaSet ID.

@@ -32,7 +32,7 @@ public class X_Z_MargenProv extends PO implements I_Z_MargenProv, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20171122L;
+	private static final long serialVersionUID = 20171128L;
 
     /** Standard Constructor */
     public X_Z_MargenProv (Properties ctx, int Z_MargenProv_ID, String trxName)
@@ -119,6 +119,40 @@ public class X_Z_MargenProv extends PO implements I_Z_MargenProv, I_Persistent
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	/** Set MarginTolerance.
+		@param MarginTolerance 
+		Porcentaje de tolerancia para márgenes
+	  */
+	public void setMarginTolerance (BigDecimal MarginTolerance)
+	{
+		set_Value (COLUMNNAME_MarginTolerance, MarginTolerance);
+	}
+
+	/** Get MarginTolerance.
+		@return Porcentaje de tolerancia para márgenes
+	  */
+	public BigDecimal getMarginTolerance () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MarginTolerance);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set ProcessButton.
+		@param ProcessButton ProcessButton	  */
+	public void setProcessButton (String ProcessButton)
+	{
+		set_Value (COLUMNNAME_ProcessButton, ProcessButton);
+	}
+
+	/** Get ProcessButton.
+		@return ProcessButton	  */
+	public String getProcessButton () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton);
 	}
 
 	/** Set Z_MargenProv ID.

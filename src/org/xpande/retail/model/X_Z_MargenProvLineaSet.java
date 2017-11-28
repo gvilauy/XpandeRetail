@@ -32,7 +32,7 @@ public class X_Z_MargenProvLineaSet extends PO implements I_Z_MargenProvLineaSet
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20171122L;
+	private static final long serialVersionUID = 20171128L;
 
     /** Standard Constructor */
     public X_Z_MargenProvLineaSet (Properties ctx, int Z_MargenProvLineaSet_ID, String trxName)
@@ -94,6 +94,26 @@ public class X_Z_MargenProvLineaSet extends PO implements I_Z_MargenProvLineaSet
 		return bd;
 	}
 
+	/** Set MarginTolerance.
+		@param MarginTolerance 
+		Porcentaje de tolerancia para márgenes
+	  */
+	public void setMarginTolerance (BigDecimal MarginTolerance)
+	{
+		set_Value (COLUMNNAME_MarginTolerance, MarginTolerance);
+	}
+
+	/** Get MarginTolerance.
+		@return Porcentaje de tolerancia para márgenes
+	  */
+	public BigDecimal getMarginTolerance () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MarginTolerance);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
 	/** Set Name.
 		@param Name 
 		Alphanumeric identifier of the entity
@@ -142,9 +162,26 @@ public class X_Z_MargenProvLineaSet extends PO implements I_Z_MargenProvLineaSet
 		return (String)get_Value(COLUMNNAME_ProcessButton2);
 	}
 
-	public org.xpande.retail.model.I_Z_MargenProvLinea getZ_MargenProvLinea() throws RuntimeException
+	/** Set ProcessButton3.
+		@param ProcessButton3 
+		Botón para proceso
+	  */
+	public void setProcessButton3 (String ProcessButton3)
+	{
+		set_Value (COLUMNNAME_ProcessButton3, ProcessButton3);
+	}
+
+	/** Get ProcessButton3.
+		@return Botón para proceso
+	  */
+	public String getProcessButton3 () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton3);
+	}
+
+	public I_Z_MargenProvLinea getZ_MargenProvLinea() throws RuntimeException
     {
-		return (org.xpande.retail.model.I_Z_MargenProvLinea)MTable.get(getCtx(), org.xpande.retail.model.I_Z_MargenProvLinea.Table_Name)
+		return (I_Z_MargenProvLinea)MTable.get(getCtx(), I_Z_MargenProvLinea.Table_Name)
 			.getPO(getZ_MargenProvLinea_ID(), get_TrxName());	}
 
 	/** Set Z_MargenProvLinea ID.
