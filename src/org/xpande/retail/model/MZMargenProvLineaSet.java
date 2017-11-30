@@ -3,8 +3,10 @@ package org.xpande.retail.model;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.xpande.comercial.model.MZComercialConfig;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -104,10 +106,19 @@ public class MZMargenProvLineaSet extends X_Z_MargenProvLineaSet {
     @Override
     protected boolean beforeSave(boolean newRecord) {
 
-        if (newRecord){
-            // Copio tolerancia de margenes desde parametros comerciales
-            MZComercialConfig comercialConfig = MZComercialConfig.getDefault(getCtx(), get_TrxName());
-            this.setMarginTolerance(comercialConfig.getMarginTolerance());
+        if ((newRecord) || (is_ValueChanged(X_Z_MargenProvLineaSet.COLUMNNAME_Margin))){
+
+            if ((this.getMargin() != null) && (this.getMargin().compareTo(Env.ZERO) > 0)){
+                // Calculo tolerancia segun parametros general del modulo comercial
+                MZComercialConfig comercialConfig = MZComercialConfig.getDefault(getCtx(), get_TrxName());
+                if ((comercialConfig.getMarginTolerance() != null) && (comercialConfig.getMarginTolerance().compareTo(Env.ZERO) > 0)){
+                    this.setMarginTolerance(this.getMargin().multiply(comercialConfig.getMarginTolerance().divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP)));
+                }
+                else{
+                    this.setMarginTolerance(Env.ZERO);
+                }
+            }
+
         }
 
         return true;
