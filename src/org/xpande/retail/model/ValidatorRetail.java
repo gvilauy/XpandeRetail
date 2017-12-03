@@ -351,6 +351,21 @@ public class ValidatorRetail implements ModelValidator {
                 invoice.set_ValueOfColumn("AmtSubtotal", grandTotal.subtract(sumImpuestos));
                 invoice.saveEx();
             }
+
+            // Cuando estoy en comprobantes de compra
+            if (type == ModelValidator.TYPE_AFTER_NEW){
+                if (!invoice.isSOTrx()){
+                    if (model.get_Value("PricePO") == null){
+                        MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(model.getCtx(), invoice.getC_BPartner_ID(), model.getM_Product_ID(), null);
+                        if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+                            MZProductoSocioOrg productoSocioOrg = productoSocio.getOrg(invoice.getAD_Org_ID());
+                            if ((productoSocioOrg != null) && (productoSocioOrg.get_ID() > 0)){
+                                model.set_ValueOfColumn("PricePO", productoSocioOrg.getPricePO());
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)
