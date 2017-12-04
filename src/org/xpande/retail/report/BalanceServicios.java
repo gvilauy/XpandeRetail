@@ -154,7 +154,7 @@ public class BalanceServicios extends SvrProcess {
 
 
     /***
-     * Actualiza campos de las Tablas de Reporte.
+     * Actualiza campos de las Tablas del Reporte.
      * Xpande. Created by Gabriel Vila on 9/11/17.
      */
     private void updateData() {
