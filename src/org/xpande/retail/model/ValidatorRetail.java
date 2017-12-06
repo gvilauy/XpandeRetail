@@ -123,6 +123,7 @@ public class ValidatorRetail implements ModelValidator {
                 throw new AdempiereException("No se pudo calcular precios y montos para esta linea de Orden de Compra");
             }
 
+
             // Precisión de la lista de precios
             MPriceList priceList = (MPriceList) order.getM_PriceList();
             int precisionDecimal = priceList.getPricePrecision();
@@ -149,6 +150,12 @@ public class ValidatorRetail implements ModelValidator {
             //	Set UOM
             if(model.getC_UOM_ID() == 0 ){
                 model.setC_UOM_ID(productPricing.getC_UOM_ID());
+            }
+
+            // Nuevo registro, dejo fijo el precio OC en una columna para que en caso de haber descuentos manuales, se visualice diferencias
+            // entre precio oc original, y el nuevo precio oc con descuentos manuales aplicados.
+            if (type == ModelValidator.TYPE_BEFORE_NEW){
+                model.set_ValueOfColumn("PricePO", model.getPriceEntered());
             }
 
             // Calcula descuento manual
@@ -220,6 +227,8 @@ public class ValidatorRetail implements ModelValidator {
                     order.saveEx();
                 }
             }
+
+
         }
 
         return mensaje;
@@ -352,24 +361,12 @@ public class ValidatorRetail implements ModelValidator {
                 invoice.saveEx();
             }
 
-            // Cuando estoy en comprobantes de compra
-            if (type == ModelValidator.TYPE_AFTER_NEW){
-                if (!invoice.isSOTrx()){
-                    if (model.get_Value("PricePO") == null){
-                        MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(model.getCtx(), invoice.getC_BPartner_ID(), model.getM_Product_ID(), null);
-                        if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
-                            MZProductoSocioOrg productoSocioOrg = productoSocio.getOrg(invoice.getAD_Org_ID());
-                            if ((productoSocioOrg != null) && (productoSocioOrg.get_ID() > 0)){
-                                model.set_ValueOfColumn("PricePO", productoSocioOrg.getPricePO());
-                            }
-                        }
-                    }
-                }
-            }
         }
 
-        if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)
+        else if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)
                 || (type == ModelValidator.TYPE_BEFORE_DELETE)){
+
+            MInvoice invoice = (MInvoice)model.getC_Invoice();
 
             // Siguiendo el mismo concepto que el cabezal, se actualiza subtotal de esta linea.
             // Nuevo campo de subtotal, no se toca el original de ADempiere.
@@ -381,6 +378,24 @@ public class ValidatorRetail implements ModelValidator {
                 }
                 else{
                     model.set_ValueOfColumn("AmtSubtotal", lineTotal);
+                }
+            }
+
+            // Cuando estoy en comprobantes de compra
+            if (type == ModelValidator.TYPE_BEFORE_NEW){
+                if (!invoice.isSOTrx()){
+                    if (model.get_Value("PricePO") == null){
+                        MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(model.getCtx(), invoice.getC_BPartner_ID(), model.getM_Product_ID(), null);
+                        if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+                            MZProductoSocioOrg productoSocioOrg = productoSocio.getOrg(invoice.getAD_Org_ID());
+                            if ((productoSocioOrg != null) && (productoSocioOrg.get_ID() > 0)){
+                                model.set_ValueOfColumn("PricePO", productoSocioOrg.getPricePO());
+                            }
+                            else{
+                                model.set_ValueOfColumn("PricePO", productoSocio.getPricePO());
+                            }
+                        }
+                    }
                 }
             }
 
