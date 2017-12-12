@@ -245,20 +245,18 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 			// Actualizo lista de precios de venta del documento para el producto de esta linea
 			this.updateProductPriceListSO(priceList, priceListVersion, pvpLinea, fechaHoy);
 
-			// Si estoy procesando multiples organizaciones, debo actualizar lista de venta de cada organizacion participante
-			if (!this.isOnlyOneOrg()){
+			// Debo actualizar lista de venta de cada organizacion participante
+			List<MZActualizacionPVPOrg> pvpOrgs = this.getSelectedOrgs();
 
-				List<MZActualizacionPVPOrg> pvpOrgs = this.getSelectedOrgs();
-
-				for (MZActualizacionPVPOrg pvpOrg: pvpOrgs){
-					BigDecimal newPriceSO = pvpLinea.getNewPriceSO();
-					if (pvpLinea.isDistinctPriceSO()){
-						MZActualizacionPVPLinOrg pvpLinOrg = pvpLinea.getOrg(pvpOrg.getAD_OrgTrx_ID());
-						newPriceSO = pvpLinOrg.getNewPriceSO();
-					}
-					pvpOrg.updateProductPriceListSO(pvpLinea.getM_Product_ID(), priceList.getC_Currency_ID(), newPriceSO, fechaHoy);
+			for (MZActualizacionPVPOrg pvpOrg: pvpOrgs){
+				BigDecimal newPriceSO = pvpLinea.getNewPriceSO();
+				if (pvpLinea.isDistinctPriceSO()){
+					MZActualizacionPVPLinOrg pvpLinOrg = pvpLinea.getOrg(pvpOrg.getAD_OrgTrx_ID());
+					newPriceSO = pvpLinOrg.getNewPriceSO();
 				}
+				pvpOrg.updateProductPriceListSO(pvpLinea.getM_Product_ID(), priceList.getC_Currency_ID(), newPriceSO, fechaHoy);
 			}
+
 		}
 
 		// Guardo documento en tabla para informes de actividad por documento

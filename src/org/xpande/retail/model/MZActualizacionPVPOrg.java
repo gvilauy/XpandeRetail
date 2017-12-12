@@ -31,10 +31,10 @@ public class MZActualizacionPVPOrg extends X_Z_ActualizacionPVPOrg {
     /***
      * Actualiza lista de precios de venta de esta organización para el producto de la linea recibida.
      * Xpande. Created by Gabriel Vila on 7/20/17.
-     * @param m_product_id
-     * @param c_currency_id
+     * @param mProductID
+     * @param cCurrencyID
      * @param newPriceSO
-     * @param fechaHoy
+     * @param fechaVigencia
      */
     public void updateProductPriceListSO(int mProductID, int cCurrencyID, BigDecimal newPriceSO, Timestamp fechaVigencia) {
 
