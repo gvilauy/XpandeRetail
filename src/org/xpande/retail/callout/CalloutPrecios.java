@@ -578,6 +578,93 @@ public class CalloutPrecios extends CalloutEngine {
 
 
     /***
+     * Setea moneda de venta y versión de lista, segun lista de precios recibida.
+     * Xpande. Created by Gabriel Vila on 7/31/17.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String priceInfoSO_ByPriceList(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if ((value == null) || (((Integer) value).intValue() <= 0)){
+            mTab.setValue("C_Currency_ID_SO", null);
+            mTab.setValue("M_PriceList_Version_ID_SO", null);
+            return "";
+        }
+
+        int mPriceListID = ((Integer) value).intValue();
+
+        MPriceList priceList = MPriceList.get(ctx, mPriceListID, null);
+
+        // Seteo moneda de lista
+        mTab.setValue("C_Currency_ID_SO", priceList.getC_Currency_ID());
+
+        // Obtengo versión de lista vigente
+        MPriceListVersion plv = priceList.getPriceListVersion(null);
+        if ((plv != null) && (plv.get_ID() > 0)){
+            mTab.setValue("M_PriceList_Version_ID_SO", plv.get_ID());
+        }
+        else{
+            mTab.setValue("M_PriceList_Version_ID_SO", null);
+        }
+
+
+        return "";
+    }
+
+
+    /***
+     * Setea lista de precios y versión según moneda de venta recibida.
+     * Xpande. Created by Gabriel Vila on 7/31/17.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String priceInfoSO_ByCurrencySO(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if ((value == null) || (((Integer) value).intValue() <= 0)){
+            mTab.setValue("M_PriceList_ID_SO", null);
+            mTab.setValue("M_PriceList_Version_ID_SO", null);
+            return "";
+        }
+
+        int adClientID = Env.getContextAsInt(ctx, WindowNo, "AD_Client_ID");
+        int adOrgID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
+
+        int cCurrencyID = ((Integer)value).intValue();
+
+        // Obtengo lista de venta para organización seleccionada en este documento y moneda
+        MPriceList priceList = PriceListUtils.getPriceListByOrg(ctx, adClientID, adOrgID, cCurrencyID, true, null);
+
+        if ((priceList != null) && (priceList.get_ID() > 0)){
+
+            mTab.setValue("M_PriceList_ID_SO", priceList.getM_PriceList_ID());
+
+            // Obtengo versión de lista vigente
+            MPriceListVersion plv = priceList.getPriceListVersion(null);
+            if ((plv != null) && (plv.get_ID() > 0)){
+                mTab.setValue("M_PriceList_Version_ID_SO", plv.get_ID());
+            }
+            else{
+                mTab.setValue("M_PriceList_Version_ID_SO", null);
+            }
+        }
+        else{
+            mTab.setValue("M_PriceList_ID_SO", null);
+
+        }
+
+        return "";
+    }
+
+
+    /***
      * Cuando estoy en el preceso de asociacion de productos a proveedores en Gestión de Precios, seteo producto-codigo de barra, segun valor
      * digitado.
      * Xpande. Created by Gabriel Vila on 11/1/17.

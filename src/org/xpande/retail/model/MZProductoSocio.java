@@ -144,6 +144,24 @@ public class MZProductoSocio extends X_Z_ProductoSocio {
 
 
     /***
+     * Obtiene y retorna lista de socios de negocio que comercializan un producto recibido.
+     * Xpande. Created by Gabriel Vila on 1/10/18.
+     * @param ctx
+     * @param mProductID
+     * @param trxName
+     * @return
+     */
+    public static List<MZProductoSocio> getByProduct(Properties ctx, int mProductID, String trxName) {
+
+        String whereClause = X_Z_ProductoSocio.COLUMNNAME_M_Product_ID + " =" + mProductID;
+
+        List<MZProductoSocio> lines = new Query(ctx, I_Z_ProductoSocio.Table_Name, whereClause, trxName).list();
+
+        return lines;
+    }
+
+
+    /***
      * Metodo que calcula y setea margenes de esta linea.
      * Xpande. Created by Gabriel Vila on 6/23/17.
      */
