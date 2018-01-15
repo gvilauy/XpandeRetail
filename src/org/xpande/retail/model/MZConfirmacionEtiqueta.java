@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -33,6 +34,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.xpande.core.model.MZActividadDocumento;
+import org.xpande.core.utils.DateUtils;
 import org.xpande.core.utils.SequenceUtils;
 
 /** Generated Model for Z_ConfirmacionEtiqueta
@@ -564,8 +566,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 			this.getDocActualizacionPVP();
 
 			// Obtiene documentos de ofertas periódicas
-			//this.getDocOfertas();
-
+			this.getDocOfertas();
 
 		}
 		catch (Exception e){
@@ -733,6 +734,9 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 		try{
 
 			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+            Date dateFechaAux = new Date(fechaHoy.getTime());
+            dateFechaAux =  DateUtils.addDays(dateFechaAux, 3);
+            Timestamp fechaOferta = new Timestamp(dateFechaAux.getTime());
 
 			int zOfertaVentaID = 0;
 			MZConfirmacionEtiquetaDoc etiquetaDoc = null;
@@ -746,7 +750,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					" where linorg.ad_orgtrx_id =" + this.getAD_Org_ID() +
 					" and lin.newpriceso > 0 " +
 					" and cab.docstatus='CO' " +
-					" and (cab.startdate <='" + fechaHoy + "' and cab.enddate >='" + fechaHoy + "') " +
+					" and (cab.startdate <='" + fechaOferta + "' and cab.enddate >='" + fechaOferta + "') " +
 					" and cab.z_ofertaventa_id not in " +
 					" (select confdoc.record_id from z_confirmacionetiquetadoc confdoc " +
 					" inner join z_confirmacionetiqueta conf on confdoc.z_confirmacionetiqueta_id = conf.z_confirmacionetiqueta_id " +
