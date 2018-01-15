@@ -160,10 +160,16 @@ public class ValidatorRetail implements ModelValidator {
 
             // Calcula descuento manual
             BigDecimal Discount2 = (BigDecimal)model.get_Value("Discount2");
-            BigDecimal PriceActual = model.getPriceActual();
             if (Discount2 == null) Discount2 = Env.ZERO;
-            if (model.getPriceList().doubleValue() != 0 ){
-                PriceActual = new BigDecimal ((100.0 - model.getDiscount().doubleValue()) / 100.0 * model.getPriceList().doubleValue());
+
+            BigDecimal PriceActual = (BigDecimal) model.get_Value("PricePO");
+            if (PriceActual == null){
+                PriceActual = model.getPriceActual();
+            }
+            if (PriceActual == null) PriceActual = Env.ZERO;
+
+            if (PriceActual.compareTo(Env.ZERO) != 0 ){
+                PriceActual = new BigDecimal ((100.0 - model.getDiscount().doubleValue()) / 100.0 * PriceActual.doubleValue());
             }
             PriceActual = new BigDecimal ((100.0 - Discount2.doubleValue()) / 100.0 * PriceActual.doubleValue());
             if (PriceActual.scale() > 2)
