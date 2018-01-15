@@ -93,19 +93,6 @@ public interface I_Z_ProductoSocio
 
 	public I_C_Currency getC_Currency() throws RuntimeException;
 
-    /** Column name C_Currency_ID_Offer */
-    public static final String COLUMNNAME_C_Currency_ID_Offer = "C_Currency_ID_Offer";
-
-	/** Set C_Currency_ID_Offer.
-	  * Moneda para precios de oferta en Retail
-	  */
-	public void setC_Currency_ID_Offer(int C_Currency_ID_Offer);
-
-	/** Get C_Currency_ID_Offer.
-	  * Moneda para precios de oferta en Retail
-	  */
-	public int getC_Currency_ID_Offer();
-
     /** Column name C_Currency_ID_SO */
     public static final String COLUMNNAME_C_Currency_ID_SO = "C_Currency_ID_SO";
 
@@ -399,19 +386,6 @@ public interface I_Z_ProductoSocio
 	  */
 	public BigDecimal getPriceList();
 
-    /** Column name PriceOfferPO */
-    public static final String COLUMNNAME_PriceOfferPO = "PriceOfferPO";
-
-	/** Set PriceOfferPO.
-	  * Precio de compra de oferta en Retail
-	  */
-	public void setPriceOfferPO(BigDecimal PriceOfferPO);
-
-	/** Get PriceOfferPO.
-	  * Precio de compra de oferta en Retail
-	  */
-	public BigDecimal getPriceOfferPO();
-
     /** Column name PricePO */
     public static final String COLUMNNAME_PricePO = "PricePO";
 
@@ -502,19 +476,6 @@ public interface I_Z_ProductoSocio
 	  */
 	public String getVendorProductNo();
 
-    /** Column name WithOfferPO */
-    public static final String COLUMNNAME_WithOfferPO = "WithOfferPO";
-
-	/** Set WithOfferPO.
-	  * Tiene Oferta o no de compra en Retail
-	  */
-	public void setWithOfferPO(boolean WithOfferPO);
-
-	/** Get WithOfferPO.
-	  * Tiene Oferta o no de compra en Retail
-	  */
-	public boolean isWithOfferPO();
-
     /** Column name Z_LineaProductoSocio_ID */
     public static final String COLUMNNAME_Z_LineaProductoSocio_ID = "Z_LineaProductoSocio_ID";
 
@@ -525,17 +486,6 @@ public interface I_Z_ProductoSocio
 	public int getZ_LineaProductoSocio_ID();
 
 	public I_Z_LineaProductoSocio getZ_LineaProductoSocio() throws RuntimeException;
-
-    /** Column name Z_OfertaVenta_ID */
-    public static final String COLUMNNAME_Z_OfertaVenta_ID = "Z_OfertaVenta_ID";
-
-	/** Set Z_OfertaVenta ID	  */
-	public void setZ_OfertaVenta_ID(int Z_OfertaVenta_ID);
-
-	/** Get Z_OfertaVenta ID	  */
-	public int getZ_OfertaVenta_ID();
-
-	public I_Z_OfertaVenta getZ_OfertaVenta() throws RuntimeException;
 
     /** Column name Z_PautaComercial_ID */
     public static final String COLUMNNAME_Z_PautaComercial_ID = "Z_PautaComercial_ID";

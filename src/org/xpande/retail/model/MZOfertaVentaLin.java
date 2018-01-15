@@ -2,6 +2,7 @@ package org.xpande.retail.model;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
+import org.compiere.process.DocAction;
 import org.xpande.core.utils.PriceListUtils;
 
 import java.sql.ResultSet;
@@ -21,6 +22,30 @@ public class MZOfertaVentaLin extends X_Z_OfertaVentaLin {
 
     public MZOfertaVentaLin(Properties ctx, ResultSet rs, String trxName) {
         super(ctx, rs, trxName);
+    }
+
+
+    @Override
+    protected boolean beforeSave(boolean newRecord) {
+
+        // Para nuevos registros o cambio de producto
+        if ((newRecord) || (is_ValueChanged(X_Z_OfertaVentaLin.COLUMNNAME_M_Product_ID))){
+
+            MZOfertaVenta ofertaVenta = (MZOfertaVenta) this.getZ_OfertaVenta();
+            MProduct product = (MProduct) this.getM_Product();
+
+            // Valido que el producto de esta linea no tengo una oferta definida dentro del mismo rango de fechas de esta oferta.
+            MZProductoOferta productoOferta = MZProductoOferta.getByProductDate(getCtx(), this.getM_Product_ID(), ofertaVenta.getStartDate(), ofertaVenta.getEndDate(), get_TrxName());
+            if ((productoOferta != null) && (productoOferta.get_ID() > 0)){
+                MZOfertaVenta ofertaVentaAux = (MZOfertaVenta) productoOferta.getZ_OfertaVenta();
+
+                log.saveError("ATENCIÓN", "Ya existe una oferta para el producto " + product.getValue() + " - " + product.getName() +
+                            " (Oferta nro.: " + ofertaVentaAux.getDocumentNo() + ")");
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override

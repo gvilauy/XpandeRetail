@@ -51,19 +51,20 @@ public class MProductPricing
 	 */
 	
 	@Deprecated
-	public MProductPricing(int productId, int partnerId, int adOrgTrxID,
+	public MProductPricing(int productId, int partnerId, int adOrgTrxID, Timestamp dateDocument,
                            BigDecimal quantity, boolean isSOTrx)
 	{
-		 this(productId, partnerId, adOrgTrxID, quantity, isSOTrx, null);
+		 this(productId, partnerId, adOrgTrxID, dateDocument, quantity, isSOTrx, null);
 	}
 	
 	
-	public MProductPricing(int productId, int partnerId, int adOrgTrxID,
+	public MProductPricing(int productId, int partnerId, int adOrgTrxID, Timestamp dateDocument,
                            BigDecimal quantity, boolean isSOTrx, String trxName)
 	{
 		this.productId = productId;
 		this.partnerId = partnerId;
 		this.adOrgTrxID = adOrgTrxID;
+		this.dateDocument = dateDocument;
 		this.trxName = trxName;
 
 		if (quantity != null && Env.ZERO.compareTo(quantity) != 0)
@@ -77,6 +78,7 @@ public class MProductPricing
 
 	private int 		productId;
 	private int 		partnerId;
+	private Timestamp	dateDocument;
 	private int	adOrgTrxID;
 	private BigDecimal 	quantity = Env.ONE;
 	private boolean 	isSOTrx = true;
@@ -104,6 +106,8 @@ public class MProductPricing
 	private boolean 	isTaxIncluded = true;
 	private String		trxName = null;
 
+	private boolean tieneOfertaComercial = false;
+	private boolean ofertaAplicaDtosPago = true;
 
 	private int forcedPrecision = -1;
 
@@ -188,17 +192,41 @@ public class MProductPricing
 
 				MProduct product = (MProduct)productoSocio.getM_Product();
 
-				MZProductoSocioOrg productoSocioOrg = productoSocio.getOrg(this.adOrgTrxID);
-				if ((productoSocioOrg != null) && (productoSocioOrg.get_ID() > 0)){
-					priceStd = productoSocioOrg.getPriceList();
-					priceList = productoSocioOrg.getPriceList();
-					priceLimit = productoSocioOrg.getPriceList();
-					uomId = product.getC_UOM_ID();
-					currencyId = productoSocio.getC_Currency_ID();
-					productCategoryId = product.getM_Product_Category_ID();
-					isEnforcePriceLimit = false;
-					isTaxIncluded = true;
-					calculated = true;
+				// Verifico si tengo oferta comercial, en cuyo caso dejo constancia y obtengo precio de oferta y su correspondiente moneda
+				MZProductoSocioOferta socioOferta = MZProductoSocioOferta.getByProductBPDate(Env.getCtx(), productoSocio.get_ID(), this.dateDocument, null);
+				if ((socioOferta != null) && (socioOferta.get_ID() > 0)){
+					// Tengo oferta, tomo el precio de la oferta
+					this.tieneOfertaComercial = true;
+					MZOfertaVentaLinBP ofertaVentaLinBP = (MZOfertaVentaLinBP) socioOferta.getZ_OfertaVentaLinBP();
+					if ((ofertaVentaLinBP != null) && (ofertaVentaLinBP.get_ID() > 0)){
+						this.ofertaAplicaDtosPago = ofertaVentaLinBP.isAplicanDtosPago();
+						priceStd = ofertaVentaLinBP.getNewPricePO();
+						priceList = ofertaVentaLinBP.getNewPricePO();
+						priceLimit = ofertaVentaLinBP.getNewPricePO();
+						uomId = product.getC_UOM_ID();
+						currencyId = ofertaVentaLinBP.getC_Currency_ID();
+						productCategoryId = product.getM_Product_Category_ID();
+						isEnforcePriceLimit = false;
+						isTaxIncluded = true;
+						calculated = true;
+					}
+				}
+				else{
+					// No tengo oferta, tomo el precio desde organizacion
+					this.tieneOfertaComercial = false;
+
+					MZProductoSocioOrg productoSocioOrg = productoSocio.getOrg(this.adOrgTrxID);
+					if ((productoSocioOrg != null) && (productoSocioOrg.get_ID() > 0)){
+						priceStd = productoSocioOrg.getPriceList();
+						priceList = productoSocioOrg.getPriceList();
+						priceLimit = productoSocioOrg.getPriceList();
+						uomId = product.getC_UOM_ID();
+						currencyId = productoSocio.getC_Currency_ID();
+						productCategoryId = product.getM_Product_Category_ID();
+						isEnforcePriceLimit = false;
+						isTaxIncluded = true;
+						calculated = true;
+					}
 				}
 			}
 
@@ -792,16 +820,20 @@ public class MProductPricing
 			priceStd = discountSchema.calculatePrice(quantity, priceStd, productId, productCategoryId, flatDiscount);
 		}
 		else{
-			// Es aquí donde se utiliza el concepto de Pauta Comercial en Retail, para el manejo de descuentos.
-			// Instancio modelo producto-socio, y si este modelo tiene pauta comercial asociada, calculo descuentos.
-			MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(Env.getCtx(), partnerId, productId, null);
-			if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
-				if (productoSocio.getZ_PautaComercial_ID() > 0){
-					this.setPrecision();
-					MZPautaComercial pautaComercial = (MZPautaComercial) productoSocio.getZ_PautaComercial();
-					ProductPricesInfo ppi = pautaComercial.calculatePrices(productId, priceStd, precision);
-					if (ppi != null){
-						priceStd = ppi.getPricePO();
+
+			// Si no tengo precio de oferta
+			if (!this.tieneOfertaComercial){
+				// Es aquí donde se utiliza el concepto de Pauta Comercial en Retail, para el manejo de descuentos.
+				// Instancio modelo producto-socio, y si este modelo tiene pauta comercial asociada, calculo descuentos.
+				MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(Env.getCtx(), partnerId, productId, null);
+				if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+					if (productoSocio.getZ_PautaComercial_ID() > 0){
+						this.setPrecision();
+						MZPautaComercial pautaComercial = (MZPautaComercial) productoSocio.getZ_PautaComercial();
+						ProductPricesInfo ppi = pautaComercial.calculatePrices(productId, priceStd, precision);
+						if (ppi != null){
+							priceStd = ppi.getPricePO();
+						}
 					}
 				}
 			}

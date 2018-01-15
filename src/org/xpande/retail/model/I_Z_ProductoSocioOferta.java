@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_ProductoOferta
+/** Generated Interface for Z_ProductoSocioOferta
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_ProductoOferta 
+public interface I_Z_ProductoSocioOferta 
 {
 
-    /** TableName=Z_ProductoOferta */
-    public static final String Table_Name = "Z_ProductoOferta";
+    /** TableName=Z_ProductoSocioOferta */
+    public static final String Table_Name = "Z_ProductoSocioOferta";
 
-    /** AD_Table_ID=1000183 */
+    /** AD_Table_ID=1000184 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -105,21 +105,6 @@ public interface I_Z_ProductoOferta
 	  */
 	public boolean isActive();
 
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/** Set Product.
-	  * Product, Service, Item
-	  */
-	public void setM_Product_ID(int M_Product_ID);
-
-	/** Get Product.
-	  * Product, Service, Item
-	  */
-	public int getM_Product_ID();
-
-	public I_M_Product getM_Product() throws RuntimeException;
-
     /** Column name StartDate */
     public static final String COLUMNNAME_StartDate = "StartDate";
 
@@ -160,6 +145,17 @@ public interface I_Z_ProductoOferta
 
 	public I_Z_OfertaVenta getZ_OfertaVenta() throws RuntimeException;
 
+    /** Column name Z_OfertaVentaLinBP_ID */
+    public static final String COLUMNNAME_Z_OfertaVentaLinBP_ID = "Z_OfertaVentaLinBP_ID";
+
+	/** Set Z_OfertaVentaLinBP ID	  */
+	public void setZ_OfertaVentaLinBP_ID(int Z_OfertaVentaLinBP_ID);
+
+	/** Get Z_OfertaVentaLinBP ID	  */
+	public int getZ_OfertaVentaLinBP_ID();
+
+	public I_Z_OfertaVentaLinBP getZ_OfertaVentaLinBP() throws RuntimeException;
+
     /** Column name Z_OfertaVentaLin_ID */
     public static final String COLUMNNAME_Z_OfertaVentaLin_ID = "Z_OfertaVentaLin_ID";
 
@@ -171,12 +167,23 @@ public interface I_Z_ProductoOferta
 
 	public I_Z_OfertaVentaLin getZ_OfertaVentaLin() throws RuntimeException;
 
-    /** Column name Z_ProductoOferta_ID */
-    public static final String COLUMNNAME_Z_ProductoOferta_ID = "Z_ProductoOferta_ID";
+    /** Column name Z_ProductoSocio_ID */
+    public static final String COLUMNNAME_Z_ProductoSocio_ID = "Z_ProductoSocio_ID";
 
-	/** Set Z_ProductoOferta ID	  */
-	public void setZ_ProductoOferta_ID(int Z_ProductoOferta_ID);
+	/** Set Z_ProductoSocio ID	  */
+	public void setZ_ProductoSocio_ID(int Z_ProductoSocio_ID);
 
-	/** Get Z_ProductoOferta ID	  */
-	public int getZ_ProductoOferta_ID();
+	/** Get Z_ProductoSocio ID	  */
+	public int getZ_ProductoSocio_ID();
+
+	public I_Z_ProductoSocio getZ_ProductoSocio() throws RuntimeException;
+
+    /** Column name Z_ProductoSocioOferta_ID */
+    public static final String COLUMNNAME_Z_ProductoSocioOferta_ID = "Z_ProductoSocioOferta_ID";
+
+	/** Set Z_ProductoSocioOferta ID	  */
+	public void setZ_ProductoSocioOferta_ID(int Z_ProductoSocioOferta_ID);
+
+	/** Get Z_ProductoSocioOferta ID	  */
+	public int getZ_ProductoSocioOferta_ID();
 }

@@ -22,10 +22,10 @@ import java.sql.Timestamp;
 import java.util.Properties;
 import org.compiere.model.*;
 
-/** Generated Model for Z_ProductoOferta
+/** Generated Model for Z_ProductoSocioOferta
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0 - $Id$ */
-public class X_Z_ProductoOferta extends PO implements I_Z_ProductoOferta, I_Persistent 
+public class X_Z_ProductoSocioOferta extends PO implements I_Z_ProductoSocioOferta, I_Persistent 
 {
 
 	/**
@@ -34,22 +34,23 @@ public class X_Z_ProductoOferta extends PO implements I_Z_ProductoOferta, I_Pers
 	private static final long serialVersionUID = 20180115L;
 
     /** Standard Constructor */
-    public X_Z_ProductoOferta (Properties ctx, int Z_ProductoOferta_ID, String trxName)
+    public X_Z_ProductoSocioOferta (Properties ctx, int Z_ProductoSocioOferta_ID, String trxName)
     {
-      super (ctx, Z_ProductoOferta_ID, trxName);
-      /** if (Z_ProductoOferta_ID == 0)
+      super (ctx, Z_ProductoSocioOferta_ID, trxName);
+      /** if (Z_ProductoSocioOferta_ID == 0)
         {
 			setEndDate (new Timestamp( System.currentTimeMillis() ));
-			setM_Product_ID (0);
 			setStartDate (new Timestamp( System.currentTimeMillis() ));
 			setZ_OfertaVenta_ID (0);
+			setZ_OfertaVentaLinBP_ID (0);
 			setZ_OfertaVentaLin_ID (0);
-			setZ_ProductoOferta_ID (0);
+			setZ_ProductoSocio_ID (0);
+			setZ_ProductoSocioOferta_ID (0);
         } */
     }
 
     /** Load Constructor */
-    public X_Z_ProductoOferta (Properties ctx, ResultSet rs, String trxName)
+    public X_Z_ProductoSocioOferta (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -71,7 +72,7 @@ public class X_Z_ProductoOferta extends PO implements I_Z_ProductoOferta, I_Pers
 
     public String toString()
     {
-      StringBuffer sb = new StringBuffer ("X_Z_ProductoOferta[")
+      StringBuffer sb = new StringBuffer ("X_Z_ProductoSocioOferta[")
         .append(get_ID()).append("]");
       return sb.toString();
     }
@@ -91,34 +92,6 @@ public class X_Z_ProductoOferta extends PO implements I_Z_ProductoOferta, I_Pers
 	public Timestamp getEndDate () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_EndDate);
-	}
-
-	public I_M_Product getM_Product() throws RuntimeException
-    {
-		return (I_M_Product)MTable.get(getCtx(), I_M_Product.Table_Name)
-			.getPO(getM_Product_ID(), get_TrxName());	}
-
-	/** Set Product.
-		@param M_Product_ID 
-		Product, Service, Item
-	  */
-	public void setM_Product_ID (int M_Product_ID)
-	{
-		if (M_Product_ID < 1) 
-			set_Value (COLUMNNAME_M_Product_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
-	}
-
-	/** Get Product.
-		@return Product, Service, Item
-	  */
-	public int getM_Product_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	/** Set Start Date.
@@ -163,6 +136,31 @@ public class X_Z_ProductoOferta extends PO implements I_Z_ProductoOferta, I_Pers
 		return ii.intValue();
 	}
 
+	public I_Z_OfertaVentaLinBP getZ_OfertaVentaLinBP() throws RuntimeException
+    {
+		return (I_Z_OfertaVentaLinBP)MTable.get(getCtx(), I_Z_OfertaVentaLinBP.Table_Name)
+			.getPO(getZ_OfertaVentaLinBP_ID(), get_TrxName());	}
+
+	/** Set Z_OfertaVentaLinBP ID.
+		@param Z_OfertaVentaLinBP_ID Z_OfertaVentaLinBP ID	  */
+	public void setZ_OfertaVentaLinBP_ID (int Z_OfertaVentaLinBP_ID)
+	{
+		if (Z_OfertaVentaLinBP_ID < 1) 
+			set_Value (COLUMNNAME_Z_OfertaVentaLinBP_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_OfertaVentaLinBP_ID, Integer.valueOf(Z_OfertaVentaLinBP_ID));
+	}
+
+	/** Get Z_OfertaVentaLinBP ID.
+		@return Z_OfertaVentaLinBP ID	  */
+	public int getZ_OfertaVentaLinBP_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_OfertaVentaLinBP_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	public I_Z_OfertaVentaLin getZ_OfertaVentaLin() throws RuntimeException
     {
 		return (I_Z_OfertaVentaLin)MTable.get(getCtx(), I_Z_OfertaVentaLin.Table_Name)
@@ -188,21 +186,46 @@ public class X_Z_ProductoOferta extends PO implements I_Z_ProductoOferta, I_Pers
 		return ii.intValue();
 	}
 
-	/** Set Z_ProductoOferta ID.
-		@param Z_ProductoOferta_ID Z_ProductoOferta ID	  */
-	public void setZ_ProductoOferta_ID (int Z_ProductoOferta_ID)
+	public I_Z_ProductoSocio getZ_ProductoSocio() throws RuntimeException
+    {
+		return (I_Z_ProductoSocio)MTable.get(getCtx(), I_Z_ProductoSocio.Table_Name)
+			.getPO(getZ_ProductoSocio_ID(), get_TrxName());	}
+
+	/** Set Z_ProductoSocio ID.
+		@param Z_ProductoSocio_ID Z_ProductoSocio ID	  */
+	public void setZ_ProductoSocio_ID (int Z_ProductoSocio_ID)
 	{
-		if (Z_ProductoOferta_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Z_ProductoOferta_ID, null);
+		if (Z_ProductoSocio_ID < 1) 
+			set_Value (COLUMNNAME_Z_ProductoSocio_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_Z_ProductoOferta_ID, Integer.valueOf(Z_ProductoOferta_ID));
+			set_Value (COLUMNNAME_Z_ProductoSocio_ID, Integer.valueOf(Z_ProductoSocio_ID));
 	}
 
-	/** Get Z_ProductoOferta ID.
-		@return Z_ProductoOferta ID	  */
-	public int getZ_ProductoOferta_ID () 
+	/** Get Z_ProductoSocio ID.
+		@return Z_ProductoSocio ID	  */
+	public int getZ_ProductoSocio_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ProductoOferta_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ProductoSocio_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_ProductoSocioOferta ID.
+		@param Z_ProductoSocioOferta_ID Z_ProductoSocioOferta ID	  */
+	public void setZ_ProductoSocioOferta_ID (int Z_ProductoSocioOferta_ID)
+	{
+		if (Z_ProductoSocioOferta_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Z_ProductoSocioOferta_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Z_ProductoSocioOferta_ID, Integer.valueOf(Z_ProductoSocioOferta_ID));
+	}
+
+	/** Get Z_ProductoSocioOferta ID.
+		@return Z_ProductoSocioOferta ID	  */
+	public int getZ_ProductoSocioOferta_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ProductoSocioOferta_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

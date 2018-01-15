@@ -162,14 +162,18 @@ public class ValidatorRetail implements ModelValidator {
             BigDecimal Discount2 = (BigDecimal)model.get_Value("Discount2");
             if (Discount2 == null) Discount2 = Env.ZERO;
 
+            boolean precioConDescuentos = true;
             BigDecimal PriceActual = (BigDecimal) model.get_Value("PricePO");
             if (PriceActual == null){
+                precioConDescuentos = false;
                 PriceActual = model.getPriceActual();
             }
             if (PriceActual == null) PriceActual = Env.ZERO;
 
             if (PriceActual.compareTo(Env.ZERO) != 0 ){
-                PriceActual = new BigDecimal ((100.0 - model.getDiscount().doubleValue()) / 100.0 * PriceActual.doubleValue());
+                if (!precioConDescuentos){
+                    PriceActual = new BigDecimal ((100.0 - model.getDiscount().doubleValue()) / 100.0 * PriceActual.doubleValue());
+                }
             }
             PriceActual = new BigDecimal ((100.0 - Discount2.doubleValue()) / 100.0 * PriceActual.doubleValue());
             if (PriceActual.scale() > 2)
@@ -420,7 +424,8 @@ public class ValidatorRetail implements ModelValidator {
         MProductPricing productPricing = null;
 
         try{
-            productPricing = new MProductPricing (orderLine.getM_Product_ID(), order.getC_BPartner_ID(), order.getAD_Org_ID(), orderLine.getQtyOrdered(), false, null);
+            productPricing = new MProductPricing (orderLine.getM_Product_ID(), order.getC_BPartner_ID(), order.getAD_Org_ID(),
+                    order.getDateOrdered(), orderLine.getQtyOrdered(), false, null);
             productPricing.setM_PriceList_ID(order.getM_PriceList_ID());
             productPricing.setPriceDate(order.getDateOrdered());
 

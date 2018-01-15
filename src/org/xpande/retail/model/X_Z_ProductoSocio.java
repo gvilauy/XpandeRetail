@@ -33,7 +33,7 @@ public class X_Z_ProductoSocio extends PO implements I_Z_ProductoSocio, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180110L;
+	private static final long serialVersionUID = 20180115L;
 
     /** Standard Constructor */
     public X_Z_ProductoSocio (Properties ctx, int Z_ProductoSocio_ID, String trxName)
@@ -52,8 +52,6 @@ public class X_Z_ProductoSocio extends PO implements I_Z_ProductoSocio, I_Persis
 			setPriceFinal (Env.ZERO);
 			setPriceList (Env.ZERO);
 			setPricePO (Env.ZERO);
-			setWithOfferPO (false);
-// N
 			setZ_ProductoSocio_ID (0);
         } */
     }
@@ -137,26 +135,6 @@ public class X_Z_ProductoSocio extends PO implements I_Z_ProductoSocio, I_Persis
 	public int getC_Currency_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set C_Currency_ID_Offer.
-		@param C_Currency_ID_Offer 
-		Moneda para precios de oferta en Retail
-	  */
-	public void setC_Currency_ID_Offer (int C_Currency_ID_Offer)
-	{
-		set_Value (COLUMNNAME_C_Currency_ID_Offer, Integer.valueOf(C_Currency_ID_Offer));
-	}
-
-	/** Get C_Currency_ID_Offer.
-		@return Moneda para precios de oferta en Retail
-	  */
-	public int getC_Currency_ID_Offer () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID_Offer);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -601,26 +579,6 @@ public class X_Z_ProductoSocio extends PO implements I_Z_ProductoSocio, I_Persis
 		return bd;
 	}
 
-	/** Set PriceOfferPO.
-		@param PriceOfferPO 
-		Precio de compra de oferta en Retail
-	  */
-	public void setPriceOfferPO (BigDecimal PriceOfferPO)
-	{
-		set_Value (COLUMNNAME_PriceOfferPO, PriceOfferPO);
-	}
-
-	/** Get PriceOfferPO.
-		@return Precio de compra de oferta en Retail
-	  */
-	public BigDecimal getPriceOfferPO () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceOfferPO);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
 	/** Set PO Price.
 		@param PricePO 
 		Price based on a purchase order
@@ -735,30 +693,6 @@ public class X_Z_ProductoSocio extends PO implements I_Z_ProductoSocio, I_Persis
 		return (String)get_Value(COLUMNNAME_VendorProductNo);
 	}
 
-	/** Set WithOfferPO.
-		@param WithOfferPO 
-		Tiene Oferta o no de compra en Retail
-	  */
-	public void setWithOfferPO (boolean WithOfferPO)
-	{
-		set_Value (COLUMNNAME_WithOfferPO, Boolean.valueOf(WithOfferPO));
-	}
-
-	/** Get WithOfferPO.
-		@return Tiene Oferta o no de compra en Retail
-	  */
-	public boolean isWithOfferPO () 
-	{
-		Object oo = get_Value(COLUMNNAME_WithOfferPO);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
 	public I_Z_LineaProductoSocio getZ_LineaProductoSocio() throws RuntimeException
     {
 		return (I_Z_LineaProductoSocio)MTable.get(getCtx(), I_Z_LineaProductoSocio.Table_Name)
@@ -779,31 +713,6 @@ public class X_Z_ProductoSocio extends PO implements I_Z_ProductoSocio, I_Persis
 	public int getZ_LineaProductoSocio_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_LineaProductoSocio_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	public I_Z_OfertaVenta getZ_OfertaVenta() throws RuntimeException
-    {
-		return (I_Z_OfertaVenta)MTable.get(getCtx(), I_Z_OfertaVenta.Table_Name)
-			.getPO(getZ_OfertaVenta_ID(), get_TrxName());	}
-
-	/** Set Z_OfertaVenta ID.
-		@param Z_OfertaVenta_ID Z_OfertaVenta ID	  */
-	public void setZ_OfertaVenta_ID (int Z_OfertaVenta_ID)
-	{
-		if (Z_OfertaVenta_ID < 1) 
-			set_Value (COLUMNNAME_Z_OfertaVenta_ID, null);
-		else 
-			set_Value (COLUMNNAME_Z_OfertaVenta_ID, Integer.valueOf(Z_OfertaVenta_ID));
-	}
-
-	/** Get Z_OfertaVenta ID.
-		@return Z_OfertaVenta ID	  */
-	public int getZ_OfertaVenta_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_OfertaVenta_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

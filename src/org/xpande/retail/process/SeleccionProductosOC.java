@@ -129,7 +129,8 @@ public class SeleccionProductosOC extends SeleccionProductosOCAbstract
 		MProductPricing productPricing = null;
 
 		try{
-			productPricing = new MProductPricing (orderLine.getM_Product_ID(), this.order.getC_BPartner_ID(), this.order.getAD_Org_ID(), orderLine.getQtyOrdered(), false, null);
+			productPricing = new MProductPricing (orderLine.getM_Product_ID(), this.order.getC_BPartner_ID(), this.order.getAD_Org_ID(),
+					this.order.getDateOrdered(), orderLine.getQtyOrdered(), false, null);
 			productPricing.setM_PriceList_ID(this.order.getM_PriceList_ID());
 			productPricing.setPriceDate(this.order.getDateOrdered());
 

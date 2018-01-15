@@ -246,9 +246,20 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 		// Recorro y proceso lineas de la oferta
 		for (MZOfertaVentaLin ventaLin: ventaLinList){
 
+			MProduct product = (MProduct) ventaLin.getM_Product();
+
+			// Valido que el producto de esta linea no tengo una oferta definida dentro del mismo rango de fechas de esta oferta.
+			MZProductoOferta productoOferta = MZProductoOferta.getByProductDate(getCtx(), ventaLin.getM_Product_ID(), this.getStartDate(), this.getEndDate(), get_TrxName());
+			if ((productoOferta != null) && (productoOferta.get_ID() > 0)){
+				MZOfertaVenta ofertaVentaAux = (MZOfertaVenta) productoOferta.getZ_OfertaVenta();
+				m_processMsg = "Ya existe una oferta para el producto " + product.getValue() + " - " + product.getName() + " (Oferta nro.: " + ofertaVentaAux.getDocumentNo() + ")";
+				return DocAction.STATUS_Invalid;
+			}
+
 			// Genero nuevo registro en histórico de ofertas para el producto de esta linea
-			MZProductoOferta productoOferta = new MZProductoOferta(getCtx(), 0, get_TrxName());
+			productoOferta = new MZProductoOferta(getCtx(), 0, get_TrxName());
 			productoOferta.setZ_OfertaVenta_ID(this.get_ID());
+			productoOferta.setZ_OfertaVentaLin_ID(ventaLin.get_ID());
 			productoOferta.setM_Product_ID(ventaLin.getM_Product_ID());
 			productoOferta.setStartDate(this.getStartDate());
 			productoOferta.setEndDate(this.getEndDate());
@@ -262,17 +273,20 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 				if (linBP.getNewPricePO() != null){
 					if (linBP.getNewPricePO().compareTo(Env.ZERO) > 0){
 
-						// Actualizo información de ficha producto-socio
+						// Agrego oferta al histórico de este producto-socio
 						MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(getCtx(), linBP.getC_BPartner_ID(), ventaLin.getM_Product_ID(), get_TrxName());
 						if ((productoSocio == null) || (productoSocio.get_ID() <= 0)){
 							m_processMsg = "No se pudo obtener información de Producto - Socio de Negocio.";
 							return DocAction.STATUS_Invalid;
 						}
-						productoSocio.setWithOfferPO(true);
-						productoSocio.setPriceOfferPO(linBP.getNewPricePO());
-						productoSocio.setZ_OfertaVenta_ID(this.get_ID());
-						productoSocio.setC_Currency_ID_Offer(linBP.getC_Currency_ID_To());
-						productoSocio.saveEx();
+						MZProductoSocioOferta socioOferta = new MZProductoSocioOferta(getCtx(), 0, get_TrxName());
+						socioOferta.setZ_OfertaVenta_ID(this.get_ID());
+						socioOferta.setZ_OfertaVentaLin_ID(ventaLin.get_ID());
+						socioOferta.setZ_OfertaVentaLinBP_ID(linBP.get_ID());
+						socioOferta.setZ_ProductoSocio_ID(productoSocio.get_ID());
+						socioOferta.setStartDate(this.getStartDate());
+						socioOferta.setEndDate(this.getEndDate());
+						socioOferta.saveEx();
 					}
 				}
 			}
@@ -588,8 +602,6 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 			if (!this.getEndDate().after(this.getStartDate())){
 				return "Fecha Oferta Hasta no puede ser anterior a la fecha Oferta Desde.";
 			}
-
-
 
 		}
 		catch (Exception e){

@@ -31,6 +31,7 @@ import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.xpande.core.model.MZActividadDocumento;
 import org.xpande.core.utils.SequenceUtils;
 
@@ -562,6 +563,10 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 			// Obtiene documentos de actualizacion pvp
 			this.getDocActualizacionPVP();
 
+			// Obtiene documentos de ofertas periódicas
+			//this.getDocOfertas();
+
+
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);
@@ -709,6 +714,83 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 		}
 		finally {
 		    DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+	}
+
+
+	/***
+	 * Obtiene documentos de Ofertas Periódicas a considerarse en este proceso.
+	 * Xpande. Created by Gabriel Vila on 1/15/18.
+	 */
+	private void getDocOfertas() {
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+
+			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
+			int zOfertaVentaID = 0;
+			MZConfirmacionEtiquetaDoc etiquetaDoc = null;
+			int adTableID = MTable.getTable_ID(I_Z_OfertaVenta.Table_Name);
+
+			sql = " select cab.z_ofertaventa_id, cab.c_doctype_id, cab.documentno, cab.startdate, cab.updated, cab.updatedby, " +
+					" lin.c_currency_id_so as c_currency_id, lin.m_product_id, lin.newpriceso, linorg.ad_orgtrx_id " +
+					" from z_ofertaventalinorg linorg " +
+					" inner join z_ofertaventalin lin on linorg.z_ofertaventalin_id = lin.z_ofertaventalin_id " +
+					" inner join z_ofertaventa cab on lin.z_ofertaventa_id = cab.z_ofertaventa_id " +
+					" where linorg.ad_orgtrx_id =" + this.getAD_Org_ID() +
+					" and lin.newpriceso > 0 " +
+					" and cab.docstatus='CO' " +
+					" and (cab.startdate <='" + fechaHoy + "' and cab.enddate >='" + fechaHoy + "') " +
+					" and cab.z_ofertaventa_id not in " +
+					" (select confdoc.record_id from z_confirmacionetiquetadoc confdoc " +
+					" inner join z_confirmacionetiqueta conf on confdoc.z_confirmacionetiqueta_id = conf.z_confirmacionetiqueta_id " +
+					" where confdoc.isselected ='Y' and confdoc.ad_table_id =" + adTableID +
+					" and conf.ad_org_id =" + this.getAD_Org_ID() + ") " +
+					" order by cab.updated, cab.z_ofertaventa_id ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+
+				// Corte por id de documento de gestión de precios
+				if (rs.getInt("z_ofertaventa_id") != zOfertaVentaID){
+					// Nuevo documento
+					etiquetaDoc = new MZConfirmacionEtiquetaDoc(getCtx(), 0, get_TrxName());
+					etiquetaDoc.setZ_ConfirmacionEtiqueta_ID(this.get_ID());
+					etiquetaDoc.setAD_Table_ID(adTableID);
+					etiquetaDoc.setRecord_ID(rs.getInt("z_ofertaventa_id"));
+					etiquetaDoc.setAD_User_ID(rs.getInt("updatedby"));
+					etiquetaDoc.setC_DocTypeTarget_ID(rs.getInt("c_doctype_id"));
+					etiquetaDoc.setDateDoc(rs.getTimestamp("updated"));
+					etiquetaDoc.setDocumentNoRef(rs.getString("documentno"));
+					etiquetaDoc.save();
+
+					zOfertaVentaID = rs.getInt("z_ofertaventa_id");
+				}
+
+				// Nuevo producto
+				MZConfirmacionEtiquetaProd etiquetaProd = new MZConfirmacionEtiquetaProd(getCtx(), 0, get_TrxName());
+				etiquetaProd.setZ_ConfirmacionEtiquetaDoc_ID(etiquetaDoc.get_ID());
+				etiquetaProd.setM_Product_ID(rs.getInt("m_product_id"));
+				etiquetaProd.setPriceSO(rs.getBigDecimal("newpriceso"));
+				etiquetaProd.setDateValidSO(rs.getTimestamp("startdate"));
+				etiquetaProd.setC_Currency_ID_SO(rs.getInt("c_currency_id"));
+				etiquetaProd.setQtyCount(1);
+				etiquetaProd.saveEx();
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
 

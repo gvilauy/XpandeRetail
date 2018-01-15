@@ -125,7 +125,8 @@ public class SeleccionProductosCompProv extends SeleccionProductosCompProvAbstra
 		MProductPricing productPricing = null;
 
 		try{
-			productPricing = new MProductPricing (invoiceLine.getM_Product_ID(), this.invoice.getC_BPartner_ID(), this.invoice.getAD_Org_ID(), invoiceLine.getQtyInvoiced(), false, null);
+			productPricing = new MProductPricing (invoiceLine.getM_Product_ID(), this.invoice.getC_BPartner_ID(), this.invoice.getAD_Org_ID(),
+					this.invoice.getDateInvoiced(), invoiceLine.getQtyInvoiced(), false, null);
 			productPricing.setM_PriceList_ID(priceList.get_ID());
 			productPricing.setPriceDate(this.invoice.getDateInvoiced());
 
