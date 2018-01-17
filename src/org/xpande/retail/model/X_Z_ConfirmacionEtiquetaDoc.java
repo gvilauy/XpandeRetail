@@ -31,7 +31,7 @@ public class X_Z_ConfirmacionEtiquetaDoc extends PO implements I_Z_ConfirmacionE
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170921L;
+	private static final long serialVersionUID = 20180115L;
 
     /** Standard Constructor */
     public X_Z_ConfirmacionEtiquetaDoc (Properties ctx, int Z_ConfirmacionEtiquetaDoc_ID, String trxName)
@@ -237,6 +237,23 @@ public class X_Z_ConfirmacionEtiquetaDoc extends PO implements I_Z_ConfirmacionE
 	public Timestamp getDateDoc () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_DateDoc);
+	}
+
+	/** Set DateToPos.
+		@param DateToPos 
+		Fecha en la que se debe comunicar información al POS en módulo de Retail
+	  */
+	public void setDateToPos (Timestamp DateToPos)
+	{
+		set_Value (COLUMNNAME_DateToPos, DateToPos);
+	}
+
+	/** Get DateToPos.
+		@return Fecha en la que se debe comunicar información al POS en módulo de Retail
+	  */
+	public Timestamp getDateToPos () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DateToPos);
 	}
 
 	/** Set DocumentNoRef.

@@ -165,6 +165,19 @@ public interface I_Z_ConfirmacionEtiquetaDoc
 	  */
 	public Timestamp getDateDoc();
 
+    /** Column name DateToPos */
+    public static final String COLUMNNAME_DateToPos = "DateToPos";
+
+	/** Set DateToPos.
+	  * Fecha en la que se debe comunicar información al POS en módulo de Retail
+	  */
+	public void setDateToPos(Timestamp DateToPos);
+
+	/** Get DateToPos.
+	  * Fecha en la que se debe comunicar información al POS en módulo de Retail
+	  */
+	public Timestamp getDateToPos();
+
     /** Column name DocumentNoRef */
     public static final String COLUMNNAME_DocumentNoRef = "DocumentNoRef";
 

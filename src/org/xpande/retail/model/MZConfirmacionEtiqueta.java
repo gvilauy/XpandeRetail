@@ -344,6 +344,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					" where cab.z_confirmacionetiqueta_id =" + this.get_ID() +
 					//" and cdoc.isconfirmed='Y' " +
 					" and cprod.isprinted='Y' " +
+					" and cprod.WithOfferSO='N' " +   // No imprimo etiquetas de productos que estan actualmente en una oferta vigente
 					" order by prod.z_productoseccion_id, prod.z_productorubro_id, prod.z_productofamilia_id, prod.z_productosubfamilia_id, " +
 					" cdoc.c_bpartner_id, cdoc.z_lineaproductosocio_id ";
 
@@ -586,6 +587,9 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 		ResultSet rs = null;
 
 		try{
+
+			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
 			int zActualizacionPVPID = 0;
 			MZConfirmacionEtiquetaDoc etiquetaDoc = null;
 			int adTableID = MTable.getTable_ID(I_Z_ActualizacionPVP.Table_Name);
@@ -625,6 +629,15 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					zActualizacionPVPID = rs.getInt("z_actualizacionpvp_id");
 				}
 
+				// Verifico si este producto esta en oferta en este momento y marco flag de esa situación.
+				// En caso de estar en oferta actualmente, este producto no debe imprimir etiqueta con el nuevo precio de venta.
+				// Tampoco será enviado al POS.
+				boolean tieneOfertaSO = false;
+				MZProductoOferta productoOferta = MZProductoOferta.getByProductDateOrg(getCtx(), rs.getInt("m_product_id"), fechaHoy, fechaHoy, this.getAD_Org_ID(), get_TrxName());
+				if ((productoOferta != null) && (productoOferta.get_ID() > 0)){
+					tieneOfertaSO = true;
+				}
+
 				// Nuevo producto
 				MZConfirmacionEtiquetaProd etiquetaProd = new MZConfirmacionEtiquetaProd(getCtx(), 0, get_TrxName());
 				etiquetaProd.setZ_ConfirmacionEtiquetaDoc_ID(etiquetaDoc.get_ID());
@@ -632,6 +645,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 				etiquetaProd.setPriceSO(rs.getBigDecimal("newpriceso"));
 				etiquetaProd.setDateValidSO(rs.getTimestamp("datedoc"));
 				etiquetaProd.setC_Currency_ID_SO(rs.getInt("c_currency_id"));
+				etiquetaProd.setWithOfferSO(tieneOfertaSO);
 				etiquetaProd.setQtyCount(1);
 				etiquetaProd.saveEx();
 			}
@@ -657,6 +671,9 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 		ResultSet rs = null;
 
 		try{
+
+			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
 			int zPreciosProvCabID = 0;
 			MZConfirmacionEtiquetaDoc etiquetaDoc = null;
 			int adTableID = MTable.getTable_ID(I_Z_PreciosProvCab.Table_Name);
@@ -699,6 +716,15 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					zPreciosProvCabID = rs.getInt("z_preciosprovcab_id");
 				}
 
+				// Verifico si este producto esta en oferta en este momento y marco flag de esa situación.
+				// En caso de estar en oferta actualmente, este producto no debe imprimir etiqueta con el nuevo precio de venta.
+				// Tampoco será enviado al POS.
+				boolean tieneOfertaSO = false;
+				MZProductoOferta productoOferta = MZProductoOferta.getByProductDateOrg(getCtx(), rs.getInt("m_product_id"), fechaHoy, fechaHoy, this.getAD_Org_ID(), get_TrxName());
+				if ((productoOferta != null) && (productoOferta.get_ID() > 0)){
+					tieneOfertaSO = true;
+				}
+
 				// Nuevo producto
 				MZConfirmacionEtiquetaProd etiquetaProd = new MZConfirmacionEtiquetaProd(getCtx(), 0, get_TrxName());
 				etiquetaProd.setZ_ConfirmacionEtiquetaDoc_ID(etiquetaDoc.get_ID());
@@ -706,6 +732,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 				etiquetaProd.setPriceSO(rs.getBigDecimal("newpriceso"));
 				etiquetaProd.setDateValidSO(rs.getTimestamp("datevalidpo"));
 				etiquetaProd.setC_Currency_ID_SO(rs.getInt("c_currency_id_so"));
+				etiquetaProd.setWithOfferSO(tieneOfertaSO);
 				etiquetaProd.setQtyCount(1);
 				etiquetaProd.saveEx();
 			}
@@ -774,6 +801,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					etiquetaDoc.setC_DocTypeTarget_ID(rs.getInt("c_doctype_id"));
 					etiquetaDoc.setDateDoc(rs.getTimestamp("updated"));
 					etiquetaDoc.setDocumentNoRef(rs.getString("documentno"));
+					etiquetaDoc.setDateToPos(rs.getTimestamp("startdate"));
 					etiquetaDoc.save();
 
 					zOfertaVentaID = rs.getInt("z_ofertaventa_id");
@@ -786,6 +814,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 				etiquetaProd.setPriceSO(rs.getBigDecimal("newpriceso"));
 				etiquetaProd.setDateValidSO(rs.getTimestamp("startdate"));
 				etiquetaProd.setC_Currency_ID_SO(rs.getInt("c_currency_id"));
+				etiquetaProd.setWithOfferSO(false);  // Este producto en si mismo esta entrando a comuniacion al local para imprimirse por una cercana oferta.
 				etiquetaProd.setQtyCount(1);
 				etiquetaProd.saveEx();
 			}
@@ -855,6 +884,14 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 	protected boolean beforeSave(boolean newRecord) {
 
 		try{
+
+			// No acepto organización *
+			if (this.getAD_Org_ID() <= 0){
+				log.saveError("ATENCIÓN", "Debe Indicar Organización a considerar (no se acepta organización = * )");
+				return false;
+
+			}
+
 			if (newRecord){
 				// Genera ID para impresión de etiquetas. Este ID es el que se pasa por parametro al reporte.
 				int impresionID = SequenceUtils.getNextID_NoTable(get_TrxName(), "impresion_id");

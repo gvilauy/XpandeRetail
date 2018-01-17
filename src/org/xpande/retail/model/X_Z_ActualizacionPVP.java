@@ -31,7 +31,7 @@ public class X_Z_ActualizacionPVP extends PO implements I_Z_ActualizacionPVP, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170719L;
+	private static final long serialVersionUID = 20180117L;
 
     /** Standard Constructor */
     public X_Z_ActualizacionPVP (Properties ctx, int Z_ActualizacionPVP_ID, String trxName)
@@ -159,6 +159,23 @@ public class X_Z_ActualizacionPVP extends PO implements I_Z_ActualizacionPVP, I_
 	public Timestamp getDateDoc () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_DateDoc);
+	}
+
+	/** Set DateToPos.
+		@param DateToPos 
+		Fecha en la que se debe comunicar información al POS en módulo de Retail
+	  */
+	public void setDateToPos (Timestamp DateToPos)
+	{
+		set_Value (COLUMNNAME_DateToPos, DateToPos);
+	}
+
+	/** Get DateToPos.
+		@return Fecha en la que se debe comunicar información al POS en módulo de Retail
+	  */
+	public Timestamp getDateToPos () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DateToPos);
 	}
 
 	/** Set Description.
@@ -391,6 +408,20 @@ public class X_Z_ActualizacionPVP extends PO implements I_Z_ActualizacionPVP, I_
 		return false;
 	}
 
+	/** Set ProcessButton.
+		@param ProcessButton ProcessButton	  */
+	public void setProcessButton (String ProcessButton)
+	{
+		set_Value (COLUMNNAME_ProcessButton, ProcessButton);
+	}
+
+	/** Get ProcessButton.
+		@return ProcessButton	  */
+	public String getProcessButton () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton);
+	}
+
 	/** Set Processed.
 		@param Processed 
 		The document has been processed
@@ -415,6 +446,27 @@ public class X_Z_ActualizacionPVP extends PO implements I_Z_ActualizacionPVP, I_
 		return false;
 	}
 
+	/** Set Process Now.
+		@param Processing Process Now	  */
+	public void setProcessing (boolean Processing)
+	{
+		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+	}
+
+	/** Get Process Now.
+		@return Process Now	  */
+	public boolean isProcessing () 
+	{
+		Object oo = get_Value(COLUMNNAME_Processing);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Z_ActualizacionPVP ID.
 		@param Z_ActualizacionPVP_ID Z_ActualizacionPVP ID	  */
 	public void setZ_ActualizacionPVP_ID (int Z_ActualizacionPVP_ID)
@@ -430,6 +482,31 @@ public class X_Z_ActualizacionPVP extends PO implements I_Z_ActualizacionPVP, I_
 	public int getZ_ActualizacionPVP_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ActualizacionPVP_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_OfertaVenta getZ_OfertaVenta() throws RuntimeException
+    {
+		return (I_Z_OfertaVenta)MTable.get(getCtx(), I_Z_OfertaVenta.Table_Name)
+			.getPO(getZ_OfertaVenta_ID(), get_TrxName());	}
+
+	/** Set Z_OfertaVenta ID.
+		@param Z_OfertaVenta_ID Z_OfertaVenta ID	  */
+	public void setZ_OfertaVenta_ID (int Z_OfertaVenta_ID)
+	{
+		if (Z_OfertaVenta_ID < 1) 
+			set_Value (COLUMNNAME_Z_OfertaVenta_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_OfertaVenta_ID, Integer.valueOf(Z_OfertaVenta_ID));
+	}
+
+	/** Get Z_OfertaVenta ID.
+		@return Z_OfertaVenta ID	  */
+	public int getZ_OfertaVenta_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_OfertaVenta_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

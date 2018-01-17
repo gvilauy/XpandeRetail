@@ -159,6 +159,15 @@ public interface I_Z_ComunicacionPOS
 	  */
 	public String getDocumentNo();
 
+    /** Column name ErrorMsg */
+    public static final String COLUMNNAME_ErrorMsg = "ErrorMsg";
+
+	/** Set Error Msg	  */
+	public void setErrorMsg(String ErrorMsg);
+
+	/** Get Error Msg	  */
+	public String getErrorMsg();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 

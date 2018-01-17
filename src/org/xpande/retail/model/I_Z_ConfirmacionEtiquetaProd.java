@@ -96,14 +96,50 @@ public interface I_Z_ConfirmacionEtiquetaProd
     public static final String COLUMNNAME_DateValidSO = "DateValidSO";
 
 	/** Set DateValidSO.
-	  * Fecha Vigencia Compra
+	  * Fecha Vigencia Venta
 	  */
 	public void setDateValidSO(Timestamp DateValidSO);
 
 	/** Get DateValidSO.
-	  * Fecha Vigencia Compra
+	  * Fecha Vigencia Venta
 	  */
 	public Timestamp getDateValidSO();
+
+    /** Column name ID1 */
+    public static final String COLUMNNAME_ID1 = "ID1";
+
+	/** Set ID1	  */
+	public void setID1(int ID1);
+
+	/** Get ID1	  */
+	public int getID1();
+
+    /** Column name ID2 */
+    public static final String COLUMNNAME_ID2 = "ID2";
+
+	/** Set ID2	  */
+	public void setID2(int ID2);
+
+	/** Get ID2	  */
+	public int getID2();
+
+    /** Column name ID3 */
+    public static final String COLUMNNAME_ID3 = "ID3";
+
+	/** Set ID3	  */
+	public void setID3(int ID3);
+
+	/** Get ID3	  */
+	public int getID3();
+
+    /** Column name ID4 */
+    public static final String COLUMNNAME_ID4 = "ID4";
+
+	/** Set ID4	  */
+	public void setID4(int ID4);
+
+	/** Get ID4	  */
+	public int getID4();
 
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
@@ -201,6 +237,19 @@ public interface I_Z_ConfirmacionEtiquetaProd
 	  */
 	public int getUpdatedBy();
 
+    /** Column name WithOfferSO */
+    public static final String COLUMNNAME_WithOfferSO = "WithOfferSO";
+
+	/** Set WithOfferSO.
+	  * Si tiene o no oferta en precio de venta en Retail
+	  */
+	public void setWithOfferSO(boolean WithOfferSO);
+
+	/** Get WithOfferSO.
+	  * Si tiene o no oferta en precio de venta en Retail
+	  */
+	public boolean isWithOfferSO();
+
     /** Column name Z_ConfirmacionEtiquetaDoc_ID */
     public static final String COLUMNNAME_Z_ConfirmacionEtiquetaDoc_ID = "Z_ConfirmacionEtiquetaDoc_ID";
 
@@ -220,4 +269,48 @@ public interface I_Z_ConfirmacionEtiquetaProd
 
 	/** Get Z_ConfirmacionEtiquetaProd ID	  */
 	public int getZ_ConfirmacionEtiquetaProd_ID();
+
+    /** Column name Z_ProductoFamilia_ID */
+    public static final String COLUMNNAME_Z_ProductoFamilia_ID = "Z_ProductoFamilia_ID";
+
+	/** Set Z_ProductoFamilia ID	  */
+	public void setZ_ProductoFamilia_ID(int Z_ProductoFamilia_ID);
+
+	/** Get Z_ProductoFamilia ID	  */
+	public int getZ_ProductoFamilia_ID();
+
+	public I_Z_ProductoFamilia getZ_ProductoFamilia() throws RuntimeException;
+
+    /** Column name Z_ProductoRubro_ID */
+    public static final String COLUMNNAME_Z_ProductoRubro_ID = "Z_ProductoRubro_ID";
+
+	/** Set Z_ProductoRubro ID	  */
+	public void setZ_ProductoRubro_ID(int Z_ProductoRubro_ID);
+
+	/** Get Z_ProductoRubro ID	  */
+	public int getZ_ProductoRubro_ID();
+
+	public I_Z_ProductoRubro getZ_ProductoRubro() throws RuntimeException;
+
+    /** Column name Z_ProductoSeccion_ID */
+    public static final String COLUMNNAME_Z_ProductoSeccion_ID = "Z_ProductoSeccion_ID";
+
+	/** Set Z_ProductoSeccion ID	  */
+	public void setZ_ProductoSeccion_ID(int Z_ProductoSeccion_ID);
+
+	/** Get Z_ProductoSeccion ID	  */
+	public int getZ_ProductoSeccion_ID();
+
+	public I_Z_ProductoSeccion getZ_ProductoSeccion() throws RuntimeException;
+
+    /** Column name Z_ProductoSubfamilia_ID */
+    public static final String COLUMNNAME_Z_ProductoSubfamilia_ID = "Z_ProductoSubfamilia_ID";
+
+	/** Set Z_ProductoSubfamilia ID	  */
+	public void setZ_ProductoSubfamilia_ID(int Z_ProductoSubfamilia_ID);
+
+	/** Get Z_ProductoSubfamilia ID	  */
+	public int getZ_ProductoSubfamilia_ID();
+
+	public I_Z_ProductoSubfamilia getZ_ProductoSubfamilia() throws RuntimeException;
 }

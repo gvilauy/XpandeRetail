@@ -31,7 +31,7 @@ public class X_Z_ComunicacionPOS extends PO implements I_Z_ComunicacionPOS, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170913L;
+	private static final long serialVersionUID = 20180117L;
 
     /** Standard Constructor */
     public X_Z_ComunicacionPOS (Properties ctx, int Z_ComunicacionPOS_ID, String trxName)
@@ -256,6 +256,20 @@ public class X_Z_ComunicacionPOS extends PO implements I_Z_ComunicacionPOS, I_Pe
 	public String getDocumentNo () 
 	{
 		return (String)get_Value(COLUMNNAME_DocumentNo);
+	}
+
+	/** Set Error Msg.
+		@param ErrorMsg Error Msg	  */
+	public void setErrorMsg (String ErrorMsg)
+	{
+		set_Value (COLUMNNAME_ErrorMsg, ErrorMsg);
+	}
+
+	/** Get Error Msg.
+		@return Error Msg	  */
+	public String getErrorMsg () 
+	{
+		return (String)get_Value(COLUMNNAME_ErrorMsg);
 	}
 
 	/** Set Approved.

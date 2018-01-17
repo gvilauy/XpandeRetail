@@ -31,7 +31,7 @@ public class X_Z_OfertaVenta extends PO implements I_Z_OfertaVenta, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180110L;
+	private static final long serialVersionUID = 20180117L;
 
     /** Standard Constructor */
     public X_Z_OfertaVenta (Properties ctx, int Z_OfertaVenta_ID, String trxName)
@@ -468,6 +468,31 @@ public class X_Z_OfertaVenta extends PO implements I_Z_OfertaVenta, I_Persistent
 	public Timestamp getStartDate () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_StartDate);
+	}
+
+	public I_Z_ActualizacionPVP getZ_ActualizacionPVP() throws RuntimeException
+    {
+		return (I_Z_ActualizacionPVP)MTable.get(getCtx(), I_Z_ActualizacionPVP.Table_Name)
+			.getPO(getZ_ActualizacionPVP_ID(), get_TrxName());	}
+
+	/** Set Z_ActualizacionPVP ID.
+		@param Z_ActualizacionPVP_ID Z_ActualizacionPVP ID	  */
+	public void setZ_ActualizacionPVP_ID (int Z_ActualizacionPVP_ID)
+	{
+		if (Z_ActualizacionPVP_ID < 1) 
+			set_Value (COLUMNNAME_Z_ActualizacionPVP_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_ActualizacionPVP_ID, Integer.valueOf(Z_ActualizacionPVP_ID));
+	}
+
+	/** Get Z_ActualizacionPVP ID.
+		@return Z_ActualizacionPVP ID	  */
+	public int getZ_ActualizacionPVP_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ActualizacionPVP_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Z_OfertaVenta ID.

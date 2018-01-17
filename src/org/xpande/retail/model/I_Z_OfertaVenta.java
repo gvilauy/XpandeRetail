@@ -314,6 +314,17 @@ public interface I_Z_OfertaVenta
 	  */
 	public int getUpdatedBy();
 
+    /** Column name Z_ActualizacionPVP_ID */
+    public static final String COLUMNNAME_Z_ActualizacionPVP_ID = "Z_ActualizacionPVP_ID";
+
+	/** Set Z_ActualizacionPVP ID	  */
+	public void setZ_ActualizacionPVP_ID(int Z_ActualizacionPVP_ID);
+
+	/** Get Z_ActualizacionPVP ID	  */
+	public int getZ_ActualizacionPVP_ID();
+
+	public I_Z_ActualizacionPVP getZ_ActualizacionPVP() throws RuntimeException;
+
     /** Column name Z_OfertaVenta_ID */
     public static final String COLUMNNAME_Z_OfertaVenta_ID = "Z_OfertaVenta_ID";
 

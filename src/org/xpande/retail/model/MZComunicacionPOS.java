@@ -31,6 +31,7 @@ import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.xpande.core.model.I_Z_ProductoUPC;
 import org.xpande.core.model.MZActividadDocumento;
 import org.xpande.sisteco.model.I_Z_SistecoInterfaceOut;
@@ -343,9 +344,13 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 
 		try{
 
+			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
 			// Actualizo marca de documentos
 			action = " update z_confirmacionetiquetadoc set comunicadopos='Y' " +
-						" where isselected='Y' and isconfirmed='Y' and z_confirmacionetiqueta_id in " +
+						" where comunicadopos='N' and isselected='Y' and isconfirmed='Y' " +
+						" and ((DateToPos is null) or (DateToPos <='" + fechaHoy + "')) " +
+						" and z_confirmacionetiqueta_id in " +
 						" (select z_confirmacionetiqueta_id from z_confirmacionetiqueta where z_comunicacionpos_id =" + this.get_ID() + ")";
 			DB.executeUpdateEx(action, get_TrxName());
 
@@ -530,7 +535,8 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 
 		    sql = " select z_confirmacionetiqueta_id " +
 					" from z_confirmacionetiqueta " +
-					" where docstatus='CO' " +
+					" where ad_org_id =" + this.getAD_Org_ID() +
+					" and docstatus='CO' " +
 					" and z_comunicacionpos_id is null " +
 					" and comunicadopos ='N' " +
 					" order by datedoc";
@@ -556,6 +562,9 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 		return message;
 	}
 
+
+
+
 	/***
 	 * Elimina información de documentos asociados a este modelo.
 	 * Xpande. Created by Gabriel Vila on 9/13/17.
@@ -573,6 +582,13 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 
 	@Override
 	protected boolean beforeSave(boolean newRecord) {
+
+		// No acepto organización *
+		if (this.getAD_Org_ID() <= 0){
+			log.saveError("ATENCIÓN", "Debe Indicar Organización a considerar (no se acepta organización = * )");
+			return false;
+
+		}
 
 		// Si se indica comunicar solo clientes y codigos de barra, me aseguro de no tener documentos cargados para comunicacion de precios
 		if (this.isOnlyBasicData()){

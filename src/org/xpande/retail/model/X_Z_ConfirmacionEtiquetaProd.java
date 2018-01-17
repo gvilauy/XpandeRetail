@@ -33,7 +33,7 @@ public class X_Z_ConfirmacionEtiquetaProd extends PO implements I_Z_Confirmacion
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170712L;
+	private static final long serialVersionUID = 20180117L;
 
     /** Standard Constructor */
     public X_Z_ConfirmacionEtiquetaProd (Properties ctx, int Z_ConfirmacionEtiquetaProd_ID, String trxName)
@@ -50,6 +50,8 @@ public class X_Z_ConfirmacionEtiquetaProd extends PO implements I_Z_Confirmacion
 			setM_Product_ID (0);
 			setPriceSO (Env.ZERO);
 			setQtyCount (0);
+			setWithOfferSO (false);
+// N
 			setZ_ConfirmacionEtiquetaDoc_ID (0);
 			setZ_ConfirmacionEtiquetaProd_ID (0);
         } */
@@ -105,7 +107,7 @@ public class X_Z_ConfirmacionEtiquetaProd extends PO implements I_Z_Confirmacion
 
 	/** Set DateValidSO.
 		@param DateValidSO 
-		Fecha Vigencia Compra
+		Fecha Vigencia Venta
 	  */
 	public void setDateValidSO (Timestamp DateValidSO)
 	{
@@ -113,11 +115,79 @@ public class X_Z_ConfirmacionEtiquetaProd extends PO implements I_Z_Confirmacion
 	}
 
 	/** Get DateValidSO.
-		@return Fecha Vigencia Compra
+		@return Fecha Vigencia Venta
 	  */
 	public Timestamp getDateValidSO () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_DateValidSO);
+	}
+
+	/** Set ID1.
+		@param ID1 ID1	  */
+	public void setID1 (int ID1)
+	{
+		set_Value (COLUMNNAME_ID1, Integer.valueOf(ID1));
+	}
+
+	/** Get ID1.
+		@return ID1	  */
+	public int getID1 () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_ID1);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set ID2.
+		@param ID2 ID2	  */
+	public void setID2 (int ID2)
+	{
+		set_Value (COLUMNNAME_ID2, Integer.valueOf(ID2));
+	}
+
+	/** Get ID2.
+		@return ID2	  */
+	public int getID2 () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_ID2);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set ID3.
+		@param ID3 ID3	  */
+	public void setID3 (int ID3)
+	{
+		set_Value (COLUMNNAME_ID3, Integer.valueOf(ID3));
+	}
+
+	/** Get ID3.
+		@return ID3	  */
+	public int getID3 () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_ID3);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set ID4.
+		@param ID4 ID4	  */
+	public void setID4 (int ID4)
+	{
+		set_Value (COLUMNNAME_ID4, Integer.valueOf(ID4));
+	}
+
+	/** Get ID4.
+		@return ID4	  */
+	public int getID4 () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_ID4);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set IsOmitted.
@@ -236,6 +306,30 @@ public class X_Z_ConfirmacionEtiquetaProd extends PO implements I_Z_Confirmacion
 		return ii.intValue();
 	}
 
+	/** Set WithOfferSO.
+		@param WithOfferSO 
+		Si tiene o no oferta en precio de venta en Retail
+	  */
+	public void setWithOfferSO (boolean WithOfferSO)
+	{
+		set_Value (COLUMNNAME_WithOfferSO, Boolean.valueOf(WithOfferSO));
+	}
+
+	/** Get WithOfferSO.
+		@return Si tiene o no oferta en precio de venta en Retail
+	  */
+	public boolean isWithOfferSO () 
+	{
+		Object oo = get_Value(COLUMNNAME_WithOfferSO);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	public I_Z_ConfirmacionEtiquetaDoc getZ_ConfirmacionEtiquetaDoc() throws RuntimeException
     {
 		return (I_Z_ConfirmacionEtiquetaDoc)MTable.get(getCtx(), I_Z_ConfirmacionEtiquetaDoc.Table_Name)
@@ -276,6 +370,106 @@ public class X_Z_ConfirmacionEtiquetaProd extends PO implements I_Z_Confirmacion
 	public int getZ_ConfirmacionEtiquetaProd_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ConfirmacionEtiquetaProd_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_ProductoFamilia getZ_ProductoFamilia() throws RuntimeException
+    {
+		return (I_Z_ProductoFamilia)MTable.get(getCtx(), I_Z_ProductoFamilia.Table_Name)
+			.getPO(getZ_ProductoFamilia_ID(), get_TrxName());	}
+
+	/** Set Z_ProductoFamilia ID.
+		@param Z_ProductoFamilia_ID Z_ProductoFamilia ID	  */
+	public void setZ_ProductoFamilia_ID (int Z_ProductoFamilia_ID)
+	{
+		if (Z_ProductoFamilia_ID < 1) 
+			set_Value (COLUMNNAME_Z_ProductoFamilia_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_ProductoFamilia_ID, Integer.valueOf(Z_ProductoFamilia_ID));
+	}
+
+	/** Get Z_ProductoFamilia ID.
+		@return Z_ProductoFamilia ID	  */
+	public int getZ_ProductoFamilia_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ProductoFamilia_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_ProductoRubro getZ_ProductoRubro() throws RuntimeException
+    {
+		return (I_Z_ProductoRubro)MTable.get(getCtx(), I_Z_ProductoRubro.Table_Name)
+			.getPO(getZ_ProductoRubro_ID(), get_TrxName());	}
+
+	/** Set Z_ProductoRubro ID.
+		@param Z_ProductoRubro_ID Z_ProductoRubro ID	  */
+	public void setZ_ProductoRubro_ID (int Z_ProductoRubro_ID)
+	{
+		if (Z_ProductoRubro_ID < 1) 
+			set_Value (COLUMNNAME_Z_ProductoRubro_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_ProductoRubro_ID, Integer.valueOf(Z_ProductoRubro_ID));
+	}
+
+	/** Get Z_ProductoRubro ID.
+		@return Z_ProductoRubro ID	  */
+	public int getZ_ProductoRubro_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ProductoRubro_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_ProductoSeccion getZ_ProductoSeccion() throws RuntimeException
+    {
+		return (I_Z_ProductoSeccion)MTable.get(getCtx(), I_Z_ProductoSeccion.Table_Name)
+			.getPO(getZ_ProductoSeccion_ID(), get_TrxName());	}
+
+	/** Set Z_ProductoSeccion ID.
+		@param Z_ProductoSeccion_ID Z_ProductoSeccion ID	  */
+	public void setZ_ProductoSeccion_ID (int Z_ProductoSeccion_ID)
+	{
+		if (Z_ProductoSeccion_ID < 1) 
+			set_Value (COLUMNNAME_Z_ProductoSeccion_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_ProductoSeccion_ID, Integer.valueOf(Z_ProductoSeccion_ID));
+	}
+
+	/** Get Z_ProductoSeccion ID.
+		@return Z_ProductoSeccion ID	  */
+	public int getZ_ProductoSeccion_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ProductoSeccion_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_ProductoSubfamilia getZ_ProductoSubfamilia() throws RuntimeException
+    {
+		return (I_Z_ProductoSubfamilia)MTable.get(getCtx(), I_Z_ProductoSubfamilia.Table_Name)
+			.getPO(getZ_ProductoSubfamilia_ID(), get_TrxName());	}
+
+	/** Set Z_ProductoSubfamilia ID.
+		@param Z_ProductoSubfamilia_ID Z_ProductoSubfamilia ID	  */
+	public void setZ_ProductoSubfamilia_ID (int Z_ProductoSubfamilia_ID)
+	{
+		if (Z_ProductoSubfamilia_ID < 1) 
+			set_Value (COLUMNNAME_Z_ProductoSubfamilia_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_ProductoSubfamilia_ID, Integer.valueOf(Z_ProductoSubfamilia_ID));
+	}
+
+	/** Get Z_ProductoSubfamilia ID.
+		@return Z_ProductoSubfamilia ID	  */
+	public int getZ_ProductoSubfamilia_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ProductoSubfamilia_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
