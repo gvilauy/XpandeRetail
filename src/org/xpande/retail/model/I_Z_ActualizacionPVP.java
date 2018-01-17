@@ -122,6 +122,19 @@ public interface I_Z_ActualizacionPVP
 	  */
 	public Timestamp getDateDoc();
 
+    /** Column name DateToPos */
+    public static final String COLUMNNAME_DateToPos = "DateToPos";
+
+	/** Set DateToPos.
+	  * Fecha en la que se debe comunicar información al POS en módulo de Retail
+	  */
+	public void setDateToPos(Timestamp DateToPos);
+
+	/** Get DateToPos.
+	  * Fecha en la que se debe comunicar información al POS en módulo de Retail
+	  */
+	public Timestamp getDateToPos();
+
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
 
@@ -243,6 +256,15 @@ public interface I_Z_ActualizacionPVP
 	  */
 	public boolean isOnlyOneOrg();
 
+    /** Column name ProcessButton */
+    public static final String COLUMNNAME_ProcessButton = "ProcessButton";
+
+	/** Set ProcessButton	  */
+	public void setProcessButton(String ProcessButton);
+
+	/** Get ProcessButton	  */
+	public String getProcessButton();
+
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
@@ -255,6 +277,15 @@ public interface I_Z_ActualizacionPVP
 	  * The document has been processed
 	  */
 	public boolean isProcessed();
+
+    /** Column name Processing */
+    public static final String COLUMNNAME_Processing = "Processing";
+
+	/** Set Process Now	  */
+	public void setProcessing(boolean Processing);
+
+	/** Get Process Now	  */
+	public boolean isProcessing();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -280,4 +311,15 @@ public interface I_Z_ActualizacionPVP
 
 	/** Get Z_ActualizacionPVP ID	  */
 	public int getZ_ActualizacionPVP_ID();
+
+    /** Column name Z_OfertaVenta_ID */
+    public static final String COLUMNNAME_Z_OfertaVenta_ID = "Z_OfertaVenta_ID";
+
+	/** Set Z_OfertaVenta ID	  */
+	public void setZ_OfertaVenta_ID(int Z_OfertaVenta_ID);
+
+	/** Get Z_OfertaVenta ID	  */
+	public int getZ_OfertaVenta_ID();
+
+	public I_Z_OfertaVenta getZ_OfertaVenta() throws RuntimeException;
 }

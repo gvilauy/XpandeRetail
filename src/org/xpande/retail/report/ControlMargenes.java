@@ -108,7 +108,7 @@ public class ControlMargenes extends SvrProcess {
         try{
 
             // Cadenas de insert en tablas del reporte
-            action = " insert into " + TABLA_REPORTE + " (ad_client_id, ad_org_id, ad_user_id, c_bpartner_id, m_product_id, pricefinalmargin, margintolerance, margin, estadomargen) ";
+            action = " insert into " + TABLA_REPORTE + " (ad_client_id, ad_org_id, ad_user_id, c_bpartner_id, m_product_id, pricefinalmargin, pricefinal, priceso, margintolerance, margin, estadomargen) ";
 
             // Armo condicion where dinámica del reporte
             String whereClause = "";
@@ -128,24 +128,28 @@ public class ControlMargenes extends SvrProcess {
             // Control contra margenes de Productos
             if (this.estadoMargen.equalsIgnoreCase("RANGO")){
 
-                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, tol4, margen4, control4 as control " +
+                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, " +
+                        " pricefinal, priceso, tol4, margen4, control4 as control " +
                         " from zv_comercial_gralmargen " +
                         " where control1 ='N' and control2 ='N' and control3 ='N' and control4 ='N' AND margen4 is not null";
             }
             else if (this.estadoMargen.equalsIgnoreCase("BAJO")){
 
-                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, tol4, margen4, control4 as control " +
+                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, " +
+                        " pricefinal, priceso, tol4, margen4, control4 as control " +
                         " from zv_comercial_gralmargen " +
                         " where control4 ='YB'";
             }
             else if (this.estadoMargen.equalsIgnoreCase("ALTO")){
 
-                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, tol4, margen4, control4 as control " +
+                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, " +
+                        " pricefinal, priceso, tol4, margen4, control4 as control " +
                         " from zv_comercial_gralmargen " +
                         " where control4 ='YA'";
             }
             else{
-                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, tol4, margen4, control4 as control " +
+                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, " +
+                        " pricefinal, priceso, tol4, margen4, control4 as control " +
                         " from zv_comercial_gralmargen " +
                         " where control4 !='N'";
             }
@@ -154,7 +158,8 @@ public class ControlMargenes extends SvrProcess {
             // Control contra margenes de Segmentos
             if (this.estadoMargen.equalsIgnoreCase("RANGO")){
 
-                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, tol3, margen3, control3 as control " +
+                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, " +
+                        " pricefinal, priceso, tol3, margen3, control3 as control " +
                         " from zv_comercial_gralmargen " +
                         " where control1 ='N' and control2 ='N' and control3 ='N' and control4 ='N' AND margen3 is not null " +
                         " and not exists(select * from " + TABLA_REPORTE + " where ad_org_id = zv_comercial_gralmargen.ad_orgtrx_id " +
@@ -167,7 +172,8 @@ public class ControlMargenes extends SvrProcess {
             }
             else if (this.estadoMargen.equalsIgnoreCase("BAJO")){
 
-                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, tol3, margen3, control3 as control " +
+                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, " +
+                        " pricefinal, priceso, tol3, margen3, control3 as control " +
                         " from zv_comercial_gralmargen " +
                         " where control3 ='YB' " +
                         " and not exists(select * from " + TABLA_REPORTE + " where ad_org_id = zv_comercial_gralmargen.ad_orgtrx_id " +
@@ -176,7 +182,8 @@ public class ControlMargenes extends SvrProcess {
             }
             else if (this.estadoMargen.equalsIgnoreCase("ALTO")){
 
-                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, tol3, margen3, control3 as control " +
+                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, " +
+                        " pricefinal, priceso, tol3, margen3, control3 as control " +
                         " from zv_comercial_gralmargen " +
                         " where control3 ='YA' " +
                         " and not exists(select * from " + TABLA_REPORTE + " where ad_org_id = zv_comercial_gralmargen.ad_orgtrx_id " +
@@ -184,7 +191,8 @@ public class ControlMargenes extends SvrProcess {
                         " and m_product_id = zv_comercial_gralmargen.m_product_id)";
             }
             else{
-                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, tol3, margen3, control3 as control " +
+                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, " +
+                        " pricefinal, priceso, tol3, margen3, control3 as control " +
                         " from zv_comercial_gralmargen " +
                         " where control3 !='N' " +
                         " and not exists(select * from " + TABLA_REPORTE + " where ad_org_id = zv_comercial_gralmargen.ad_orgtrx_id " +
@@ -196,7 +204,8 @@ public class ControlMargenes extends SvrProcess {
             // Control contra margenes de Lineas
             if (this.estadoMargen.equalsIgnoreCase("RANGO")){
 
-                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, tol2, margen2, control2 as control " +
+                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, " +
+                        " pricefinal, priceso, tol2, margen2, control2 as control " +
                         " from zv_comercial_gralmargen " +
                         " where control1 ='N' and control2 ='N' and control3 ='N' and control4 ='N' AND margen2 is not null " +
                         " and not exists(select * from " + TABLA_REPORTE + " where ad_org_id = zv_comercial_gralmargen.ad_orgtrx_id " +
@@ -210,7 +219,8 @@ public class ControlMargenes extends SvrProcess {
             }
             else if (this.estadoMargen.equalsIgnoreCase("BAJO")){
 
-                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, tol2, margen2, control2 as control " +
+                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, " +
+                        " pricefinal, priceso, tol2, margen2, control2 as control " +
                         " from zv_comercial_gralmargen " +
                         " where control2 ='YB' " +
                         " and not exists(select * from " + TABLA_REPORTE + " where ad_org_id = zv_comercial_gralmargen.ad_orgtrx_id " +
@@ -219,7 +229,8 @@ public class ControlMargenes extends SvrProcess {
             }
             else if (this.estadoMargen.equalsIgnoreCase("ALTO")){
 
-                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, tol2, margen2, control2 as control " +
+                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, " +
+                        " pricefinal, priceso, tol2, margen2, control2 as control " +
                         " from zv_comercial_gralmargen " +
                         " where control2 ='YA' " +
                         " and not exists(select * from " + TABLA_REPORTE + " where ad_org_id = zv_comercial_gralmargen.ad_orgtrx_id " +
@@ -227,7 +238,8 @@ public class ControlMargenes extends SvrProcess {
                         " and m_product_id = zv_comercial_gralmargen.m_product_id)";
             }
             else{
-                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, tol2, margen2, control2 as control " +
+                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, " +
+                        " pricefinal, priceso, tol2, margen2, control2 as control " +
                         " from zv_comercial_gralmargen " +
                         " where control2 !='N' " +
                         " and not exists(select * from " + TABLA_REPORTE + " where ad_org_id = zv_comercial_gralmargen.ad_orgtrx_id " +
@@ -239,7 +251,8 @@ public class ControlMargenes extends SvrProcess {
             // Control contra margenes de Proveedores
             if (this.estadoMargen.equalsIgnoreCase("RANGO")){
 
-                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, tol1, margen1, control1 as control " +
+                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, " +
+                        " pricefinal, priceso, tol1, margen1, control1 as control " +
                         " from zv_comercial_gralmargen " +
                         " where control1 ='N' and control2 ='N' and control3 ='N' and control4 ='N' AND margen1 is not null " +
                         " and not exists(select * from " + TABLA_REPORTE + " where ad_org_id = zv_comercial_gralmargen.ad_orgtrx_id " +
@@ -253,7 +266,8 @@ public class ControlMargenes extends SvrProcess {
             }
             else if (this.estadoMargen.equalsIgnoreCase("BAJO")){
 
-                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, tol1, margen1, control1 as control " +
+                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, " +
+                        " pricefinal, priceso, tol1, margen1, control1 as control " +
                         " from zv_comercial_gralmargen " +
                         " where control1 ='YB' " +
                         " and not exists(select * from " + TABLA_REPORTE + " where ad_org_id = zv_comercial_gralmargen.ad_orgtrx_id " +
@@ -262,7 +276,8 @@ public class ControlMargenes extends SvrProcess {
             }
             else if (this.estadoMargen.equalsIgnoreCase("ALTO")){
 
-                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, tol1, margen1, control1 as control " +
+                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, " +
+                        " pricefinal, priceso, tol1, margen1, control1 as control " +
                         " from zv_comercial_gralmargen " +
                         " where control1 ='YA' " +
                         " and not exists(select * from " + TABLA_REPORTE + " where ad_org_id = zv_comercial_gralmargen.ad_orgtrx_id " +
@@ -270,7 +285,8 @@ public class ControlMargenes extends SvrProcess {
                         " and m_product_id = zv_comercial_gralmargen.m_product_id)";
             }
             else{
-                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, tol1, margen1, control1 as control " +
+                sql = " select distinct ad_client_id, ad_orgtrx_id, " + this.getAD_User_ID() + ", c_bpartner_id, m_product_id, pricefinalmargin, " +
+                        " pricefinal, priceso, tol1, margen1, control1 as control " +
                         " from zv_comercial_gralmargen " +
                         " where control1 !='N' " +
                         " and not exists(select * from " + TABLA_REPORTE + " where ad_org_id = zv_comercial_gralmargen.ad_orgtrx_id " +

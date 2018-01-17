@@ -591,4 +591,52 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 		return lines;
 	}
 
+
+	/***
+	 * Carga datos de productos a actualizar PVP a partir de una oferta periódica recibida.
+	 * @param zOfertaVentaID
+	 * @return
+	 */
+    public String getInfoFromOffer(int zOfertaVentaID) {
+
+		String message =  null;
+
+		try{
+
+			// Instancio modelo de oferta
+			MZOfertaVenta ofertaVenta = new MZOfertaVenta(getCtx(), zOfertaVentaID, get_TrxName());
+			if ((ofertaVenta == null) || (ofertaVenta.get_ID() <= 0)){
+				return "No se obtuvo Oferta Periódica con ID =" + zOfertaVentaID;
+			}
+
+
+			// ME DEBO ASEGURAR QUE SI LA OFERTA SELECCIONADA TIENE N ORGANIZACIONES, LA ACTUALIZACION PVP SEA CON ORGANIZACION = *
+			// Y ADEMAS EN LA PESTAÑA DE ORGANIZACIONES A CONSIDERAR SE COPIEN EXACTAMENTE LAS MISMAS ORGANIZACIONES QUE SE CONSIDERARON EN LA OFERTA.
+
+			// Obtengo y recorro lineas de esta oferta (productos)
+			List<MZOfertaVentaLin> ventaLinList = ofertaVenta.getLines();
+			for (MZOfertaVentaLin ventaLin: ventaLinList){
+
+				// Si para este linea tengo precio de venta
+				if ((ventaLin.getNewPriceSO() != null) && (ventaLin.getNewPriceSO().compareTo(Env.ZERO) > 0)){
+
+					// Cargo producto con el precio actual de venta = precio oferta, y nuevo precio = precio actual de la lista de precios de venta
+
+				}
+			}
+
+
+
+
+			// Seteo asociación de oferta con este modelo y fecha de actualizacion al POS
+			this.setZ_OfertaVenta_ID(zOfertaVentaID);
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return message;
+    }
+
 }

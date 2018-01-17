@@ -6,6 +6,7 @@ import org.compiere.process.DocumentEngine;
 import java.lang.annotation.Documented;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -51,6 +52,53 @@ public class MZProductoOferta extends X_Z_ProductoOferta {
             if (!ofertaVenta.getDocStatus().equalsIgnoreCase(DocumentEngine.STATUS_Completed)){
                 model = null;
             }
+        }
+
+        return model;
+    }
+
+    /***
+     * Obtiene y retorna modelo según producto, fecha y organización recibida.
+     * Xpande. Created by Gabriel Vila on 1/15/18.
+     * @param ctx
+     * @param mProductID
+     * @param fechaDesde
+     * @param fechaHasta
+     * @param trxName
+     * @return
+     */
+    public static MZProductoOferta getByProductDateOrg(Properties ctx, int mProductID, Timestamp fechaDesde, Timestamp fechaHasta, int adOrgID, String trxName){
+
+        String whereClause = X_Z_ProductoOferta.COLUMNNAME_M_Product_ID + " =" + mProductID +
+                " AND (('" + fechaDesde + "' <=" + X_Z_ProductoOferta.COLUMNNAME_StartDate +
+                " AND '" + fechaHasta + "' >=" + X_Z_ProductoOferta.COLUMNNAME_StartDate + ")" +
+                " OR ('" + fechaDesde + "' >=" + X_Z_ProductoOferta.COLUMNNAME_StartDate +
+                " AND '" + fechaDesde + "' <=" + X_Z_ProductoOferta.COLUMNNAME_EndDate + "))";
+
+        MZProductoOferta model = new Query(ctx, I_Z_ProductoOferta.Table_Name, whereClause, trxName)
+                .setOrderBy(X_Z_ProductoOferta.COLUMNNAME_StartDate).first();
+
+        if ((model != null) && (model.get_ID() > 0)){
+            // Verifico que la oferta este en estado completa
+            MZOfertaVenta ofertaVenta = (MZOfertaVenta) model.getZ_OfertaVenta();
+            if (!ofertaVenta.getDocStatus().equalsIgnoreCase(DocumentEngine.STATUS_Completed)){
+                model = null;
+            }
+
+            // Obtengo lista de organizaciones asociadas a esta oferta y seleccionadas.
+            List<MZOfertaVentaOrg> ventaOrgList = ofertaVenta.getOrgsSelected();
+
+            // Si la organización recibida no esta dentro de las organizaciones contempladas en esta oferta, no retorno nada.
+            boolean aplicaOrganización = false;
+            for (MZOfertaVentaOrg ventaOrg: ventaOrgList){
+                if (ventaOrg.getAD_OrgTrx_ID() == adOrgID){
+                    aplicaOrganización = true;
+                }
+            }
+            if (!aplicaOrganización){
+                model = null;
+            }
+
         }
 
         return model;
