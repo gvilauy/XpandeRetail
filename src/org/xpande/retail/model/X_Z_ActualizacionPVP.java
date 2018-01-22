@@ -31,7 +31,7 @@ public class X_Z_ActualizacionPVP extends PO implements I_Z_ActualizacionPVP, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180117L;
+	private static final long serialVersionUID = 20180118L;
 
     /** Standard Constructor */
     public X_Z_ActualizacionPVP (Properties ctx, int Z_ActualizacionPVP_ID, String trxName)
@@ -302,6 +302,20 @@ public class X_Z_ActualizacionPVP extends PO implements I_Z_ActualizacionPVP, I_
 	public String getDocumentNo () 
 	{
 		return (String)get_Value(COLUMNNAME_DocumentNo);
+	}
+
+	/** Set Error Msg.
+		@param ErrorMsg Error Msg	  */
+	public void setErrorMsg (String ErrorMsg)
+	{
+		set_Value (COLUMNNAME_ErrorMsg, ErrorMsg);
+	}
+
+	/** Get Error Msg.
+		@return Error Msg	  */
+	public String getErrorMsg () 
+	{
+		return (String)get_Value(COLUMNNAME_ErrorMsg);
 	}
 
 	/** Set Approved.

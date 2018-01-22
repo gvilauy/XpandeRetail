@@ -718,7 +718,10 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				prodbp.setZ_PautaComercialSet_ID_2(0);
 			}
 
-			prodbp.setVendorProductNo(line.getVendorProductNo());
+			if ((line.getVendorProductNo() != null) && (!line.getVendorProductNo().trim().equalsIgnoreCase(""))){
+				prodbp.setVendorProductNo(line.getVendorProductNo());
+			}
+
 			prodbp.saveEx();
 
 			// No dejo ids de pauta en cero en el producto-socio

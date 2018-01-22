@@ -210,6 +210,28 @@ public class ValidatorRetail implements ModelValidator {
                     }
                 }
             }
+
+            // Seteo monto de impuesto de esta linea si aun no tiene valor.
+            BigDecimal taxAmt = (BigDecimal) model.get_Value("TaxAmt");
+            if (taxAmt == null) taxAmt = Env.ZERO;
+            if (taxAmt.compareTo(Env.ZERO) == 0){
+                MTax tax = new MTax (model.getCtx(), model.getC_Tax_ID(), null);
+                taxAmt = tax.calculateTax(model.getLineNetAmt(), order.isTaxIncluded(), precisionDecimal);
+                model.set_ValueOfColumn("TaxAmt", taxAmt);
+            }
+
+            // Si no tengo subtotal, lo seteo ahora
+            BigDecimal amtSubtotal = (BigDecimal) model.get_Value("AmtSubtotal");
+            if (amtSubtotal == null) amtSubtotal = Env.ZERO;
+            if (amtSubtotal.compareTo(Env.ZERO) <= 0){
+                if (!order.isTaxIncluded()){
+                    model.set_ValueOfColumn("AmtSubtotal", model.getLineNetAmt());
+                }
+                else{
+                    model.set_ValueOfColumn("AmtSubtotal", model.getLineNetAmt().subtract(taxAmt));
+                }
+            }
+
         }
         else if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)
                 || (type == ModelValidator.TYPE_AFTER_DELETE)){
@@ -487,8 +509,11 @@ public class ValidatorRetail implements ModelValidator {
                         if (!vendorProductNo.equalsIgnoreCase("")){
                             MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(model.getCtx(), model.getC_BPartner_ID(), mInOutLine.getM_Product_ID(), model.get_TrxName());
                             if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
-                                productoSocio.setVendorProductNo(vendorProductNo);
-                                productoSocio.saveEx();
+
+                                if ((vendorProductNo != null) && (!vendorProductNo.trim().equalsIgnoreCase(""))){
+                                    productoSocio.setVendorProductNo(vendorProductNo);
+                                    productoSocio.saveEx();
+                                }
                             }
                             else{
                                 MProduct prod = (MProduct) mInOutLine.getM_Product();

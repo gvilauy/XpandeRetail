@@ -152,7 +152,14 @@ public class GenerarActPVPOferta extends SvrProcess {
 
                 // Completo actualización PVP asociada a esta oferta
                 if (!actualizacionPVP.processIt(DocAction.ACTION_Complete)){
-                    
+
+                    String mesageError = actualizacionPVP.getProcessMsg();
+                    if (mesageError == null){
+                        mesageError = "No se pudo completar Actualización PVP para Oferta número : " + ofertaVenta.getDocumentNo();
+                    }
+
+                    actualizacionPVP.setErrorMsg(mesageError);
+                    actualizacionPVP.saveEx();
                 }
 
             } // Loop de ofertas

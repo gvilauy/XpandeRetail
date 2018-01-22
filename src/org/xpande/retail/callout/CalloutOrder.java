@@ -660,6 +660,29 @@ public class CalloutOrder extends CalloutEngine {
         log.info("LineNetAmt=" + LineNetAmt);
         mTab.setValue("LineNetAmt", LineNetAmt);
 
+
+        // XPande. Gabriel Vila. Seteo un campo con el valor del subtotal de la linea, contemplando listas con impuesto incluído.
+        Integer taxID = (Integer)mTab.getValue("C_Tax_ID");
+        BigDecimal taxAmt = Env.ZERO;
+        if (taxID != null)
+        {
+            int C_Tax_ID = taxID.intValue();
+            MTax tax = new MTax (ctx, C_Tax_ID, null);
+            taxAmt = tax.calculateTax(LineNetAmt, order.isTaxIncluded(), StdPrecision);
+            mTab.setValue("TaxAmt", taxAmt);
+        }
+        if (!order.isTaxIncluded()){
+            //	Add it up
+            //mTab.setValue("LineTotalAmt", LineNetAmt.add(taxAmt));
+            mTab.setValue("AmtSubtotal", LineNetAmt);
+        }
+        else{
+            //mTab.setValue("LineTotalAmt", LineNetAmt);
+            mTab.setValue("AmtSubtotal", LineNetAmt.subtract(taxAmt));
+        }
+        // Fin Xpande.
+
+
         //
         return "";
     }	//	amt
