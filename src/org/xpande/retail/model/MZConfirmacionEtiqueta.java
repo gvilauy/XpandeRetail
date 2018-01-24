@@ -594,7 +594,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 			MZConfirmacionEtiquetaDoc etiquetaDoc = null;
 			int adTableID = MTable.getTable_ID(I_Z_ActualizacionPVP.Table_Name);
 
-			sql = " select cab.z_actualizacionpvp_id, cab.c_doctype_id, cab.documentno, cab.datedoc, cab.updated, cab.updatedby, a.datetopos, " +
+			sql = " select cab.z_actualizacionpvp_id, cab.c_doctype_id, cab.documentno, cab.datedoc, cab.updated, cab.updatedby, cab.datetopos, " +
 					" lin.c_currency_id, lin.m_product_id, linorg.newpriceso, linorg.ad_orgtrx_id " +
 					" from z_actualizacionpvplinorg linorg " +
 					" inner join z_actualizacionpvplin lin on linorg.z_actualizacionpvplin_id = lin.z_actualizacionpvplin_id " +
