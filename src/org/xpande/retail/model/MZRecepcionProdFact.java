@@ -78,7 +78,7 @@ public class MZRecepcionProdFact extends X_Z_RecepcionProdFact {
 
         String whereClause = X_Z_RecepcionProdFact.COLUMNNAME_M_InOut_ID + " =" + mInOutID;
 
-        List<MZRecepcionProdFact> lines = new Query(ctx, I_Z_RecepcionProdFact.Table_Name, whereClause, trxName).list();
+        List<MZRecepcionProdFact> lines = new Query(ctx, I_Z_RecepcionProdFact.Table_Name, whereClause, trxName).setOrderBy(" Z_RecepcionProdFact_ID ").list();
 
         return lines;
     }
@@ -94,7 +94,7 @@ public class MZRecepcionProdFact extends X_Z_RecepcionProdFact {
         String whereClause = X_M_InOutLine.COLUMNNAME_M_InOut_ID + " =" + this.getM_InOut_ID() +
                 " AND " + X_Z_RecepcionProdFact.COLUMNNAME_Z_RecepcionProdFact_ID + " =" + this.get_ID();
 
-        List<MInOutLine> lines = new Query(getCtx(), I_M_InOutLine.Table_Name, whereClause, get_TrxName()).list();
+        List<MInOutLine> lines = new Query(getCtx(), I_M_InOutLine.Table_Name, whereClause, get_TrxName()).setOrderBy(" M_InOutLine_ID ").list();
 
         return lines;
     }
