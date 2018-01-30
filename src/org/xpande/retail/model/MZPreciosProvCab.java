@@ -39,6 +39,7 @@ import org.compiere.util.TimeUtil;
 import org.xpande.core.model.MZActividadDocumento;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.core.model.MZSocioListaPrecio;
+import org.xpande.core.utils.PriceListUtils;
 import sun.misc.MessageUtils;
 
 /** Generated Model for Z_PreciosProvCab
@@ -1860,6 +1861,28 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 	@Override
 	protected boolean beforeSave(boolean newRecord) {
+
+
+		if (newRecord){
+
+			// Si no tengo aun seteada la lista de venta, la seteo ahora.
+			if (this.getM_PriceList_ID_SO() <= 0){
+
+				// Obtengo lista de precios para organización y moneda de este documento
+				MPriceList priceList = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), this.getAD_Org_ID(),
+						this.getC_Currency_ID_SO(), true, null);
+
+				if ((priceList != null) && (priceList.get_ID() > 0)) {
+					this.setM_PriceList_ID_SO(priceList.getM_PriceList_ID());
+					// Obtengo versión de lista vigente
+					MPriceListVersion plv = priceList.getPriceListVersion(null);
+					if ((plv != null) && (plv.get_ID() > 0)) {
+						this.setM_PriceList_Version_ID_SO(plv.get_ID());
+					}
+				}
+			}
+		}
+
 
 		// Me aseguro que tengo la pauta correcta para la linea
 		if (this.getZ_LineaProductoSocio_ID() > 0){

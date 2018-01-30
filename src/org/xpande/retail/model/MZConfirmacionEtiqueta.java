@@ -778,7 +778,8 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					" where linorg.ad_orgtrx_id =" + this.getAD_Org_ID() +
 					" and lin.newpriceso > 0 " +
 					" and cab.docstatus='CO' " +
-					" and (cab.startdate <='" + fechaOferta + "' and cab.enddate >='" + fechaOferta + "') " +
+					" and cab.startdate <='" + fechaOferta + "' "  +
+					//"' and cab.enddate >='" + fechaOferta + "') " +
 					" and cab.z_ofertaventa_id not in " +
 					" (select confdoc.record_id from z_confirmacionetiquetadoc confdoc " +
 					" inner join z_confirmacionetiqueta conf on confdoc.z_confirmacionetiqueta_id = conf.z_confirmacionetiqueta_id " +

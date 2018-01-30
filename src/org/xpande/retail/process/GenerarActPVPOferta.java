@@ -17,6 +17,8 @@ import java.sql.Timestamp;
 import java.util.List;
 
 /**
+ * Proceso que genera documentos de Actualización de PVP en base a las ofertas periódicas que ya fueron previamente comunicadas al local y
+ * que estan en fecha.
  * Product: Adempiere ERP & CRM Smart Business Solution. Localization : Uruguay - Xpande
  * Xpande. Created by Gabriel Vila on 1/17/18.
  */

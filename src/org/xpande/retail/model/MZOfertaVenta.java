@@ -31,6 +31,7 @@ import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.xpande.core.utils.PriceListUtils;
 
 /** Generated Model for Z_OfertaVenta
  *  @author Adempiere (generated) 
@@ -453,6 +454,32 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
       return sb.toString();
     }
 
+
+	@Override
+	protected boolean beforeSave(boolean newRecord) {
+
+		if (newRecord){
+
+			// Si no tengo aun seteada la lista de venta, la seteo ahora.
+			if (this.getM_PriceList_ID_SO() <= 0){
+
+				// Obtengo lista de precios para organización y moneda de este documento
+				MPriceList priceList = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), this.getAD_Org_ID(),
+						this.getC_Currency_ID_SO(), true, null);
+
+				if ((priceList != null) && (priceList.get_ID() > 0)) {
+					this.setM_PriceList_ID_SO(priceList.getM_PriceList_ID());
+					// Obtengo versión de lista vigente
+					MPriceListVersion plv = priceList.getPriceListVersion(null);
+					if ((plv != null) && (plv.get_ID() > 0)) {
+						this.setM_PriceList_Version_ID_SO(plv.get_ID());
+					}
+				}
+			}
+		}
+
+		return true;
+	}
 
 	@Override
 	protected boolean afterSave(boolean newRecord, boolean success) {
