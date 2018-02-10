@@ -37,6 +37,8 @@ import org.xpande.core.model.MZActividadDocumento;
 import org.xpande.sisteco.model.I_Z_SistecoInterfaceOut;
 import org.xpande.sisteco.model.MZSistecoInterfaceOut;
 import org.xpande.sisteco.utils.ProcesadorInterfaceOut;
+import org.xpande.stech.model.MZStechInterfaceOut;
+import org.xpande.stech.utils.*;
 
 /** Generated Model for Z_ComunicacionPOS
  *  @author Adempiere (generated) 
@@ -248,20 +250,49 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 			processPrices = false;
 		}
 
-		// Proceso interface de salida por ahora sisteco.
-		ProcesadorInterfaceOut procesadorInterfaceOut = new ProcesadorInterfaceOut(getCtx(), get_TrxName());
-		m_processMsg = procesadorInterfaceOut.executeInterfaceOut(this.getAD_Org_ID(), this.get_ID(), processPrices, true, true);
-		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+
+		int contadorLineas = 0;
+
+		// Obtengo proveedor de pos para la organización de este modelo.
+		// Por ahora manejo Sisteco y Scanntech
+		MZPosVendor posVendor = MZPosVendor.getByOrg(getCtx(), this.getAD_Org_ID(), get_TrxName());
+		if (posVendor.getValue().equalsIgnoreCase("SISTECO")){
+
+			// Proceso interface de salida por sisteco.
+			ProcesadorInterfaceOut procesadorInterfaceOut = new ProcesadorInterfaceOut(getCtx(), get_TrxName());
+			m_processMsg = procesadorInterfaceOut.executeInterfaceOut(this.getAD_Org_ID(), this.get_ID(), processPrices, true, true);
+			if (m_processMsg != null)
+				return DocAction.STATUS_Invalid;
+
+			// Guardo auditoria del proceso con datos de las entidades comunicadas, en caso de haber alguna
+			List<MZSistecoInterfaceOut> interfaceOuts = procesadorInterfaceOut.getMarcasProcesadas(this.get_ID());
+			if (interfaceOuts.size() > 0){
+				this.generarAuditoriaSisteco(interfaceOuts);
+				contadorLineas = interfaceOuts.size();
+			}
+
+		}
+		else if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
+
+			// Proceso interface de salida por scanntech.
+
+			org.xpande.stech.utils.ProcesadorInterfaceOut procesadorInterfaceOut = new org.xpande.stech.utils.ProcesadorInterfaceOut(getCtx(), get_TrxName());
+			m_processMsg = procesadorInterfaceOut.executeInterfaceOut(this.getAD_Org_ID(), this.get_ID(), processPrices, true, true);
+			if (m_processMsg != null)
+				return DocAction.STATUS_Invalid;
+
+			// Guardo auditoria del proceso con datos de las entidades comunicadas, en caso de haber alguna
+			List<MZStechInterfaceOut> interfaceOuts = procesadorInterfaceOut.getMarcasProcesadas(this.get_ID());
+			if (interfaceOuts.size() > 0){
+				this.generarAuditoriaScanntech(interfaceOuts);
+				contadorLineas = interfaceOuts.size();
+			}
+
+
+		}
 
 		// Actualizo marca de comunicado al pos en documentos comunicados
 		this.updateDocumentosComunicados();
-
-		// Guardo auditoria del proceso con datos de las entidades comunicadas, en caso de haber alguna
-		List<MZSistecoInterfaceOut> interfaceOuts = procesadorInterfaceOut.getMarcasProcesadas(this.get_ID());
-		if (interfaceOuts.size() > 0){
-			this.generarAuditoria(interfaceOuts);
-		}
 
 		// Guardo documento en tabla para informes de actividad por documento
 		MZActividadDocumento actividadDocumento = new MZActividadDocumento(getCtx(), 0, get_TrxName());
@@ -274,9 +305,7 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 		actividadDocumento.setCompletedBy(Env.getAD_User_ID(getCtx()));
 		actividadDocumento.setDateCompleted(new Timestamp(System.currentTimeMillis()));
 		actividadDocumento.setAD_Role_ID(Env.getAD_Role_ID(getCtx()));
-		if (interfaceOuts != null){
-			actividadDocumento.setLineNo(interfaceOuts.size());
-		}
+		actividadDocumento.setLineNo(contadorLineas);
 		actividadDocumento.setDiferenciaTiempo(new BigDecimal((actividadDocumento.getDateCompleted().getTime()-actividadDocumento.getDocDateCreated().getTime())/1000).divide(new BigDecimal(60),2,BigDecimal.ROUND_HALF_UP));
 		actividadDocumento.saveEx();
 
@@ -297,11 +326,11 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 
 
 	/***
-	 * Genera auditoria de este proceso con las marcas comunicadas al pos.
+	 * Genera auditoria de este proceso con las marcas comunicadas al pos de Sisteco.
 	 * Xpande. Created by Gabriel Vila on 10/13/17.
 	 * @param interfaceOuts
 	 */
-	private void generarAuditoria(List<MZSistecoInterfaceOut> interfaceOuts) {
+	private void generarAuditoriaSisteco(List<MZSistecoInterfaceOut> interfaceOuts) {
 
 		try{
 			for (MZSistecoInterfaceOut interfaceOut: interfaceOuts){
@@ -330,6 +359,44 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);
+		}
+	}
+
+
+	/***
+	 * Genera auditoria de este proceso con las marcas comunicadas al pos de Scanntech.
+	 * Xpande. Created by Gabriel Vila on 10/13/17.
+	 * @param interfaceOuts
+	 */
+	private void generarAuditoriaScanntech(List<MZStechInterfaceOut> interfaceOuts) {
+
+		try{
+			for (MZStechInterfaceOut interfaceOut: interfaceOuts){
+				MZComunicacionPOSAud posAud = new MZComunicacionPOSAud(getCtx(), 0, get_TrxName());
+				posAud.setZ_ComunicacionPOS_ID(this.get_ID());
+				posAud.setAD_Table_ID(I_Z_SistecoInterfaceOut.Table_ID);
+				posAud.setRecord_ID(interfaceOut.get_ID());
+				posAud.setCRUDType(interfaceOut.getCRUDType());
+				if (interfaceOut.getAD_Table_ID() == I_M_Product.Table_ID){
+					posAud.setM_Product_ID(interfaceOut.getRecord_ID());
+					posAud.setPriceSO(interfaceOut.getPriceSO());
+					posAud.setTipoComunicaPOS(X_Z_ComunicacionPOSAud.TIPOCOMUNICAPOS_PRODUCTO);
+				}
+				else if (interfaceOut.getAD_Table_ID() == I_Z_ProductoUPC.Table_ID){
+					posAud.setUPC(interfaceOut.getDescription());
+					posAud.setTipoComunicaPOS(X_Z_ComunicacionPOSAud.TIPOCOMUNICAPOS_CODIGODEBARRAS);
+				}
+				else if (interfaceOut.getAD_Table_ID() == I_C_BPartner.Table_ID){
+					posAud.setC_BPartner_ID(interfaceOut.getRecord_ID());
+					posAud.setTipoComunicaPOS(X_Z_ComunicacionPOSAud.TIPOCOMUNICAPOS_SOCIODENEGOCIO);
+				}
+
+				posAud.saveEx();
+			}
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
 		}
 	}
 

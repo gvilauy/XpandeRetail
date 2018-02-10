@@ -36,4 +36,23 @@ public class MZPosVendor extends X_Z_PosVendor {
         return lines;
 
     }
+
+
+    /***
+     * Obtiene y retorna proveedor de pos para una determinada organización recibida.
+     * Xpande. Created by Gabriel Vila on 2/9/18.
+     * @param ctx
+     * @param adOrgID
+     * @param trxName
+     * @return
+     */
+    public static MZPosVendor getByOrg(Properties ctx, int adOrgID, String trxName){
+
+        String whereClause = X_Z_PosVendorOrg.COLUMNNAME_AD_Org_ID + " =" + adOrgID;
+
+        MZPosVendor model = new Query(ctx, I_Z_PosVendorOrg.Table_Name, whereClause, trxName).setOnlyActiveRecords(true).first();
+
+        return model;
+    }
+
 }
