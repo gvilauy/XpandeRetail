@@ -151,6 +151,7 @@ public class GenerarFacturasRecibidas extends SvrProcess {
                     invLine.setPriceEntered(invLine.getPriceActual());
                     invLine.set_ValueOfColumn("PricePO", invLine.getPriceEntered());
                     invLine.setLineNetAmt();
+                    invLine.setM_InOutLine_ID(inOutLine.get_ID());
 
                     invLine.saveEx();
                 }

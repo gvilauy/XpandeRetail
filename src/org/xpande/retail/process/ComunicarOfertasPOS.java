@@ -112,8 +112,8 @@ public class ComunicarOfertasPOS extends SvrProcess {
                         messageError = "Se detectaron errores al momneto de completar este documento.";
                     }
                     comunicacionPOS.setErrorMsg(messageError);
-                    comunicacionPOS.saveEx();
                 }
+                comunicacionPOS.saveEx();
             }
 
         }

@@ -46,13 +46,32 @@ public class MZPosVendor extends X_Z_PosVendor {
      * @param trxName
      * @return
      */
-    public static MZPosVendor getByOrg(Properties ctx, int adOrgID, String trxName){
+    public static MZPosVendorOrg getByOrg(Properties ctx, int adOrgID, String trxName){
 
-        String whereClause = X_Z_PosVendorOrg.COLUMNNAME_AD_Org_ID + " =" + adOrgID;
+        String whereClause = X_Z_PosVendorOrg.COLUMNNAME_AD_OrgTrx_ID + " =" + adOrgID;
 
-        MZPosVendor model = new Query(ctx, I_Z_PosVendorOrg.Table_Name, whereClause, trxName).setOnlyActiveRecords(true).first();
+        MZPosVendorOrg model = new Query(ctx, I_Z_PosVendorOrg.Table_Name, whereClause, trxName).setOnlyActiveRecords(true).first();
 
         return model;
+    }
+
+
+    /***
+     * Obtiene y retorna modelo según value recibido.
+     * Xpande. Created by Gabriel Vila on 2/13/18.
+     * @param ctx
+     * @param value
+     * @param trxName
+     * @return
+     */
+    public static MZPosVendor getByValue(Properties ctx, String value, String trxName){
+
+        String whereClause = X_Z_PosVendor.COLUMNNAME_Value + " ='" + value + "' ";
+
+        MZPosVendor model = new Query(ctx, I_Z_PosVendor.Table_Name, whereClause, trxName).setOnlyActiveRecords(true).first();
+
+        return model;
+
     }
 
 }

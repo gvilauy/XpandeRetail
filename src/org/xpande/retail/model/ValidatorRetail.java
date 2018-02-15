@@ -3,6 +3,7 @@ package org.xpande.retail.model;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.acct.Doc;
 import org.compiere.model.*;
+import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.core.model.MZActividadDocumento;
@@ -10,6 +11,7 @@ import org.xpande.core.model.MZProductoUPC;
 import org.xpande.retail.utils.ProductPricesInfo;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 
 /**
@@ -632,6 +634,7 @@ public class ValidatorRetail implements ModelValidator {
         if (timing == TIMING_AFTER_COMPLETE){
 
             // Calculo de descuentos por Notas de Credito al Pago.
+            // Calculo y generación de remitos por diferencia de cantidad y montos
 
             // No aplica en comprobantes de venta
             if (model.isSOTrx()){
@@ -669,13 +672,16 @@ public class ValidatorRetail implements ModelValidator {
                 precision = MPriceList.getPricePrecision(model.getCtx(), model.getM_PriceList_ID());
             }
 
-            // Recorro lineas del comprobante y si corresponde calculo precio con descuento por NC al pago
+            // Recorro lineas del comprobante
             boolean hayDescuntoNC = false;
+
+            MZRemitoDifInv remitoDif = null;
 
             for (int i = 0; i < invoiceLines.length; i++){
                 MInvoiceLine invoiceLine = invoiceLines[i];
                 if (invoiceLine.getM_Product_ID() > 0){
                     if ((invoiceLine.getPriceEntered() != null) && (invoiceLine.getPriceEntered().compareTo(Env.ZERO) > 0)){
+                        // Si corresponde calculo precio con descuento por NC al pago
                         // Instancio modelo producto-socio, y si este modelo tiene pauta comercial asociada, calculo descuentos por NC al pago.
                         MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(Env.getCtx(), model.getC_BPartner_ID(), invoiceLine.getM_Product_ID(), null);
                         if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
@@ -708,6 +714,76 @@ public class ValidatorRetail implements ModelValidator {
                             productoSocio.setPriceInvoiced(invoiceLine.getPriceEntered());
                             productoSocio.saveEx();
                         }
+
+                        // Si corresponde genero documento de Remito por Diferencia
+                        boolean hayDiferenciaCantidad = false;
+                        boolean hayDiferenciaNeto = false;
+                        // Verifico diferencias entre cantidad recibida y cantidad facturada, si es que tengo recepcion asociada
+                        BigDecimal cantRecepcionada = invoiceLine.getQtyInvoiced();
+                        BigDecimal cantFacturada = invoiceLine.getQtyInvoiced();
+                        if (invoiceLine.getM_InOutLine_ID() > 0){
+                            MInOutLine inOutLine = (MInOutLine) invoiceLine.getM_InOutLine();
+                            cantRecepcionada = inOutLine.getMovementQty();
+                        }
+                        BigDecimal cantDiferencia = cantFacturada.subtract(cantRecepcionada);
+                        if (cantDiferencia.compareTo(Env.ZERO) > 0){
+                            hayDiferenciaCantidad = true;
+                        }
+
+                        BigDecimal pricePO = invoiceLine.getPriceEntered();
+                        BigDecimal netoFacturado = invoiceLine.getLineNetAmt();
+                        BigDecimal netoPO = netoFacturado;
+                        BigDecimal netoDiferencia = Env.ZERO;
+                        if (invoiceLine.get_Value("PricePO") != null){
+                            pricePO = (BigDecimal) invoiceLine.get_Value("PricePO");
+                            if (pricePO.compareTo(Env.ZERO) > 0){
+                                netoPO = pricePO.multiply(cantFacturada).setScale(precision, RoundingMode.HALF_UP);
+                                netoDiferencia = netoFacturado.subtract(netoPO);
+                                if (netoDiferencia.compareTo(Env.ZERO) > 0){
+                                    hayDiferenciaNeto = true;
+                                }
+                            }
+                        }
+
+                        // Tengo diferencia de monto o cantidad
+                        if (hayDiferenciaCantidad || hayDiferenciaNeto){
+                            // Si no tengo aun el cabezal de remito por diferencia, lo creo en este moemento
+                            if (remitoDif == null){
+
+                                MDocType[] docTypeRemitoList = MDocType.getOfDocBaseType(model.getCtx(), "RDI");
+                                if (docTypeRemitoList.length <= 0){
+                                    return "No esta definido el Documento para Remito por Diferencia.";
+                                }
+                                MDocType docRemito = docTypeRemitoList[0];
+
+                                remitoDif = new MZRemitoDifInv(model.getCtx(), 0, model.get_TrxName());
+                                remitoDif.setC_BPartner_ID(model.getC_BPartner_ID());
+                                remitoDif.setC_Currency_ID(model.getC_Currency_ID());
+                                remitoDif.setC_DocType_ID(docRemito.get_ID());
+                                remitoDif.setC_Invoice_ID(model.get_ID());
+                                remitoDif.setDateDoc(model.getDateInvoiced());
+                                remitoDif.setAD_Org_ID(model.getAD_Org_ID());
+                                remitoDif.saveEx();
+                            }
+
+                            // Nueva Linea de remito por diferencia
+                            MZRemitoDifInvLin remitoLin = new MZRemitoDifInvLin(model.getCtx(), 0, model.get_TrxName());
+                            remitoLin.setZ_RemitoDifInv_ID(remitoDif.get_ID());
+                            remitoLin.setC_InvoiceLine_ID(invoiceLine.get_ID());
+                            remitoLin.setM_InOutLine_ID(invoiceLine.getM_InOutLine_ID());
+                            remitoLin.setM_Product_ID(invoiceLine.getM_Product_ID());
+                            remitoLin.setC_UOM_ID(invoiceLine.getC_UOM_ID());
+                            remitoLin.setQtyDelivered(cantRecepcionada);
+                            remitoLin.setQtyInvoiced(cantFacturada);
+                            remitoLin.setDifferenceQty(cantDiferencia);
+                            remitoLin.setPricePO(pricePO);
+                            remitoLin.setPriceInvoiced(invoiceLine.getPriceEntered());
+                            remitoLin.setAmtSubtotal(netoFacturado);
+                            remitoLin.setAmtSubtotalPO(netoPO);
+                            remitoLin.setDifferenceAmt(netoDiferencia);
+                            remitoLin.saveEx();
+
+                        }
                     }
                 }
             }
@@ -715,6 +791,19 @@ public class ValidatorRetail implements ModelValidator {
                 action = " update c_invoice set TieneDtosNC ='Y' " +
                         " where c_invoice_id =" + model.get_ID();
                 DB.executeUpdateEx(action, model.get_TrxName());
+            }
+
+            if (remitoDif != null){
+                if (!remitoDif.processIt(DocAction.ACTION_Complete)){
+                    message = remitoDif.getProcessMsg();
+                    if (message == null){
+                        message = "Error al completar documento de Remito por Diferencia";
+                    }
+                    return message;
+                }
+
+                // Marco invoice como Bloqueada ya que tiene diferencias
+                DB.executeUpdateEx(" update c_invoice set EstadoAprobacion ='BLOQUEADO' where c_invoice_id =" + model.get_ID(), model.get_TrxName());
             }
 
         }

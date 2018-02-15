@@ -255,7 +255,8 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 
 		// Obtengo proveedor de pos para la organización de este modelo.
 		// Por ahora manejo Sisteco y Scanntech
-		MZPosVendor posVendor = MZPosVendor.getByOrg(getCtx(), this.getAD_Org_ID(), get_TrxName());
+		MZPosVendorOrg posVendorOrg = MZPosVendor.getByOrg(getCtx(), this.getAD_Org_ID(), get_TrxName());
+		MZPosVendor posVendor = (MZPosVendor) posVendorOrg.getZ_PosVendor();
 		if (posVendor.getValue().equalsIgnoreCase("SISTECO")){
 
 			// Proceso interface de salida por sisteco.
