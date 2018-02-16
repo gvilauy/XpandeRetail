@@ -801,6 +801,7 @@ public class ValidatorRetail implements ModelValidator {
                     }
                     return message;
                 }
+                remitoDif.saveEx();
 
                 // Marco invoice como Bloqueada ya que tiene diferencias
                 DB.executeUpdateEx(" update c_invoice set EstadoAprobacion ='BLOQUEADO' where c_invoice_id =" + model.get_ID(), model.get_TrxName());
