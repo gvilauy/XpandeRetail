@@ -252,6 +252,19 @@ public interface I_Z_RemitoDifInv
 	/** Get Process Now	  */
 	public boolean isProcessing();
 
+    /** Column name TotalAmt */
+    public static final String COLUMNNAME_TotalAmt = "TotalAmt";
+
+	/** Set Total Amount.
+	  * Total Amount
+	  */
+	public void setTotalAmt(BigDecimal TotalAmt);
+
+	/** Get Total Amount.
+	  * Total Amount
+	  */
+	public BigDecimal getTotalAmt();
+
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 

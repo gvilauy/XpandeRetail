@@ -32,7 +32,7 @@ public class X_Z_RemitoDifInvLin extends PO implements I_Z_RemitoDifInvLin, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180215L;
+	private static final long serialVersionUID = 20180226L;
 
     /** Standard Constructor */
     public X_Z_RemitoDifInvLin (Properties ctx, int Z_RemitoDifInvLin_ID, String trxName)
@@ -40,16 +40,12 @@ public class X_Z_RemitoDifInvLin extends PO implements I_Z_RemitoDifInvLin, I_Pe
       super (ctx, Z_RemitoDifInvLin_ID, trxName);
       /** if (Z_RemitoDifInvLin_ID == 0)
         {
-			setAmtSubtotal (Env.ZERO);
-			setAmtSubtotalPO (Env.ZERO);
 			setC_InvoiceLine_ID (0);
 			setC_UOM_ID (0);
-			setDifferenceAmt (Env.ZERO);
-			setDifferenceQty (Env.ZERO);
-			setPriceInvoiced (Env.ZERO);
-			setPricePO (Env.ZERO);
-			setQtyDelivered (Env.ZERO);
-			setQtyInvoiced (Env.ZERO);
+			setIsDifferenceAmt (false);
+// N
+			setIsDifferenceQty (false);
+// N
 			setZ_RemitoDifInv_ID (0);
 			setZ_RemitoDifInvLin_ID (0);
         } */
@@ -121,6 +117,34 @@ public class X_Z_RemitoDifInvLin extends PO implements I_Z_RemitoDifInvLin, I_Pe
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	public I_C_Invoice getC_Invoice() throws RuntimeException
+    {
+		return (I_C_Invoice)MTable.get(getCtx(), I_C_Invoice.Table_Name)
+			.getPO(getC_Invoice_ID(), get_TrxName());	}
+
+	/** Set Invoice.
+		@param C_Invoice_ID 
+		Invoice Identifier
+	  */
+	public void setC_Invoice_ID (int C_Invoice_ID)
+	{
+		if (C_Invoice_ID < 1) 
+			set_Value (COLUMNNAME_C_Invoice_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
+	}
+
+	/** Get Invoice.
+		@return Invoice Identifier
+	  */
+	public int getC_Invoice_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	public I_C_InvoiceLine getC_InvoiceLine() throws RuntimeException
@@ -199,6 +223,26 @@ public class X_Z_RemitoDifInvLin extends PO implements I_Z_RemitoDifInvLin, I_Pe
 		return bd;
 	}
 
+	/** Set DifferencePrice.
+		@param DifferencePrice 
+		Diferencia entre precios
+	  */
+	public void setDifferencePrice (BigDecimal DifferencePrice)
+	{
+		set_Value (COLUMNNAME_DifferencePrice, DifferencePrice);
+	}
+
+	/** Get DifferencePrice.
+		@return Diferencia entre precios
+	  */
+	public BigDecimal getDifferencePrice () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DifferencePrice);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
 	/** Set Difference.
 		@param DifferenceQty 
 		Difference Quantity
@@ -217,6 +261,54 @@ public class X_Z_RemitoDifInvLin extends PO implements I_Z_RemitoDifInvLin, I_Pe
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	/** Set IsDifferenceAmt.
+		@param IsDifferenceAmt 
+		Si tiene o no diferencia por montos
+	  */
+	public void setIsDifferenceAmt (boolean IsDifferenceAmt)
+	{
+		set_Value (COLUMNNAME_IsDifferenceAmt, Boolean.valueOf(IsDifferenceAmt));
+	}
+
+	/** Get IsDifferenceAmt.
+		@return Si tiene o no diferencia por montos
+	  */
+	public boolean isDifferenceAmt () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsDifferenceAmt);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set IsDifferenceQty.
+		@param IsDifferenceQty 
+		Si tiene o no diferencia de cantidades
+	  */
+	public void setIsDifferenceQty (boolean IsDifferenceQty)
+	{
+		set_Value (COLUMNNAME_IsDifferenceQty, Boolean.valueOf(IsDifferenceQty));
+	}
+
+	/** Get IsDifferenceQty.
+		@return Si tiene o no diferencia de cantidades
+	  */
+	public boolean isDifferenceQty () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsDifferenceQty);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	public I_M_InOutLine getM_InOutLine() throws RuntimeException

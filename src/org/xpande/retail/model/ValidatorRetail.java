@@ -676,6 +676,7 @@ public class ValidatorRetail implements ModelValidator {
             boolean hayDescuntoNC = false;
 
             MZRemitoDifInv remitoDif = null;
+            BigDecimal totalAmtRemito = Env.ZERO;
 
             for (int i = 0; i < invoiceLines.length; i++){
                 MInvoiceLine invoiceLine = invoiceLines[i];
@@ -731,6 +732,7 @@ public class ValidatorRetail implements ModelValidator {
                         }
 
                         BigDecimal pricePO = invoiceLine.getPriceEntered();
+                        BigDecimal priceDiferencia = Env.ZERO;
                         BigDecimal netoFacturado = invoiceLine.getLineNetAmt();
                         BigDecimal netoPO = netoFacturado;
                         BigDecimal netoDiferencia = Env.ZERO;
@@ -739,7 +741,9 @@ public class ValidatorRetail implements ModelValidator {
                             if (pricePO.compareTo(Env.ZERO) > 0){
                                 netoPO = pricePO.multiply(cantFacturada).setScale(precision, RoundingMode.HALF_UP);
                                 netoDiferencia = netoFacturado.subtract(netoPO);
-                                if (netoDiferencia.compareTo(Env.ZERO) > 0){
+                                priceDiferencia = invoiceLine.getPriceEntered().subtract(pricePO);
+                                BigDecimal toleranciaNeto = new BigDecimal(1.50);
+                                if (netoDiferencia.compareTo(toleranciaNeto) > 0){
                                     hayDiferenciaNeto = true;
                                 }
                             }
@@ -763,26 +767,68 @@ public class ValidatorRetail implements ModelValidator {
                                 remitoDif.setC_Invoice_ID(model.get_ID());
                                 remitoDif.setDateDoc(model.getDateInvoiced());
                                 remitoDif.setAD_Org_ID(model.getAD_Org_ID());
+                                remitoDif.setTotalAmt(Env.ZERO);
                                 remitoDif.saveEx();
                             }
 
-                            // Nueva Linea de remito por diferencia
-                            MZRemitoDifInvLin remitoLin = new MZRemitoDifInvLin(model.getCtx(), 0, model.get_TrxName());
-                            remitoLin.setZ_RemitoDifInv_ID(remitoDif.get_ID());
-                            remitoLin.setC_InvoiceLine_ID(invoiceLine.get_ID());
-                            remitoLin.setM_InOutLine_ID(invoiceLine.getM_InOutLine_ID());
-                            remitoLin.setM_Product_ID(invoiceLine.getM_Product_ID());
-                            remitoLin.setC_UOM_ID(invoiceLine.getC_UOM_ID());
-                            remitoLin.setQtyDelivered(cantRecepcionada);
-                            remitoLin.setQtyInvoiced(cantFacturada);
-                            remitoLin.setDifferenceQty(cantDiferencia);
-                            remitoLin.setPricePO(pricePO);
-                            remitoLin.setPriceInvoiced(invoiceLine.getPriceEntered());
-                            remitoLin.setAmtSubtotal(netoFacturado);
-                            remitoLin.setAmtSubtotalPO(netoPO);
-                            remitoLin.setDifferenceAmt(netoDiferencia);
-                            remitoLin.saveEx();
+                            // Genero un linea de diferencia por cantidad y una linea de diferencia por monto (para el mismo producto, dos lineas).
+                            if (hayDiferenciaCantidad){
+                                MZRemitoDifInvLin remitoLin = new MZRemitoDifInvLin(model.getCtx(), 0, model.get_TrxName());
+                                remitoLin.setZ_RemitoDifInv_ID(remitoDif.get_ID());
+                                remitoLin.setC_InvoiceLine_ID(invoiceLine.get_ID());
+                                remitoLin.setC_Invoice_ID(model.get_ID());
+                                remitoLin.setM_InOutLine_ID(invoiceLine.getM_InOutLine_ID());
+                                remitoLin.setM_Product_ID(invoiceLine.getM_Product_ID());
+                                remitoLin.setC_UOM_ID(invoiceLine.getC_UOM_ID());
+                                remitoLin.setQtyDelivered(cantRecepcionada);
+                                remitoLin.setQtyInvoiced(cantFacturada);
+                                remitoLin.setDifferenceQty(cantDiferencia);
+                                remitoLin.setPricePO(pricePO);
+                                remitoLin.setPriceInvoiced(invoiceLine.getPriceEntered());
+                                remitoLin.setDifferencePrice(priceDiferencia);
+                                remitoLin.setAmtSubtotal(netoFacturado);
+                                remitoLin.setAmtSubtotalPO(netoPO);
 
+                                // Neto diferencia se calcula multiplicando la cantidad diferencia por el precio facturado
+                                remitoLin.setDifferenceAmt(remitoLin.getDifferenceQty().multiply(remitoLin.getPriceInvoiced()).setScale(precision, RoundingMode.HALF_UP));
+
+                                remitoLin.setIsDifferenceQty(true);
+                                remitoLin.setIsDifferenceAmt(false);
+                                remitoLin.saveEx();
+                            }
+                            if (hayDiferenciaNeto){
+                                MZRemitoDifInvLin remitoLin = new MZRemitoDifInvLin(model.getCtx(), 0, model.get_TrxName());
+                                remitoLin.setZ_RemitoDifInv_ID(remitoDif.get_ID());
+                                remitoLin.setC_InvoiceLine_ID(invoiceLine.get_ID());
+                                remitoLin.setC_Invoice_ID(model.get_ID());
+                                remitoLin.setM_InOutLine_ID(invoiceLine.getM_InOutLine_ID());
+                                remitoLin.setM_Product_ID(invoiceLine.getM_Product_ID());
+                                remitoLin.setC_UOM_ID(invoiceLine.getC_UOM_ID());
+                                remitoLin.setQtyDelivered(cantRecepcionada);
+                                remitoLin.setQtyInvoiced(cantFacturada);
+                                remitoLin.setDifferenceQty(cantDiferencia);
+                                remitoLin.setPricePO(pricePO);
+                                remitoLin.setPriceInvoiced(invoiceLine.getPriceEntered());
+                                remitoLin.setDifferencePrice(priceDiferencia);
+                                remitoLin.setAmtSubtotal(netoFacturado);
+                                remitoLin.setAmtSubtotalPO(netoPO);
+
+                                // Neto diferencia de la linea por diferencia de monto depende si ademas este producto tiene o no diferencia de cantidad
+                                if (hayDiferenciaCantidad){
+                                    // Neto diferencia se calcula multiplicando la cantidad recepcionada por el precio facturado
+                                    remitoLin.setDifferenceAmt(remitoLin.getQtyDelivered().multiply(remitoLin.getPriceInvoiced()).setScale(precision, RoundingMode.HALF_UP));
+                                }
+                                else{
+                                    // El producto solo tiene diferencia por monto y ya esta calculada
+                                    remitoLin.setDifferenceAmt(netoDiferencia);
+                                }
+
+                                remitoLin.setIsDifferenceQty(false);
+                                remitoLin.setIsDifferenceAmt(true);
+                                remitoLin.saveEx();
+
+                                totalAmtRemito = totalAmtRemito.add(remitoLin.getDifferenceAmt());
+                            }
                         }
                     }
                 }
@@ -794,6 +840,7 @@ public class ValidatorRetail implements ModelValidator {
             }
 
             if (remitoDif != null){
+                remitoDif.setTotalAmt(totalAmtRemito);
                 if (!remitoDif.processIt(DocAction.ACTION_Complete)){
                     message = remitoDif.getProcessMsg();
                     if (message == null){
@@ -829,6 +876,7 @@ public class ValidatorRetail implements ModelValidator {
                 return null;
             }
 
+            // Elimino información para notas de credito al pago que pueda tener esta factura
             action = " update c_invoiceline set PriceDtoNC = null, " +
                      " AmtDtoNC = null, " +
                      " TieneDtosNC ='N' " +
@@ -839,6 +887,10 @@ public class ValidatorRetail implements ModelValidator {
                     " where c_invoice_id =" + model.get_ID();
             DB.executeUpdateEx(action, model.get_TrxName());
 
+            // Elimino remito por diferencia que pueda tener asociada esta factura
+            action = " delete from " + X_Z_RemitoDifInv.Table_Name +
+                     " where c_invoice_id =" + model.get_ID();
+            DB.executeUpdateEx(action, model.get_TrxName());
         }
 
         return null;

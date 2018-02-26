@@ -17,10 +17,12 @@
 /** Generated Model - DO NOT CHANGE */
 package org.xpande.retail.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 import org.compiere.model.*;
+import org.compiere.util.Env;
 
 /** Generated Model for Z_RemitoDifInv
  *  @author Adempiere (generated) 
@@ -31,7 +33,7 @@ public class X_Z_RemitoDifInv extends PO implements I_Z_RemitoDifInv, I_Persiste
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180215L;
+	private static final long serialVersionUID = 20180226L;
 
     /** Standard Constructor */
     public X_Z_RemitoDifInv (Properties ctx, int Z_RemitoDifInv_ID, String trxName)
@@ -56,6 +58,7 @@ public class X_Z_RemitoDifInv extends PO implements I_Z_RemitoDifInv, I_Persiste
 // N
 			setProcessing (false);
 // N
+			setTotalAmt (Env.ZERO);
 			setZ_RemitoDifInv_ID (0);
         } */
     }
@@ -410,6 +413,26 @@ public class X_Z_RemitoDifInv extends PO implements I_Z_RemitoDifInv, I_Persiste
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Total Amount.
+		@param TotalAmt 
+		Total Amount
+	  */
+	public void setTotalAmt (BigDecimal TotalAmt)
+	{
+		set_Value (COLUMNNAME_TotalAmt, TotalAmt);
+	}
+
+	/** Get Total Amount.
+		@return Total Amount
+	  */
+	public BigDecimal getTotalAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalAmt);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set Z_RemitoDifInv ID.

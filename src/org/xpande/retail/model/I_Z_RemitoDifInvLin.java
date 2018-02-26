@@ -89,6 +89,21 @@ public interface I_Z_RemitoDifInvLin
 	  */
 	public BigDecimal getAmtSubtotalPO();
 
+    /** Column name C_Invoice_ID */
+    public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
+
+	/** Set Invoice.
+	  * Invoice Identifier
+	  */
+	public void setC_Invoice_ID(int C_Invoice_ID);
+
+	/** Get Invoice.
+	  * Invoice Identifier
+	  */
+	public int getC_Invoice_ID();
+
+	public I_C_Invoice getC_Invoice() throws RuntimeException;
+
     /** Column name C_InvoiceLine_ID */
     public static final String COLUMNNAME_C_InvoiceLine_ID = "C_InvoiceLine_ID";
 
@@ -148,6 +163,19 @@ public interface I_Z_RemitoDifInvLin
 	  */
 	public BigDecimal getDifferenceAmt();
 
+    /** Column name DifferencePrice */
+    public static final String COLUMNNAME_DifferencePrice = "DifferencePrice";
+
+	/** Set DifferencePrice.
+	  * Diferencia entre precios
+	  */
+	public void setDifferencePrice(BigDecimal DifferencePrice);
+
+	/** Get DifferencePrice.
+	  * Diferencia entre precios
+	  */
+	public BigDecimal getDifferencePrice();
+
     /** Column name DifferenceQty */
     public static final String COLUMNNAME_DifferenceQty = "DifferenceQty";
 
@@ -173,6 +201,32 @@ public interface I_Z_RemitoDifInvLin
 	  * The record is active in the system
 	  */
 	public boolean isActive();
+
+    /** Column name IsDifferenceAmt */
+    public static final String COLUMNNAME_IsDifferenceAmt = "IsDifferenceAmt";
+
+	/** Set IsDifferenceAmt.
+	  * Si tiene o no diferencia por montos
+	  */
+	public void setIsDifferenceAmt(boolean IsDifferenceAmt);
+
+	/** Get IsDifferenceAmt.
+	  * Si tiene o no diferencia por montos
+	  */
+	public boolean isDifferenceAmt();
+
+    /** Column name IsDifferenceQty */
+    public static final String COLUMNNAME_IsDifferenceQty = "IsDifferenceQty";
+
+	/** Set IsDifferenceQty.
+	  * Si tiene o no diferencia de cantidades
+	  */
+	public void setIsDifferenceQty(boolean IsDifferenceQty);
+
+	/** Get IsDifferenceQty.
+	  * Si tiene o no diferencia de cantidades
+	  */
+	public boolean isDifferenceQty();
 
     /** Column name M_InOutLine_ID */
     public static final String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";

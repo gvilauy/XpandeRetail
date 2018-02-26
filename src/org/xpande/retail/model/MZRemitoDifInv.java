@@ -66,6 +66,7 @@ public class MZRemitoDifInv extends X_Z_RemitoDifInv implements DocAction, DocOp
 
 			//options[newIndex++] = DocumentEngine.ACTION_ReActivate;
 			//options[newIndex++] = DocumentEngine.ACTION_Void;
+			options[newIndex++] = DocumentEngine.ACTION_Close;
 		}
 
 		return newIndex;
@@ -289,6 +290,7 @@ public class MZRemitoDifInv extends X_Z_RemitoDifInv implements DocAction, DocOp
 		log.info("closeIt - " + toString());
 
 		//	Close Not delivered Qty
+		setDocStatus(DOCSTATUS_Closed);
 		setDocAction(DOCACTION_None);
 		return true;
 	}	//	closeIt
