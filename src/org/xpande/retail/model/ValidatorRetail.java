@@ -783,6 +783,7 @@ public class ValidatorRetail implements ModelValidator {
                                 remitoLin.setQtyDelivered(cantRecepcionada);
                                 remitoLin.setQtyInvoiced(cantFacturada);
                                 remitoLin.setDifferenceQty(cantDiferencia);
+                                remitoLin.setQtyOpen(cantDiferencia);
                                 remitoLin.setPricePO(pricePO);
                                 remitoLin.setPriceInvoiced(invoiceLine.getPriceEntered());
                                 remitoLin.setDifferencePrice(priceDiferencia);
@@ -792,6 +793,7 @@ public class ValidatorRetail implements ModelValidator {
                                 // Neto diferencia se calcula multiplicando la cantidad diferencia por el precio facturado
                                 remitoLin.setDifferenceAmt(remitoLin.getDifferenceQty().multiply(remitoLin.getPriceInvoiced()).setScale(precision, RoundingMode.HALF_UP));
 
+                                remitoLin.setAmtOpen(remitoLin.getDifferenceAmt());
                                 remitoLin.setIsDifferenceQty(true);
                                 remitoLin.setIsDifferenceAmt(false);
                                 remitoLin.saveEx();
@@ -807,6 +809,7 @@ public class ValidatorRetail implements ModelValidator {
                                 remitoLin.setQtyDelivered(cantRecepcionada);
                                 remitoLin.setQtyInvoiced(cantFacturada);
                                 remitoLin.setDifferenceQty(cantDiferencia);
+                                remitoLin.setQtyOpen(cantDiferencia);
                                 remitoLin.setPricePO(pricePO);
                                 remitoLin.setPriceInvoiced(invoiceLine.getPriceEntered());
                                 remitoLin.setDifferencePrice(priceDiferencia);
@@ -823,6 +826,7 @@ public class ValidatorRetail implements ModelValidator {
                                     remitoLin.setDifferenceAmt(netoDiferencia);
                                 }
 
+                                remitoLin.setAmtOpen(remitoLin.getDifferenceAmt());
                                 remitoLin.setIsDifferenceQty(false);
                                 remitoLin.setIsDifferenceAmt(true);
                                 remitoLin.saveEx();

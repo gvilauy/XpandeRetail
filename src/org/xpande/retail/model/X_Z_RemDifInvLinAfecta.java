@@ -23,38 +23,44 @@ import java.util.Properties;
 import org.compiere.model.*;
 import org.compiere.util.Env;
 
-/** Generated Model for Z_RemitoDifInvLin
+/** Generated Model for Z_RemDifInvLinAfecta
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0 - $Id$ */
-public class X_Z_RemitoDifInvLin extends PO implements I_Z_RemitoDifInvLin, I_Persistent 
+public class X_Z_RemDifInvLinAfecta extends PO implements I_Z_RemDifInvLinAfecta, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180228L;
+	private static final long serialVersionUID = 20180227L;
 
     /** Standard Constructor */
-    public X_Z_RemitoDifInvLin (Properties ctx, int Z_RemitoDifInvLin_ID, String trxName)
+    public X_Z_RemDifInvLinAfecta (Properties ctx, int Z_RemDifInvLinAfecta_ID, String trxName)
     {
-      super (ctx, Z_RemitoDifInvLin_ID, trxName);
-      /** if (Z_RemitoDifInvLin_ID == 0)
+      super (ctx, Z_RemDifInvLinAfecta_ID, trxName);
+      /** if (Z_RemDifInvLinAfecta_ID == 0)
         {
+			setAmtDocument (Env.ZERO);
+			setAmtOpen (Env.ZERO);
 			setC_InvoiceLine_ID (0);
 			setC_UOM_ID (0);
-			setIsClosed (false);
-// N
 			setIsDifferenceAmt (false);
 // N
 			setIsDifferenceQty (false);
 // N
+			setPriceDoc (Env.ZERO);
+			setPriceEntered (Env.ZERO);
+			setQtyDocument (Env.ZERO);
+			setQtyEntered (Env.ZERO);
+			setQtyOpen (Env.ZERO);
+			setZ_RemDifInvLinAfecta_ID (0);
 			setZ_RemitoDifInv_ID (0);
 			setZ_RemitoDifInvLin_ID (0);
         } */
     }
 
     /** Load Constructor */
-    public X_Z_RemitoDifInvLin (Properties ctx, ResultSet rs, String trxName)
+    public X_Z_RemDifInvLinAfecta (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -76,10 +82,30 @@ public class X_Z_RemitoDifInvLin extends PO implements I_Z_RemitoDifInvLin, I_Pe
 
     public String toString()
     {
-      StringBuffer sb = new StringBuffer ("X_Z_RemitoDifInvLin[")
+      StringBuffer sb = new StringBuffer ("X_Z_RemDifInvLinAfecta[")
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set AmtDocument.
+		@param AmtDocument 
+		Monto documento
+	  */
+	public void setAmtDocument (BigDecimal AmtDocument)
+	{
+		set_Value (COLUMNNAME_AmtDocument, AmtDocument);
+	}
+
+	/** Get AmtDocument.
+		@return Monto documento
+	  */
+	public BigDecimal getAmtDocument () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtDocument);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
 
 	/** Set AmtOpen.
 		@param AmtOpen 
@@ -96,46 +122,6 @@ public class X_Z_RemitoDifInvLin extends PO implements I_Z_RemitoDifInvLin, I_Pe
 	public BigDecimal getAmtOpen () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtOpen);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set AmtSubtotal.
-		@param AmtSubtotal 
-		Subtotales para no mostrar impuestos incluídos
-	  */
-	public void setAmtSubtotal (BigDecimal AmtSubtotal)
-	{
-		set_Value (COLUMNNAME_AmtSubtotal, AmtSubtotal);
-	}
-
-	/** Get AmtSubtotal.
-		@return Subtotales para no mostrar impuestos incluídos
-	  */
-	public BigDecimal getAmtSubtotal () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtSubtotal);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set AmtSubtotalPO.
-		@param AmtSubtotalPO 
-		Subtotal considerando precio pactado para orden de compra
-	  */
-	public void setAmtSubtotalPO (BigDecimal AmtSubtotalPO)
-	{
-		set_Value (COLUMNNAME_AmtSubtotalPO, AmtSubtotalPO);
-	}
-
-	/** Get AmtSubtotalPO.
-		@return Subtotal considerando precio pactado para orden de compra
-	  */
-	public BigDecimal getAmtSubtotalPO () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtSubtotalPO);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
@@ -225,88 +211,21 @@ public class X_Z_RemitoDifInvLin extends PO implements I_Z_RemitoDifInvLin, I_Pe
 		return ii.intValue();
 	}
 
-	/** Set Difference.
-		@param DifferenceAmt 
-		Difference Amount
+	/** Set DocumentNoRef.
+		@param DocumentNoRef 
+		Numero de documento referenciado
 	  */
-	public void setDifferenceAmt (BigDecimal DifferenceAmt)
+	public void setDocumentNoRef (String DocumentNoRef)
 	{
-		set_Value (COLUMNNAME_DifferenceAmt, DifferenceAmt);
+		set_Value (COLUMNNAME_DocumentNoRef, DocumentNoRef);
 	}
 
-	/** Get Difference.
-		@return Difference Amount
+	/** Get DocumentNoRef.
+		@return Numero de documento referenciado
 	  */
-	public BigDecimal getDifferenceAmt () 
+	public String getDocumentNoRef () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DifferenceAmt);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set DifferencePrice.
-		@param DifferencePrice 
-		Diferencia entre precios
-	  */
-	public void setDifferencePrice (BigDecimal DifferencePrice)
-	{
-		set_Value (COLUMNNAME_DifferencePrice, DifferencePrice);
-	}
-
-	/** Get DifferencePrice.
-		@return Diferencia entre precios
-	  */
-	public BigDecimal getDifferencePrice () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DifferencePrice);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set Difference.
-		@param DifferenceQty 
-		Difference Quantity
-	  */
-	public void setDifferenceQty (BigDecimal DifferenceQty)
-	{
-		set_Value (COLUMNNAME_DifferenceQty, DifferenceQty);
-	}
-
-	/** Get Difference.
-		@return Difference Quantity
-	  */
-	public BigDecimal getDifferenceQty () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DifferenceQty);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set Closed Status.
-		@param IsClosed 
-		The status is closed
-	  */
-	public void setIsClosed (boolean IsClosed)
-	{
-		set_Value (COLUMNNAME_IsClosed, Boolean.valueOf(IsClosed));
-	}
-
-	/** Get Closed Status.
-		@return The status is closed
-	  */
-	public boolean isClosed () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsClosed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return (String)get_Value(COLUMNNAME_DocumentNoRef);
 	}
 
 	/** Set IsDifferenceAmt.
@@ -357,32 +276,24 @@ public class X_Z_RemitoDifInvLin extends PO implements I_Z_RemitoDifInvLin, I_Pe
 		return false;
 	}
 
-	public I_M_InOutLine getM_InOutLine() throws RuntimeException
-    {
-		return (I_M_InOutLine)MTable.get(getCtx(), I_M_InOutLine.Table_Name)
-			.getPO(getM_InOutLine_ID(), get_TrxName());	}
-
-	/** Set Shipment/Receipt Line.
-		@param M_InOutLine_ID 
-		Line on Shipment or Receipt document
+	/** Set Line Total.
+		@param LineTotalAmt 
+		Total line amount incl. Tax
 	  */
-	public void setM_InOutLine_ID (int M_InOutLine_ID)
+	public void setLineTotalAmt (BigDecimal LineTotalAmt)
 	{
-		if (M_InOutLine_ID < 1) 
-			set_Value (COLUMNNAME_M_InOutLine_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_InOutLine_ID, Integer.valueOf(M_InOutLine_ID));
+		set_Value (COLUMNNAME_LineTotalAmt, LineTotalAmt);
 	}
 
-	/** Get Shipment/Receipt Line.
-		@return Line on Shipment or Receipt document
+	/** Get Line Total.
+		@return Total line amount incl. Tax
 	  */
-	public int getM_InOutLine_ID () 
+	public BigDecimal getLineTotalAmt () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOutLine_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_LineTotalAmt);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	public I_M_Product getM_Product() throws RuntimeException
@@ -413,81 +324,81 @@ public class X_Z_RemitoDifInvLin extends PO implements I_Z_RemitoDifInvLin, I_Pe
 		return ii.intValue();
 	}
 
-	/** Set Price Invoiced.
-		@param PriceInvoiced 
-		The priced invoiced to the customer (in the currency of the customer's AR price list) - 0 for default price
+	/** Set PriceDoc.
+		@param PriceDoc 
+		Precio del documento o linea
 	  */
-	public void setPriceInvoiced (BigDecimal PriceInvoiced)
+	public void setPriceDoc (BigDecimal PriceDoc)
 	{
-		set_Value (COLUMNNAME_PriceInvoiced, PriceInvoiced);
+		set_Value (COLUMNNAME_PriceDoc, PriceDoc);
 	}
 
-	/** Get Price Invoiced.
-		@return The priced invoiced to the customer (in the currency of the customer's AR price list) - 0 for default price
+	/** Get PriceDoc.
+		@return Precio del documento o linea
 	  */
-	public BigDecimal getPriceInvoiced () 
+	public BigDecimal getPriceDoc () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceInvoiced);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceDoc);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
 	}
 
-	/** Set PO Price.
-		@param PricePO 
-		Price based on a purchase order
+	/** Set Price.
+		@param PriceEntered 
+		Price Entered - the price based on the selected/base UoM
 	  */
-	public void setPricePO (BigDecimal PricePO)
+	public void setPriceEntered (BigDecimal PriceEntered)
 	{
-		set_Value (COLUMNNAME_PricePO, PricePO);
+		set_Value (COLUMNNAME_PriceEntered, PriceEntered);
 	}
 
-	/** Get PO Price.
-		@return Price based on a purchase order
+	/** Get Price.
+		@return Price Entered - the price based on the selected/base UoM
 	  */
-	public BigDecimal getPricePO () 
+	public BigDecimal getPriceEntered () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PricePO);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceEntered);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
 	}
 
-	/** Set Delivered Quantity.
-		@param QtyDelivered 
-		Delivered Quantity
+	/** Set QtyDocument.
+		@param QtyDocument 
+		Cantidad original del documento o linea
 	  */
-	public void setQtyDelivered (BigDecimal QtyDelivered)
+	public void setQtyDocument (BigDecimal QtyDocument)
 	{
-		set_Value (COLUMNNAME_QtyDelivered, QtyDelivered);
+		set_Value (COLUMNNAME_QtyDocument, QtyDocument);
 	}
 
-	/** Get Delivered Quantity.
-		@return Delivered Quantity
+	/** Get QtyDocument.
+		@return Cantidad original del documento o linea
 	  */
-	public BigDecimal getQtyDelivered () 
+	public BigDecimal getQtyDocument () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDelivered);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDocument);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
 	}
 
-	/** Set Quantity Invoiced.
-		@param QtyInvoiced 
-		Invoiced Quantity
+	/** Set Quantity.
+		@param QtyEntered 
+		The Quantity Entered is based on the selected UoM
 	  */
-	public void setQtyInvoiced (BigDecimal QtyInvoiced)
+	public void setQtyEntered (BigDecimal QtyEntered)
 	{
-		set_Value (COLUMNNAME_QtyInvoiced, QtyInvoiced);
+		set_Value (COLUMNNAME_QtyEntered, QtyEntered);
 	}
 
-	/** Get Quantity Invoiced.
-		@return Invoiced Quantity
+	/** Get Quantity.
+		@return The Quantity Entered is based on the selected UoM
 	  */
-	public BigDecimal getQtyInvoiced () 
+	public BigDecimal getQtyEntered () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoiced);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyEntered);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
@@ -511,6 +422,46 @@ public class X_Z_RemitoDifInvLin extends PO implements I_Z_RemitoDifInvLin, I_Pe
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	/** Set Referenced Invoice.
+		@param Ref_Invoice_ID Referenced Invoice	  */
+	public void setRef_Invoice_ID (int Ref_Invoice_ID)
+	{
+		if (Ref_Invoice_ID < 1) 
+			set_Value (COLUMNNAME_Ref_Invoice_ID, null);
+		else 
+			set_Value (COLUMNNAME_Ref_Invoice_ID, Integer.valueOf(Ref_Invoice_ID));
+	}
+
+	/** Get Referenced Invoice.
+		@return Referenced Invoice	  */
+	public int getRef_Invoice_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Ref_Invoice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_RemDifInvLinAfecta ID.
+		@param Z_RemDifInvLinAfecta_ID Z_RemDifInvLinAfecta ID	  */
+	public void setZ_RemDifInvLinAfecta_ID (int Z_RemDifInvLinAfecta_ID)
+	{
+		if (Z_RemDifInvLinAfecta_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Z_RemDifInvLinAfecta_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Z_RemDifInvLinAfecta_ID, Integer.valueOf(Z_RemDifInvLinAfecta_ID));
+	}
+
+	/** Get Z_RemDifInvLinAfecta ID.
+		@return Z_RemDifInvLinAfecta ID	  */
+	public int getZ_RemDifInvLinAfecta_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_RemDifInvLinAfecta_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	public I_Z_RemitoDifInv getZ_RemitoDifInv() throws RuntimeException
@@ -538,14 +489,19 @@ public class X_Z_RemitoDifInvLin extends PO implements I_Z_RemitoDifInvLin, I_Pe
 		return ii.intValue();
 	}
 
+	public I_Z_RemitoDifInvLin getZ_RemitoDifInvLin() throws RuntimeException
+    {
+		return (I_Z_RemitoDifInvLin)MTable.get(getCtx(), I_Z_RemitoDifInvLin.Table_Name)
+			.getPO(getZ_RemitoDifInvLin_ID(), get_TrxName());	}
+
 	/** Set Z_RemitoDifInvLin ID.
 		@param Z_RemitoDifInvLin_ID Z_RemitoDifInvLin ID	  */
 	public void setZ_RemitoDifInvLin_ID (int Z_RemitoDifInvLin_ID)
 	{
 		if (Z_RemitoDifInvLin_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Z_RemitoDifInvLin_ID, null);
+			set_Value (COLUMNNAME_Z_RemitoDifInvLin_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_Z_RemitoDifInvLin_ID, Integer.valueOf(Z_RemitoDifInvLin_ID));
+			set_Value (COLUMNNAME_Z_RemitoDifInvLin_ID, Integer.valueOf(Z_RemitoDifInvLin_ID));
 	}
 
 	/** Get Z_RemitoDifInvLin ID.

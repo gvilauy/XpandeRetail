@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_RemitoDifInvLin
+/** Generated Interface for Z_RemDifInvLinAfecta
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_RemitoDifInvLin 
+public interface I_Z_RemDifInvLinAfecta 
 {
 
-    /** TableName=Z_RemitoDifInvLin */
-    public static final String Table_Name = "Z_RemitoDifInvLin";
+    /** TableName=Z_RemDifInvLinAfecta */
+    public static final String Table_Name = "Z_RemDifInvLinAfecta";
 
-    /** AD_Table_ID=1000194 */
+    /** AD_Table_ID=1000200 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -63,6 +63,19 @@ public interface I_Z_RemitoDifInvLin
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name AmtDocument */
+    public static final String COLUMNNAME_AmtDocument = "AmtDocument";
+
+	/** Set AmtDocument.
+	  * Monto documento
+	  */
+	public void setAmtDocument(BigDecimal AmtDocument);
+
+	/** Get AmtDocument.
+	  * Monto documento
+	  */
+	public BigDecimal getAmtDocument();
+
     /** Column name AmtOpen */
     public static final String COLUMNNAME_AmtOpen = "AmtOpen";
 
@@ -75,32 +88,6 @@ public interface I_Z_RemitoDifInvLin
 	  * Monto pendiente
 	  */
 	public BigDecimal getAmtOpen();
-
-    /** Column name AmtSubtotal */
-    public static final String COLUMNNAME_AmtSubtotal = "AmtSubtotal";
-
-	/** Set AmtSubtotal.
-	  * Subtotales para no mostrar impuestos incluídos
-	  */
-	public void setAmtSubtotal(BigDecimal AmtSubtotal);
-
-	/** Get AmtSubtotal.
-	  * Subtotales para no mostrar impuestos incluídos
-	  */
-	public BigDecimal getAmtSubtotal();
-
-    /** Column name AmtSubtotalPO */
-    public static final String COLUMNNAME_AmtSubtotalPO = "AmtSubtotalPO";
-
-	/** Set AmtSubtotalPO.
-	  * Subtotal considerando precio pactado para orden de compra
-	  */
-	public void setAmtSubtotalPO(BigDecimal AmtSubtotalPO);
-
-	/** Get AmtSubtotalPO.
-	  * Subtotal considerando precio pactado para orden de compra
-	  */
-	public BigDecimal getAmtSubtotalPO();
 
     /** Column name C_Invoice_ID */
     public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
@@ -163,44 +150,18 @@ public interface I_Z_RemitoDifInvLin
 
 	public I_C_UOM getC_UOM() throws RuntimeException;
 
-    /** Column name DifferenceAmt */
-    public static final String COLUMNNAME_DifferenceAmt = "DifferenceAmt";
+    /** Column name DocumentNoRef */
+    public static final String COLUMNNAME_DocumentNoRef = "DocumentNoRef";
 
-	/** Set Difference.
-	  * Difference Amount
+	/** Set DocumentNoRef.
+	  * Numero de documento referenciado
 	  */
-	public void setDifferenceAmt(BigDecimal DifferenceAmt);
+	public void setDocumentNoRef(String DocumentNoRef);
 
-	/** Get Difference.
-	  * Difference Amount
+	/** Get DocumentNoRef.
+	  * Numero de documento referenciado
 	  */
-	public BigDecimal getDifferenceAmt();
-
-    /** Column name DifferencePrice */
-    public static final String COLUMNNAME_DifferencePrice = "DifferencePrice";
-
-	/** Set DifferencePrice.
-	  * Diferencia entre precios
-	  */
-	public void setDifferencePrice(BigDecimal DifferencePrice);
-
-	/** Get DifferencePrice.
-	  * Diferencia entre precios
-	  */
-	public BigDecimal getDifferencePrice();
-
-    /** Column name DifferenceQty */
-    public static final String COLUMNNAME_DifferenceQty = "DifferenceQty";
-
-	/** Set Difference.
-	  * Difference Quantity
-	  */
-	public void setDifferenceQty(BigDecimal DifferenceQty);
-
-	/** Get Difference.
-	  * Difference Quantity
-	  */
-	public BigDecimal getDifferenceQty();
+	public String getDocumentNoRef();
 
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
@@ -214,19 +175,6 @@ public interface I_Z_RemitoDifInvLin
 	  * The record is active in the system
 	  */
 	public boolean isActive();
-
-    /** Column name IsClosed */
-    public static final String COLUMNNAME_IsClosed = "IsClosed";
-
-	/** Set Closed Status.
-	  * The status is closed
-	  */
-	public void setIsClosed(boolean IsClosed);
-
-	/** Get Closed Status.
-	  * The status is closed
-	  */
-	public boolean isClosed();
 
     /** Column name IsDifferenceAmt */
     public static final String COLUMNNAME_IsDifferenceAmt = "IsDifferenceAmt";
@@ -254,20 +202,18 @@ public interface I_Z_RemitoDifInvLin
 	  */
 	public boolean isDifferenceQty();
 
-    /** Column name M_InOutLine_ID */
-    public static final String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
+    /** Column name LineTotalAmt */
+    public static final String COLUMNNAME_LineTotalAmt = "LineTotalAmt";
 
-	/** Set Shipment/Receipt Line.
-	  * Line on Shipment or Receipt document
+	/** Set Line Total.
+	  * Total line amount incl. Tax
 	  */
-	public void setM_InOutLine_ID(int M_InOutLine_ID);
+	public void setLineTotalAmt(BigDecimal LineTotalAmt);
 
-	/** Get Shipment/Receipt Line.
-	  * Line on Shipment or Receipt document
+	/** Get Line Total.
+	  * Total line amount incl. Tax
 	  */
-	public int getM_InOutLine_ID();
-
-	public I_M_InOutLine getM_InOutLine() throws RuntimeException;
+	public BigDecimal getLineTotalAmt();
 
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
@@ -284,57 +230,57 @@ public interface I_Z_RemitoDifInvLin
 
 	public I_M_Product getM_Product() throws RuntimeException;
 
-    /** Column name PriceInvoiced */
-    public static final String COLUMNNAME_PriceInvoiced = "PriceInvoiced";
+    /** Column name PriceDoc */
+    public static final String COLUMNNAME_PriceDoc = "PriceDoc";
 
-	/** Set Price Invoiced.
-	  * The priced invoiced to the customer (in the currency of the customer's AR price list) - 0 for default price
+	/** Set PriceDoc.
+	  * Precio del documento o linea
 	  */
-	public void setPriceInvoiced(BigDecimal PriceInvoiced);
+	public void setPriceDoc(BigDecimal PriceDoc);
 
-	/** Get Price Invoiced.
-	  * The priced invoiced to the customer (in the currency of the customer's AR price list) - 0 for default price
+	/** Get PriceDoc.
+	  * Precio del documento o linea
 	  */
-	public BigDecimal getPriceInvoiced();
+	public BigDecimal getPriceDoc();
 
-    /** Column name PricePO */
-    public static final String COLUMNNAME_PricePO = "PricePO";
+    /** Column name PriceEntered */
+    public static final String COLUMNNAME_PriceEntered = "PriceEntered";
 
-	/** Set PO Price.
-	  * Price based on a purchase order
+	/** Set Price.
+	  * Price Entered - the price based on the selected/base UoM
 	  */
-	public void setPricePO(BigDecimal PricePO);
+	public void setPriceEntered(BigDecimal PriceEntered);
 
-	/** Get PO Price.
-	  * Price based on a purchase order
+	/** Get Price.
+	  * Price Entered - the price based on the selected/base UoM
 	  */
-	public BigDecimal getPricePO();
+	public BigDecimal getPriceEntered();
 
-    /** Column name QtyDelivered */
-    public static final String COLUMNNAME_QtyDelivered = "QtyDelivered";
+    /** Column name QtyDocument */
+    public static final String COLUMNNAME_QtyDocument = "QtyDocument";
 
-	/** Set Delivered Quantity.
-	  * Delivered Quantity
+	/** Set QtyDocument.
+	  * Cantidad original del documento o linea
 	  */
-	public void setQtyDelivered(BigDecimal QtyDelivered);
+	public void setQtyDocument(BigDecimal QtyDocument);
 
-	/** Get Delivered Quantity.
-	  * Delivered Quantity
+	/** Get QtyDocument.
+	  * Cantidad original del documento o linea
 	  */
-	public BigDecimal getQtyDelivered();
+	public BigDecimal getQtyDocument();
 
-    /** Column name QtyInvoiced */
-    public static final String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
+    /** Column name QtyEntered */
+    public static final String COLUMNNAME_QtyEntered = "QtyEntered";
 
-	/** Set Quantity Invoiced.
-	  * Invoiced Quantity
+	/** Set Quantity.
+	  * The Quantity Entered is based on the selected UoM
 	  */
-	public void setQtyInvoiced(BigDecimal QtyInvoiced);
+	public void setQtyEntered(BigDecimal QtyEntered);
 
-	/** Get Quantity Invoiced.
-	  * Invoiced Quantity
+	/** Get Quantity.
+	  * The Quantity Entered is based on the selected UoM
 	  */
-	public BigDecimal getQtyInvoiced();
+	public BigDecimal getQtyEntered();
 
     /** Column name QtyOpen */
     public static final String COLUMNNAME_QtyOpen = "QtyOpen";
@@ -348,6 +294,15 @@ public interface I_Z_RemitoDifInvLin
 	  * Cantidad pendiente del documento o linea
 	  */
 	public BigDecimal getQtyOpen();
+
+    /** Column name Ref_Invoice_ID */
+    public static final String COLUMNNAME_Ref_Invoice_ID = "Ref_Invoice_ID";
+
+	/** Set Referenced Invoice	  */
+	public void setRef_Invoice_ID(int Ref_Invoice_ID);
+
+	/** Get Referenced Invoice	  */
+	public int getRef_Invoice_ID();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -364,6 +319,15 @@ public interface I_Z_RemitoDifInvLin
 	  * User who updated this records
 	  */
 	public int getUpdatedBy();
+
+    /** Column name Z_RemDifInvLinAfecta_ID */
+    public static final String COLUMNNAME_Z_RemDifInvLinAfecta_ID = "Z_RemDifInvLinAfecta_ID";
+
+	/** Set Z_RemDifInvLinAfecta ID	  */
+	public void setZ_RemDifInvLinAfecta_ID(int Z_RemDifInvLinAfecta_ID);
+
+	/** Get Z_RemDifInvLinAfecta ID	  */
+	public int getZ_RemDifInvLinAfecta_ID();
 
     /** Column name Z_RemitoDifInv_ID */
     public static final String COLUMNNAME_Z_RemitoDifInv_ID = "Z_RemitoDifInv_ID";
@@ -384,4 +348,6 @@ public interface I_Z_RemitoDifInvLin
 
 	/** Get Z_RemitoDifInvLin ID	  */
 	public int getZ_RemitoDifInvLin_ID();
+
+	public I_Z_RemitoDifInvLin getZ_RemitoDifInvLin() throws RuntimeException;
 }

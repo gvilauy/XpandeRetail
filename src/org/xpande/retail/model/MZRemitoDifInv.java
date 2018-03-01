@@ -20,6 +20,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
@@ -392,4 +393,22 @@ public class MZRemitoDifInv extends X_Z_RemitoDifInv implements DocAction, DocOp
         .append(getSummary()).append("]");
       return sb.toString();
     }
+
+
+	/***
+	 * Obtiene y retorna lineas abiertas de este Remito por Diferencia.
+	 * Xpande. Created by Gabriel Vila on 2/28/18.
+	 * @return
+	 */
+	public List<MZRemitoDifInvLin> getNotClosedLines(){
+
+		String whereClause = X_Z_RemitoDifInvLin.COLUMNNAME_Z_RemitoDifInv_ID + " =" + this.get_ID() +
+				" AND " + X_Z_RemitoDifInvLin.COLUMNNAME_IsClosed + " ='N'";
+
+		List<MZRemitoDifInvLin> lines = new Query(getCtx(), I_Z_RemitoDifInvLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+
 }

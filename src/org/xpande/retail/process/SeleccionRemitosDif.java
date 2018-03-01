@@ -22,11 +22,10 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.util.Env;
 import org.xpande.core.model.MZProductoUPC;
-import org.xpande.retail.model.MProductPricing;
-import org.xpande.retail.model.MZRemitoDifInv;
-import org.xpande.retail.model.MZRemitoDifInvLin;
+import org.xpande.retail.model.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 /** Generated Process for (Z_SeleccionRemitosDif)
@@ -50,7 +49,7 @@ public class SeleccionRemitosDif extends SeleccionRemitosDifAbstract
 	{
 		try {
 
-			/*
+			String documentNoRef = this.invoice.get_ValueAsString("DocumentSerie") + this.invoice.getDocumentNo();
 
 			List<Integer> recordIds = getSelectionKeys();
 
@@ -59,8 +58,70 @@ public class SeleccionRemitosDif extends SeleccionRemitosDifAbstract
 
 				MZRemitoDifInv remitoDif = new MZRemitoDifInv(getCtx(), key.intValue(), get_TrxName());
 
-				// Obtengo lineas del remito, pendientes aún de afectar en notas de crédito
-				List<MZRemitoDifInvLin>
+				// Obtengo lineas del remito que estan abiertas, es decir aún tienen saldo pendiente
+				List<MZRemitoDifInvLin> difInvLinList = remitoDif.getNotClosedLines();
+
+				// Reorro y cargao información de estas lineas
+				for (MZRemitoDifInvLin difInvLin: difInvLinList){
+
+					MZRemDifInvLinAfecta linAfecta = new MZRemDifInvLinAfecta(getCtx(), 0, get_TrxName());
+					linAfecta.setZ_RemitoDifInv_ID(remitoDif.get_ID());
+					linAfecta.setZ_RemitoDifInvLin_ID(difInvLin.get_ID());
+					linAfecta.setC_Invoice_ID(this.invoice.get_ID());
+					linAfecta.setC_UOM_ID(difInvLin.getC_UOM_ID());
+					linAfecta.setDocumentNoRef(documentNoRef);
+					linAfecta.setIsDifferenceAmt(difInvLin.isDifferenceAmt());
+					linAfecta.setIsDifferenceQty(difInvLin.isDifferenceQty());
+					linAfecta.setM_Product_ID(difInvLin.getM_Product_ID());
+					linAfecta.setRef_Invoice_ID(difInvLin.getC_Invoice_ID());
+
+					// Una linea de remito es por diferencia de cantidad o por diferencia de precio, pero nunca ambas a la vez.
+					if (difInvLin.isDifferenceQty()){
+						linAfecta.setQtyDocument(difInvLin.getDifferenceQty());
+						linAfecta.setQtyOpen(difInvLin.getQtyOpen());
+						linAfecta.setQtyEntered(linAfecta.getQtyOpen());
+						linAfecta.setPriceDoc(difInvLin.getPriceInvoiced());
+					}
+
+					if (difInvLin.isDifferenceAmt()){
+						linAfecta.setQtyDocument(difInvLin.getQtyDelivered());
+						linAfecta.setQtyOpen(Env.ZERO);
+						linAfecta.setQtyEntered(linAfecta.getQtyDocument());
+						linAfecta.setPriceDoc(difInvLin.getDifferencePrice());
+					}
+
+					linAfecta.setPriceEntered(linAfecta.getPriceDoc());
+					linAfecta.setAmtDocument(difInvLin.getDifferenceAmt());
+					linAfecta.setAmtOpen(difInvLin.getAmtOpen());
+					linAfecta.setLineTotalAmt(linAfecta.getQtyEntered().multiply(linAfecta.getPriceEntered()).setScale(2, RoundingMode.HALF_UP));
+
+					// Genera nueva linea de nota de credito asociada a esta linea del remito por diferencia
+					MInvoiceLine invoiceLine = new MInvoiceLine(this.invoice);
+					invoiceLine.setM_Product_ID(linAfecta.getM_Product_ID());
+					invoiceLine.setQtyEntered(linAfecta.getQtyEntered());
+					invoiceLine.setQtyInvoiced(linAfecta.getQtyEntered());
+					invoiceLine.setC_UOM_ID(linAfecta.getC_UOM_ID());
+					invoiceLine.setPriceActual(linAfecta.getPriceEntered());
+					invoiceLine.setPriceList(linAfecta.getPriceEntered());
+					invoiceLine.setPriceLimit(linAfecta.getPriceEntered());
+					invoiceLine.set_ValueOfColumn("PricePO", invoiceLine.getPriceEntered());
+					MZProductoUPC productoUPC = MZProductoUPC.getByProduct(getCtx(), linAfecta.getM_Product_ID(), null);
+					if ((productoUPC != null) && (productoUPC.get_ID() > 0)){
+						invoiceLine.set_ValueOfColumn("UPC", productoUPC.getUPC());
+					}
+					MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(getCtx(), this.invoice.getC_BPartner_ID(), linAfecta.getM_Product_ID(), null);
+					if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+						invoiceLine.set_ValueOfColumn("VendorProductNo", productoSocio.getVendorProductNo());
+					}
+
+					invoiceLine.saveEx();
+
+					// Guardo linea de afectación de remito
+					linAfecta.setC_InvoiceLine_ID(invoiceLine.get_ID());
+					linAfecta.saveEx();
+				}
+
+				/*
 
 				// Inserto producto en nueva linea de comprobante
 				MInvoiceLine invoiceLine = new MInvoiceLine(this.invoice);
@@ -107,9 +168,9 @@ public class SeleccionRemitosDif extends SeleccionRemitosDifAbstract
 
 				invoiceLine.saveEx();
 
+				*/
 
 			});
-			*/
 
 		}
 		catch (Exception e){
