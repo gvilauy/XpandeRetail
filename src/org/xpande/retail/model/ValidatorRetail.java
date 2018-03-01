@@ -818,8 +818,8 @@ public class ValidatorRetail implements ModelValidator {
 
                                 // Neto diferencia de la linea por diferencia de monto depende si ademas este producto tiene o no diferencia de cantidad
                                 if (hayDiferenciaCantidad){
-                                    // Neto diferencia se calcula multiplicando la cantidad recepcionada por el precio facturado
-                                    remitoLin.setDifferenceAmt(remitoLin.getQtyDelivered().multiply(remitoLin.getPriceInvoiced()).setScale(precision, RoundingMode.HALF_UP));
+                                    // Neto diferencia se calcula multiplicando la cantidad recepcionada por el precio diferencia
+                                    remitoLin.setDifferenceAmt(remitoLin.getQtyDelivered().multiply(remitoLin.getDifferencePrice()).setScale(precision, RoundingMode.HALF_UP));
                                 }
                                 else{
                                     // El producto solo tiene diferencia por monto y ya esta calculada

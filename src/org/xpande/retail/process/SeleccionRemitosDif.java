@@ -49,14 +49,15 @@ public class SeleccionRemitosDif extends SeleccionRemitosDifAbstract
 	{
 		try {
 
-			String documentNoRef = this.invoice.get_ValueAsString("DocumentSerie") + this.invoice.getDocumentNo();
-
 			List<Integer> recordIds = getSelectionKeys();
 
 			//	Recorro filas de selección de productos que fueron seleccionadas por el usuario
 			recordIds.stream().forEach(key -> {
 
 				MZRemitoDifInv remitoDif = new MZRemitoDifInv(getCtx(), key.intValue(), get_TrxName());
+				MInvoice invoiceRemito = (MInvoice) remitoDif.getC_Invoice();
+
+				String documentNoRef = invoiceRemito.get_ValueAsString("DocumentSerie") + invoiceRemito.getDocumentNo();
 
 				// Obtengo lineas del remito que estan abiertas, es decir aún tienen saldo pendiente
 				List<MZRemitoDifInvLin> difInvLinList = remitoDif.getNotClosedLines();
