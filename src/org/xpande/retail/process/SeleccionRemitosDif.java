@@ -102,10 +102,11 @@ public class SeleccionRemitosDif extends SeleccionRemitosDifAbstract
 					invoiceLine.setQtyEntered(linAfecta.getQtyEntered());
 					invoiceLine.setQtyInvoiced(linAfecta.getQtyEntered());
 					invoiceLine.setC_UOM_ID(linAfecta.getC_UOM_ID());
+					invoiceLine.setPriceEntered(linAfecta.getPriceEntered());
 					invoiceLine.setPriceActual(linAfecta.getPriceEntered());
 					invoiceLine.setPriceList(linAfecta.getPriceEntered());
 					invoiceLine.setPriceLimit(linAfecta.getPriceEntered());
-					invoiceLine.set_ValueOfColumn("PricePO", invoiceLine.getPriceEntered());
+					invoiceLine.set_ValueOfColumn("PricePO", linAfecta.getPriceEntered());
 					MZProductoUPC productoUPC = MZProductoUPC.getByProduct(getCtx(), linAfecta.getM_Product_ID(), null);
 					if ((productoUPC != null) && (productoUPC.get_ID() > 0)){
 						invoiceLine.set_ValueOfColumn("UPC", productoUPC.getUPC());

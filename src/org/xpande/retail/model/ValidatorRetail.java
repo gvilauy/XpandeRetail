@@ -6,6 +6,7 @@ import org.compiere.model.*;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.comercial.model.MZComercialConfig;
 import org.xpande.core.model.MZActividadDocumento;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.retail.utils.ProductPricesInfo;
@@ -633,9 +634,6 @@ public class ValidatorRetail implements ModelValidator {
 
         if (timing == TIMING_AFTER_COMPLETE){
 
-            // Calculo de descuentos por Notas de Credito al Pago.
-            // Calculo y generación de remitos por diferencia de cantidad y montos
-
             // No aplica en comprobantes de venta
             if (model.isSOTrx()){
                 return null;
@@ -660,208 +658,101 @@ public class ValidatorRetail implements ModelValidator {
             actividadDocumento.setDiferenciaTiempo(new BigDecimal((actividadDocumento.getDateCompleted().getTime()-actividadDocumento.getDocDateCreated().getTime())/1000).divide(new BigDecimal(60),2,BigDecimal.ROUND_HALF_UP));
             actividadDocumento.saveEx();
 
-            // No aplica en comprobantes de compra cuyo documento no sea del tipo API (Facturas)
-            MDocType docType = (MDocType) model.getC_DocTypeTarget();
-            if (!docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
-                return null;
-            }
-
             // Precisión decimal de lista de precios de compra, si es que tengo.
             int precision = 2;
             if (model.getM_PriceList_ID() > 0){
                 precision = MPriceList.getPricePrecision(model.getCtx(), model.getM_PriceList_ID());
             }
 
-            // Recorro lineas del comprobante
-            boolean hayDescuntoNC = false;
+            // Para comprobantes de compra del tipo API (facturas de proveedores)
+            MDocType docType = (MDocType) model.getC_DocTypeTarget();
+            if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
+                // Calculo de descuentos por Notas de Credito al Pago.
+                // Calculo y generación de remitos por diferencia de cantidad y montos
 
-            MZRemitoDifInv remitoDif = null;
-            BigDecimal totalAmtRemito = Env.ZERO;
+                // Recorro lineas del comprobante
+                boolean hayDescuntoNC = false;
 
-            for (int i = 0; i < invoiceLines.length; i++){
-                MInvoiceLine invoiceLine = invoiceLines[i];
-                if (invoiceLine.getM_Product_ID() > 0){
-                    if ((invoiceLine.getPriceEntered() != null) && (invoiceLine.getPriceEntered().compareTo(Env.ZERO) > 0)){
-                        // Si corresponde calculo precio con descuento por NC al pago
-                        // Instancio modelo producto-socio, y si este modelo tiene pauta comercial asociada, calculo descuentos por NC al pago.
-                        MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(Env.getCtx(), model.getC_BPartner_ID(), invoiceLine.getM_Product_ID(), null);
-                        if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
-                            if (productoSocio.getZ_PautaComercial_ID() > 0){
-                                MZPautaComercial pautaComercial = (MZPautaComercial) productoSocio.getZ_PautaComercial();
-                                ProductPricesInfo ppi = pautaComercial.calculatePrices(invoiceLine.getM_Product_ID(), invoiceLine.getPriceEntered(), precision);
-                                if (ppi != null){
-                                    if ((ppi.getPriceDtoNC() != null) && (ppi.getPriceDtoNC().compareTo(Env.ZERO) > 0)){
-                                        BigDecimal priceDtoNC = ppi.getPriceDtoNC();
-                                        BigDecimal amtDtoNC = priceDtoNC.multiply(invoiceLine.getQtyEntered()).setScale(precision, BigDecimal.ROUND_HALF_UP);
+                MZRemitoDifInv remitoDif = null;
+                BigDecimal totalAmtRemito = Env.ZERO;
 
-                                        action = " update c_invoiceline set PriceDtoNC =" + priceDtoNC + ", " +
-                                                " AmtDtoNC =" + amtDtoNC + ", " +
-                                                " PorcDtoNC =" + ppi.getSumPercentageDiscountsNC() + ", " +
-                                                " TieneDtosNC ='Y' " +
-                                                " where c_invoiceline_id =" + invoiceLine.get_ID();
-                                        DB.executeUpdateEx(action, model.get_TrxName());
+                for (int i = 0; i < invoiceLines.length; i++){
 
-                                        hayDescuntoNC = true;
+                    MInvoiceLine invoiceLine = invoiceLines[i];
+
+                    // Proceso notas de credito al pago
+                    boolean resultadoNC = this.setNCAlPago(model, invoiceLine, precision);
+                    if (resultadoNC){
+                        hayDescuntoNC = true;
+                    }
+
+                    // Proceso remitos por diferencia
+                    BigDecimal amtRemitoLin = this.setRemitoDiferencia(model, invoiceLine, remitoDif, precision);
+                    if (amtRemitoLin != null){
+                        totalAmtRemito = totalAmtRemito.add(amtRemitoLin);
+                    }
+                }
+
+                if (hayDescuntoNC){
+                    action = " update c_invoice set TieneDtosNC ='Y' " +
+                            " where c_invoice_id =" + model.get_ID();
+                    DB.executeUpdateEx(action, model.get_TrxName());
+                }
+
+                if (remitoDif != null){
+                    remitoDif.setTotalAmt(totalAmtRemito);
+                    if (!remitoDif.processIt(DocAction.ACTION_Complete)){
+                        message = remitoDif.getProcessMsg();
+                        if (message == null){
+                            message = "Error al completar documento de Remito por Diferencia";
+                        }
+                        return message;
+                    }
+                    remitoDif.saveEx();
+
+                    // Marco invoice como Bloqueada ya que tiene diferencias
+                    DB.executeUpdateEx(" update c_invoice set EstadoAprobacion ='BLOQUEADO' where c_invoice_id =" + model.get_ID(), model.get_TrxName());
+                }
+            }
+            else if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APCredit)){
+
+                // Si estoy complentando una nota de credito por diferencia en facturación, contra remitos
+                MZComercialConfig comercialConfig = MZComercialConfig.getDefault(model.getCtx(), null);
+                if (comercialConfig.getDefaultDocAPCDif_ID() == model.getC_DocTypeTarget_ID()) {
+                    for (int i = 0; i < invoiceLines.length; i++) {
+                        MInvoiceLine invoiceLine = invoiceLines[i];
+
+                        // Obtengo linea de afectación de remito asociada a esta linea de nota de crédito
+                        MZRemDifInvLinAfecta lineAfecta = MZRemDifInvLinAfecta.getByInvoiceLine(model.getCtx(), invoiceLine.get_ID(), model.get_TrxName());
+                        if ((lineAfecta != null) && (lineAfecta.get_ID() > 0)){
+
+                            // Obtengo linea de remito y actualizo datos de la misma
+                            MZRemitoDifInvLin remLin = (MZRemitoDifInvLin) lineAfecta.getZ_RemitoDifInvLin();
+                            if ((remLin != null) && (remLin.get_ID() > 0)){
+                                // Actualizo cantidad o neto abierto segun tipo de diferencia
+                                boolean closeLine = false;
+                                if (remLin.isDifferenceAmt()){
+                                    remLin.setAmtOpen(remLin.getAmtOpen().subtract(invoiceLine.getLineTotalAmt()));
+                                    if (remLin.getAmtOpen().compareTo(Env.ZERO) <= 0){
+                                        closeLine = true;
                                     }
                                 }
-                            }
-
-                            // Guardo datos de ultima factura en ficha de producto-proveedor
-                            String serieDocumento = model.get_ValueAsString("DocumentSerie");
-                            if (serieDocumento == null) serieDocumento = "";
-
-                            productoSocio.setInvoiceNo(serieDocumento + model.getDocumentNo());
-                            productoSocio.setDateInvoiced(model.getDateInvoiced());
-                            productoSocio.setPriceInvoiced(invoiceLine.getPriceEntered());
-                            productoSocio.saveEx();
-                        }
-
-                        // Si corresponde genero documento de Remito por Diferencia
-                        boolean hayDiferenciaCantidad = false;
-                        boolean hayDiferenciaNeto = false;
-                        // Verifico diferencias entre cantidad recibida y cantidad facturada, si es que tengo recepcion asociada
-                        BigDecimal cantRecepcionada = invoiceLine.getQtyInvoiced();
-                        BigDecimal cantFacturada = invoiceLine.getQtyInvoiced();
-                        if (invoiceLine.getM_InOutLine_ID() > 0){
-                            MInOutLine inOutLine = (MInOutLine) invoiceLine.getM_InOutLine();
-                            cantRecepcionada = inOutLine.getMovementQty();
-                        }
-                        BigDecimal cantDiferencia = cantFacturada.subtract(cantRecepcionada);
-                        if (cantDiferencia.compareTo(Env.ZERO) > 0){
-                            hayDiferenciaCantidad = true;
-                        }
-
-                        BigDecimal pricePO = invoiceLine.getPriceEntered();
-                        BigDecimal priceDiferencia = Env.ZERO;
-                        BigDecimal netoFacturado = invoiceLine.getLineNetAmt();
-                        BigDecimal netoPO = netoFacturado;
-                        BigDecimal netoDiferencia = Env.ZERO;
-                        if (invoiceLine.get_Value("PricePO") != null){
-                            pricePO = (BigDecimal) invoiceLine.get_Value("PricePO");
-                            if (pricePO.compareTo(Env.ZERO) > 0){
-                                netoPO = pricePO.multiply(cantFacturada).setScale(precision, RoundingMode.HALF_UP);
-                                netoDiferencia = netoFacturado.subtract(netoPO);
-                                priceDiferencia = invoiceLine.getPriceEntered().subtract(pricePO);
-                                BigDecimal toleranciaNeto = new BigDecimal(1.50);
-                                if (netoDiferencia.compareTo(toleranciaNeto) > 0){
-                                    hayDiferenciaNeto = true;
+                                if (remLin.isDifferenceQty()){
+                                    remLin.setQtyOpen(remLin.getQtyOpen().subtract(invoiceLine.getQtyEntered()));
+                                    if (remLin.getQtyOpen().compareTo(Env.ZERO) <= 0){
+                                        closeLine = true;
+                                    }
                                 }
-                            }
-                        }
-
-                        // Tengo diferencia de monto o cantidad
-                        if (hayDiferenciaCantidad || hayDiferenciaNeto){
-                            // Si no tengo aun el cabezal de remito por diferencia, lo creo en este moemento
-                            if (remitoDif == null){
-
-                                MDocType[] docTypeRemitoList = MDocType.getOfDocBaseType(model.getCtx(), "RDI");
-                                if (docTypeRemitoList.length <= 0){
-                                    return "No esta definido el Documento para Remito por Diferencia.";
-                                }
-                                MDocType docRemito = docTypeRemitoList[0];
-
-                                remitoDif = new MZRemitoDifInv(model.getCtx(), 0, model.get_TrxName());
-                                remitoDif.setC_BPartner_ID(model.getC_BPartner_ID());
-                                remitoDif.setC_Currency_ID(model.getC_Currency_ID());
-                                remitoDif.setC_DocType_ID(docRemito.get_ID());
-                                remitoDif.setC_Invoice_ID(model.get_ID());
-                                remitoDif.setDateDoc(model.getDateInvoiced());
-                                remitoDif.setAD_Org_ID(model.getAD_Org_ID());
-                                remitoDif.setTotalAmt(Env.ZERO);
-                                remitoDif.saveEx();
-                            }
-
-                            // Genero un linea de diferencia por cantidad y una linea de diferencia por monto (para el mismo producto, dos lineas).
-                            if (hayDiferenciaCantidad){
-                                MZRemitoDifInvLin remitoLin = new MZRemitoDifInvLin(model.getCtx(), 0, model.get_TrxName());
-                                remitoLin.setZ_RemitoDifInv_ID(remitoDif.get_ID());
-                                remitoLin.setC_InvoiceLine_ID(invoiceLine.get_ID());
-                                remitoLin.setC_Invoice_ID(model.get_ID());
-                                remitoLin.setM_InOutLine_ID(invoiceLine.getM_InOutLine_ID());
-                                remitoLin.setM_Product_ID(invoiceLine.getM_Product_ID());
-                                remitoLin.setC_UOM_ID(invoiceLine.getC_UOM_ID());
-                                remitoLin.setQtyDelivered(cantRecepcionada);
-                                remitoLin.setQtyInvoiced(cantFacturada);
-                                remitoLin.setDifferenceQty(cantDiferencia);
-                                remitoLin.setQtyOpen(cantDiferencia);
-                                remitoLin.setPricePO(pricePO);
-                                remitoLin.setPriceInvoiced(invoiceLine.getPriceEntered());
-                                remitoLin.setDifferencePrice(priceDiferencia);
-                                remitoLin.setAmtSubtotal(netoFacturado);
-                                remitoLin.setAmtSubtotalPO(netoPO);
-
-                                // Neto diferencia se calcula multiplicando la cantidad diferencia por el precio facturado
-                                remitoLin.setDifferenceAmt(remitoLin.getDifferenceQty().multiply(remitoLin.getPriceInvoiced()).setScale(precision, RoundingMode.HALF_UP));
-
-                                remitoLin.setAmtOpen(remitoLin.getDifferenceAmt());
-                                remitoLin.setIsDifferenceQty(true);
-                                remitoLin.setIsDifferenceAmt(false);
-                                remitoLin.saveEx();
-                            }
-                            if (hayDiferenciaNeto){
-                                MZRemitoDifInvLin remitoLin = new MZRemitoDifInvLin(model.getCtx(), 0, model.get_TrxName());
-                                remitoLin.setZ_RemitoDifInv_ID(remitoDif.get_ID());
-                                remitoLin.setC_InvoiceLine_ID(invoiceLine.get_ID());
-                                remitoLin.setC_Invoice_ID(model.get_ID());
-                                remitoLin.setM_InOutLine_ID(invoiceLine.getM_InOutLine_ID());
-                                remitoLin.setM_Product_ID(invoiceLine.getM_Product_ID());
-                                remitoLin.setC_UOM_ID(invoiceLine.getC_UOM_ID());
-                                remitoLin.setQtyDelivered(cantRecepcionada);
-                                remitoLin.setQtyInvoiced(cantFacturada);
-                                remitoLin.setDifferenceQty(cantDiferencia);
-                                remitoLin.setQtyOpen(cantDiferencia);
-                                remitoLin.setPricePO(pricePO);
-                                remitoLin.setPriceInvoiced(invoiceLine.getPriceEntered());
-                                remitoLin.setDifferencePrice(priceDiferencia);
-                                remitoLin.setAmtSubtotal(netoFacturado);
-                                remitoLin.setAmtSubtotalPO(netoPO);
-
-                                // Neto diferencia de la linea por diferencia de monto depende si ademas este producto tiene o no diferencia de cantidad
-                                if (hayDiferenciaCantidad){
-                                    // Neto diferencia se calcula multiplicando la cantidad recepcionada por el precio diferencia
-                                    remitoLin.setDifferenceAmt(remitoLin.getQtyDelivered().multiply(remitoLin.getDifferencePrice()).setScale(precision, RoundingMode.HALF_UP));
-                                }
-                                else{
-                                    // El producto solo tiene diferencia por monto y ya esta calculada
-                                    remitoLin.setDifferenceAmt(netoDiferencia);
-                                }
-
-                                remitoLin.setAmtOpen(remitoLin.getDifferenceAmt());
-                                remitoLin.setIsDifferenceQty(false);
-                                remitoLin.setIsDifferenceAmt(true);
-                                remitoLin.saveEx();
-
-                                totalAmtRemito = totalAmtRemito.add(remitoLin.getDifferenceAmt());
+                                remLin.setIsClosed(closeLine);
+                                remLin.saveEx();
                             }
                         }
                     }
                 }
-            }
-            if (hayDescuntoNC){
-                action = " update c_invoice set TieneDtosNC ='Y' " +
-                        " where c_invoice_id =" + model.get_ID();
-                DB.executeUpdateEx(action, model.get_TrxName());
-            }
-
-            if (remitoDif != null){
-                remitoDif.setTotalAmt(totalAmtRemito);
-                if (!remitoDif.processIt(DocAction.ACTION_Complete)){
-                    message = remitoDif.getProcessMsg();
-                    if (message == null){
-                        message = "Error al completar documento de Remito por Diferencia";
-                    }
-                    return message;
-                }
-                remitoDif.saveEx();
-
-                // Marco invoice como Bloqueada ya que tiene diferencias
-                DB.executeUpdateEx(" update c_invoice set EstadoAprobacion ='BLOQUEADO' where c_invoice_id =" + model.get_ID(), model.get_TrxName());
             }
 
         }
         else if (timing == TIMING_BEFORE_REACTIVATE){
-
-            // Cuando reactivo un documento, me aseguro de no dejar factura marcada con datos de descuentos por notas de credito al pago.
 
             // No aplica en comprobantes de venta
             if (model.isSOTrx()){
@@ -874,27 +765,27 @@ public class ValidatorRetail implements ModelValidator {
                 actividadDocumento.deleteEx(true);
             }
 
-            // No aplica en comprobantes de venta cuyo documento no sea del tipo API (Facturas)
+            // Para comprobantes de compra del tipo API (facturas de proveedores)
             MDocType docType = (MDocType) model.getC_DocTypeTarget();
-            if (!docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
-                return null;
+            if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
+                // Cuando reactivo un documento, me aseguro de no dejar factura marcada con datos de descuentos por notas de credito al pago.
+                // Elimino información para notas de credito al pago que pueda tener esta factura
+                action = " update c_invoiceline set PriceDtoNC = null, " +
+                        " AmtDtoNC = null, " +
+                        " TieneDtosNC ='N' " +
+                        " where c_invoice_id =" + model.get_ID();
+                DB.executeUpdateEx(action, model.get_TrxName());
+
+                action = " update c_invoice set TieneDtosNC ='N' " +
+                        " where c_invoice_id =" + model.get_ID();
+                DB.executeUpdateEx(action, model.get_TrxName());
+
+                // Elimino remito por diferencia que pueda tener asociada esta factura
+                action = " delete from " + X_Z_RemitoDifInv.Table_Name +
+                        " where c_invoice_id =" + model.get_ID();
+                DB.executeUpdateEx(action, model.get_TrxName());
             }
 
-            // Elimino información para notas de credito al pago que pueda tener esta factura
-            action = " update c_invoiceline set PriceDtoNC = null, " +
-                     " AmtDtoNC = null, " +
-                     " TieneDtosNC ='N' " +
-                     " where c_invoice_id =" + model.get_ID();
-            DB.executeUpdateEx(action, model.get_TrxName());
-
-            action = " update c_invoice set TieneDtosNC ='N' " +
-                    " where c_invoice_id =" + model.get_ID();
-            DB.executeUpdateEx(action, model.get_TrxName());
-
-            // Elimino remito por diferencia que pueda tener asociada esta factura
-            action = " delete from " + X_Z_RemitoDifInv.Table_Name +
-                     " where c_invoice_id =" + model.get_ID();
-            DB.executeUpdateEx(action, model.get_TrxName());
         }
 
         return null;
@@ -957,6 +848,211 @@ public class ValidatorRetail implements ModelValidator {
         }
 
         return null;
+    }
+
+
+    /***
+     * Dada una linea de factura verifica si para la misma corresponde o no un descuento con NC al pago.
+     * Xpande. Created by Gabriel Vila on 3/5/18.
+     * @param invoice
+     * @param invoiceLine
+     * @param precision
+     * @return
+     */
+    private boolean setNCAlPago(MInvoice invoice, MInvoiceLine invoiceLine, int precision){
+
+        boolean hayDescuntoNC = false;
+        String action = "";
+
+        try{
+
+            if (invoiceLine.getM_Product_ID() <= 0){
+                return false;
+            }
+
+            if ((invoiceLine.getPriceEntered() == null) || (invoiceLine.getPriceEntered().compareTo(Env.ZERO) == 0)){
+                return false;
+            }
+
+            // Si corresponde calculo precio con descuento por NC al pago
+            // Instancio modelo producto-socio, y si este modelo tiene pauta comercial asociada, calculo descuentos por NC al pago.
+            MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(Env.getCtx(), invoice.getC_BPartner_ID(), invoiceLine.getM_Product_ID(), null);
+            if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+                if (productoSocio.getZ_PautaComercial_ID() > 0){
+                    MZPautaComercial pautaComercial = (MZPautaComercial) productoSocio.getZ_PautaComercial();
+                    ProductPricesInfo ppi = pautaComercial.calculatePrices(invoiceLine.getM_Product_ID(), invoiceLine.getPriceEntered(), precision);
+                    if (ppi != null){
+                        if ((ppi.getPriceDtoNC() != null) && (ppi.getPriceDtoNC().compareTo(Env.ZERO) > 0)){
+                            BigDecimal priceDtoNC = ppi.getPriceDtoNC();
+                            BigDecimal amtDtoNC = priceDtoNC.multiply(invoiceLine.getQtyEntered()).setScale(precision, BigDecimal.ROUND_HALF_UP);
+
+                            action = " update c_invoiceline set PriceDtoNC =" + priceDtoNC + ", " +
+                                    " AmtDtoNC =" + amtDtoNC + ", " +
+                                    " PorcDtoNC =" + ppi.getSumPercentageDiscountsNC() + ", " +
+                                    " TieneDtosNC ='Y' " +
+                                    " where c_invoiceline_id =" + invoiceLine.get_ID();
+                            DB.executeUpdateEx(action, invoice.get_TrxName());
+
+                            hayDescuntoNC = true;
+                        }
+                    }
+                }
+
+                // Guardo datos de ultima factura en ficha de producto-proveedor
+                String serieDocumento = invoice.get_ValueAsString("DocumentSerie");
+                if (serieDocumento == null) serieDocumento = "";
+
+                productoSocio.setInvoiceNo(serieDocumento + invoice.getDocumentNo());
+                productoSocio.setDateInvoiced(invoice.getDateInvoiced());
+                productoSocio.setPriceInvoiced(invoiceLine.getPriceEntered());
+                productoSocio.saveEx();
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return hayDescuntoNC;
+    }
+
+    private BigDecimal setRemitoDiferencia(MInvoice invoice, MInvoiceLine invoiceLine, MZRemitoDifInv remitoDif, int precision){
+
+        BigDecimal amtRemito = Env.ZERO;
+
+        try{
+
+            if (invoiceLine.getM_Product_ID() <= 0){
+                return Env.ZERO;
+            }
+
+            // Si corresponde genero documento de Remito por Diferencia
+            boolean hayDiferenciaCantidad = false;
+            boolean hayDiferenciaNeto = false;
+
+            // Verifico diferencias entre cantidad recibida y cantidad facturada, si es que tengo recepcion asociada
+            BigDecimal cantRecepcionada = invoiceLine.getQtyInvoiced();
+            BigDecimal cantFacturada = invoiceLine.getQtyInvoiced();
+            if (invoiceLine.getM_InOutLine_ID() > 0){
+                MInOutLine inOutLine = (MInOutLine) invoiceLine.getM_InOutLine();
+                cantRecepcionada = inOutLine.getMovementQty();
+            }
+            BigDecimal cantDiferencia = cantFacturada.subtract(cantRecepcionada);
+            if (cantDiferencia.compareTo(Env.ZERO) > 0){
+                hayDiferenciaCantidad = true;
+            }
+
+            BigDecimal pricePO = invoiceLine.getPriceEntered();
+            BigDecimal priceDiferencia = Env.ZERO;
+            BigDecimal netoFacturado = invoiceLine.getLineNetAmt();
+            BigDecimal netoPO = netoFacturado;
+            BigDecimal netoDiferencia = Env.ZERO;
+            if (invoiceLine.get_Value("PricePO") != null){
+                pricePO = (BigDecimal) invoiceLine.get_Value("PricePO");
+                if (pricePO.compareTo(Env.ZERO) > 0){
+                    netoPO = pricePO.multiply(cantFacturada).setScale(precision, RoundingMode.HALF_UP);
+                    netoDiferencia = netoFacturado.subtract(netoPO);
+                    priceDiferencia = invoiceLine.getPriceEntered().subtract(pricePO);
+                    BigDecimal toleranciaNeto = new BigDecimal(1.50);
+                    if (netoDiferencia.compareTo(toleranciaNeto) > 0){
+                        hayDiferenciaNeto = true;
+                    }
+                }
+            }
+
+            // Tengo diferencia de monto o cantidad
+            if (hayDiferenciaCantidad || hayDiferenciaNeto){
+                // Si no tengo aun el cabezal de remito por diferencia, lo creo en este moemento
+                if (remitoDif == null){
+
+                    MDocType[] docTypeRemitoList = MDocType.getOfDocBaseType(invoice.getCtx(), "RDI");
+                    if (docTypeRemitoList.length <= 0){
+                        throw new AdempiereException("No esta definido el Documento para Remito por Diferencia");
+                    }
+                    MDocType docRemito = docTypeRemitoList[0];
+
+                    remitoDif = new MZRemitoDifInv(invoice.getCtx(), 0, invoice.get_TrxName());
+                    remitoDif.setC_BPartner_ID(invoice.getC_BPartner_ID());
+                    remitoDif.setC_Currency_ID(invoice.getC_Currency_ID());
+                    remitoDif.setC_DocType_ID(docRemito.get_ID());
+                    remitoDif.setC_Invoice_ID(invoice.get_ID());
+                    remitoDif.setDateDoc(invoice.getDateInvoiced());
+                    remitoDif.setAD_Org_ID(invoice.getAD_Org_ID());
+                    remitoDif.setTotalAmt(Env.ZERO);
+                    remitoDif.saveEx();
+                }
+
+                // Genero un linea de diferencia por cantidad y una linea de diferencia por monto (para el mismo producto, dos lineas).
+                if (hayDiferenciaCantidad){
+                    MZRemitoDifInvLin remitoLin = new MZRemitoDifInvLin(invoice.getCtx(), 0, invoice.get_TrxName());
+                    remitoLin.setZ_RemitoDifInv_ID(remitoDif.get_ID());
+                    remitoLin.setC_InvoiceLine_ID(invoiceLine.get_ID());
+                    remitoLin.setC_Invoice_ID(invoice.get_ID());
+                    remitoLin.setM_InOutLine_ID(invoiceLine.getM_InOutLine_ID());
+                    remitoLin.setM_Product_ID(invoiceLine.getM_Product_ID());
+                    remitoLin.setC_UOM_ID(invoiceLine.getC_UOM_ID());
+                    remitoLin.setQtyDelivered(cantRecepcionada);
+                    remitoLin.setQtyInvoiced(cantFacturada);
+                    remitoLin.setDifferenceQty(cantDiferencia);
+                    remitoLin.setQtyOpen(cantDiferencia);
+                    remitoLin.setPricePO(pricePO);
+                    remitoLin.setPriceInvoiced(invoiceLine.getPriceEntered());
+                    remitoLin.setDifferencePrice(priceDiferencia);
+                    remitoLin.setAmtSubtotal(netoFacturado);
+                    remitoLin.setAmtSubtotalPO(netoPO);
+
+                    // Neto diferencia se calcula multiplicando la cantidad diferencia por el precio facturado
+                    remitoLin.setDifferenceAmt(remitoLin.getDifferenceQty().multiply(remitoLin.getPriceInvoiced()).setScale(precision, RoundingMode.HALF_UP));
+
+                    remitoLin.setAmtOpen(remitoLin.getDifferenceAmt());
+                    remitoLin.setIsDifferenceQty(true);
+                    remitoLin.setIsDifferenceAmt(false);
+                    remitoLin.saveEx();
+                }
+                if (hayDiferenciaNeto){
+                    MZRemitoDifInvLin remitoLin = new MZRemitoDifInvLin(invoice.getCtx(), 0, invoice.get_TrxName());
+                    remitoLin.setZ_RemitoDifInv_ID(remitoDif.get_ID());
+                    remitoLin.setC_InvoiceLine_ID(invoiceLine.get_ID());
+                    remitoLin.setC_Invoice_ID(invoice.get_ID());
+                    remitoLin.setM_InOutLine_ID(invoiceLine.getM_InOutLine_ID());
+                    remitoLin.setM_Product_ID(invoiceLine.getM_Product_ID());
+                    remitoLin.setC_UOM_ID(invoiceLine.getC_UOM_ID());
+                    remitoLin.setQtyDelivered(cantRecepcionada);
+                    remitoLin.setQtyInvoiced(cantFacturada);
+                    remitoLin.setDifferenceQty(cantDiferencia);
+                    remitoLin.setQtyOpen(cantDiferencia);
+                    remitoLin.setPricePO(pricePO);
+                    remitoLin.setPriceInvoiced(invoiceLine.getPriceEntered());
+                    remitoLin.setDifferencePrice(priceDiferencia);
+                    remitoLin.setAmtSubtotal(netoFacturado);
+                    remitoLin.setAmtSubtotalPO(netoPO);
+
+                    // Neto diferencia de la linea por diferencia de monto depende si ademas este producto tiene o no diferencia de cantidad
+                    if (hayDiferenciaCantidad){
+                        // Neto diferencia se calcula multiplicando la cantidad recepcionada por el precio diferencia
+                        remitoLin.setDifferenceAmt(remitoLin.getQtyDelivered().multiply(remitoLin.getDifferencePrice()).setScale(precision, RoundingMode.HALF_UP));
+                    }
+                    else{
+                        // El producto solo tiene diferencia por monto y ya esta calculada
+                        remitoLin.setDifferenceAmt(netoDiferencia);
+                    }
+
+                    remitoLin.setAmtOpen(remitoLin.getDifferenceAmt());
+                    remitoLin.setIsDifferenceQty(false);
+                    remitoLin.setIsDifferenceAmt(true);
+                    remitoLin.saveEx();
+
+                    amtRemito = remitoLin.getDifferenceAmt();
+
+                    //totalAmtRemito = totalAmtRemito.add(remitoLin.getDifferenceAmt());
+                }
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return amtRemito;
     }
 
 }
