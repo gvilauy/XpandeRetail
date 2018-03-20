@@ -673,8 +673,22 @@ public class ValidatorRetail implements ModelValidator {
                 // Recorro lineas del comprobante
                 boolean hayDescuntoNC = false;
 
-                MZRemitoDifInv remitoDif = null;
+                // Instancio cabezal de remito por diferencia, si luego no tiene monto, lo elimino.
                 BigDecimal totalAmtRemito = Env.ZERO;
+                MZRemitoDifInv remitoDif = null;
+                MDocType[] docTypeRemitoList = MDocType.getOfDocBaseType(model.getCtx(), "RDI");
+                if (docTypeRemitoList.length <= 0){
+                    throw new AdempiereException("No esta definido el Documento para Remito por Diferencia");
+                }
+                MDocType docRemito = docTypeRemitoList[0];
+                remitoDif = new MZRemitoDifInv(model.getCtx(), 0, model.get_TrxName());
+                remitoDif.setC_BPartner_ID(model.getC_BPartner_ID());
+                remitoDif.setC_Currency_ID(model.getC_Currency_ID());
+                remitoDif.setC_DocType_ID(docRemito.get_ID());
+                remitoDif.setC_Invoice_ID(model.get_ID());
+                remitoDif.setDateDoc(model.getDateInvoiced());
+                remitoDif.setAD_Org_ID(model.getAD_Org_ID());
+                remitoDif.setTotalAmt(Env.ZERO);
 
                 for (int i = 0; i < invoiceLines.length; i++){
 
@@ -699,7 +713,7 @@ public class ValidatorRetail implements ModelValidator {
                     DB.executeUpdateEx(action, model.get_TrxName());
                 }
 
-                if (remitoDif != null){
+                if (totalAmtRemito.compareTo(Env.ZERO) > 0){
                     remitoDif.setTotalAmt(totalAmtRemito);
                     if (!remitoDif.processIt(DocAction.ACTION_Complete)){
                         message = remitoDif.getProcessMsg();
@@ -962,26 +976,9 @@ public class ValidatorRetail implements ModelValidator {
 
             // Tengo diferencia de monto o cantidad
             if (hayDiferenciaCantidad || hayDiferenciaNeto){
-                // Si no tengo aun el cabezal de remito por diferencia, lo creo en este moemento
-                if (remitoDif == null){
-
-                    MDocType[] docTypeRemitoList = MDocType.getOfDocBaseType(invoice.getCtx(), "RDI");
-                    if (docTypeRemitoList.length <= 0){
-                        throw new AdempiereException("No esta definido el Documento para Remito por Diferencia");
-                    }
-                    MDocType docRemito = docTypeRemitoList[0];
-
-                    remitoDif = new MZRemitoDifInv(invoice.getCtx(), 0, invoice.get_TrxName());
-                    remitoDif.setC_BPartner_ID(invoice.getC_BPartner_ID());
-                    remitoDif.setC_Currency_ID(invoice.getC_Currency_ID());
-                    remitoDif.setC_DocType_ID(docRemito.get_ID());
-                    remitoDif.setC_Invoice_ID(invoice.get_ID());
-                    remitoDif.setDateDoc(invoice.getDateInvoiced());
-                    remitoDif.setAD_Org_ID(invoice.getAD_Org_ID());
-                    remitoDif.setTotalAmt(Env.ZERO);
+                if (remitoDif.get_ID() <= 0){
                     remitoDif.saveEx();
                 }
-
                 // Genero un linea de diferencia por cantidad y una linea de diferencia por monto (para el mismo producto, dos lineas).
                 if (hayDiferenciaCantidad){
                     MZRemitoDifInvLin remitoLin = new MZRemitoDifInvLin(invoice.getCtx(), 0, invoice.get_TrxName());
@@ -1008,7 +1005,11 @@ public class ValidatorRetail implements ModelValidator {
                     remitoLin.setIsDifferenceQty(true);
                     remitoLin.setIsDifferenceAmt(false);
                     remitoLin.saveEx();
+
+                    amtRemito = remitoLin.getDifferenceAmt();
+
                 }
+
                 if (hayDiferenciaNeto){
                     MZRemitoDifInvLin remitoLin = new MZRemitoDifInvLin(invoice.getCtx(), 0, invoice.get_TrxName());
                     remitoLin.setZ_RemitoDifInv_ID(remitoDif.get_ID());
