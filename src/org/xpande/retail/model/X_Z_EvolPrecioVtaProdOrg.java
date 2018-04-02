@@ -33,7 +33,7 @@ public class X_Z_EvolPrecioVtaProdOrg extends PO implements I_Z_EvolPrecioVtaPro
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170808L;
+	private static final long serialVersionUID = 20180401L;
 
     /** Standard Constructor */
     public X_Z_EvolPrecioVtaProdOrg (Properties ctx, int Z_EvolPrecioVtaProdOrg_ID, String trxName)
@@ -44,9 +44,10 @@ public class X_Z_EvolPrecioVtaProdOrg extends PO implements I_Z_EvolPrecioVtaPro
 			setAD_OrgTrx_ID (0);
 			setC_Currency_ID (0);
 			setDateValidSO (new Timestamp( System.currentTimeMillis() ));
-			setM_PriceList_ID (0);
 			setM_Product_ID (0);
 			setPriceSO (Env.ZERO);
+			setVigente (false);
+// N
 			setZ_EvolPrecioVtaProdOrg_ID (0);
         } */
     }
@@ -158,6 +159,34 @@ public class X_Z_EvolPrecioVtaProdOrg extends PO implements I_Z_EvolPrecioVtaPro
 		return ii.intValue();
 	}
 
+	public I_C_DocType getC_DocType() throws RuntimeException
+    {
+		return (I_C_DocType)MTable.get(getCtx(), I_C_DocType.Table_Name)
+			.getPO(getC_DocType_ID(), get_TrxName());	}
+
+	/** Set Document Type.
+		@param C_DocType_ID 
+		Document type or rules
+	  */
+	public void setC_DocType_ID (int C_DocType_ID)
+	{
+		if (C_DocType_ID < 0) 
+			set_Value (COLUMNNAME_C_DocType_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+	}
+
+	/** Get Document Type.
+		@return Document type or rules
+	  */
+	public int getC_DocType_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set DateValidSO.
 		@param DateValidSO 
 		Fecha Vigencia Venta
@@ -173,6 +202,23 @@ public class X_Z_EvolPrecioVtaProdOrg extends PO implements I_Z_EvolPrecioVtaPro
 	public Timestamp getDateValidSO () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_DateValidSO);
+	}
+
+	/** Set DocumentNoRef.
+		@param DocumentNoRef 
+		Numero de documento referenciado
+	  */
+	public void setDocumentNoRef (String DocumentNoRef)
+	{
+		set_Value (COLUMNNAME_DocumentNoRef, DocumentNoRef);
+	}
+
+	/** Get DocumentNoRef.
+		@return Numero de documento referenciado
+	  */
+	public String getDocumentNoRef () 
+	{
+		return (String)get_Value(COLUMNNAME_DocumentNoRef);
 	}
 
 	public I_M_PriceList getM_PriceList() throws RuntimeException
@@ -251,6 +297,30 @@ public class X_Z_EvolPrecioVtaProdOrg extends PO implements I_Z_EvolPrecioVtaPro
 		return bd;
 	}
 
+	/** Set Vigente.
+		@param Vigente 
+		Si esta vigente o no
+	  */
+	public void setVigente (boolean Vigente)
+	{
+		set_Value (COLUMNNAME_Vigente, Boolean.valueOf(Vigente));
+	}
+
+	/** Get Vigente.
+		@return Si esta vigente o no
+	  */
+	public boolean isVigente () 
+	{
+		Object oo = get_Value(COLUMNNAME_Vigente);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Z_EvolPrecioVtaProdOrg ID.
 		@param Z_EvolPrecioVtaProdOrg_ID Z_EvolPrecioVtaProdOrg ID	  */
 	public void setZ_EvolPrecioVtaProdOrg_ID (int Z_EvolPrecioVtaProdOrg_ID)
@@ -266,6 +336,31 @@ public class X_Z_EvolPrecioVtaProdOrg extends PO implements I_Z_EvolPrecioVtaPro
 	public int getZ_EvolPrecioVtaProdOrg_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_EvolPrecioVtaProdOrg_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_OfertaVenta getZ_OfertaVenta() throws RuntimeException
+    {
+		return (I_Z_OfertaVenta)MTable.get(getCtx(), I_Z_OfertaVenta.Table_Name)
+			.getPO(getZ_OfertaVenta_ID(), get_TrxName());	}
+
+	/** Set Z_OfertaVenta ID.
+		@param Z_OfertaVenta_ID Z_OfertaVenta ID	  */
+	public void setZ_OfertaVenta_ID (int Z_OfertaVenta_ID)
+	{
+		if (Z_OfertaVenta_ID < 1) 
+			set_Value (COLUMNNAME_Z_OfertaVenta_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_OfertaVenta_ID, Integer.valueOf(Z_OfertaVenta_ID));
+	}
+
+	/** Get Z_OfertaVenta ID.
+		@return Z_OfertaVenta ID	  */
+	public int getZ_OfertaVenta_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_OfertaVenta_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

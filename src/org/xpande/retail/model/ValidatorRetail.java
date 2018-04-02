@@ -614,6 +614,14 @@ public class ValidatorRetail implements ModelValidator {
             evolPrecioVtaProdOrg.setDateValidSO((Timestamp) model.get_Value("ValidFrom"));
             evolPrecioVtaProdOrg.setPriceSO(model.getPriceList());
             evolPrecioVtaProdOrg.setAD_User_ID(Env.getAD_User_ID(model.getCtx()));
+
+            if (model.get_ValueAsInt("C_DocType_ID") > 0){
+                evolPrecioVtaProdOrg.setC_DocType_ID(model.get_ValueAsInt("C_DocType_ID"));
+            }
+            if (model.get_ValueAsString("DocumentNoRef") != null){
+                evolPrecioVtaProdOrg.setDocumentNoRef(model.get_ValueAsString("DocumentNoRef"));
+            }
+
             evolPrecioVtaProdOrg.saveEx();
         }
 

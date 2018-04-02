@@ -477,7 +477,6 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			// Si no tengo precio para este producto, lo creo.
 			if ((pprice == null) || (pprice.getM_Product_ID() <= 0)){
 				pprice = new MProductPrice(plVersionVenta, line.getM_Product_ID(), line.getNewPriceSO(), line.getNewPriceSO(), line.getNewPriceSO());
-				pprice.set_ValueOfColumn("ValidFrom", this.getDateValidPO());
 			}
 			else{
 				// Actualizo precios si hay cambios
@@ -485,10 +484,11 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 					pprice.setPriceList(line.getNewPriceSO());
 					pprice.setPriceStd(line.getNewPriceSO());
 					pprice.setPriceLimit(line.getNewPriceSO());
-					pprice.set_ValueOfColumn("ValidFrom", this.getDateValidPO());
 				}
 			}
-
+			pprice.set_ValueOfColumn("C_DocType_ID", this.getC_DocType_ID());
+			pprice.set_ValueOfColumn("DocumentNoRef", this.getDocumentNo());
+			pprice.set_ValueOfColumn("ValidFrom", this.getDateValidPO());
 			pprice.saveEx();
 
 		}

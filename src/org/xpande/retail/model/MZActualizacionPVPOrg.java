@@ -45,6 +45,8 @@ public class MZActualizacionPVPOrg extends X_Z_ActualizacionPVPOrg {
             MPriceList plVenta = null;
             MPriceListVersion plVersionVenta = null;
 
+            MZActualizacionPVP actualizacionPVP = (MZActualizacionPVP) this.getZ_ActualizacionPVP();
+
             if (this.getM_PriceList_ID() <= 0){
                 plVenta = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), this.getAD_OrgTrx_ID(), cCurrencyID, true, get_TrxName());
                 if ((plVenta == null) || (plVenta.get_ID() <= 0)){
@@ -77,6 +79,8 @@ public class MZActualizacionPVPOrg extends X_Z_ActualizacionPVPOrg {
                 pprice.setPriceStd(newPriceSO);
                 pprice.setPriceLimit(newPriceSO);
             }
+            pprice.set_ValueOfColumn("C_DocType_ID", actualizacionPVP.getC_DocType_ID());
+            pprice.set_ValueOfColumn("DocumentNoRef", actualizacionPVP.getDocumentNo());
             pprice.set_ValueOfColumn("ValidFrom", fechaVigencia);
             pprice.saveEx();
 

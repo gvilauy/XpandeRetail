@@ -31,7 +31,7 @@ public class X_Z_ProductoOferta extends PO implements I_Z_ProductoOferta, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180115L;
+	private static final long serialVersionUID = 20180401L;
 
     /** Standard Constructor */
     public X_Z_ProductoOferta (Properties ctx, int Z_ProductoOferta_ID, String trxName)

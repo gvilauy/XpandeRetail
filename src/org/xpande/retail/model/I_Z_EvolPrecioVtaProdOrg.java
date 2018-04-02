@@ -106,6 +106,21 @@ public interface I_Z_EvolPrecioVtaProdOrg
 
 	public I_C_Currency getC_Currency() throws RuntimeException;
 
+    /** Column name C_DocType_ID */
+    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/** Set Document Type.
+	  * Document type or rules
+	  */
+	public void setC_DocType_ID(int C_DocType_ID);
+
+	/** Get Document Type.
+	  * Document type or rules
+	  */
+	public int getC_DocType_ID();
+
+	public I_C_DocType getC_DocType() throws RuntimeException;
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -134,6 +149,19 @@ public interface I_Z_EvolPrecioVtaProdOrg
 	  * Fecha Vigencia Venta
 	  */
 	public Timestamp getDateValidSO();
+
+    /** Column name DocumentNoRef */
+    public static final String COLUMNNAME_DocumentNoRef = "DocumentNoRef";
+
+	/** Set DocumentNoRef.
+	  * Numero de documento referenciado
+	  */
+	public void setDocumentNoRef(String DocumentNoRef);
+
+	/** Get DocumentNoRef.
+	  * Numero de documento referenciado
+	  */
+	public String getDocumentNoRef();
 
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
@@ -207,6 +235,19 @@ public interface I_Z_EvolPrecioVtaProdOrg
 	  */
 	public int getUpdatedBy();
 
+    /** Column name Vigente */
+    public static final String COLUMNNAME_Vigente = "Vigente";
+
+	/** Set Vigente.
+	  * Si esta vigente o no
+	  */
+	public void setVigente(boolean Vigente);
+
+	/** Get Vigente.
+	  * Si esta vigente o no
+	  */
+	public boolean isVigente();
+
     /** Column name Z_EvolPrecioVtaProdOrg_ID */
     public static final String COLUMNNAME_Z_EvolPrecioVtaProdOrg_ID = "Z_EvolPrecioVtaProdOrg_ID";
 
@@ -215,4 +256,15 @@ public interface I_Z_EvolPrecioVtaProdOrg
 
 	/** Get Z_EvolPrecioVtaProdOrg ID	  */
 	public int getZ_EvolPrecioVtaProdOrg_ID();
+
+    /** Column name Z_OfertaVenta_ID */
+    public static final String COLUMNNAME_Z_OfertaVenta_ID = "Z_OfertaVenta_ID";
+
+	/** Set Z_OfertaVenta ID	  */
+	public void setZ_OfertaVenta_ID(int Z_OfertaVenta_ID);
+
+	/** Get Z_OfertaVenta ID	  */
+	public int getZ_OfertaVenta_ID();
+
+	public I_Z_OfertaVenta getZ_OfertaVenta() throws RuntimeException;
 }

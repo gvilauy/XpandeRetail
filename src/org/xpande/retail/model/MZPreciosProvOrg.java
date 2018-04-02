@@ -31,9 +31,6 @@ public class MZPreciosProvOrg extends X_Z_PreciosProvOrg {
     /***
      * Actualiza lista de precios de venta de esta organización para el producto de la linea recibida.
      * Xpande. Created by Gabriel Vila on 6/21/17.
-     * @param plVenta
-     * @param plVersionVenta
-     * @param line
      * @param validFrom
      */
     public void updateProductPriceListSO(int mProductID, int cCurrencyID, BigDecimal newPriceSO, Timestamp validFrom ) {
@@ -44,6 +41,8 @@ public class MZPreciosProvOrg extends X_Z_PreciosProvOrg {
             // Si ya tengo seteada esta lista en este modelo, la utilizo, sino la seteo ahora.
             MPriceList plVenta = null;
             MPriceListVersion plVersionVenta = null;
+
+            MZPreciosProvCab preciosProvCab = (MZPreciosProvCab) this.getZ_PreciosProvCab();
 
             if (this.getM_PriceList_ID_SO() <= 0){
                 plVenta = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), this.getAD_OrgTrx_ID(), cCurrencyID, true, get_TrxName());
@@ -77,9 +76,11 @@ public class MZPreciosProvOrg extends X_Z_PreciosProvOrg {
                     pprice.setPriceList(newPriceSO);
                     pprice.setPriceStd(newPriceSO);
                     pprice.setPriceLimit(newPriceSO);
-                    pprice.set_ValueOfColumn("ValidFrom", validFrom);
                 }
             }
+            pprice.set_ValueOfColumn("C_DocType_ID", preciosProvCab.getC_DocType_ID());
+            pprice.set_ValueOfColumn("DocumentNoRef", preciosProvCab.getDocumentNo());
+            pprice.set_ValueOfColumn("ValidFrom", validFrom);
             pprice.saveEx();
 
         }

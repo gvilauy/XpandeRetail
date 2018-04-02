@@ -318,6 +318,8 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 				pprice.setPriceLimit(pvpLinea.getNewPriceSO());
 			}
 			pprice.set_ValueOfColumn("ValidFrom", fechaVigencia);
+			pprice.set_ValueOfColumn("C_DocType_ID", this.getC_DocType_ID());
+			pprice.set_ValueOfColumn("DocumentNoRef", this.getDocumentNo());
 			pprice.saveEx();
 
 			// Actualizo datos venta para el producto en esta lista en asociaciones producto-socio

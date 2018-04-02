@@ -261,7 +261,8 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 				return DocAction.STATUS_Invalid;
 			}
 
-			// Genero nuevo registro en histórico de ofertas para el producto de esta linea
+			// Genero nuevo registro en tabla de ofertas para el producto de esta linea.
+			// No descrimino por organización ya que por definición la oferta de venta es para todas las organizaciones por igual.
 			productoOferta = new MZProductoOferta(getCtx(), 0, get_TrxName());
 			productoOferta.setZ_OfertaVenta_ID(this.get_ID());
 			productoOferta.setZ_OfertaVentaLin_ID(ventaLin.get_ID());
@@ -270,98 +271,117 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 			productoOferta.setEndDate(this.getEndDate());
 			productoOferta.saveEx();
 
-			// Para cada organización a la cual se aplica esta oferta, se enera una marca de actualización de precio de venta para este producto al POS,
-			// indicando que es oferta y su vigencia.
-			for (MZOfertaVentaOrg ventaOrg: this.getOrgsSelected()){
+			// Si tengo oferta para precio de venta
+			if ((ventaLin.getNewPriceSO() != null) && (ventaLin.getNewPriceSO().compareTo(Env.ZERO) > 0)){
 
-				// Obtengo proveedor de pos para esta organización (por ahora Sisteco y Scanntech)
-				MZPosVendorOrg posVendorOrg = MZPosVendor.getByOrg(getCtx(), ventaOrg.getAD_OrgTrx_ID(), get_TrxName());
-				MZPosVendor posVendor = (MZPosVendor) posVendorOrg.getZ_PosVendor();
-				if (posVendor.getValue().equalsIgnoreCase("SISTECO")){
+				// Para cada organización a la cual se aplica esta oferta:
+				// 1. Se genera nuevo registro en evolución de precios para el producto de esta linea y organización
+				// 3. Se enera una marca de actualización de precio de venta para este producto al POS, indicando que es oferta y su vigencia.
+				for (MZOfertaVentaOrg ventaOrg: this.getOrgsSelected()){
 
-					// Marca Update
-					MZSistecoInterfaceOut sistecoInterfaceOut = MZSistecoInterfaceOut.getRecord(getCtx(), I_M_Product.Table_ID, ventaLin.getM_Product_ID(), ventaOrg.getAD_OrgTrx_ID(), get_TrxName());
-					if ((sistecoInterfaceOut != null) && (sistecoInterfaceOut.get_ID() > 0)){
-						// Proceso segun marca que ya tenía este producto antes de su actualización.
-						// Si marca anterior es CREATE o UPDATE
-						if ((sistecoInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_SistecoInterfaceOut.CRUDTYPE_CREATE))
-							|| (sistecoInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_SistecoInterfaceOut.CRUDTYPE_UPDATE))){
+					// Genero nuevo registro en evolucion de precios del producto para esta organizacion
+					MZEvolPrecioVtaProdOrg evolPrecioVtaProdOrg = new MZEvolPrecioVtaProdOrg(getCtx(), 0, get_TrxName());
+					evolPrecioVtaProdOrg.setM_Product_ID(product.getM_Product_ID());
+					evolPrecioVtaProdOrg.setC_Currency_ID(this.getC_Currency_ID_SO());
+					evolPrecioVtaProdOrg.setAD_OrgTrx_ID(ventaOrg.getAD_OrgTrx_ID());
+					evolPrecioVtaProdOrg.setDateValidSO(this.getStartDate());
+					evolPrecioVtaProdOrg.setPriceSO(ventaLin.getNewPriceSO());
+					evolPrecioVtaProdOrg.setAD_User_ID(Env.getAD_User_ID(getCtx()));
+					evolPrecioVtaProdOrg.setC_DocType_ID(this.getC_DocType_ID());
+					evolPrecioVtaProdOrg.setDocumentNoRef(this.getDocumentNo());
+					evolPrecioVtaProdOrg.setZ_OfertaVenta_ID(this.get_ID());
+					evolPrecioVtaProdOrg.saveEx();
 
-							// Actualizo datos de esta marca para pasar precio de oferta al POS
+					// Obtengo proveedor de pos para esta organización (por ahora Sisteco y Scanntech)
+					MZPosVendorOrg posVendorOrg = MZPosVendor.getByOrg(getCtx(), ventaOrg.getAD_OrgTrx_ID(), get_TrxName());
+					MZPosVendor posVendor = (MZPosVendor) posVendorOrg.getZ_PosVendor();
+					if (posVendor.getValue().equalsIgnoreCase("SISTECO")){
+
+						// Marca Update
+						MZSistecoInterfaceOut sistecoInterfaceOut = MZSistecoInterfaceOut.getRecord(getCtx(), I_M_Product.Table_ID, ventaLin.getM_Product_ID(), ventaOrg.getAD_OrgTrx_ID(), get_TrxName());
+						if ((sistecoInterfaceOut != null) && (sistecoInterfaceOut.get_ID() > 0)){
+							// Proceso segun marca que ya tenía este producto antes de su actualización.
+							// Si marca anterior es CREATE o UPDATE
+							if ((sistecoInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_SistecoInterfaceOut.CRUDTYPE_CREATE))
+									|| (sistecoInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_SistecoInterfaceOut.CRUDTYPE_UPDATE))){
+
+								// Actualizo datos de esta marca para pasar precio de oferta al POS
+								sistecoInterfaceOut.setWithOfferSO(true);
+								sistecoInterfaceOut.setStartDate(this.getStartDate());
+								sistecoInterfaceOut.setEndDate(this.getEndDate());
+								sistecoInterfaceOut.setPriceSO(ventaLin.getNewPriceSO());
+								sistecoInterfaceOut.saveEx();
+
+								continue;
+							}
+							else if (sistecoInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_SistecoInterfaceOut.CRUDTYPE_DELETE)){
+								// Si marca anterior es DELETEAR, es porque el producto se inactivo anteriormente.
+								// Si este producto sigue estando inactivo
+								if (!product.isActive()){
+									continue; // No hago nada y respeto primer marca.
+								}
+							}
+						}
+						// Si no tenia marca, la creo ahora con accion UPDATE
+						if ((sistecoInterfaceOut == null) || (sistecoInterfaceOut.get_ID() <= 0)){
+							sistecoInterfaceOut = new MZSistecoInterfaceOut(getCtx(), 0, get_TrxName());
+							sistecoInterfaceOut.setCRUDType(X_Z_SistecoInterfaceOut.CRUDTYPE_UPDATE);
+							sistecoInterfaceOut.setAD_Table_ID(I_M_Product.Table_ID);
+							sistecoInterfaceOut.setSeqNo(20);
+							sistecoInterfaceOut.setRecord_ID(product.get_ID());
+							sistecoInterfaceOut.setIsPriceChanged(true);
+							sistecoInterfaceOut.setAD_OrgTrx_ID(ventaOrg.getAD_OrgTrx_ID());
 							sistecoInterfaceOut.setWithOfferSO(true);
 							sistecoInterfaceOut.setStartDate(this.getStartDate());
 							sistecoInterfaceOut.setEndDate(this.getEndDate());
 							sistecoInterfaceOut.setPriceSO(ventaLin.getNewPriceSO());
 							sistecoInterfaceOut.saveEx();
-
-							continue;
 						}
-						else if (sistecoInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_SistecoInterfaceOut.CRUDTYPE_DELETE)){
-							// Si marca anterior es DELETEAR, es porque el producto se inactivo anteriormente.
-							// Si este producto sigue estando inactivo
-							if (!product.isActive()){
-								continue; // No hago nada y respeto primer marca.
+
+					}
+					else if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
+
+						// Marca Update
+						MZStechInterfaceOut scanntechInterfaceOut = MZStechInterfaceOut.getRecord(getCtx(), I_M_Product.Table_ID, ventaLin.getM_Product_ID(), ventaOrg.getAD_OrgTrx_ID(), get_TrxName());
+						if ((scanntechInterfaceOut != null) && (scanntechInterfaceOut.get_ID() > 0)){
+							// Proceso segun marca que ya tenía este producto antes de su actualización.
+							// Si marca anterior es CREATE o UPDATE
+							if ((scanntechInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_StechInterfaceOut.CRUDTYPE_CREATE))
+									|| (scanntechInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_StechInterfaceOut.CRUDTYPE_UPDATE))){
+
+								// Actualizo datos de esta marca para pasar precio de oferta al POS
+								scanntechInterfaceOut.setWithOfferSO(true);
+								scanntechInterfaceOut.setStartDate(this.getStartDate());
+								scanntechInterfaceOut.setEndDate(this.getEndDate());
+								scanntechInterfaceOut.setPriceSO(ventaLin.getNewPriceSO());
+								scanntechInterfaceOut.saveEx();
+
+								continue;
+							}
+							else if (scanntechInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_StechInterfaceOut.CRUDTYPE_DELETE)){
+								// Si marca anterior es DELETEAR, es porque el producto se inactivo anteriormente.
+								// Si este producto sigue estando inactivo
+								if (!product.isActive()){
+									continue; // No hago nada y respeto primer marca.
+								}
 							}
 						}
-					}
-					// Si no tenia marca, la creo ahora con accion UPDATE
-					if ((sistecoInterfaceOut == null) || (sistecoInterfaceOut.get_ID() <= 0)){
-						sistecoInterfaceOut = new MZSistecoInterfaceOut(getCtx(), 0, get_TrxName());
-						sistecoInterfaceOut.setCRUDType(X_Z_SistecoInterfaceOut.CRUDTYPE_UPDATE);
-						sistecoInterfaceOut.setAD_Table_ID(I_M_Product.Table_ID);
-						sistecoInterfaceOut.setSeqNo(20);
-						sistecoInterfaceOut.setRecord_ID(product.get_ID());
-						sistecoInterfaceOut.setIsPriceChanged(true);
-						sistecoInterfaceOut.setAD_OrgTrx_ID(ventaOrg.getAD_OrgTrx_ID());
-						sistecoInterfaceOut.setWithOfferSO(true);
-						sistecoInterfaceOut.setStartDate(this.getStartDate());
-						sistecoInterfaceOut.setEndDate(this.getEndDate());
-						sistecoInterfaceOut.setPriceSO(ventaLin.getNewPriceSO());
-						sistecoInterfaceOut.saveEx();
-					}
-
-				}
-				else if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
-
-					// Marca Update
-					MZStechInterfaceOut scanntechInterfaceOut = MZStechInterfaceOut.getRecord(getCtx(), I_M_Product.Table_ID, ventaLin.getM_Product_ID(), ventaOrg.getAD_OrgTrx_ID(), get_TrxName());
-					if ((scanntechInterfaceOut != null) && (scanntechInterfaceOut.get_ID() > 0)){
-						// Proceso segun marca que ya tenía este producto antes de su actualización.
-						// Si marca anterior es CREATE o UPDATE
-						if ((scanntechInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_StechInterfaceOut.CRUDTYPE_CREATE))
-								|| (scanntechInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_StechInterfaceOut.CRUDTYPE_UPDATE))){
-
-							// Actualizo datos de esta marca para pasar precio de oferta al POS
+						// Si no tenia marca, la creo ahora con accion UPDATE
+						if ((scanntechInterfaceOut == null) || (scanntechInterfaceOut.get_ID() <= 0)){
+							scanntechInterfaceOut = new MZStechInterfaceOut(getCtx(), 0, get_TrxName());
+							scanntechInterfaceOut.setCRUDType(X_Z_SistecoInterfaceOut.CRUDTYPE_UPDATE);
+							scanntechInterfaceOut.setAD_Table_ID(I_M_Product.Table_ID);
+							scanntechInterfaceOut.setSeqNo(20);
+							scanntechInterfaceOut.setRecord_ID(product.get_ID());
+							scanntechInterfaceOut.setIsPriceChanged(true);
+							scanntechInterfaceOut.setAD_OrgTrx_ID(ventaOrg.getAD_OrgTrx_ID());
 							scanntechInterfaceOut.setWithOfferSO(true);
 							scanntechInterfaceOut.setStartDate(this.getStartDate());
 							scanntechInterfaceOut.setEndDate(this.getEndDate());
 							scanntechInterfaceOut.setPriceSO(ventaLin.getNewPriceSO());
 							scanntechInterfaceOut.saveEx();
+						}
 
-							continue;
-						}
-						else if (scanntechInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_StechInterfaceOut.CRUDTYPE_DELETE)){
-							// Si marca anterior es DELETEAR, es porque el producto se inactivo anteriormente.
-							// Si este producto sigue estando inactivo
-							if (!product.isActive()){
-								continue; // No hago nada y respeto primer marca.
-							}
-						}
-					}
-					// Si no tenia marca, la creo ahora con accion UPDATE
-					if ((scanntechInterfaceOut == null) || (scanntechInterfaceOut.get_ID() <= 0)){
-						scanntechInterfaceOut = new MZStechInterfaceOut(getCtx(), 0, get_TrxName());
-						scanntechInterfaceOut.setCRUDType(X_Z_SistecoInterfaceOut.CRUDTYPE_UPDATE);
-						scanntechInterfaceOut.setAD_Table_ID(I_M_Product.Table_ID);
-						scanntechInterfaceOut.setSeqNo(20);
-						scanntechInterfaceOut.setRecord_ID(product.get_ID());
-						scanntechInterfaceOut.setIsPriceChanged(true);
-						scanntechInterfaceOut.setAD_OrgTrx_ID(ventaOrg.getAD_OrgTrx_ID());
-						scanntechInterfaceOut.setWithOfferSO(true);
-						scanntechInterfaceOut.setStartDate(this.getStartDate());
-						scanntechInterfaceOut.setEndDate(this.getEndDate());
-						scanntechInterfaceOut.setPriceSO(ventaLin.getNewPriceSO());
-						scanntechInterfaceOut.saveEx();
 					}
 
 				}
