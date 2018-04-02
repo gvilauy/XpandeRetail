@@ -3,6 +3,8 @@ package org.xpande.retail.model;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MProductPrice;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.xpande.core.utils.SequenceUtils;
 
 import java.math.BigDecimal;
@@ -70,9 +72,30 @@ public class MZImpresionEtiquetaSimple extends X_Z_ImpresionEtiquetaSimple {
                 MZImpEtiqSimpleLin etiqSimpleLin = new MZImpEtiqSimpleLin(getCtx(), rs.getInt("z_impetiqsimplelin_id"), get_TrxName());
 
                 // Actualizo precio de venta y validez para este producto en la lista de venta seleccionada
+                BigDecimal priceSO = Env.ZERO;
+                Timestamp validFrom = null;
+
                 MProductPrice productPrice = MProductPrice.get(getCtx(), this.getM_PriceList_Version_ID(), etiqSimpleLin.getM_Product_ID(), get_TrxName());
-                etiqSimpleLin.setPriceSO(productPrice.getPriceList());
-                etiqSimpleLin.setDateValidSO((Timestamp)productPrice.get_Value("ValidFrom"));
+                priceSO = productPrice.getPriceList();
+                validFrom = (Timestamp)productPrice.get_Value("ValidFrom");
+
+                // Verifico si este producto tiene una oferta vigente para la fecha actual.
+                // Si es asi, el precio que tiene que considerarse es el precio oferta y no el precio de lista.
+                Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+                MZProductoOferta productoOferta = MZProductoOferta.getByProductDate(getCtx(), etiqSimpleLin.getM_Product_ID(), fechaHoy, fechaHoy, null);
+                if ((productoOferta != null) && (productoOferta.get_ID() > 0)){
+                    MZOfertaVenta ofertaVenta = (MZOfertaVenta) productoOferta.getZ_OfertaVenta();
+                    MZOfertaVentaLin ventaLin = ofertaVenta.getLineByProduct(etiqSimpleLin.getM_Product_ID());
+                    if ((ventaLin != null) && (ventaLin.get_ID() > 0)){
+                        if ((ventaLin.getNewPriceSO() != null) && (ventaLin.getNewPriceSO().compareTo(Env.ZERO) > 0)){
+                            priceSO = ventaLin.getNewPriceSO();
+                        }
+                    }
+                    validFrom = ofertaVenta.getStartDate();
+                }
+
+                etiqSimpleLin.setPriceSO(priceSO);
+                etiqSimpleLin.setDateValidSO(validFrom);
 
                 // Para este producto debo agregar tantos registros de impresión como cantidad de etiquetas a imprimir
                 for (int i = 1; i <= etiqSimpleLin.getQtyCount(); i++){

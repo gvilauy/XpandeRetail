@@ -1,8 +1,10 @@
 package org.xpande.retail.callout;
 
 import org.compiere.model.*;
+import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.core.model.MZSocioListaPrecio;
 import org.xpande.core.utils.PriceListUtils;
@@ -519,14 +521,36 @@ public class CalloutPrecios extends CalloutEngine {
                 mTab.setValue("PricePO", Env.ZERO);
             }
 
+            BigDecimal priceSO = Env.ZERO;
+            Timestamp validFrom = null;
+
             // Obtengo y seteo precio de venta actual desde lista de precios de venta del cabezal
             int mPriceListID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_ID");
             int mPriceListVersionID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_Version_ID");
             MProductPrice productPrice = MProductPrice.get(ctx, mPriceListVersionID, prod.get_ID(), null);
             if (productPrice != null){
-                mTab.setValue("PriceSO", productPrice.getPriceList());
-                mTab.setValue("NewPriceSO", productPrice.getPriceList());
-                mTab.setValue("DateValidSO", (Timestamp)productPrice.get_Value("ValidFrom"));
+                priceSO = productPrice.getPriceList();
+                validFrom = (Timestamp)productPrice.get_Value("ValidFrom");
+            }
+
+            // Verifico si este producto tiene una oferta vigente para la fecha actual.
+            // Si es asi, el precio que tiene que considerarse es el precio oferta y no el precio de lista.
+            Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+            MZProductoOferta productoOferta = MZProductoOferta.getByProductDate(ctx, prod.get_ID(), fechaHoy, fechaHoy, null);
+            if ((productoOferta != null) && (productoOferta.get_ID() > 0)){
+                MZOfertaVenta ofertaVenta = (MZOfertaVenta) productoOferta.getZ_OfertaVenta();
+                MZOfertaVentaLin ventaLin = ofertaVenta.getLineByProduct(prod.get_ID());
+                if ((ventaLin != null) && (ventaLin.get_ID() > 0)){
+                    if ((ventaLin.getNewPriceSO() != null) && (ventaLin.getNewPriceSO().compareTo(Env.ZERO) > 0)){
+                        priceSO = ventaLin.getNewPriceSO();
+                    }
+                }
+                validFrom = ofertaVenta.getStartDate();
+            }
+            if (productPrice != null){
+                mTab.setValue("PriceSO", priceSO);
+                mTab.setValue("NewPriceSO", priceSO);
+                mTab.setValue("DateValidSO", validFrom);
             }
             else{
                 mTab.setValue("PriceSO", Env.ZERO);

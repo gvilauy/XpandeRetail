@@ -762,4 +762,21 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 	}
 
 
+	/***
+	 * Obtiene y retorna linea según id de producto recibido.
+	 * Xpande. Created by Gabriel Vila on 4/2/18.
+	 * @param mProductID
+	 * @return
+	 */
+	public MZOfertaVentaLin getLineByProduct(int mProductID) {
+
+		String whereClause = X_Z_OfertaVentaLin.COLUMNNAME_Z_OfertaVenta_ID + " =" + this.get_ID() +
+				" AND " + X_Z_OfertaVentaLin.COLUMNNAME_M_Product_ID + " =" + mProductID;
+
+		MZOfertaVentaLin model = new Query(getCtx(), I_Z_OfertaVentaLin.Table_Name, whereClause, get_TrxName()).first();
+
+		return model;
+	}
+
+
 }
