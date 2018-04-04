@@ -31,7 +31,7 @@ public class X_Z_OfertaVenta extends PO implements I_Z_OfertaVenta, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180117L;
+	private static final long serialVersionUID = 20180404L;
 
     /** Standard Constructor */
     public X_Z_OfertaVenta (Properties ctx, int Z_OfertaVenta_ID, String trxName)
@@ -50,6 +50,8 @@ public class X_Z_OfertaVenta extends PO implements I_Z_OfertaVenta, I_Persistent
 			setDocumentNo (null);
 			setEndDate (new Timestamp( System.currentTimeMillis() ));
 			setIsApproved (false);
+// N
+			setIsModified (false);
 // N
 			setM_PriceList_ID_SO (0);
 			setM_PriceList_Version_ID_SO (0);
@@ -315,6 +317,30 @@ public class X_Z_OfertaVenta extends PO implements I_Z_OfertaVenta, I_Persistent
 	public boolean isApproved () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsApproved);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Modified.
+		@param IsModified 
+		The record is modified
+	  */
+	public void setIsModified (boolean IsModified)
+	{
+		set_Value (COLUMNNAME_IsModified, Boolean.valueOf(IsModified));
+	}
+
+	/** Get Modified.
+		@return The record is modified
+	  */
+	public boolean isModified () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsModified);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

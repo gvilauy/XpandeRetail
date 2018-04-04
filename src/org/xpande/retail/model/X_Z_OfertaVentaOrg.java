@@ -30,7 +30,7 @@ public class X_Z_OfertaVentaOrg extends PO implements I_Z_OfertaVentaOrg, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180110L;
+	private static final long serialVersionUID = 20180404L;
 
     /** Standard Constructor */
     public X_Z_OfertaVentaOrg (Properties ctx, int Z_OfertaVentaOrg_ID, String trxName)
@@ -40,6 +40,8 @@ public class X_Z_OfertaVentaOrg extends PO implements I_Z_OfertaVentaOrg, I_Pers
         {
 			setAD_OrgTrx_ID (0);
 			setIsSelected (true);
+// Y
+			setIsSelectedLast (true);
 // Y
 			setZ_OfertaVenta_ID (0);
 			setZ_OfertaVentaOrg_ID (0);
@@ -118,9 +120,33 @@ public class X_Z_OfertaVentaOrg extends PO implements I_Z_OfertaVentaOrg, I_Pers
 		return false;
 	}
 
-	public org.xpande.retail.model.I_Z_OfertaVenta getZ_OfertaVenta() throws RuntimeException
+	/** Set IsSelectedLast.
+		@param IsSelectedLast 
+		Si anteriormente estaba seleccionado o no
+	  */
+	public void setIsSelectedLast (boolean IsSelectedLast)
+	{
+		set_Value (COLUMNNAME_IsSelectedLast, Boolean.valueOf(IsSelectedLast));
+	}
+
+	/** Get IsSelectedLast.
+		@return Si anteriormente estaba seleccionado o no
+	  */
+	public boolean isSelectedLast () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsSelectedLast);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	public I_Z_OfertaVenta getZ_OfertaVenta() throws RuntimeException
     {
-		return (org.xpande.retail.model.I_Z_OfertaVenta)MTable.get(getCtx(), org.xpande.retail.model.I_Z_OfertaVenta.Table_Name)
+		return (I_Z_OfertaVenta)MTable.get(getCtx(), I_Z_OfertaVenta.Table_Name)
 			.getPO(getZ_OfertaVenta_ID(), get_TrxName());	}
 
 	/** Set Z_OfertaVenta ID.

@@ -17,16 +17,14 @@
 /** Generated Model - DO NOT CHANGE */
 package org.xpande.retail.model;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import org.compiere.model.*;
-import org.compiere.util.Env;
 
-/** Generated Model for Z_OfertaVentaLin
+/** Generated Model for Z_OfertaVentaLinDel
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0 - $Id$ */
-public class X_Z_OfertaVentaLin extends PO implements I_Z_OfertaVentaLin, I_Persistent 
+public class X_Z_OfertaVentaLinDel extends PO implements I_Z_OfertaVentaLinDel, I_Persistent 
 {
 
 	/**
@@ -35,25 +33,20 @@ public class X_Z_OfertaVentaLin extends PO implements I_Z_OfertaVentaLin, I_Pers
 	private static final long serialVersionUID = 20180404L;
 
     /** Standard Constructor */
-    public X_Z_OfertaVentaLin (Properties ctx, int Z_OfertaVentaLin_ID, String trxName)
+    public X_Z_OfertaVentaLinDel (Properties ctx, int Z_OfertaVentaLinDel_ID, String trxName)
     {
-      super (ctx, Z_OfertaVentaLin_ID, trxName);
-      /** if (Z_OfertaVentaLin_ID == 0)
+      super (ctx, Z_OfertaVentaLinDel_ID, trxName);
+      /** if (Z_OfertaVentaLinDel_ID == 0)
         {
-			setC_Currency_ID_SO (0);
-			setIsModified (false);
-// N
-			setIsNew (false);
-// N
 			setM_Product_ID (0);
-			setNewPriceSO (Env.ZERO);
 			setZ_OfertaVenta_ID (0);
+			setZ_OfertaVentaLinDel_ID (0);
 			setZ_OfertaVentaLin_ID (0);
         } */
     }
 
     /** Load Constructor */
-    public X_Z_OfertaVentaLin (Properties ctx, ResultSet rs, String trxName)
+    public X_Z_OfertaVentaLinDel (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -75,112 +68,10 @@ public class X_Z_OfertaVentaLin extends PO implements I_Z_OfertaVentaLin, I_Pers
 
     public String toString()
     {
-      StringBuffer sb = new StringBuffer ("X_Z_OfertaVentaLin[")
+      StringBuffer sb = new StringBuffer ("X_Z_OfertaVentaLinDel[")
         .append(get_ID()).append("]");
       return sb.toString();
     }
-
-	/** Set C_Currency_ID_SO.
-		@param C_Currency_ID_SO 
-		Moneda de Venta
-	  */
-	public void setC_Currency_ID_SO (int C_Currency_ID_SO)
-	{
-		set_Value (COLUMNNAME_C_Currency_ID_SO, Integer.valueOf(C_Currency_ID_SO));
-	}
-
-	/** Get C_Currency_ID_SO.
-		@return Moneda de Venta
-	  */
-	public int getC_Currency_ID_SO () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID_SO);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
-	  */
-	public void setDescription (String Description)
-	{
-		set_Value (COLUMNNAME_Description, Description);
-	}
-
-	/** Get Description.
-		@return Optional short description of the record
-	  */
-	public String getDescription () 
-	{
-		return (String)get_Value(COLUMNNAME_Description);
-	}
-
-	/** Set Modified.
-		@param IsModified 
-		The record is modified
-	  */
-	public void setIsModified (boolean IsModified)
-	{
-		set_Value (COLUMNNAME_IsModified, Boolean.valueOf(IsModified));
-	}
-
-	/** Get Modified.
-		@return The record is modified
-	  */
-	public boolean isModified () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsModified);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set IsNew.
-		@param IsNew IsNew	  */
-	public void setIsNew (boolean IsNew)
-	{
-		set_Value (COLUMNNAME_IsNew, Boolean.valueOf(IsNew));
-	}
-
-	/** Get IsNew.
-		@return IsNew	  */
-	public boolean isNew () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsNew);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set LastPriceSO.
-		@param LastPriceSO 
-		Ultimo precio de venta
-	  */
-	public void setLastPriceSO (BigDecimal LastPriceSO)
-	{
-		set_Value (COLUMNNAME_LastPriceSO, LastPriceSO);
-	}
-
-	/** Get LastPriceSO.
-		@return Ultimo precio de venta
-	  */
-	public BigDecimal getLastPriceSO () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_LastPriceSO);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
 
 	public I_M_Product getM_Product() throws RuntimeException
     {
@@ -210,63 +101,6 @@ public class X_Z_OfertaVentaLin extends PO implements I_Z_OfertaVentaLin, I_Pers
 		return ii.intValue();
 	}
 
-	/** Set NewPriceSO.
-		@param NewPriceSO 
-		NewPriceSO
-	  */
-	public void setNewPriceSO (BigDecimal NewPriceSO)
-	{
-		set_Value (COLUMNNAME_NewPriceSO, NewPriceSO);
-	}
-
-	/** Get NewPriceSO.
-		@return NewPriceSO
-	  */
-	public BigDecimal getNewPriceSO () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_NewPriceSO);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set PriceSO.
-		@param PriceSO 
-		PriceSO
-	  */
-	public void setPriceSO (BigDecimal PriceSO)
-	{
-		set_Value (COLUMNNAME_PriceSO, PriceSO);
-	}
-
-	/** Get PriceSO.
-		@return PriceSO
-	  */
-	public BigDecimal getPriceSO () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceSO);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set UPC/EAN.
-		@param UPC 
-		Bar Code (Universal Product Code or its superset European Article Number)
-	  */
-	public void setUPC (String UPC)
-	{
-		set_Value (COLUMNNAME_UPC, UPC);
-	}
-
-	/** Get UPC/EAN.
-		@return Bar Code (Universal Product Code or its superset European Article Number)
-	  */
-	public String getUPC () 
-	{
-		return (String)get_Value(COLUMNNAME_UPC);
-	}
-
 	public I_Z_OfertaVenta getZ_OfertaVenta() throws RuntimeException
     {
 		return (I_Z_OfertaVenta)MTable.get(getCtx(), I_Z_OfertaVenta.Table_Name)
@@ -292,14 +126,34 @@ public class X_Z_OfertaVentaLin extends PO implements I_Z_OfertaVentaLin, I_Pers
 		return ii.intValue();
 	}
 
+	/** Set Z_OfertaVentaLinDel ID.
+		@param Z_OfertaVentaLinDel_ID Z_OfertaVentaLinDel ID	  */
+	public void setZ_OfertaVentaLinDel_ID (int Z_OfertaVentaLinDel_ID)
+	{
+		if (Z_OfertaVentaLinDel_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Z_OfertaVentaLinDel_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Z_OfertaVentaLinDel_ID, Integer.valueOf(Z_OfertaVentaLinDel_ID));
+	}
+
+	/** Get Z_OfertaVentaLinDel ID.
+		@return Z_OfertaVentaLinDel ID	  */
+	public int getZ_OfertaVentaLinDel_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_OfertaVentaLinDel_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Z_OfertaVentaLin ID.
 		@param Z_OfertaVentaLin_ID Z_OfertaVentaLin ID	  */
 	public void setZ_OfertaVentaLin_ID (int Z_OfertaVentaLin_ID)
 	{
 		if (Z_OfertaVentaLin_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Z_OfertaVentaLin_ID, null);
+			set_Value (COLUMNNAME_Z_OfertaVentaLin_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_Z_OfertaVentaLin_ID, Integer.valueOf(Z_OfertaVentaLin_ID));
+			set_Value (COLUMNNAME_Z_OfertaVentaLin_ID, Integer.valueOf(Z_OfertaVentaLin_ID));
 	}
 
 	/** Get Z_OfertaVentaLin ID.

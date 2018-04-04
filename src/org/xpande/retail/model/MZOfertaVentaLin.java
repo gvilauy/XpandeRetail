@@ -3,6 +3,7 @@ package org.xpande.retail.model;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
+import org.compiere.util.DB;
 import org.xpande.core.utils.PriceListUtils;
 
 import java.sql.ResultSet;
@@ -28,10 +29,11 @@ public class MZOfertaVentaLin extends X_Z_OfertaVentaLin {
     @Override
     protected boolean beforeSave(boolean newRecord) {
 
-        // Para nuevos registros o cambio de producto
-        if ((newRecord) || (is_ValueChanged(X_Z_OfertaVentaLin.COLUMNNAME_M_Product_ID))){
+        MZOfertaVenta ofertaVenta = (MZOfertaVenta) this.getZ_OfertaVenta();
 
-            MZOfertaVenta ofertaVenta = (MZOfertaVenta) this.getZ_OfertaVenta();
+        // Para nuevos registros o cambio de producto
+        if (newRecord){
+
             MProduct product = (MProduct) this.getM_Product();
 
             // Valido que el producto de esta linea no tengo una oferta definida dentro del mismo rango de fechas de esta oferta.
@@ -43,6 +45,63 @@ public class MZOfertaVentaLin extends X_Z_OfertaVentaLin {
                             " (Oferta nro.: " + ofertaVentaAux.getDocumentNo() + ")");
                 return false;
             }
+
+            // Inicializo Precio anterior es igual al nuevo precio para productos nuevos en la oferta.
+            this.setLastPriceSO(this.getNewPriceSO());
+
+            // Si estoy en correccion de oferta, marco este nuevo producto ingresado como nuevo en la corrección
+            if (ofertaVenta.isModified()){
+                this.setIsModified(true);
+                this.setIsNew(true);
+
+                // Me aseguro que no hayan marcas de este producto en la tablas de eliminados.
+                // Esto es por si elimino un producto y lo vuelve a dar de alta, durante el proceso de corrección.
+                String action = " delete from z_ofertaventalindel where z_ofertaventa_id =" + ofertaVenta.get_ID() +
+                        " and m_product_id =" + this.getM_Product_ID();
+                DB.executeUpdateEx(action, get_TrxName());
+            }
+            else{
+                this.setIsModified(false);
+                this.setIsNew(false);
+            }
+        }
+
+        // Si se modifica el precio de venta
+        if (this.is_ValueChanged(X_Z_OfertaVentaLin.COLUMNNAME_NewPriceSO)){
+            // Si no estoy en corrección, o estoy en corrección y el producto es nuevo para la oferta
+            if ((!ofertaVenta.isModified()) || (ofertaVenta.isModified() && this.isNew())){
+                // Actualizo precio anterior igual al nuevo precio
+                this.setLastPriceSO(this.getNewPriceSO());
+            }
+            // Si estoy en corrección y el producto ya existia en la oferta y le esta cambiando el precio, marco producto modificado.
+            if ((ofertaVenta.isModified()) && (!this.isNew())){
+                if (this.getNewPriceSO().compareTo(this.getLastPriceSO()) != 0){
+                    this.setIsModified(true);
+                }
+                else{
+                    this.setIsModified(false);
+                }
+            }
+        }
+
+        return true;
+    }
+
+
+    @Override
+    protected boolean beforeDelete() {
+
+        // Obtengo cabezal de oferta
+        MZOfertaVenta ofertaVenta = (MZOfertaVenta) this.getZ_OfertaVenta();
+
+        // Si estoy en corrección de oferta
+        if (ofertaVenta.isModified()){
+            // Al eliminar un producto, guardo información de esta eliminación para procesarlo al completar nuevamente la oferta
+            MZOfertaVentaLinDel linDel = new MZOfertaVentaLinDel(getCtx(), 0, get_TrxName());
+            linDel.setZ_OfertaVenta_ID(ofertaVenta.get_ID());
+            linDel.setM_Product_ID(this.getM_Product_ID());
+            linDel.setZ_OfertaVentaLin_ID(this.get_ID());
+            linDel.saveEx();
         }
 
         return true;
@@ -114,6 +173,7 @@ public class MZOfertaVentaLin extends X_Z_OfertaVentaLin {
                 }
 
             }
+
         }
 
         return true;

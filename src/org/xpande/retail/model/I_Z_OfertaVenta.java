@@ -211,6 +211,19 @@ public interface I_Z_OfertaVenta
 	  */
 	public boolean isApproved();
 
+    /** Column name IsModified */
+    public static final String COLUMNNAME_IsModified = "IsModified";
+
+	/** Set Modified.
+	  * The record is modified
+	  */
+	public void setIsModified(boolean IsModified);
+
+	/** Get Modified.
+	  * The record is modified
+	  */
+	public boolean isModified();
+
     /** Column name M_PriceList_ID_SO */
     public static final String COLUMNNAME_M_PriceList_ID_SO = "M_PriceList_ID_SO";
 

@@ -114,6 +114,19 @@ public interface I_Z_OfertaVentaOrg
 	/** Get Selected	  */
 	public boolean isSelected();
 
+    /** Column name IsSelectedLast */
+    public static final String COLUMNNAME_IsSelectedLast = "IsSelectedLast";
+
+	/** Set IsSelectedLast.
+	  * Si anteriormente estaba seleccionado o no
+	  */
+	public void setIsSelectedLast(boolean IsSelectedLast);
+
+	/** Get IsSelectedLast.
+	  * Si anteriormente estaba seleccionado o no
+	  */
+	public boolean isSelectedLast();
+
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -139,7 +152,7 @@ public interface I_Z_OfertaVentaOrg
 	/** Get Z_OfertaVenta ID	  */
 	public int getZ_OfertaVenta_ID();
 
-	public org.xpande.retail.model.I_Z_OfertaVenta getZ_OfertaVenta() throws RuntimeException;
+	public I_Z_OfertaVenta getZ_OfertaVenta() throws RuntimeException;
 
     /** Column name Z_OfertaVentaOrg_ID */
     public static final String COLUMNNAME_Z_OfertaVentaOrg_ID = "Z_OfertaVentaOrg_ID";

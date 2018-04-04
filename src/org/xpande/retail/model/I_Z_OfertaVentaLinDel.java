@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_OfertaVentaLin
+/** Generated Interface for Z_OfertaVentaLinDel
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_OfertaVentaLin 
+public interface I_Z_OfertaVentaLinDel 
 {
 
-    /** TableName=Z_OfertaVentaLin */
-    public static final String Table_Name = "Z_OfertaVentaLin";
+    /** TableName=Z_OfertaVentaLinDel */
+    public static final String Table_Name = "Z_OfertaVentaLinDel";
 
-    /** AD_Table_ID=1000180 */
+    /** AD_Table_ID=1000207 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -63,19 +63,6 @@ public interface I_Z_OfertaVentaLin
 	  */
 	public int getAD_Org_ID();
 
-    /** Column name C_Currency_ID_SO */
-    public static final String COLUMNNAME_C_Currency_ID_SO = "C_Currency_ID_SO";
-
-	/** Set C_Currency_ID_SO.
-	  * Moneda de Venta
-	  */
-	public void setC_Currency_ID_SO(int C_Currency_ID_SO);
-
-	/** Get C_Currency_ID_SO.
-	  * Moneda de Venta
-	  */
-	public int getC_Currency_ID_SO();
-
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -92,19 +79,6 @@ public interface I_Z_OfertaVentaLin
 	  */
 	public int getCreatedBy();
 
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
-
-	/** Set Description.
-	  * Optional short description of the record
-	  */
-	public void setDescription(String Description);
-
-	/** Get Description.
-	  * Optional short description of the record
-	  */
-	public String getDescription();
-
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -117,41 +91,6 @@ public interface I_Z_OfertaVentaLin
 	  * The record is active in the system
 	  */
 	public boolean isActive();
-
-    /** Column name IsModified */
-    public static final String COLUMNNAME_IsModified = "IsModified";
-
-	/** Set Modified.
-	  * The record is modified
-	  */
-	public void setIsModified(boolean IsModified);
-
-	/** Get Modified.
-	  * The record is modified
-	  */
-	public boolean isModified();
-
-    /** Column name IsNew */
-    public static final String COLUMNNAME_IsNew = "IsNew";
-
-	/** Set IsNew	  */
-	public void setIsNew(boolean IsNew);
-
-	/** Get IsNew	  */
-	public boolean isNew();
-
-    /** Column name LastPriceSO */
-    public static final String COLUMNNAME_LastPriceSO = "LastPriceSO";
-
-	/** Set LastPriceSO.
-	  * Ultimo precio de venta
-	  */
-	public void setLastPriceSO(BigDecimal LastPriceSO);
-
-	/** Get LastPriceSO.
-	  * Ultimo precio de venta
-	  */
-	public BigDecimal getLastPriceSO();
 
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
@@ -167,45 +106,6 @@ public interface I_Z_OfertaVentaLin
 	public int getM_Product_ID();
 
 	public I_M_Product getM_Product() throws RuntimeException;
-
-    /** Column name NewPriceSO */
-    public static final String COLUMNNAME_NewPriceSO = "NewPriceSO";
-
-	/** Set NewPriceSO.
-	  * NewPriceSO
-	  */
-	public void setNewPriceSO(BigDecimal NewPriceSO);
-
-	/** Get NewPriceSO.
-	  * NewPriceSO
-	  */
-	public BigDecimal getNewPriceSO();
-
-    /** Column name PriceSO */
-    public static final String COLUMNNAME_PriceSO = "PriceSO";
-
-	/** Set PriceSO.
-	  * PriceSO
-	  */
-	public void setPriceSO(BigDecimal PriceSO);
-
-	/** Get PriceSO.
-	  * PriceSO
-	  */
-	public BigDecimal getPriceSO();
-
-    /** Column name UPC */
-    public static final String COLUMNNAME_UPC = "UPC";
-
-	/** Set UPC/EAN.
-	  * Bar Code (Universal Product Code or its superset European Article Number)
-	  */
-	public void setUPC(String UPC);
-
-	/** Get UPC/EAN.
-	  * Bar Code (Universal Product Code or its superset European Article Number)
-	  */
-	public String getUPC();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -233,6 +133,15 @@ public interface I_Z_OfertaVentaLin
 	public int getZ_OfertaVenta_ID();
 
 	public I_Z_OfertaVenta getZ_OfertaVenta() throws RuntimeException;
+
+    /** Column name Z_OfertaVentaLinDel_ID */
+    public static final String COLUMNNAME_Z_OfertaVentaLinDel_ID = "Z_OfertaVentaLinDel_ID";
+
+	/** Set Z_OfertaVentaLinDel ID	  */
+	public void setZ_OfertaVentaLinDel_ID(int Z_OfertaVentaLinDel_ID);
+
+	/** Get Z_OfertaVentaLinDel ID	  */
+	public int getZ_OfertaVentaLinDel_ID();
 
     /** Column name Z_OfertaVentaLin_ID */
     public static final String COLUMNNAME_Z_OfertaVentaLin_ID = "Z_OfertaVentaLin_ID";
