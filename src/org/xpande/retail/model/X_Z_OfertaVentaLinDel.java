@@ -19,6 +19,7 @@ package org.xpande.retail.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.Properties;
 import org.compiere.model.*;
 import org.compiere.util.Env;
@@ -41,6 +42,7 @@ public class X_Z_OfertaVentaLinDel extends PO implements I_Z_OfertaVentaLinDel, 
       /** if (Z_OfertaVentaLinDel_ID == 0)
         {
 			setM_Product_ID (0);
+			setValidFrom (new Timestamp( System.currentTimeMillis() ));
 			setZ_OfertaVenta_ID (0);
 			setZ_OfertaVentaLinDel_ID (0);
 			setZ_OfertaVentaLin_ID (0);
@@ -121,6 +123,23 @@ public class X_Z_OfertaVentaLinDel extends PO implements I_Z_OfertaVentaLinDel, 
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	/** Set Valid from.
+		@param ValidFrom 
+		Valid from including this date (first day)
+	  */
+	public void setValidFrom (Timestamp ValidFrom)
+	{
+		set_Value (COLUMNNAME_ValidFrom, ValidFrom);
+	}
+
+	/** Get Valid from.
+		@return Valid from including this date (first day)
+	  */
+	public Timestamp getValidFrom () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_ValidFrom);
 	}
 
 	public I_Z_OfertaVenta getZ_OfertaVenta() throws RuntimeException

@@ -136,6 +136,19 @@ public interface I_Z_OfertaVentaLinDel
 	  */
 	public int getUpdatedBy();
 
+    /** Column name ValidFrom */
+    public static final String COLUMNNAME_ValidFrom = "ValidFrom";
+
+	/** Set Valid from.
+	  * Valid from including this date (first day)
+	  */
+	public void setValidFrom(Timestamp ValidFrom);
+
+	/** Get Valid from.
+	  * Valid from including this date (first day)
+	  */
+	public Timestamp getValidFrom();
+
     /** Column name Z_OfertaVenta_ID */
     public static final String COLUMNNAME_Z_OfertaVenta_ID = "Z_OfertaVenta_ID";
 

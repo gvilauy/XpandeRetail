@@ -780,11 +780,11 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					" and cab.docstatus='CO' " +
 					" and cab.startdate <='" + fechaOferta + "' "  +
 					//"' and cab.enddate >='" + fechaOferta + "') " +
-					" and cab.z_ofertaventa_id not in " +
+					" and ((cab.z_ofertaventa_id not in " +
 					" (select confdoc.record_id from z_confirmacionetiquetadoc confdoc " +
 					" inner join z_confirmacionetiqueta conf on confdoc.z_confirmacionetiqueta_id = conf.z_confirmacionetiqueta_id " +
 					" where confdoc.isselected ='Y' and confdoc.ad_table_id =" + adTableID +
-					" and conf.ad_org_id =" + this.getAD_Org_ID() + ") " +
+					" and conf.ad_org_id =" + this.getAD_Org_ID() + ")) OR (cab.ismodified='Y')) " +
 					" order by cab.updated, cab.z_ofertaventa_id ";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
@@ -807,6 +807,24 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					etiquetaDoc.save();
 
 					zOfertaVentaID = rs.getInt("z_ofertaventa_id");
+
+					// Si es una corrección de oferta, tengo que considerar los productos eliminados de la misma
+					MZOfertaVenta ofertaVenta = new MZOfertaVenta(getCtx(), zOfertaVentaID, get_TrxName());
+					if (ofertaVenta.isModified()){
+						List<MZOfertaVentaLinDel> linDelList = ofertaVenta.getLinesDeleted();
+						for (MZOfertaVentaLinDel linDel: linDelList){
+							// Agrego producto eliminado en correccion de oferta
+							MZConfirmacionEtiquetaProd etiquetaProd = new MZConfirmacionEtiquetaProd(getCtx(), 0, get_TrxName());
+							etiquetaProd.setZ_ConfirmacionEtiquetaDoc_ID(etiquetaDoc.get_ID());
+							etiquetaProd.setM_Product_ID(linDel.getM_Product_ID());
+							etiquetaProd.setPriceSO(linDel.getNewPriceSO());
+							etiquetaProd.setDateValidSO(linDel.getValidFrom());
+							etiquetaProd.setC_Currency_ID_SO(ofertaVenta.getC_Currency_ID_SO());
+							etiquetaProd.setWithOfferSO(false);  // Este producto en si mismo esta entrando a comuniacion al local para imprimirse por una cercana oferta.
+							etiquetaProd.setQtyCount(1);
+							etiquetaProd.saveEx();
+						}
+					}
 				}
 
 				// Nuevo producto

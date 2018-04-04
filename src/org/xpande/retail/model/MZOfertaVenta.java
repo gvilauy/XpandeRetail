@@ -935,6 +935,7 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 
 					// Obtengo el precio de lista actual del producto según lista de precios de venta asociada a la oferta
 					BigDecimal newPriceSO = Env.ZERO;
+					Timestamp validFrom = null;
 					MPriceList priceList = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), ventaOrg.getAD_OrgTrx_ID(),
 							this.getC_Currency_ID_SO(), true, null);
 
@@ -945,6 +946,7 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 							MProductPrice productPrice = MProductPrice.get(getCtx(), plv.get_ID(), product.get_ID(), null);
 							if (productPrice != null){
 								newPriceSO = productPrice.getPriceList();
+								validFrom = (Timestamp) productPrice.get_Value("ValidFrom");
 								if (newPriceSO.compareTo(Env.ZERO) <= 0){
 									return "No se pudo obtener precio de producto (" + product.getValue() + ") en Lista de Precios de Venta : " + priceList.getName();
 								}
@@ -964,6 +966,7 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 
 					// Guardo precio en linea deleteada para luego poder ser comunicado al local
 					linDel.setNewPriceSO(newPriceSO);
+					linDel.setValidFrom(validFrom);
 					linDel.saveEx();
 
 					// Genero nuevo registro en evolucion de precios del producto para esta organizacion
@@ -1002,7 +1005,7 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 	 * Xpande. Created by Gabriel Vila on 4/4/18.
 	 * @return
 	 */
-	private List<MZOfertaVentaLinDel> getLinesDeleted(){
+	public List<MZOfertaVentaLinDel> getLinesDeleted(){
 
 		String whereClause = X_Z_OfertaVentaLinDel.COLUMNNAME_Z_OfertaVenta_ID + " =" + this.get_ID();
 
