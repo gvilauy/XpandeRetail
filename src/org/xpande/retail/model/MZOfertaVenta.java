@@ -595,8 +595,11 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 			}
 
 			// Verifico rango de fechas de la oferta
-			if (this.getStartDate().before(fechaHoy)){
-				return "Fecha Oferta Desde no puede ser anterior al día de hoy.";
+
+			if (!this.isModified()){
+				if (this.getStartDate().before(fechaHoy)){
+					return "Fecha Oferta Desde no puede ser anterior al día de hoy.";
+				}
 			}
 
 			if (!this.getEndDate().after(fechaHoy)){
@@ -642,7 +645,7 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 	 * @param adOrgTrxID
 	 * @param newPriceSO
 	 */
-	private void setInterfacePOS(MZPosVendor posVendor, MProduct product, int adOrgTrxID, BigDecimal newPriceSO) {
+	private void setInterfacePOS(MZPosVendor posVendor, MProduct product, int adOrgTrxID, BigDecimal newPriceSO, boolean withOffer, int mPriceListID) {
 
 		try{
 			// Segun el proveedor de pos
@@ -657,10 +660,19 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 							|| (sistecoInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_SistecoInterfaceOut.CRUDTYPE_UPDATE))){
 
 						// Actualizo datos de esta marca para pasar precio de oferta al POS
-						sistecoInterfaceOut.setWithOfferSO(true);
-						sistecoInterfaceOut.setStartDate(this.getStartDate());
-						sistecoInterfaceOut.setEndDate(this.getEndDate());
+						sistecoInterfaceOut.setWithOfferSO(withOffer);
 						sistecoInterfaceOut.setPriceSO(newPriceSO);
+
+						if (withOffer){
+							sistecoInterfaceOut.setStartDate(this.getStartDate());
+							sistecoInterfaceOut.setEndDate(this.getEndDate());
+						}
+						else{
+							sistecoInterfaceOut.setM_PriceList_ID(mPriceListID);
+							sistecoInterfaceOut.setStartDate(null);
+							sistecoInterfaceOut.setEndDate(null);
+						}
+
 						sistecoInterfaceOut.saveEx();
 						return;
 					}
@@ -681,10 +693,18 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 					sistecoInterfaceOut.setRecord_ID(product.get_ID());
 					sistecoInterfaceOut.setIsPriceChanged(true);
 					sistecoInterfaceOut.setAD_OrgTrx_ID(adOrgTrxID);
-					sistecoInterfaceOut.setWithOfferSO(true);
-					sistecoInterfaceOut.setStartDate(this.getStartDate());
-					sistecoInterfaceOut.setEndDate(this.getEndDate());
+					sistecoInterfaceOut.setWithOfferSO(withOffer);
 					sistecoInterfaceOut.setPriceSO(newPriceSO);
+
+					if (withOffer){
+						sistecoInterfaceOut.setStartDate(this.getStartDate());
+						sistecoInterfaceOut.setEndDate(this.getEndDate());
+					}
+					else{
+						sistecoInterfaceOut.setM_PriceList_ID(mPriceListID);
+						sistecoInterfaceOut.setStartDate(null);
+						sistecoInterfaceOut.setEndDate(null);
+					}
 					sistecoInterfaceOut.saveEx();
 				}
 
@@ -700,11 +720,20 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 							|| (scanntechInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_StechInterfaceOut.CRUDTYPE_UPDATE))){
 
 						// Actualizo datos de esta marca para pasar precio de oferta al POS
-						scanntechInterfaceOut.setWithOfferSO(true);
-						scanntechInterfaceOut.setStartDate(this.getStartDate());
-						scanntechInterfaceOut.setEndDate(this.getEndDate());
+						scanntechInterfaceOut.setWithOfferSO(withOffer);
 						scanntechInterfaceOut.setPriceSO(newPriceSO);
+
+						if (withOffer){
+							scanntechInterfaceOut.setStartDate(this.getStartDate());
+							scanntechInterfaceOut.setEndDate(this.getEndDate());
+						}
+						else{
+							scanntechInterfaceOut.setM_PriceList_ID(mPriceListID);
+							scanntechInterfaceOut.setStartDate(null);
+							scanntechInterfaceOut.setEndDate(null);
+						}
 						scanntechInterfaceOut.saveEx();
+
 						return;
 					}
 					else if (scanntechInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_StechInterfaceOut.CRUDTYPE_DELETE)){
@@ -724,10 +753,18 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 					scanntechInterfaceOut.setRecord_ID(product.get_ID());
 					scanntechInterfaceOut.setIsPriceChanged(true);
 					scanntechInterfaceOut.setAD_OrgTrx_ID(adOrgTrxID);
-					scanntechInterfaceOut.setWithOfferSO(true);
-					scanntechInterfaceOut.setStartDate(this.getStartDate());
-					scanntechInterfaceOut.setEndDate(this.getEndDate());
+					scanntechInterfaceOut.setWithOfferSO(withOffer);
 					scanntechInterfaceOut.setPriceSO(newPriceSO);
+
+					if (withOffer){
+						scanntechInterfaceOut.setStartDate(this.getStartDate());
+						scanntechInterfaceOut.setEndDate(this.getEndDate());
+					}
+					else{
+						scanntechInterfaceOut.setM_PriceList_ID(mPriceListID);
+						scanntechInterfaceOut.setStartDate(null);
+						scanntechInterfaceOut.setEndDate(null);
+					}
 					scanntechInterfaceOut.saveEx();
 				}
 			}
@@ -737,6 +774,13 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 		}
 	}
 
+
+	/***
+	 * Procesa lineas de la oferta.
+	 * Xpande. Created by Gabriel Vila on 4/4/18.
+	 * @param ventaLinList
+	 * @return
+	 */
 	private String processLines(List<MZOfertaVentaLin> ventaLinList) {
 
 		String message = null;
@@ -777,7 +821,7 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 					for (MZOfertaVentaOrg ventaOrg: this.getOrgsSelected()){
 
 						// Si no estoy en correccion, o si estoy y esta organización ahora se selecciono pero antes no estaba seleccionada
-						if ((!this.isModified()) || (this.isModified() && !ventaOrg.isSelectedLast())){
+						if ((!this.isModified()) || (this.isModified() && ventaLin.isModified())){
 
 							// Genero nuevo registro en evolucion de precios del producto para esta organizacion
 							MZEvolPrecioVtaProdOrg evolPrecioVtaProdOrg = new MZEvolPrecioVtaProdOrg(getCtx(), 0, get_TrxName());
@@ -805,7 +849,7 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 						if ((!this.isModified()) || (this.isModified() && ventaLin.isModified())){
 
 							// Genero marca para comunicacion al pos.
-							this.setInterfacePOS(posVendor, product, ventaOrg.getAD_OrgTrx_ID(), ventaLin.getNewPriceSO());
+							this.setInterfacePOS(posVendor, product, ventaOrg.getAD_OrgTrx_ID(), ventaLin.getNewPriceSO(), true, 0);
 
 						}
 					}
@@ -899,9 +943,9 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 						MPriceListVersion plv = priceList.getPriceListVersion(null);
 						if (plv != null){
 							MProductPrice productPrice = MProductPrice.get(getCtx(), plv.get_ID(), product.get_ID(), null);
-							if (productPrice == null){
+							if (productPrice != null){
 								newPriceSO = productPrice.getPriceList();
-								if ((newPriceSO == null) || (newPriceSO.compareTo(Env.ZERO) <= 0)){
+								if (newPriceSO.compareTo(Env.ZERO) <= 0){
 									return "No se pudo obtener precio de producto (" + product.getValue() + ") en Lista de Precios de Venta : " + priceList.getName();
 								}
 							}
@@ -940,7 +984,7 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 					MZPosVendor posVendor = (MZPosVendor) posVendorOrg.getZ_PosVendor();
 
 					// Genero marca para comunicacion al pos.
-					this.setInterfacePOS(posVendor, product, ventaOrg.getAD_OrgTrx_ID(), newPriceSO);
+					this.setInterfacePOS(posVendor, product, ventaOrg.getAD_OrgTrx_ID(), newPriceSO, false, priceList.get_ID());
 				}
 			}
 
