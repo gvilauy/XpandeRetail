@@ -17,9 +17,11 @@
 /** Generated Model - DO NOT CHANGE */
 package org.xpande.retail.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import org.compiere.model.*;
+import org.compiere.util.Env;
 
 /** Generated Model for Z_OfertaVentaLinDel
  *  @author Adempiere (generated) 
@@ -99,6 +101,26 @@ public class X_Z_OfertaVentaLinDel extends PO implements I_Z_OfertaVentaLinDel, 
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set NewPriceSO.
+		@param NewPriceSO 
+		NewPriceSO
+	  */
+	public void setNewPriceSO (BigDecimal NewPriceSO)
+	{
+		set_Value (COLUMNNAME_NewPriceSO, NewPriceSO);
+	}
+
+	/** Get NewPriceSO.
+		@return NewPriceSO
+	  */
+	public BigDecimal getNewPriceSO () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_NewPriceSO);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	public I_Z_OfertaVenta getZ_OfertaVenta() throws RuntimeException

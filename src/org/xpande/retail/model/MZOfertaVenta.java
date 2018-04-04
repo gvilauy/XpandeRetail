@@ -918,6 +918,10 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 						return "No se pudo obtener Lista de Precios de Venta para la Organización : " + org.getName();
 					}
 
+					// Guardo precio en linea deleteada para luego poder ser comunicado al local
+					linDel.setNewPriceSO(newPriceSO);
+					linDel.saveEx();
+
 					// Genero nuevo registro en evolucion de precios del producto para esta organizacion
 					MZEvolPrecioVtaProdOrg evolPrecioVtaProdOrg = new MZEvolPrecioVtaProdOrg(getCtx(), 0, get_TrxName());
 					evolPrecioVtaProdOrg.setM_Product_ID(product.getM_Product_ID());

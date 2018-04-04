@@ -107,6 +107,19 @@ public interface I_Z_OfertaVentaLinDel
 
 	public I_M_Product getM_Product() throws RuntimeException;
 
+    /** Column name NewPriceSO */
+    public static final String COLUMNNAME_NewPriceSO = "NewPriceSO";
+
+	/** Set NewPriceSO.
+	  * NewPriceSO
+	  */
+	public void setNewPriceSO(BigDecimal NewPriceSO);
+
+	/** Get NewPriceSO.
+	  * NewPriceSO
+	  */
+	public BigDecimal getNewPriceSO();
+
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
