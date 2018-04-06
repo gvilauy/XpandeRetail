@@ -30,7 +30,7 @@ public class X_Z_OfertaVentaOrg extends PO implements I_Z_OfertaVentaOrg, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180404L;
+	private static final long serialVersionUID = 20180406L;
 
     /** Standard Constructor */
     public X_Z_OfertaVentaOrg (Properties ctx, int Z_OfertaVentaOrg_ID, String trxName)
@@ -39,10 +39,12 @@ public class X_Z_OfertaVentaOrg extends PO implements I_Z_OfertaVentaOrg, I_Pers
       /** if (Z_OfertaVentaOrg_ID == 0)
         {
 			setAD_OrgTrx_ID (0);
+			setIsModified (false);
+// N
 			setIsSelected (true);
 // Y
-			setIsSelectedLast (true);
-// Y
+			setIsSelectedLast (false);
+// N
 			setZ_OfertaVenta_ID (0);
 			setZ_OfertaVentaOrg_ID (0);
         } */
@@ -99,6 +101,30 @@ public class X_Z_OfertaVentaOrg extends PO implements I_Z_OfertaVentaOrg, I_Pers
 		return ii.intValue();
 	}
 
+	/** Set Modified.
+		@param IsModified 
+		The record is modified
+	  */
+	public void setIsModified (boolean IsModified)
+	{
+		set_Value (COLUMNNAME_IsModified, Boolean.valueOf(IsModified));
+	}
+
+	/** Get Modified.
+		@return The record is modified
+	  */
+	public boolean isModified () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsModified);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Selected.
 		@param IsSelected Selected	  */
 	public void setIsSelected (boolean IsSelected)
@@ -142,6 +168,31 @@ public class X_Z_OfertaVentaOrg extends PO implements I_Z_OfertaVentaOrg, I_Pers
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	public I_Z_ConfirmacionEtiqueta getZ_ConfirmacionEtiqueta() throws RuntimeException
+    {
+		return (I_Z_ConfirmacionEtiqueta)MTable.get(getCtx(), I_Z_ConfirmacionEtiqueta.Table_Name)
+			.getPO(getZ_ConfirmacionEtiqueta_ID(), get_TrxName());	}
+
+	/** Set Z_ConfirmacionEtiqueta ID.
+		@param Z_ConfirmacionEtiqueta_ID Z_ConfirmacionEtiqueta ID	  */
+	public void setZ_ConfirmacionEtiqueta_ID (int Z_ConfirmacionEtiqueta_ID)
+	{
+		if (Z_ConfirmacionEtiqueta_ID < 1) 
+			set_Value (COLUMNNAME_Z_ConfirmacionEtiqueta_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_ConfirmacionEtiqueta_ID, Integer.valueOf(Z_ConfirmacionEtiqueta_ID));
+	}
+
+	/** Get Z_ConfirmacionEtiqueta ID.
+		@return Z_ConfirmacionEtiqueta ID	  */
+	public int getZ_ConfirmacionEtiqueta_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ConfirmacionEtiqueta_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	public I_Z_OfertaVenta getZ_OfertaVenta() throws RuntimeException

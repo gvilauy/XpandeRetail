@@ -105,6 +105,19 @@ public interface I_Z_OfertaVentaOrg
 	  */
 	public boolean isActive();
 
+    /** Column name IsModified */
+    public static final String COLUMNNAME_IsModified = "IsModified";
+
+	/** Set Modified.
+	  * The record is modified
+	  */
+	public void setIsModified(boolean IsModified);
+
+	/** Get Modified.
+	  * The record is modified
+	  */
+	public boolean isModified();
+
     /** Column name IsSelected */
     public static final String COLUMNNAME_IsSelected = "IsSelected";
 
@@ -142,6 +155,17 @@ public interface I_Z_OfertaVentaOrg
 	  * User who updated this records
 	  */
 	public int getUpdatedBy();
+
+    /** Column name Z_ConfirmacionEtiqueta_ID */
+    public static final String COLUMNNAME_Z_ConfirmacionEtiqueta_ID = "Z_ConfirmacionEtiqueta_ID";
+
+	/** Set Z_ConfirmacionEtiqueta ID	  */
+	public void setZ_ConfirmacionEtiqueta_ID(int Z_ConfirmacionEtiqueta_ID);
+
+	/** Get Z_ConfirmacionEtiqueta ID	  */
+	public int getZ_ConfirmacionEtiqueta_ID();
+
+	public I_Z_ConfirmacionEtiqueta getZ_ConfirmacionEtiqueta() throws RuntimeException;
 
     /** Column name Z_OfertaVenta_ID */
     public static final String COLUMNNAME_Z_OfertaVenta_ID = "Z_OfertaVenta_ID";

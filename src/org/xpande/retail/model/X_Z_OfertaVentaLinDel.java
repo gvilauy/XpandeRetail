@@ -33,7 +33,7 @@ public class X_Z_OfertaVentaLinDel extends PO implements I_Z_OfertaVentaLinDel, 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180404L;
+	private static final long serialVersionUID = 20180406L;
 
     /** Standard Constructor */
     public X_Z_OfertaVentaLinDel (Properties ctx, int Z_OfertaVentaLinDel_ID, String trxName)

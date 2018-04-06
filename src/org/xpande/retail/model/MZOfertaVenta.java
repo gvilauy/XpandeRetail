@@ -20,6 +20,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -353,6 +354,14 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 	{
 		log.info("reActivateIt - " + toString());
 
+
+		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
+		if (!this.getEndDate().before(fechaHoy)){
+			m_processMsg =  "No es posible reactivar una oferta que ya caducó.";
+			return false;
+		}
+
 		setProcessed(false);
 		setDocStatus(DOCSTATUS_InProgress);
 		setDocAction(DOCACTION_Complete);
@@ -554,6 +563,37 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 
 		String whereClause = X_Z_OfertaVentaOrg.COLUMNNAME_Z_OfertaVenta_ID + " =" + this.get_ID() +
 				" AND " + X_Z_OfertaVentaOrg.COLUMNNAME_IsSelected + " ='Y'";
+
+		List<MZOfertaVentaOrg> lines = new Query(getCtx(), I_Z_OfertaVentaOrg.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+
+	/***
+	 * Obtiene y retorna lista de organizaciones NO seleccionadas para participar de este proceso de ofertas periódicas.
+	 * Xpande. Created by Gabriel Vila on 1/10/18.
+	 * @return
+	 */
+	public List<MZOfertaVentaOrg> getOrgsNotSelected() {
+
+		String whereClause = X_Z_OfertaVentaOrg.COLUMNNAME_Z_OfertaVenta_ID + " =" + this.get_ID() +
+				" AND " + X_Z_OfertaVentaOrg.COLUMNNAME_IsSelected + " ='N'";
+
+		List<MZOfertaVentaOrg> lines = new Query(getCtx(), I_Z_OfertaVentaOrg.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+
+	/***
+	 * Obtiene y retorna lista de organizaciones asociadas a esta oferta, esten o no consideradas.
+	 * Xpande. Created by Gabriel Vila on 1/10/18.
+	 * @return
+	 */
+	public List<MZOfertaVentaOrg> getOrgs() {
+
+		String whereClause = X_Z_OfertaVentaOrg.COLUMNNAME_Z_OfertaVenta_ID + " =" + this.get_ID();
 
 		List<MZOfertaVentaOrg> lines = new Query(getCtx(), I_Z_OfertaVentaOrg.Table_Name, whereClause, get_TrxName()).list();
 
@@ -785,6 +825,8 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 
 		String message = null;
 
+		HashMap<Integer, Integer> hashModifiedOrgs = new HashMap<Integer, Integer>();
+
 		try{
 			// Recorro y proceso lineas de la oferta
 			for (MZOfertaVentaLin ventaLin: ventaLinList){
@@ -820,26 +862,20 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 					// 3. Se enera una marca de actualización de precio de venta para este producto al POS, indicando que es oferta y su vigencia.
 					for (MZOfertaVentaOrg ventaOrg: this.getOrgsSelected()){
 
-						// Si no estoy en correccion, o si estoy y esta organización ahora se selecciono pero antes no estaba seleccionada
+						// Si no estoy en correccion, o si estoy y ademas estoy modificando este producto
 						if ((!this.isModified()) || (this.isModified() && ventaLin.isModified())){
 
 							// Genero nuevo registro en evolucion de precios del producto para esta organizacion
-							MZEvolPrecioVtaProdOrg evolPrecioVtaProdOrg = new MZEvolPrecioVtaProdOrg(getCtx(), 0, get_TrxName());
-							evolPrecioVtaProdOrg.setM_Product_ID(product.getM_Product_ID());
-							evolPrecioVtaProdOrg.setC_Currency_ID(this.getC_Currency_ID_SO());
-							evolPrecioVtaProdOrg.setAD_OrgTrx_ID(ventaOrg.getAD_OrgTrx_ID());
-							evolPrecioVtaProdOrg.setDateValidSO(this.getStartDate());
-							evolPrecioVtaProdOrg.setPriceSO(ventaLin.getNewPriceSO());
-							evolPrecioVtaProdOrg.setAD_User_ID(Env.getAD_User_ID(getCtx()));
-							evolPrecioVtaProdOrg.setC_DocType_ID(this.getC_DocType_ID());
-							evolPrecioVtaProdOrg.setDocumentNoRef(this.getDocumentNo());
-							evolPrecioVtaProdOrg.setZ_OfertaVenta_ID(this.get_ID());
-							evolPrecioVtaProdOrg.saveEx();
+							this.setEvolucionPriceProd(product.get_ID(), ventaOrg.getAD_OrgTrx_ID(), ventaLin.getNewPriceSO());
 						}
-
-						// Marco la organización como seleccionada en este proceso de completar la oferta.
-						ventaOrg.setIsSelectedLast(true);
-						ventaOrg.saveEx();
+						else{
+							// Si estoy en corrección, no estoy modificando el producto, y esta organización antes no estaba seleccionada
+							// (quiere decir que se selecciono en esta corrección).
+							if (this.isModified() && !ventaLin.isModified() && !ventaOrg.isSelectedLast()){
+								// Genero nuevo registro en evolucion de precios del producto para esta organizacion
+								this.setEvolucionPriceProd(product.get_ID(), ventaOrg.getAD_OrgTrx_ID(), ventaLin.getNewPriceSO());
+							}
+						}
 
 						// Obtengo proveedor de pos para esta organización (por ahora Sisteco y Scanntech)
 						MZPosVendorOrg posVendorOrg = MZPosVendor.getByOrg(getCtx(), ventaOrg.getAD_OrgTrx_ID(), get_TrxName());
@@ -851,6 +887,58 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 							// Genero marca para comunicacion al pos.
 							this.setInterfacePOS(posVendor, product, ventaOrg.getAD_OrgTrx_ID(), ventaLin.getNewPriceSO(), true, 0);
 
+							// Marco organizacion como modificada para que sea tomada en cuenta en comunicacion a local
+							if (this.isModified()){
+								if (!hashModifiedOrgs.containsKey(ventaOrg.getAD_OrgTrx_ID())){
+									ventaOrg.setIsModified(true);
+									ventaOrg.saveEx();
+									hashModifiedOrgs.put(ventaOrg.getAD_OrgTrx_ID(), ventaOrg.getAD_OrgTrx_ID());
+								}
+							}
+						}
+						else{
+							// Si estoy en corrección, no estoy modificando el producto, y esta organización antes no estaba seleccionada
+							// (quiere decir que se selecciono en esta corrección).
+							if (this.isModified() && !ventaLin.isModified() && !ventaOrg.isSelectedLast()){
+
+								// Genero marca para comunicacion al pos.
+								this.setInterfacePOS(posVendor, product, ventaOrg.getAD_OrgTrx_ID(), ventaLin.getNewPriceSO(), true, 0);
+
+								// Marco organizacion como modificada para que sea tomada en cuenta en comunicacion a local
+								if (this.isModified()){
+									if (!hashModifiedOrgs.containsKey(ventaOrg.getAD_OrgTrx_ID())){
+										ventaOrg.setIsModified(true);
+										ventaOrg.saveEx();
+										hashModifiedOrgs.put(ventaOrg.getAD_OrgTrx_ID(), ventaOrg.getAD_OrgTrx_ID());
+									}
+								}
+							}
+						}
+
+						// Marco la organización como seleccionada en este proceso de completar la oferta.
+						ventaOrg.setIsSelectedLast(true);
+						ventaOrg.saveEx();
+					}
+
+					// Si estoy en corrección, debo considerar las organizaciones que antes estaban consideradas y ahora en la corrección
+					// el usuario las quito de la oferta.
+					if (this.isModified()){
+						// Para cada organización que ahora esta como no considerada
+						for (MZOfertaVentaOrg ventaNoOrg: this.getOrgsNotSelected()){
+							// Si antes estaba considerada
+							if (ventaNoOrg.isSelectedLast()){
+
+								// Se genera nuevo registro en evolución de precios para el producto de esta linea y organización
+								// Se enera una marca de actualización de precio de venta para este producto al POS, indicando que es oferta y su vigencia.
+								this.updatePOSProductPrice(product, ventaNoOrg.getAD_OrgTrx_ID(), null);
+
+								// Marco organizacion como modificada para que sea tomada en cuenta en comunicacion a local
+								if (!hashModifiedOrgs.containsKey(ventaNoOrg.getAD_OrgTrx_ID())){
+									ventaNoOrg.setIsModified(true);
+									ventaNoOrg.saveEx();
+									hashModifiedOrgs.put(ventaNoOrg.getAD_OrgTrx_ID(), ventaNoOrg.getAD_OrgTrx_ID());
+								}
+							}
 						}
 					}
 				}
@@ -895,6 +983,35 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 
 
 	/***
+	 * Nuevo registro en evolucion de precios del producto y organizacion recibidos.
+	 * Xpande. Created by Gabriel Vila on 4/6/18.
+	 * @param mProductID
+	 * @param adOrgTrxID
+	 * @param newPriceSO
+	 */
+	private void setEvolucionPriceProd(int mProductID, int adOrgTrxID, BigDecimal newPriceSO) {
+
+		try{
+			MZEvolPrecioVtaProdOrg evolPrecioVtaProdOrg = new MZEvolPrecioVtaProdOrg(getCtx(), 0, get_TrxName());
+			evolPrecioVtaProdOrg.setM_Product_ID(mProductID);
+			evolPrecioVtaProdOrg.setC_Currency_ID(this.getC_Currency_ID_SO());
+			evolPrecioVtaProdOrg.setAD_OrgTrx_ID(adOrgTrxID);
+			evolPrecioVtaProdOrg.setDateValidSO(this.getStartDate());
+			evolPrecioVtaProdOrg.setPriceSO(newPriceSO);
+			evolPrecioVtaProdOrg.setAD_User_ID(Env.getAD_User_ID(getCtx()));
+			evolPrecioVtaProdOrg.setC_DocType_ID(this.getC_DocType_ID());
+			evolPrecioVtaProdOrg.setDocumentNoRef(this.getDocumentNo());
+			evolPrecioVtaProdOrg.setZ_OfertaVenta_ID(this.get_ID());
+			evolPrecioVtaProdOrg.saveEx();
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+	}
+
+
+	/***
 	 * Procesa productos que durante una corrección de oferta, fueron eliminados de la misma.
 	 * En este caso se deben generar marcas de interface al POS con el precio de venta de lista de estos productos.
 	 * Xpande. Created by Gabriel Vila on 4/4/18.
@@ -904,6 +1021,8 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 
 		String message = null;
 		String action = "";
+
+		HashMap<Integer, Integer> hashModifiedOrgs = new HashMap<Integer, Integer>();
 
 		try{
 			// Si no estoy en correccion, no hago nada
@@ -929,66 +1048,39 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 
 
 				// Para cada organización a la cual se aplica esta oferta:
-				// 1. Se genera nuevo registro en evolución de precios para el producto de esta linea y organización
-				// 3. Se enera una marca de actualización de precio de venta para este producto al POS, indicando que es oferta y su vigencia.
 				for (MZOfertaVentaOrg ventaOrg: this.getOrgsSelected()) {
 
-					// Obtengo el precio de lista actual del producto según lista de precios de venta asociada a la oferta
-					BigDecimal newPriceSO = Env.ZERO;
-					Timestamp validFrom = null;
-					MPriceList priceList = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), ventaOrg.getAD_OrgTrx_ID(),
-							this.getC_Currency_ID_SO(), true, null);
+					// Se genera nuevo registro en evolución de precios para el producto de esta linea y organización
+					// Se enera una marca de actualización de precio de venta para este producto al POS, indicando que es oferta y su vigencia.
+					this.updatePOSProductPrice(product, ventaOrg.getAD_OrgTrx_ID(), linDel);
 
-					if (priceList != null){
-						// Obtengo versión de lista vigente
-						MPriceListVersion plv = priceList.getPriceListVersion(null);
-						if (plv != null){
-							MProductPrice productPrice = MProductPrice.get(getCtx(), plv.get_ID(), product.get_ID(), null);
-							if (productPrice != null){
-								newPriceSO = productPrice.getPriceList();
-								validFrom = (Timestamp) productPrice.get_Value("ValidFrom");
-								if (newPriceSO.compareTo(Env.ZERO) <= 0){
-									return "No se pudo obtener precio de producto (" + product.getValue() + ") en Lista de Precios de Venta : " + priceList.getName();
-								}
-							}
-							else{
-								return "No se pudo obtener precio de producto (" + product.getValue() + ") en Lista de Precios de Venta : " + priceList.getName();
-							}
-						}
-						else{
-							return "No se pudo obtener Versión de Lista de Precios de Venta : " + priceList.getName();
-						}
-					}
-					else{
-						MOrg org = new MOrg(getCtx(), ventaOrg.getAD_OrgTrx_ID(), null);
-						return "No se pudo obtener Lista de Precios de Venta para la Organización : " + org.getName();
+					// Marco organizacion como modificada para que sea tomada en cuenta en comunicacion a local
+					if (!hashModifiedOrgs.containsKey(ventaOrg.getAD_OrgTrx_ID())){
+						ventaOrg.setIsModified(true);
+						ventaOrg.saveEx();
+						hashModifiedOrgs.put(ventaOrg.getAD_OrgTrx_ID(), ventaOrg.getAD_OrgTrx_ID());
 					}
 
-					// Guardo precio en linea deleteada para luego poder ser comunicado al local
-					linDel.setNewPriceSO(newPriceSO);
-					linDel.setValidFrom(validFrom);
-					linDel.saveEx();
-
-					// Genero nuevo registro en evolucion de precios del producto para esta organizacion
-					MZEvolPrecioVtaProdOrg evolPrecioVtaProdOrg = new MZEvolPrecioVtaProdOrg(getCtx(), 0, get_TrxName());
-					evolPrecioVtaProdOrg.setM_Product_ID(product.getM_Product_ID());
-					evolPrecioVtaProdOrg.setC_Currency_ID(this.getC_Currency_ID_SO());
-					evolPrecioVtaProdOrg.setAD_OrgTrx_ID(ventaOrg.getAD_OrgTrx_ID());
-					evolPrecioVtaProdOrg.setDateValidSO(this.getStartDate());
-					evolPrecioVtaProdOrg.setPriceSO(newPriceSO);
-					evolPrecioVtaProdOrg.setAD_User_ID(Env.getAD_User_ID(getCtx()));
-					evolPrecioVtaProdOrg.setC_DocType_ID(this.getC_DocType_ID());
-					evolPrecioVtaProdOrg.setDocumentNoRef(this.getDocumentNo());
-					evolPrecioVtaProdOrg.setZ_OfertaVenta_ID(this.get_ID());
-					evolPrecioVtaProdOrg.saveEx();
-
-					// Obtengo proveedor de pos para esta organización (por ahora Sisteco y Scanntech)
-					MZPosVendorOrg posVendorOrg = MZPosVendor.getByOrg(getCtx(), ventaOrg.getAD_OrgTrx_ID(), get_TrxName());
-					MZPosVendor posVendor = (MZPosVendor) posVendorOrg.getZ_PosVendor();
-
-					// Genero marca para comunicacion al pos.
-					this.setInterfacePOS(posVendor, product, ventaOrg.getAD_OrgTrx_ID(), newPriceSO, false, priceList.get_ID());
 				}
+
+				// Para cada organización que ahora esta como no considerada
+				for (MZOfertaVentaOrg ventaNoOrg: this.getOrgsNotSelected()){
+					// Si antes estaba considerada
+					if (ventaNoOrg.isSelectedLast()){
+
+						// Se genera nuevo registro en evolución de precios para el producto de esta linea y organización
+						// Se enera una marca de actualización de precio de venta para este producto al POS, indicando que es oferta y su vigencia.
+						this.updatePOSProductPrice(product, ventaNoOrg.getAD_OrgTrx_ID(), linDel);
+
+						// Marco organizacion como modificada para que sea tomada en cuenta en comunicacion a local
+						if (!hashModifiedOrgs.containsKey(ventaNoOrg.getAD_OrgTrx_ID())){
+							ventaNoOrg.setIsModified(true);
+							ventaNoOrg.saveEx();
+							hashModifiedOrgs.put(ventaNoOrg.getAD_OrgTrx_ID(), ventaNoOrg.getAD_OrgTrx_ID());
+						}
+					}
+				}
+
 			}
 
 		}
@@ -1014,4 +1106,156 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 		return lines;
 	}
 
+
+	/***
+	 * Reset de corrección de oferta.
+	 * Xpande. Created by Gabriel Vila on 4/6/18.
+	 */
+	public void resetModified(int adOrgTrxID) {
+
+		String action = "";
+		String sql = "";
+
+
+		try{
+
+			// Marco organizacion recibida como no modificada y guarda estado de consideración
+			action = " update z_ofertaventaorg set ismodified ='N', isselectedlast = isselected " +
+					 " where z_ofertaventa_id =" + this.get_ID() +
+					 " and ad_orgtrx_id =" + adOrgTrxID;
+			DB.executeUpdateEx(action, get_TrxName());
+
+			// Verifico si ya no quedan organizaciones modificadas para esta oferta
+			sql = " select count(*) from z_ofertaventaorg " +
+				  " where z_ofertaventa_id =" + this.get_ID() +
+				  " and ismodified ='Y' ";
+			int contador = DB.getSQLValueEx(get_TrxName(), sql);
+
+			// Si no quedan mas
+			if (contador <= 0){
+
+				// Marco lineas de la oferta como no modificadas, no nuevas, y con ultimo precio de venta igual al nuevo precio de venta
+				action = " update z_ofertaventalin set ismodified ='N', isnew='N', lastpriceso = newpriceso " +
+						" where z_ofertaventa_id =" + this.get_ID();
+				DB.executeUpdateEx(action, get_TrxName());
+
+				// Elmino información de productos eliminados durante la ultima correcion de esta oferta
+				action = " delete from z_ofertaventalindel " +
+						" where z_ofertaventa_id =" + this.get_ID();
+				DB.executeUpdateEx(action, get_TrxName());
+
+				// Marco oferta en estado no modificada
+				this.setIsModified(false);
+				this.saveEx();
+
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+	}
+
+
+	/***
+	 * Se genera nuevo registro en evolución de precios para el producto de esta linea y organización
+	 * Se enera una marca de actualización de precio de venta para este producto al POS, indicando que es oferta y su vigencia.
+	 * Xpande. Created by Gabriel Vila on 4/6/18.
+	 * @param product
+	 * @param adOrgTrxID
+	 * @param linDel
+	 * @return
+	 */
+	private String updatePOSProductPrice(MProduct product, int adOrgTrxID, MZOfertaVentaLinDel linDel){
+
+		String message = null;
+
+		try{
+			// Obtengo el precio de lista actual del producto según lista de precios de venta asociada a la oferta
+			BigDecimal newPriceSO = Env.ZERO;
+			Timestamp validFrom = null;
+			MPriceList priceList = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), adOrgTrxID,
+					this.getC_Currency_ID_SO(), true, null);
+
+			if (priceList != null){
+				// Obtengo versión de lista vigente
+				MPriceListVersion plv = priceList.getPriceListVersion(null);
+				if (plv != null){
+					MProductPrice productPrice = MProductPrice.get(getCtx(), plv.get_ID(), product.get_ID(), null);
+					if (productPrice != null){
+						newPriceSO = productPrice.getPriceList();
+						validFrom = (Timestamp) productPrice.get_Value("ValidFrom");
+						if (newPriceSO.compareTo(Env.ZERO) <= 0){
+							return "No se pudo obtener precio de producto (" + product.getValue() + ") en Lista de Precios de Venta : " + priceList.getName();
+						}
+					}
+					else{
+						return "No se pudo obtener precio de producto (" + product.getValue() + ") en Lista de Precios de Venta : " + priceList.getName();
+					}
+				}
+				else{
+					return "No se pudo obtener Versión de Lista de Precios de Venta : " + priceList.getName();
+				}
+			}
+			else{
+				MOrg org = new MOrg(getCtx(), adOrgTrxID, null);
+				return "No se pudo obtener Lista de Precios de Venta para la Organización : " + org.getName();
+			}
+
+			// Si recibo linea de producto eliminado de la oferta
+			if ((linDel != null) && (linDel.get_ID() > 0)){
+				// Guardo precio en linea deleteada para luego poder ser comunicado al local
+				linDel.setNewPriceSO(newPriceSO);
+				linDel.setValidFrom(validFrom);
+				linDel.saveEx();
+			}
+
+			// Genero nuevo registro en evolucion de precios del producto para esta organizacion
+			this.setEvolucionPriceProd(product.getM_Product_ID(), adOrgTrxID, newPriceSO);
+
+			// Obtengo proveedor de pos para esta organización (por ahora Sisteco y Scanntech)
+			MZPosVendorOrg posVendorOrg = MZPosVendor.getByOrg(getCtx(), adOrgTrxID, get_TrxName());
+			MZPosVendor posVendor = (MZPosVendor) posVendorOrg.getZ_PosVendor();
+
+			// Genero marca para comunicacion al pos.
+			this.setInterfacePOS(posVendor, product, adOrgTrxID, newPriceSO, false, priceList.get_ID());
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return message;
+	}
+
+	/***
+	 * Setea datos en la oferta a partir de ser comunicada al local.
+	 * Xpande. Created by Gabriel Vila on 4/6/18.
+	 * @param zConfirmacionEtiquetaID
+	 * @param adOrgTrxID
+	 */
+	public void setComunicadaLocal(int zConfirmacionEtiquetaID, int adOrgTrxID) {
+
+		String action = "";
+
+		try{
+
+			// Asocio organización comunicada al local con el ID de comunicacion recibido
+			action = " update z_ofertaventaorg set z_confirmacionetiqueta_id =" + zConfirmacionEtiquetaID +
+					 " where z_ofertaventa_id =" + this.get_ID() +
+					 " and ad_orgtrx_id =" + adOrgTrxID;
+			DB.executeUpdateEx(action, get_TrxName());
+
+			// Si esta oferta esta en corrección
+			if (this.isModified()){
+				// Reseto datos de corrección considerando organización recibida.
+				this.resetModified(adOrgTrxID);
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+
+
+	}
 }

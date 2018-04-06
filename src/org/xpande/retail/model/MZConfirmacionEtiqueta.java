@@ -248,6 +248,18 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 			return DocAction.STATUS_Invalid;
 		}
 
+		// Seteo información de documentos procesados
+		for (MZConfirmacionEtiquetaDoc etiquetaDoc: etiquetaDocs){
+
+			// Si este documento es una oferta periódica
+			if (etiquetaDoc.getAD_Table_ID() == X_Z_OfertaVenta.Table_ID){
+
+				// Le indico que se comunico al local con este ID
+				MZOfertaVenta ofertaVenta = new MZOfertaVenta(getCtx(), etiquetaDoc.getRecord_ID(), get_TrxName());
+				ofertaVenta.setComunicadaLocal(this.get_ID(), this.getAD_Org_ID());
+			}
+		}
+
 		// Genero registros para impresión de etiquetas
 		this.generatePrintRecords();
 
@@ -784,7 +796,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					" (select confdoc.record_id from z_confirmacionetiquetadoc confdoc " +
 					" inner join z_confirmacionetiqueta conf on confdoc.z_confirmacionetiqueta_id = conf.z_confirmacionetiqueta_id " +
 					" where confdoc.isselected ='Y' and confdoc.ad_table_id =" + adTableID +
-					" and conf.ad_org_id =" + this.getAD_Org_ID() + ")) OR (cab.ismodified='Y')) " +
+					" and conf.ad_org_id =" + this.getAD_Org_ID() + ")) OR (cab.ismodified='Y' AND linorg.ismodified='Y')) " +
 					" order by cab.updated, cab.z_ofertaventa_id ";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
