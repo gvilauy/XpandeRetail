@@ -787,6 +787,8 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					" from z_ofertaventalinorg linorg " +
 					" inner join z_ofertaventalin lin on linorg.z_ofertaventalin_id = lin.z_ofertaventalin_id " +
 					" inner join z_ofertaventa cab on lin.z_ofertaventa_id = cab.z_ofertaventa_id " +
+					" inner join z_ofertaventaorg caborg on (cab.z_ofertaventa_id = caborg.z_ofertaventa_id " +
+					" and caborg.ad_orgtrx_id =" + this.getAD_Org_ID() + ") " +
 					" where linorg.ad_orgtrx_id =" + this.getAD_Org_ID() +
 					" and lin.newpriceso > 0 " +
 					" and cab.docstatus='CO' " +
@@ -796,7 +798,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					" (select confdoc.record_id from z_confirmacionetiquetadoc confdoc " +
 					" inner join z_confirmacionetiqueta conf on confdoc.z_confirmacionetiqueta_id = conf.z_confirmacionetiqueta_id " +
 					" where confdoc.isselected ='Y' and confdoc.ad_table_id =" + adTableID +
-					" and conf.ad_org_id =" + this.getAD_Org_ID() + ")) OR (cab.ismodified='Y' AND linorg.ismodified='Y')) " +
+					" and conf.ad_org_id =" + this.getAD_Org_ID() + ")) OR (cab.ismodified='Y' AND caborg.ismodified='Y')) " +
 					" order by cab.updated, cab.z_ofertaventa_id ";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
