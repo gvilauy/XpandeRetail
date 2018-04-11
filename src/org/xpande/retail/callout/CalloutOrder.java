@@ -348,14 +348,33 @@ public class CalloutOrder extends CalloutEngine {
                 "Y".equals(Env.getContext(ctx, WindowNo, "IsSOTrx")));
 
         // Xpande. Gabriel Vila.
-        // Para ordenes de compra en Retail, puede suceder que el producto tenga un impuesto especial de compra.
-        // Por lo tanto aca considero esta posibilidad.
-        if ("N".equals(Env.getContext(ctx, WindowNo, "IsSOTrx"))){
-            MProduct product = new MProduct(ctx, M_Product_ID, null);
-            if (product.get_ValueAsInt("C_TaxCategory_ID_2") > 0){
-                MTax taxAux = TaxUtils.getLastTaxByCategory(ctx, product.get_ValueAsInt("C_TaxCategory_ID_2"), null);
-                if ((taxAux != null) && (taxAux.get_ID() > 0)){
-                    C_Tax_ID = taxAux.get_ID();
+        // Seteos de tasa de impuesto segun condiciones.
+        // Si el socio de negocio es literal E, entonces todos sus productos deben ir con la tasa de impuesto para Literal E
+        boolean esLiteralE = false;
+        int cBPartnerID = Env.getContextAsInt(ctx, WindowNo, "C_BPartner_ID");
+        if (cBPartnerID > 0){
+            MBPartner partner = new MBPartner(ctx, cBPartnerID, null);
+            if (partner.get_ValueAsBoolean("LiteralE")){
+                esLiteralE = true;
+                // Obtengo ID de tasa de impuesto para Literal E desde coniguración comercial
+                String sql = " select coalesce(literale_tax_id,0) as literale_tax_id from z_comercialconfig where value ='General' ";
+                int taxLiteralE_ID = DB.getSQLValueEx(null, sql);
+                if (taxLiteralE_ID > 0){
+                    C_Tax_ID = taxLiteralE_ID;
+                }
+            }
+        }
+        // Si no es Literal E, para invoices compra/venta en Retail, puede suceder que el producto tenga un impuesto especial de compra/venta.
+        if (!esLiteralE){
+            // Para ordenes de compra en Retail, puede suceder que el producto tenga un impuesto especial de compra.
+            // Por lo tanto aca considero esta posibilidad.
+            if ("N".equals(Env.getContext(ctx, WindowNo, "IsSOTrx"))){
+                MProduct product = new MProduct(ctx, M_Product_ID, null);
+                if (product.get_ValueAsInt("C_TaxCategory_ID_2") > 0){
+                    MTax taxAux = TaxUtils.getLastTaxByCategory(ctx, product.get_ValueAsInt("C_TaxCategory_ID_2"), null);
+                    if ((taxAux != null) && (taxAux.get_ID() > 0)){
+                        C_Tax_ID = taxAux.get_ID();
+                    }
                 }
             }
         }

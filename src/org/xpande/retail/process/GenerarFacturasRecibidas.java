@@ -4,8 +4,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.acct.Doc;
 import org.compiere.model.*;
 import org.compiere.process.SvrProcess;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.xpande.comercial.model.MZComercialConfig;
 import org.xpande.core.model.MZSocioListaPrecio;
 import org.xpande.retail.model.*;
 import org.xpande.retail.model.MProductPricing;
@@ -116,25 +118,40 @@ public class GenerarFacturasRecibidas extends SvrProcess {
                         invLine.setQtyInvoiced(Env.ZERO);
                     }
 
-                    // Impuesto del producto (primero impuesto especial de compra, y si no tiene, entonces el impuesto normal
                     MProduct prod = (MProduct)inOutLine.getM_Product();
 
-                    if (prod.get_ValueAsInt("C_TaxCategory_ID_2") > 0){
-                        MTaxCategory taxCat = new MTaxCategory(getCtx(), prod.get_ValueAsInt("C_TaxCategory_ID_2"), null);
-                        MTax tax = taxCat.getDefaultTax();
-                        if (tax != null){
-                            if (tax.get_ID() > 0){
-                                invLine.setC_Tax_ID(tax.get_ID());
-                            }
+                    // Seteos de tasa de impuesto segun condiciones.
+                    // Si el socio de negocio es literal E, entonces todos sus productos deben ir con la tasa de impuesto para Literal E
+                    boolean esLiteralE = false;
+                    MBPartner partner = (MBPartner) invoice.getC_BPartner();
+                    if (partner.get_ValueAsBoolean("LiteralE")){
+                        esLiteralE = true;
+                        // Obtengo ID de tasa de impuesto para Literal E desde coniguración comercial
+                        MZComercialConfig comercialConfig = MZComercialConfig.getDefault(getCtx(), get_TrxName());
+                        if (comercialConfig.getLiteralE_Tax_ID() > 0){
+                            invLine.setC_Tax_ID(comercialConfig.getLiteralE_Tax_ID());
                         }
                     }
-                    else{
-                        if (prod.getC_TaxCategory_ID() > 0){
-                            MTaxCategory taxCat = (MTaxCategory)prod.getC_TaxCategory();
+                    // Si no es Literal E, para invoices compra/venta en Retail, puede suceder que el producto tenga un impuesto especial de compra/venta.
+                    if (!esLiteralE){
+                        // Impuesto del producto (primero impuesto especial de compra, y si no tiene, entonces el impuesto normal
+                        if (prod.get_ValueAsInt("C_TaxCategory_ID_2") > 0){
+                            MTaxCategory taxCat = new MTaxCategory(getCtx(), prod.get_ValueAsInt("C_TaxCategory_ID_2"), null);
                             MTax tax = taxCat.getDefaultTax();
                             if (tax != null){
                                 if (tax.get_ID() > 0){
                                     invLine.setC_Tax_ID(tax.get_ID());
+                                }
+                            }
+                        }
+                        else{
+                            if (prod.getC_TaxCategory_ID() > 0){
+                                MTaxCategory taxCat = (MTaxCategory)prod.getC_TaxCategory();
+                                MTax tax = taxCat.getDefaultTax();
+                                if (tax != null){
+                                    if (tax.get_ID() > 0){
+                                        invLine.setC_Tax_ID(tax.get_ID());
+                                    }
                                 }
                             }
                         }

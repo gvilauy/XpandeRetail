@@ -145,7 +145,7 @@ public class CalloutInvoice extends CalloutEngine
 			+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"
 			+ " p.SO_Description,p.IsDiscountPrinted,"
 			+ " p.SO_CreditLimit, p.SO_CreditLimit-p.SO_CreditUsed AS CreditAvailable,"
-			+ " l.C_BPartner_Location_ID,c.AD_User_ID,"
+			+ " l.C_BPartner_Location_ID,c.AD_User_ID, coalesce(p.LiteralE,'N') as LiteralE, "
 			+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID " 
 			+ "FROM C_BPartner p"
 			+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"			
@@ -251,6 +251,10 @@ public class CalloutInvoice extends CalloutEngine
 					mTab.setValue("IsDiscountPrinted", s);
 				else
 					mTab.setValue("IsDiscountPrinted", "N");
+
+
+				// Xpande. Literal E.
+				mTab.setValue("LiteralE", rs.getString("LiteralE"));
 			}
 		}
 		catch (SQLException e)
@@ -522,13 +526,31 @@ public class CalloutInvoice extends CalloutEngine
 			Env.getContext(ctx, WindowNo, "IsSOTrx").equals("Y"));
 
 		// Xpande. Gabriel Vila.
-		// Para invoices compra/venta en Retail, puede suceder que el producto tenga un impuesto especial de compra/venta.
+		// Seteos de tasa de impuesto segun condiciones.
+		// Si el socio de negocio es literal E, entonces todos sus productos deben ir con la tasa de impuesto para Literal E
+		boolean esLiteralE = false;
+		int cBPartnerID = Env.getContextAsInt(ctx, WindowNo, "C_BPartner_ID");
+		if (cBPartnerID > 0){
+			MBPartner partner = new MBPartner(ctx, cBPartnerID, null);
+			if (partner.get_ValueAsBoolean("LiteralE")){
+				esLiteralE = true;
+				// Obtengo ID de tasa de impuesto para Literal E desde coniguración comercial
+				String sql = " select coalesce(literale_tax_id,0) as literale_tax_id from z_comercialconfig where value ='General' ";
+				int taxLiteralE_ID = DB.getSQLValueEx(null, sql);
+				if (taxLiteralE_ID > 0){
+					C_Tax_ID = taxLiteralE_ID;
+				}
+			}
+		}
+		// Si no es Literal E, para invoices compra/venta en Retail, puede suceder que el producto tenga un impuesto especial de compra/venta.
 		// Por lo tanto aca considero esta posibilidad.
-		MProduct product = new MProduct(ctx, M_Product_ID, null);
-		if (product.get_ValueAsInt("C_TaxCategory_ID_2") > 0){
-			MTax taxAux = TaxUtils.getLastTaxByCategory(ctx, product.get_ValueAsInt("C_TaxCategory_ID_2"), null);
-			if ((taxAux != null) && (taxAux.get_ID() > 0)){
-				C_Tax_ID = taxAux.get_ID();
+		if (!esLiteralE){
+			MProduct product = new MProduct(ctx, M_Product_ID, null);
+			if (product.get_ValueAsInt("C_TaxCategory_ID_2") > 0){
+				MTax taxAux = TaxUtils.getLastTaxByCategory(ctx, product.get_ValueAsInt("C_TaxCategory_ID_2"), null);
+				if ((taxAux != null) && (taxAux.get_ID() > 0)){
+					C_Tax_ID = taxAux.get_ID();
+				}
 			}
 		}
 		// Xpande
