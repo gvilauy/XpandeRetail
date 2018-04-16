@@ -392,6 +392,7 @@ public class CalloutInvoice extends CalloutEngine
 		BigDecimal pricePO = (BigDecimal) mTab.getValue("PricePO");
 		if ((pricePO == null) || (pricePO.compareTo(Env.ZERO) <= 0)) {
 			mTab.setValue("PricePO", mTab.getValue("PriceEntered"));
+			mTab.setValue("PricePONoDto", mTab.getValue("PriceEntered"));
 		}
 		// Xpande.
 
@@ -596,6 +597,7 @@ public class CalloutInvoice extends CalloutEngine
 		int StdPrecision = MPriceList.getPricePrecision(ctx, M_PriceList_ID);
 
 		BigDecimal QtyEntered, QtyInvoiced, PriceEntered, PriceActual, PriceLimit, Discount, PriceList;
+
 		//	get values
 		QtyEntered = (BigDecimal)mTab.getValue("QtyEntered");
 		QtyInvoiced = (BigDecimal)mTab.getValue("QtyInvoiced");
@@ -666,6 +668,7 @@ public class CalloutInvoice extends CalloutEngine
 			BigDecimal pricePO = (BigDecimal) mTab.getValue("PricePO");
 			if ((pricePO == null) || (pricePO.compareTo(Env.ZERO) <= 0)) {
 				mTab.setValue("PricePO", mTab.getValue("PriceEntered"));
+				mTab.setValue("PricePONoDto", mTab.getValue("PriceEntered"));
 			}
 			// Xpande.
 
@@ -695,7 +698,42 @@ public class CalloutInvoice extends CalloutEngine
 				+ " -> PriceActual=" + PriceActual);
 			mTab.setValue("PriceActual", PriceActual);
 		}
-		
+
+		// Xpande. Gabriel Vila. Al modificar valores de descuentos manuales en la linea de la invoice
+		// Por ahora lo pase para el validatorretail al guardar la linea
+		/*
+		else if ((mField.getColumnName().equals("Discount1")) || (mField.getColumnName().equals("Discount2"))
+					|| (mField.getColumnName().equals("Discount3"))){
+
+			if (Discount1 == null) Discount1 = Env.ZERO;
+			if (Discount2 == null) Discount2 = Env.ZERO;
+			if (Discount3 == null) Discount3 = Env.ZERO;
+
+			if (PricePONoDto != null) {
+				if ( PricePONoDto.doubleValue() != 0 ){
+					PricePO = new BigDecimal ((100.0 - Discount1.doubleValue()) / 100.0 * PricePONoDto.doubleValue());
+					PricePO = new BigDecimal ((100.0 - Discount2.doubleValue()) / 100.0 * PricePO.doubleValue());
+					PricePO = new BigDecimal ((100.0 - Discount3.doubleValue()) / 100.0 * PricePO.doubleValue());
+					PriceActual = PricePO;
+
+					mTab.setValue("PricePO", PricePO);
+				}
+			}
+
+			if (PriceActual.scale() > StdPrecision)
+				PriceActual = PriceActual.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
+			PriceEntered = MUOMConversion.convertProductFrom (ctx, M_Product_ID,
+					C_UOM_To_ID, PriceActual);
+			if (PriceEntered == null)
+				PriceEntered = PriceActual;
+			mTab.setValue("PriceActual", PriceActual);
+			mTab.setValue("PriceEntered", PriceEntered);
+
+		}
+		*/
+		// Xpande
+
+
 		/**  Discount entered - Calculate Actual/Entered
 		if (mField.getColumnName().equals("Discount"))
 		{

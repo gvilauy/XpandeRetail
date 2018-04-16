@@ -403,6 +403,66 @@ public class ValidatorRetail implements ModelValidator {
 
             MInvoice invoice = (MInvoice)model.getC_Invoice();
 
+
+            // Cuando estoy en comprobantes de compra
+            if (type == ModelValidator.TYPE_BEFORE_NEW){
+                if (!invoice.isSOTrx()){
+                    if (model.get_Value("PricePO") == null){
+                        MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(model.getCtx(), invoice.getC_BPartner_ID(), model.getM_Product_ID(), null);
+                        if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+                            MZProductoSocioOrg productoSocioOrg = productoSocio.getOrg(invoice.getAD_Org_ID());
+                            if ((productoSocioOrg != null) && (productoSocioOrg.get_ID() > 0)){
+                                model.set_ValueOfColumn("PricePO", productoSocioOrg.getPricePO());
+                                model.set_ValueOfColumn("PricePONoDto", productoSocioOrg.getPricePO());
+                            }
+                            else{
+                                model.set_ValueOfColumn("PricePO", productoSocio.getPricePO());
+                                model.set_ValueOfColumn("PricePONoDto", productoSocioOrg.getPricePO());
+                            }
+                        }
+                    }
+                }
+            }
+
+            if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
+                if (!invoice.isSOTrx()){
+                    if ((model.is_ValueChanged("Discount1")) || (model.is_ValueChanged("Discount2"))
+                            || (model.is_ValueChanged("Discount3"))){
+
+                        int StdPrecision = MPriceList.getPricePrecision(model.getCtx(), invoice.getM_PriceList_ID());
+
+                        BigDecimal discount1, discount2, discount3, pricePO, pricePONoDto, priceActual, priceEntered;
+                        discount1 = (BigDecimal) model.get_Value("Discount1");
+                        discount2 = (BigDecimal) model.get_Value("Discount2");
+                        discount3 = (BigDecimal) model.get_Value("Discount3");
+                        pricePONoDto = (BigDecimal) model.get_Value("PricePONoDto");
+
+                        if (discount1 == null) discount1 = Env.ZERO;
+                        if (discount2 == null) discount2 = Env.ZERO;
+                        if (discount3 == null) discount3 = Env.ZERO;
+
+                        if (pricePONoDto != null) {
+                            if (pricePONoDto.compareTo(Env.ZERO) != 0) {
+                                pricePO = new BigDecimal((100.0 - discount1.doubleValue()) / 100.0 * pricePONoDto.doubleValue());
+                                pricePO = new BigDecimal((100.0 - discount2.doubleValue()) / 100.0 * pricePO.doubleValue());
+                                pricePO = new BigDecimal((100.0 - discount3.doubleValue()) / 100.0 * pricePO.doubleValue());
+                                if (pricePO.scale() > StdPrecision){
+                                    pricePO = pricePO.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
+                                }
+                                priceActual = pricePO;
+                                priceEntered = MUOMConversion.convertProductFrom(model.getCtx(), model.getM_Product_ID(), model.getC_UOM_ID(), priceActual);
+                                if (priceEntered == null) priceEntered = priceActual;
+                                model.set_ValueOfColumn("PricePO", pricePO);
+                                model.setPriceActual(priceActual);
+                                model.setPriceEntered(priceEntered);
+                                model.setLineNetAmt();
+                                model.setTaxAmt();
+                            }
+                        }
+                    }
+                }
+            }
+
             // Siguiendo el mismo concepto que el cabezal, se actualiza subtotal de esta linea.
             // Nuevo campo de subtotal, no se toca el original de ADempiere.
             BigDecimal lineTotal = model.getLineTotalAmt();
@@ -415,25 +475,6 @@ public class ValidatorRetail implements ModelValidator {
                     model.set_ValueOfColumn("AmtSubtotal", lineTotal);
                 }
             }
-
-            // Cuando estoy en comprobantes de compra
-            if (type == ModelValidator.TYPE_BEFORE_NEW){
-                if (!invoice.isSOTrx()){
-                    if (model.get_Value("PricePO") == null){
-                        MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(model.getCtx(), invoice.getC_BPartner_ID(), model.getM_Product_ID(), null);
-                        if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
-                            MZProductoSocioOrg productoSocioOrg = productoSocio.getOrg(invoice.getAD_Org_ID());
-                            if ((productoSocioOrg != null) && (productoSocioOrg.get_ID() > 0)){
-                                model.set_ValueOfColumn("PricePO", productoSocioOrg.getPricePO());
-                            }
-                            else{
-                                model.set_ValueOfColumn("PricePO", productoSocio.getPricePO());
-                            }
-                        }
-                    }
-                }
-            }
-
         }
 
         return mensaje;

@@ -605,9 +605,10 @@ public class CalloutOrder extends CalloutEngine {
         if (mField.getColumnName().equals("Discount2"))
         {
             if (Discount2 == null) Discount2 = Env.ZERO;
-            if ( PriceList.doubleValue() != 0 )
+            if ( PriceList.doubleValue() != 0 ){
                 PriceActual = new BigDecimal ((100.0 - Discount.doubleValue()) / 100.0 * PriceList.doubleValue());
                 PriceActual = new BigDecimal ((100.0 - Discount2.doubleValue()) / 100.0 * PriceActual.doubleValue());
+            }
             if (PriceActual.scale() > StdPrecision)
                 PriceActual = PriceActual.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
             PriceEntered = MUOMConversion.convertProductFrom (ctx, M_Product_ID,
