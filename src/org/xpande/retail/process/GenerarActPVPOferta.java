@@ -3,6 +3,7 @@ package org.xpande.retail.process;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MDocType;
 import org.compiere.model.MProduct;
+import org.compiere.model.MProductPrice;
 import org.compiere.process.DocAction;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
@@ -55,10 +56,11 @@ public class GenerarActPVPOferta extends SvrProcess {
             // Obtengo ofertas periódicas que se vencen un día despues de hoy y no hayan sido procesadas por este batch
             sql = " select z_ofertaventa_id, cast((EndDate +1) as timestamp without time zone) as DateToPos " +
                     " from z_ofertaventa " +
-                    " where cast((EndDate -1) as timestamp without time zone) = cast(date_trunc('day', now()) as timestamp without time zone) " +
+                    //" where cast((EndDate -1) as timestamp without time zone) = cast(date_trunc('day', now()) as timestamp without time zone) " +
+                    " where cast((EndDate) as timestamp without time zone) = cast(date_trunc('day', now()) as timestamp without time zone) " +
                     " and DocStatus='CO' " +
                     " and Z_ActualizacionPVP_ID is null " +
-                    " order a.datedoc";
+                    " order by datedoc";
 
             pstmt = DB.prepareStatement(sql, get_TrxName());
             rs = pstmt.executeQuery();
@@ -125,6 +127,12 @@ public class GenerarActPVPOferta extends SvrProcess {
 
                         MProduct product = (MProduct) ventaLin.getM_Product();
 
+                        // Precio actual del producto en lista de precios
+                        MProductPrice productPrice = MProductPrice.get(getCtx(), actualizacionPVP.getM_PriceList_Version_ID(), product.get_ID(), get_TrxName());
+                        if (productPrice == null){
+                            return "No se pudo obtener precio de venta para el producto : " + product.getValue() + " - " + product.getName();
+                        }
+
                         MZActualizacionPVPLin pvpLin = new MZActualizacionPVPLin(getCtx(), 0, get_TrxName());
                         pvpLin.setZ_ActualizacionPVP_ID(actualizacionPVP.get_ID());
                         pvpLin.setZ_ProductoSeccion_ID(product.get_ValueAsInt("Z_ProductoSeccion_ID"));
@@ -145,7 +153,8 @@ public class GenerarActPVPOferta extends SvrProcess {
                         pvpLin.setDistinctPriceSO(false);
                         pvpLin.setInternalCode(product.getValue());
                         pvpLin.setName(product.getName());
-                        pvpLin.setNewPriceSO(ventaLin.getNewPriceSO());
+                        pvpLin.setPriceSO(ventaLin.getNewPriceSO());
+                        pvpLin.setNewPriceSO(productPrice.getPriceList());
                         pvpLin.setUPC(ventaLin.getUPC());
                         pvpLin.saveEx();
                     }
@@ -159,10 +168,9 @@ public class GenerarActPVPOferta extends SvrProcess {
                     if (mesageError == null){
                         mesageError = "No se pudo completar Actualización PVP para Oferta número : " + ofertaVenta.getDocumentNo();
                     }
-
                     actualizacionPVP.setErrorMsg(mesageError);
-                    actualizacionPVP.saveEx();
                 }
+                actualizacionPVP.saveEx();
 
             } // Loop de ofertas
 
