@@ -33,7 +33,7 @@ public class X_Z_PautaComercialSetDto extends PO implements I_Z_PautaComercialSe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170618L;
+	private static final long serialVersionUID = 20180425L;
 
     /** Standard Constructor */
     public X_Z_PautaComercialSetDto (Properties ctx, int Z_PautaComercialSetDto_ID, String trxName)
@@ -188,6 +188,32 @@ public class X_Z_PautaComercialSetDto extends PO implements I_Z_PautaComercialSe
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	/** TipoBonificaQty AD_Reference_ID=1000033 */
+	public static final int TIPOBONIFICAQTY_AD_Reference_ID=1000033;
+	/** MISMO PRODUCTO = SIMPLE */
+	public static final String TIPOBONIFICAQTY_MISMOPRODUCTO = "SIMPLE";
+	/** PRODUCTOS DEL SEGMENTO = SIMPLE_SET */
+	public static final String TIPOBONIFICAQTY_PRODUCTOSDELSEGMENTO = "SIMPLE_SET";
+	/** PRODUCTOS DEL SOCIO DE NEGOCIO = CRUZADA */
+	public static final String TIPOBONIFICAQTY_PRODUCTOSDELSOCIODENEGOCIO = "CRUZADA";
+	/** Set TipoBonificaQty.
+		@param TipoBonificaQty 
+		Lista de valores para Tipos de Bonificacion en Cantidadades
+	  */
+	public void setTipoBonificaQty (String TipoBonificaQty)
+	{
+
+		set_Value (COLUMNNAME_TipoBonificaQty, TipoBonificaQty);
+	}
+
+	/** Get TipoBonificaQty.
+		@return Lista de valores para Tipos de Bonificacion en Cantidadades
+	  */
+	public String getTipoBonificaQty () 
+	{
+		return (String)get_Value(COLUMNNAME_TipoBonificaQty);
 	}
 
 	/** Set Z_PautaComercialSetDto ID.

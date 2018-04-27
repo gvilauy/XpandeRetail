@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_PautaComercialSetDto
+/** Generated Interface for Z_InvoiceBonifica
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_PautaComercialSetDto 
+public interface I_Z_InvoiceBonifica 
 {
 
-    /** TableName=Z_PautaComercialSetDto */
-    public static final String Table_Name = "Z_PautaComercialSetDto";
+    /** TableName=Z_InvoiceBonifica */
+    public static final String Table_Name = "Z_InvoiceBonifica";
 
-    /** AD_Table_ID=1000052 */
+    /** AD_Table_ID=1000210 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -63,18 +63,35 @@ public interface I_Z_PautaComercialSetDto
 	  */
 	public int getAD_Org_ID();
 
-    /** Column name BreakValue */
-    public static final String COLUMNNAME_BreakValue = "BreakValue";
+    /** Column name C_Invoice_ID */
+    public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
-	/** Set Break Value.
-	  * Low Value of trade discount break level
+	/** Set Invoice.
+	  * Invoice Identifier
 	  */
-	public void setBreakValue(BigDecimal BreakValue);
+	public void setC_Invoice_ID(int C_Invoice_ID);
 
-	/** Get Break Value.
-	  * Low Value of trade discount break level
+	/** Get Invoice.
+	  * Invoice Identifier
 	  */
-	public BigDecimal getBreakValue();
+	public int getC_Invoice_ID();
+
+	public I_C_Invoice getC_Invoice() throws RuntimeException;
+
+    /** Column name C_InvoiceLine_ID */
+    public static final String COLUMNNAME_C_InvoiceLine_ID = "C_InvoiceLine_ID";
+
+	/** Set Invoice Line.
+	  * Invoice Detail Line
+	  */
+	public void setC_InvoiceLine_ID(int C_InvoiceLine_ID);
+
+	/** Get Invoice Line.
+	  * Invoice Detail Line
+	  */
+	public int getC_InvoiceLine_ID();
+
+	public I_C_InvoiceLine getC_InvoiceLine() throws RuntimeException;
 
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
@@ -92,45 +109,6 @@ public interface I_Z_PautaComercialSetDto
 	  */
 	public int getCreatedBy();
 
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
-
-	/** Set Description.
-	  * Optional short description of the record
-	  */
-	public void setDescription(String Description);
-
-	/** Get Description.
-	  * Optional short description of the record
-	  */
-	public String getDescription();
-
-    /** Column name Discount */
-    public static final String COLUMNNAME_Discount = "Discount";
-
-	/** Set Discount %.
-	  * Discount in percent
-	  */
-	public void setDiscount(BigDecimal Discount);
-
-	/** Get Discount %.
-	  * Discount in percent
-	  */
-	public BigDecimal getDiscount();
-
-    /** Column name DiscountType */
-    public static final String COLUMNNAME_DiscountType = "DiscountType";
-
-	/** Set Discount Type.
-	  * Type of trade discount calculation
-	  */
-	public void setDiscountType(String DiscountType);
-
-	/** Get Discount Type.
-	  * Type of trade discount calculation
-	  */
-	public String getDiscountType();
-
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -143,6 +121,86 @@ public interface I_Z_PautaComercialSetDto
 	  * The record is active in the system
 	  */
 	public boolean isActive();
+
+    /** Column name IsManual */
+    public static final String COLUMNNAME_IsManual = "IsManual";
+
+	/** Set Manual.
+	  * This is a manual process
+	  */
+	public void setIsManual(boolean IsManual);
+
+	/** Get Manual.
+	  * This is a manual process
+	  */
+	public boolean isManual();
+
+    /** Column name Line */
+    public static final String COLUMNNAME_Line = "Line";
+
+	/** Set Line No.
+	  * Unique line for this document
+	  */
+	public void setLine(int Line);
+
+	/** Get Line No.
+	  * Unique line for this document
+	  */
+	public int getLine();
+
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/** Set Product.
+	  * Product, Service, Item
+	  */
+	public void setM_Product_ID(int M_Product_ID);
+
+	/** Get Product.
+	  * Product, Service, Item
+	  */
+	public int getM_Product_ID();
+
+	public I_M_Product getM_Product() throws RuntimeException;
+
+    /** Column name M_Product_To_ID */
+    public static final String COLUMNNAME_M_Product_To_ID = "M_Product_To_ID";
+
+	/** Set To Product.
+	  * Product to be converted to (must have UOM Conversion defined to From Product)
+	  */
+	public void setM_Product_To_ID(int M_Product_To_ID);
+
+	/** Get To Product.
+	  * Product to be converted to (must have UOM Conversion defined to From Product)
+	  */
+	public int getM_Product_To_ID();
+
+    /** Column name QtyBase */
+    public static final String COLUMNNAME_QtyBase = "QtyBase";
+
+	/** Set QtyBase.
+	  * Cantidad Base
+	  */
+	public void setQtyBase(BigDecimal QtyBase);
+
+	/** Get QtyBase.
+	  * Cantidad Base
+	  */
+	public BigDecimal getQtyBase();
+
+    /** Column name QtyCalculated */
+    public static final String COLUMNNAME_QtyCalculated = "QtyCalculated";
+
+	/** Set Calculated Quantity.
+	  * Calculated Quantity
+	  */
+	public void setQtyCalculated(BigDecimal QtyCalculated);
+
+	/** Get Calculated Quantity.
+	  * Calculated Quantity
+	  */
+	public BigDecimal getQtyCalculated();
 
     /** Column name QtyReward */
     public static final String COLUMNNAME_QtyReward = "QtyReward";
@@ -182,14 +240,14 @@ public interface I_Z_PautaComercialSetDto
 	  */
 	public int getUpdatedBy();
 
-    /** Column name Z_PautaComercialSetDto_ID */
-    public static final String COLUMNNAME_Z_PautaComercialSetDto_ID = "Z_PautaComercialSetDto_ID";
+    /** Column name Z_InvoiceBonifica_ID */
+    public static final String COLUMNNAME_Z_InvoiceBonifica_ID = "Z_InvoiceBonifica_ID";
 
-	/** Set Z_PautaComercialSetDto ID	  */
-	public void setZ_PautaComercialSetDto_ID(int Z_PautaComercialSetDto_ID);
+	/** Set Z_InvoiceBonifica ID	  */
+	public void setZ_InvoiceBonifica_ID(int Z_InvoiceBonifica_ID);
 
-	/** Get Z_PautaComercialSetDto ID	  */
-	public int getZ_PautaComercialSetDto_ID();
+	/** Get Z_InvoiceBonifica ID	  */
+	public int getZ_InvoiceBonifica_ID();
 
     /** Column name Z_PautaComercialSet_ID */
     public static final String COLUMNNAME_Z_PautaComercialSet_ID = "Z_PautaComercialSet_ID";

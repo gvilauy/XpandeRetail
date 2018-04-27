@@ -11,6 +11,7 @@ import org.xpande.retail.utils.ProductPricesInfo;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -353,6 +354,46 @@ public class MZPautaComercial extends X_Z_PautaComercial {
         catch (Exception e){
             throw new AdempiereException(e);
         }
+    }
+
+
+    /***
+     * Obtiene y retorna lista de descuentos por concepto de bonificacion en unidades que tiene el producto recibido.
+     * Xpande. Created by Gabriel Vila on 4/26/18.
+     * @param mProductID
+     * @return
+     */
+    public List<MZPautaComercialSetDto> getSetsDtosXBonificacion(int mProductID) {
+
+        List<MZPautaComercialSetDto> lines = new ArrayList<MZPautaComercialSetDto>();
+
+        try{
+
+            // Si esta pauta comercial tiene segmento general
+            MZPautaComercialSet setGeneral = this.getGeneralSet();
+            if ((setGeneral != null) && (setGeneral.get_ID() > 0)){
+                // Obtengo descuentos por concepto de bonificacion en unidades, si este segmento tiene.
+                List<MZPautaComercialSetDto> setDtoList = setGeneral.getBonifDiscounts();
+                for (MZPautaComercialSetDto setDto: setDtoList){
+                    lines.add(setDto);
+                }
+            }
+
+            // Obtengo lista de segmentos especiales para este producto en esta pauta
+            List<MZPautaComercialSet> pautaComercialSets = this.getSetsByProduct(mProductID);
+            for (MZPautaComercialSet pautaComercialSet: pautaComercialSets){
+                // Obtengo descuentos por concepto de bonificacion en unidades, si este segmento tiene.
+                List<MZPautaComercialSetDto> setDtoList = pautaComercialSet.getBonifDiscounts();
+                for (MZPautaComercialSetDto setDto: setDtoList){
+                    lines.add(setDto);
+                }
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return lines;
     }
 
 }

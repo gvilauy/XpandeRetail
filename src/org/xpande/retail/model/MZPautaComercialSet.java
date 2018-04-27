@@ -202,4 +202,21 @@ public class MZPautaComercialSet extends X_Z_PautaComercialSet {
 
         return true;
     }
+
+    /***
+     * Obtiene y retorna lista de descuentos pertenecientes a este segmento y que son de bonificación en cantidad.
+     * Xpande. Created by Gabriel Vila on 4/26/18.
+     * @return
+     */
+    public List<MZPautaComercialSetDto> getBonifDiscounts() {
+
+        String whereClause = X_Z_PautaComercialSetDto.COLUMNNAME_Z_PautaComercialSet_ID + " =" + this.get_ID() +
+                " AND " + X_Z_PautaComercialSetDto.COLUMNNAME_DiscountType + " ='" + X_Z_PautaComercialSetDto.DISCOUNTTYPE_CANTIDADESBONIFICADAS + "'";
+
+        List<MZPautaComercialSetDto> lines = new Query(getCtx(), I_Z_PautaComercialSetDto.Table_Name, whereClause, get_TrxName())
+                .setOnlyActiveRecords(true).list();
+
+        return lines;
+    }
+
 }

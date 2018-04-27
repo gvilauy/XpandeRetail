@@ -26,6 +26,7 @@ import org.xpande.core.model.MZSocioListaPrecio;
 import org.xpande.core.utils.PriceListUtils;
 import org.xpande.core.utils.TaxUtils;
 import org.xpande.retail.model.MZProductoSocio;
+import org.xpande.retail.model.X_Z_InvoiceBonifica;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -335,7 +336,7 @@ public class CalloutInvoice extends CalloutEngine
 
 		int cInvoiceID = ((Integer)mTab.getValue("C_Invoice_ID")).intValue();
 		if (cInvoiceID <= 0) {
-			return "No se obtuvo ID interno de Orden";
+			return "No se obtuvo ID interno de Factura";
 		}
 
 		MInvoice invoice = new MInvoice(ctx, cInvoiceID, null);
@@ -1160,5 +1161,45 @@ public class CalloutInvoice extends CalloutEngine
 		return "";
 
 	}
+
+
+	/**
+	 * En facturas de proveedor, cuando estoy ingresando una bonificación manual, selecciono la linea de factura y se dispara
+	 * este callout.
+	 * Xpande. Created by Gabriel Vila on 4/27/18.
+	 * @param ctx
+	 * @param WindowNo
+	 * @param mTab
+	 * @param mField
+	 * @param value
+	 * @return
+	 */
+	public String setProdBonificador(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+		if (isCalloutActive()) return "";
+
+		if (value == null){
+			mTab.setValue(X_Z_InvoiceBonifica.COLUMNNAME_M_Product_ID, null);
+			mTab.setValue(X_Z_InvoiceBonifica.COLUMNNAME_M_Product_To_ID, null);
+			mTab.setValue(X_Z_InvoiceBonifica.COLUMNNAME_Line, null);
+			return "";
+		}
+
+		int cInvoiceLineID = (Integer) value;
+
+		MInvoiceLine invoiceLine = new MInvoiceLine(ctx, cInvoiceLineID, null);
+		if (invoiceLine.getM_Product_ID() > 0){
+			mTab.setValue(X_Z_InvoiceBonifica.COLUMNNAME_M_Product_ID, invoiceLine.getM_Product_ID());
+			mTab.setValue(X_Z_InvoiceBonifica.COLUMNNAME_Line, invoiceLine.getLine());
+		}
+		else{
+			mTab.setValue(X_Z_InvoiceBonifica.COLUMNNAME_M_Product_ID, null);
+			mTab.setValue(X_Z_InvoiceBonifica.COLUMNNAME_M_Product_To_ID, null);
+			mTab.setValue(X_Z_InvoiceBonifica.COLUMNNAME_Line, null);
+		}
+
+		return "";
+	}
+
 
 }	//	CalloutInvoice

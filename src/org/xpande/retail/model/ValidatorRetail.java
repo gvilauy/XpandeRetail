@@ -14,6 +14,8 @@ import org.xpande.retail.utils.ProductPricesInfo;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Model Validator para Retail
@@ -369,6 +371,7 @@ public class ValidatorRetail implements ModelValidator {
                 || (type == ModelValidator.TYPE_AFTER_DELETE)){
 
             MInvoice invoice = (MInvoice)model.getC_Invoice();
+            MDocType docType = (MDocType) invoice.getC_DocTypeTarget();
 
             // Cuando modifico linea de comprobante, me aseguro que se calcule bien el campo del cabezal
             // para subtotal en retail. Esto es porque Adempiere de fábrica, cuando maneja lista de precios con
@@ -394,6 +397,21 @@ public class ValidatorRetail implements ModelValidator {
                 }
                 invoice.set_ValueOfColumn("AmtSubtotal", grandTotal.subtract(sumImpuestos));
                 invoice.saveEx();
+            }
+
+            if ((type == ModelValidator.TYPE_AFTER_NEW) || ((type == ModelValidator.TYPE_AFTER_CHANGE) && model.is_ValueChanged(X_C_InvoiceLine.COLUMNNAME_QtyInvoiced))){
+
+                // Para comprobantes de compra del tipo factura (API), verifico si se tienen pautadas bonificaciones para socio-producto-pauta comercial.
+                // En caso de tenerlas, genero las lineas de bonificaciones pertinentes en el comprobante asociadas a esta linea de factura.
+                // Eso aplica solo para productos del tipo producto y no para servicios, etc.
+                if ((!invoice.isSOTrx()) && (docType.getDocBaseType().equalsIgnoreCase("API"))){
+                    MProduct product = (MProduct) model.getM_Product();
+                    if ((product != null) && (product.get_ID() > 0)){
+                        if (product.getProductType().equalsIgnoreCase(X_M_Product.PRODUCTTYPE_Item)){
+                            this.setBonificacionesLinea(model.getCtx(), invoice, model, model.get_TrxName());
+                        }
+                    }
+                }
             }
 
         }
@@ -478,6 +496,69 @@ public class ValidatorRetail implements ModelValidator {
         }
 
         return mensaje;
+    }
+
+    /***
+     * Para una linea de factura, verifico y obtengo descuentos en bonificaciones de unidades.
+     * Si tiene alguna bonificación pautada, genero las lineas de bonificación en el comprobante.
+     * Xpande. Created by Gabriel Vila on 4/25/18.
+     * @param ctx
+     * @param invoice
+     * @param invoiceLine
+     * @param trxName
+     */
+    private void setBonificacionesLinea(Properties ctx, MInvoice invoice, MInvoiceLine invoiceLine, String trxName) {
+
+        try{
+
+            // Me aseguro de eliminar bonificaciones no manuales asociadas a la linea de factura recibida, antes de volver a calcular.
+            String action = " delete from z_invoicebonifica where c_invoiceline_id =" + invoiceLine.get_ID() + " and ismanual='N'";
+            DB.executeUpdateEx(action, trxName);
+
+            // Obtengo modelo de asociación de producto-socio de negocio
+            MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(ctx, invoice.getC_BPartner_ID(), invoiceLine.getM_Product_ID(), trxName);
+            if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+
+                // Si existe pauta comercial para este producto-socio de negocio
+                if (productoSocio.getZ_PautaComercial_ID() > 0){
+                    MZPautaComercial pautaComercial = (MZPautaComercial) productoSocio.getZ_PautaComercial();
+
+                    // Obtengo lista de descuentos por concepto de bonificación en unidades
+                    List<MZPautaComercialSetDto> dtosList = pautaComercial.getSetsDtosXBonificacion(invoiceLine.getM_Product_ID());
+                    for (MZPautaComercialSetDto setDto: dtosList){
+                        // Si esta bonificacion tiene seteado una cantidad a bonificar
+                        if ((setDto.getQtyReward() != null) && (setDto.getQtyReward().compareTo(Env.ZERO) > 0)){
+                            // Si esta bonificación tiene seteado una cantidad de corte
+                            if ((setDto.getBreakValue() != null) && (setDto.getBreakValue().compareTo(Env.ZERO) > 0)){
+                                // Calculo la cantidad que tengo que bonificar segun la cantidad de la linea de la factura y la cantidad de corte
+                                if (invoiceLine.getQtyInvoiced().compareTo(setDto.getBreakValue()) >= 0){
+                                    long intPart = (invoiceLine.getQtyInvoiced().divide(setDto.getBreakValue())).longValue();
+                                    BigDecimal qtyBonifica = new BigDecimal(intPart);
+
+                                    // Genero linea de bonificación en factura
+                                    MZInvoiceBonifica bonifica = new MZInvoiceBonifica(ctx, 0, trxName);
+                                    bonifica.setZ_PautaComercialSet_ID(setDto.getZ_PautaComercialSet_ID());
+                                    bonifica.setC_Invoice_ID(invoice.get_ID());
+                                    bonifica.setC_InvoiceLine_ID(invoiceLine.get_ID());
+                                    bonifica.setIsManual(false);
+                                    bonifica.setM_Product_ID(invoiceLine.getM_Product_ID());
+                                    bonifica.setQtyBase(invoiceLine.getQtyInvoiced());
+                                    bonifica.setQtyCalculated(qtyBonifica);
+                                    bonifica.setQtyReward(qtyBonifica);
+                                    bonifica.setTipoBonificaQty(setDto.getTipoBonificaQty());
+                                    bonifica.setLine(invoiceLine.getLine());
+                                    bonifica.saveEx();
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
     }
 
 
@@ -681,6 +762,29 @@ public class ValidatorRetail implements ModelValidator {
         String message = null, sql = "";
         String action = "";
 
+        MDocType docType = (MDocType) model.getC_DocTypeTarget();
+
+        if (timing == TIMING_BEFORE_COMPLETE) {
+
+            // No aplica en comprobantes de venta
+            if (model.isSOTrx()) {
+                return null;
+            }
+
+            // Para comprobantes de compra del tipo API (facturas de proveedores)
+            if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)) {
+
+                // Si para esta factura de proveedor tengo lineas de bonificacion, me aseguro que dichas lineas tengan producto a bonificar.
+                sql = " select count(*) from z_invoicebonifica where c_invoice_id =" + model.get_ID() +
+                        " and (m_product_to_id is null or m_product_to_id <= 0)";
+                int contador = DB.getSQLValueEx(model.get_TrxName(), sql);
+                if (contador > 0){
+                    throw new AdempiereException("Falta indicar Producto a Bonificar en líneas de Bonificación");
+                }
+
+            }
+        }
+
         if (timing == TIMING_AFTER_COMPLETE){
 
             // No aplica en comprobantes de venta
@@ -714,8 +818,8 @@ public class ValidatorRetail implements ModelValidator {
             }
 
             // Para comprobantes de compra del tipo API (facturas de proveedores)
-            MDocType docType = (MDocType) model.getC_DocTypeTarget();
             if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
+
                 // Calculo de descuentos por Notas de Credito al Pago.
                 // Calculo y generación de remitos por diferencia de cantidad y montos
 
@@ -829,7 +933,6 @@ public class ValidatorRetail implements ModelValidator {
             }
 
             // Para comprobantes de compra del tipo API (facturas de proveedores)
-            MDocType docType = (MDocType) model.getC_DocTypeTarget();
             if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
                 // Cuando reactivo un documento, me aseguro de no dejar factura marcada con datos de descuentos por notas de credito al pago.
                 // Elimino información para notas de credito al pago que pueda tener esta factura
