@@ -67,6 +67,7 @@ public class GenerarFacturasRecibidas extends SvrProcess {
                 invoice.setC_BPartner_Location_ID(mInOut.getC_BPartner_Location_ID());
                 invoice.setC_Currency_ID(recepcionProdFact.getC_Currency_ID());
                 invoice.setAD_Org_ID(mInOut.getAD_Org_ID());
+                invoice.set_ValueOfColumn("SubDocBaseType", "RET");
 
                 if (bp.getPaymentRulePO() != null){
                     invoice.setPaymentRule(bp.getPaymentRulePO());

@@ -56,8 +56,8 @@ public class GenerarActPVPOferta extends SvrProcess {
             // Obtengo ofertas periódicas que se vencen un día despues de hoy y no hayan sido procesadas por este batch
             sql = " select z_ofertaventa_id, cast((EndDate +1) as timestamp without time zone) as DateToPos " +
                     " from z_ofertaventa " +
-                    //" where cast((EndDate -1) as timestamp without time zone) = cast(date_trunc('day', now()) as timestamp without time zone) " +
-                    " where cast((EndDate) as timestamp without time zone) = cast(date_trunc('day', now()) as timestamp without time zone) " +
+                    " where cast((EndDate -1) as timestamp without time zone) <= cast(date_trunc('day', now()) as timestamp without time zone) " +
+                    //" where cast((EndDate) as timestamp without time zone) = cast(date_trunc('day', now()) as timestamp without time zone) " +
                     " and DocStatus='CO' " +
                     " and Z_ActualizacionPVP_ID is null " +
                     " order by datedoc";

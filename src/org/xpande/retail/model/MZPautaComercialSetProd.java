@@ -47,8 +47,12 @@ public class MZPautaComercialSetProd extends X_Z_PautaComercialSetProd {
      */
     private List<MZPautaComercialSet> getOtherProductSets() {
 
+        MZPautaComercialSet pautaComercialSet = (MZPautaComercialSet) this.getZ_PautaComercialSet();
+
         String whereClause = X_Z_PautaComercialSetProd.COLUMNNAME_Z_PautaComercialSet_ID + " !=" + this.getZ_PautaComercialSet_ID() +
-                " AND " + X_Z_PautaComercialSetProd.COLUMNNAME_M_Product_ID + " =" + this.getM_Product_ID();
+                " AND " + X_Z_PautaComercialSetProd.COLUMNNAME_M_Product_ID + " =" + this.getM_Product_ID() +
+                " AND " + X_Z_PautaComercialSetProd.COLUMNNAME_Z_PautaComercialSet_ID + " IN (select z_pautacomercialset_id from z_pautacomercialset " +
+                " where z_pautacomercial_id =" + pautaComercialSet.getZ_PautaComercial_ID() + ")";
 
         List<MZPautaComercialSet> lines = new Query(getCtx(), I_Z_PautaComercialSetProd.Table_Name, whereClause, null).setOnlyActiveRecords(true).list();
 

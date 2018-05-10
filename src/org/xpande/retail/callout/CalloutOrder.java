@@ -180,6 +180,11 @@ public class CalloutOrder extends CalloutEngine {
         {
             if (product.isStocked())
             {
+
+                // Xpande. Gabriel Vila. 07/05/2018.
+                // Comento avisos de stock en ordenes de venta
+
+                /*
                 BigDecimal QtyOrdered = (BigDecimal)mTab.getValue("QtyOrdered");
                 int M_Warehouse_ID = Env.getContextAsInt(ctx, WindowNo, "M_Warehouse_ID");
                 M_AttributeSetInstance_ID = Env.getContextAsInt(ctx, WindowNo, "M_AttributeSetInstance_ID");
@@ -210,6 +215,8 @@ public class CalloutOrder extends CalloutEngine {
                                 info, false);
                     }
                 }
+                */
+                // Fin Xpande
             }
         }
         //
@@ -888,6 +895,8 @@ public class CalloutOrder extends CalloutEngine {
             return "";
         }
 
+        boolean isSOTrx = "Y".equals(Env.getContext(ctx, WindowNo, "IsSOTrx"));
+
         int cBPartnerID = Env.getContextAsInt(ctx, WindowNo, "C_BPartner_ID");
 
         String column = mField.getColumnName();
@@ -895,21 +904,26 @@ public class CalloutOrder extends CalloutEngine {
         if (column.equalsIgnoreCase("UPC")){
             MZProductoUPC pupc = MZProductoUPC.getByUPC(ctx, value.toString().trim(), null);
             if ((pupc != null) && (pupc.get_ID() > 0)){
+
                 MProduct prod = (MProduct) pupc.getM_Product();
-                MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(ctx, cBPartnerID, prod.get_ID(), null);
-                if ((productoSocio == null) || (productoSocio.get_ID() <= 0)){
-                    mTab.setValue("VendorProductNo", null);
-                    mTab.setValue("M_Product_ID", null);
-                    mTab.fireDataStatusEEvent ("Error", "El código de barras ingresado no pertenece a un Producto de este Socio de Negocio.", true);
-                }
-                else{
-                    if (productoSocio.getVendorProductNo() != null){
-                        if (!productoSocio.getVendorProductNo().trim().equalsIgnoreCase("")){
-                            mTab.setValue("VendorProductNo", productoSocio.getVendorProductNo().trim());
+                mTab.setValue("M_Product_ID", prod.get_ID());
+
+                if (!isSOTrx){
+                    MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(ctx, cBPartnerID, prod.get_ID(), null);
+                    if ((productoSocio == null) || (productoSocio.get_ID() <= 0)){
+                        mTab.setValue("VendorProductNo", null);
+                        mTab.setValue("M_Product_ID", null);
+                        mTab.fireDataStatusEEvent ("Error", "El código de barras ingresado no pertenece a un Producto de este Socio de Negocio.", true);
+                    }
+                    else{
+                        if (productoSocio.getVendorProductNo() != null){
+                            if (!productoSocio.getVendorProductNo().trim().equalsIgnoreCase("")){
+                                mTab.setValue("VendorProductNo", productoSocio.getVendorProductNo().trim());
+                            }
                         }
                     }
-                    mTab.setValue("M_Product_ID", prod.get_ID());
                 }
+
             }
             else{
                 mTab.setValue("VendorProductNo", null);
@@ -935,20 +949,24 @@ public class CalloutOrder extends CalloutEngine {
         }
         else if (column.equalsIgnoreCase("M_Product_ID")){
             int mProductID = ((Integer) value).intValue();
-            MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(ctx, cBPartnerID, mProductID, null);
-            if ((productoSocio != null) || (productoSocio.get_ID() > 0)){
-                if (productoSocio.getVendorProductNo() != null){
-                    if (!productoSocio.getVendorProductNo().trim().equalsIgnoreCase("")){
-                        mTab.setValue("VendorProductNo", productoSocio.getVendorProductNo().trim());
+
+            if (!isSOTrx){
+                MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(ctx, cBPartnerID, mProductID, null);
+                if ((productoSocio != null) || (productoSocio.get_ID() > 0)){
+                    if (productoSocio.getVendorProductNo() != null){
+                        if (!productoSocio.getVendorProductNo().trim().equalsIgnoreCase("")){
+                            mTab.setValue("VendorProductNo", productoSocio.getVendorProductNo().trim());
+                        }
+                        else{
+                            mTab.setValue("VendorProductNo", null);
+                        }
                     }
                     else{
                         mTab.setValue("VendorProductNo", null);
                     }
                 }
-                else{
-                    mTab.setValue("VendorProductNo", null);
-                }
             }
+
             MZProductoUPC pupc = MZProductoUPC.getByProduct(ctx, mProductID, null);
             if ((pupc != null) && (pupc.get_ID() > 0)){
                 mTab.setValue("UPC", pupc.getUPC());
