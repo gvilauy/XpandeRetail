@@ -124,6 +124,19 @@ public interface I_Z_ActualizacionPVPLin
 
 	public I_C_UOM getC_UOM() throws RuntimeException;
 
+    /** Column name DateValidSO */
+    public static final String COLUMNNAME_DateValidSO = "DateValidSO";
+
+	/** Set DateValidSO.
+	  * Fecha Vigencia Venta
+	  */
+	public void setDateValidSO(Timestamp DateValidSO);
+
+	/** Get DateValidSO.
+	  * Fecha Vigencia Venta
+	  */
+	public Timestamp getDateValidSO();
+
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
 
@@ -361,7 +374,7 @@ public interface I_Z_ActualizacionPVPLin
 	/** Get Z_ActualizacionPVP ID	  */
 	public int getZ_ActualizacionPVP_ID();
 
-	public org.xpande.retail.model.I_Z_ActualizacionPVP getZ_ActualizacionPVP() throws RuntimeException;
+	public I_Z_ActualizacionPVP getZ_ActualizacionPVP() throws RuntimeException;
 
     /** Column name Z_ActualizacionPVPLin_ID */
     public static final String COLUMNNAME_Z_ActualizacionPVPLin_ID = "Z_ActualizacionPVPLin_ID";

@@ -672,8 +672,8 @@ public class ValidatorRetail implements ModelValidator {
                 return "Debe indicar Nombre Corto para el nuevo Producto";
             }
             String nombreCorto = model.getDescription().trim();
-            if (nombreCorto.length() > 30){
-                nombreCorto = nombreCorto.substring(0,30);
+            if (nombreCorto.length() > 31){
+                nombreCorto = nombreCorto.substring(0,31);
                 model.setDescription(nombreCorto);
             }
 

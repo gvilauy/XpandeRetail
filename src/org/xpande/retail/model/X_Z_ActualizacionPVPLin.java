@@ -19,6 +19,7 @@ package org.xpande.retail.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.Properties;
 import org.compiere.model.*;
 import org.compiere.util.Env;
@@ -32,7 +33,7 @@ public class X_Z_ActualizacionPVPLin extends PO implements I_Z_ActualizacionPVPL
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170719L;
+	private static final long serialVersionUID = 20180515L;
 
     /** Standard Constructor */
     public X_Z_ActualizacionPVPLin (Properties ctx, int Z_ActualizacionPVPLin_ID, String trxName)
@@ -45,6 +46,7 @@ public class X_Z_ActualizacionPVPLin extends PO implements I_Z_ActualizacionPVPL
 // N
 			setIsConfirmed (true);
 // Y
+			setM_Product_ID (0);
 			setZ_ActualizacionPVP_ID (0);
 			setZ_ActualizacionPVPLin_ID (0);
         } */
@@ -160,6 +162,23 @@ public class X_Z_ActualizacionPVPLin extends PO implements I_Z_ActualizacionPVPL
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set DateValidSO.
+		@param DateValidSO 
+		Fecha Vigencia Venta
+	  */
+	public void setDateValidSO (Timestamp DateValidSO)
+	{
+		set_Value (COLUMNNAME_DateValidSO, DateValidSO);
+	}
+
+	/** Get DateValidSO.
+		@return Fecha Vigencia Venta
+	  */
+	public Timestamp getDateValidSO () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DateValidSO);
 	}
 
 	/** Set Description.
@@ -482,9 +501,9 @@ public class X_Z_ActualizacionPVPLin extends PO implements I_Z_ActualizacionPVPL
 		return (String)get_Value(COLUMNNAME_VendorProductNo);
 	}
 
-	public org.xpande.retail.model.I_Z_ActualizacionPVP getZ_ActualizacionPVP() throws RuntimeException
+	public I_Z_ActualizacionPVP getZ_ActualizacionPVP() throws RuntimeException
     {
-		return (org.xpande.retail.model.I_Z_ActualizacionPVP)MTable.get(getCtx(), org.xpande.retail.model.I_Z_ActualizacionPVP.Table_Name)
+		return (I_Z_ActualizacionPVP)MTable.get(getCtx(), I_Z_ActualizacionPVP.Table_Name)
 			.getPO(getZ_ActualizacionPVP_ID(), get_TrxName());	}
 
 	/** Set Z_ActualizacionPVP ID.

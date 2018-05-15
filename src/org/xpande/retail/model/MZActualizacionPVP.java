@@ -16,14 +16,18 @@
  *****************************************************************************/
 package org.xpande.retail.model;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.impexp.ImpFormat;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
@@ -640,5 +644,158 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 
 		return message;
     }
+
+
+	/***
+	 * Carga información de productos desde archivo recibido mediante formato de importación de datos.
+	 * Xpande. Created by Gabriel Vila on 5/15/18.
+	 * @param fileName
+	 * @return
+	 */
+	public String getDataFromFile(String fileName) {
+
+    	String message = null;
+
+		FileReader fReader = null;
+		BufferedReader bReader = null;
+
+		String lineaArchivo = null;
+		String action = "", sql = "";
+
+		try{
+
+			// Formato de importación de archivo de interface de precios de proveedor
+			ImpFormat formatoImpArchivo = ImpFormat.load("Retail_ActualizacionPVP");
+
+			// Abro archivo
+			File archivoPazos = new File(fileName);
+			fReader = new FileReader(archivoPazos);
+			bReader = new BufferedReader(fReader);
+
+			int contLineas = 0;
+			int zActualizacionPVPArchID = 0;
+
+			// Leo lineas del archivo
+			lineaArchivo = bReader.readLine();
+
+			while (lineaArchivo != null) {
+
+				lineaArchivo = lineaArchivo.replace("'", "");
+				contLineas++;
+
+				zActualizacionPVPArchID = formatoImpArchivo.updateDB(lineaArchivo, getCtx(), get_TrxName());
+
+				if (zActualizacionPVPArchID <= 0){
+					return "Error al procesar linea " + contLineas + " : " + lineaArchivo;
+				}
+				else{
+
+					// Seteo atributos de linea procesada en tabla
+					action = " update " + I_Z_ActualizacionPVPArch.Table_Name +
+							" set " + X_Z_ActualizacionPVPArch.COLUMNNAME_Z_ActualizacionPVP_ID + " = " + this.get_ID() + ", " +
+							" LineNumber =" + contLineas + ", " +
+							" FileLineText ='" + lineaArchivo + "' " +
+							" where " + X_Z_ActualizacionPVPArch.COLUMNNAME_Z_ActualizacionPVPArch_ID + " = " + zActualizacionPVPArchID;
+					DB.executeUpdateEx(action, get_TrxName());
+				}
+
+				lineaArchivo = bReader.readLine();
+			}
+
+			// Si el archivo no tiene lineas aviso y salgo.
+			if (contLineas <= 0){
+				return "El archivo seleccionado no tiene lineas para procesar.";
+			}
+
+			// Cargo info desde tabla de formato de importación a las tablas finales.
+			List<MZActualizacionPVPArch> pvpArchList = this.getLineasArch();
+			for (MZActualizacionPVPArch pvpArch: pvpArchList){
+
+				boolean inconsistente = false;
+
+				// Valido que se haya indicado codigo interno de producto en esta linea de archivo
+				if ((pvpArch.getValue() == null) || (pvpArch.getValue().trim().equalsIgnoreCase(""))){
+					pvpArch.setErrorMsg("No se indica Codigo Interno de Producto");
+					pvpArch.setIsConfirmed(false);
+					pvpArch.saveEx();
+					inconsistente = true;
+				}
+				else{
+					// Obtengo ID para el codigo interno leído
+					sql = " select m_product_id from m_product where value='" + pvpArch.getValue().trim() + "'";
+					int mProductID = DB.getSQLValueEx(null, sql);
+					if (mProductID <= 0){
+						pvpArch.setErrorMsg("Codigo Interno de Producto incorrecto.");
+						pvpArch.setIsConfirmed(false);
+						pvpArch.saveEx();
+						inconsistente = true;
+					}
+					else{
+						pvpArch.setM_Product_ID(mProductID);
+						pvpArch.saveEx();
+					}
+				}
+
+				// Valido precio de venta de esta linea
+				if ((pvpArch.getPriceSO() == null) || (pvpArch.getPriceSO().compareTo(Env.ZERO) <= 0)){
+					pvpArch.setErrorMsg("Precio de Venta incorrecto.");
+					pvpArch.setIsConfirmed(false);
+					pvpArch.saveEx();
+					inconsistente = true;
+				}
+
+				// Si no tengo inconsitencias, guardo flag en linea
+				if (!inconsistente){
+					pvpArch.setIsConfirmed(true);
+					pvpArch.saveEx();
+				}
+
+				MZActualizacionPiiVPLin pvpLin = new MZActualizacionPVPLin(getCtx(), 0, get_TrxName());
+				pvpLin.setZ_ActualizacionPVP_ID(this.get_ID());
+				pvpLin.setM_Product_ID(pvpArch.getM_Product_ID());
+				pvpLin.setNewPriceSO(pvpArch.getPriceSO());
+				pvpLin.saveEx();
+
+			}
+
+
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			if (bReader != null){
+				try{
+					bReader.close();
+					if (fReader != null){
+						fReader.close();
+					}
+				}
+				catch (Exception e){
+					log.log(Level.SEVERE, e.getMessage());
+				}
+			}
+		}
+
+
+    	return message;
+	}
+
+
+	/***
+	 * Obtiene y retorna lineas leidas desde un archivo para este modelo de actualizacion pvp.
+	 * Xpande. Created by Gabriel Vila on 5/15/18.
+	 * @return
+	 */
+	private List<MZActualizacionPVPArch> getLineasArch(){
+
+		String whereClause = X_Z_ActualizacionPVPArch.COLUMNNAME_Z_ActualizacionPVP_ID + " =" + this.get_ID();
+
+		List<MZActualizacionPVPArch> lines = new Query(getCtx(), I_Z_ActualizacionPVPArch.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
 
 }

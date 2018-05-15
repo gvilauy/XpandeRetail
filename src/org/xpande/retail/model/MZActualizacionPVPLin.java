@@ -1,9 +1,16 @@
 package org.xpande.retail.model;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.MProduct;
+import org.compiere.model.MProductPrice;
 import org.compiere.model.Query;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.xpande.core.model.MZProductoUPC;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
@@ -24,6 +31,82 @@ public class MZActualizacionPVPLin extends X_Z_ActualizacionPVPLin {
 
     @Override
     protected boolean beforeSave(boolean newRecord) {
+
+        // si es nuevo registro
+        if (newRecord){
+            // Si el precio actual de venta no esta seteado
+            if ((this.getPriceSO() == null) || (this.getPriceSO().compareTo(Env.ZERO) <= 0)){
+
+                // Seteo datos asociados al producto de esta linea
+                MProduct product = (MProduct) this.getM_Product();
+                MZActualizacionPVP actualizacionPVP = (MZActualizacionPVP) this.getZ_ActualizacionPVP();
+
+                // Codigo de barras
+                MZProductoUPC pupc = MZProductoUPC.getByProduct(getCtx(), this.getM_Product_ID(), null);
+                if ((pupc != null) && (pupc.get_ID() > 0)){
+                    this.setUPC(pupc.getUPC());
+                }
+
+                // Jerarquía del producto
+                this.setZ_ProductoSeccion_ID(product.get_ValueAsInt("Z_ProductoSeccion_ID"));
+                this.setZ_ProductoRubro_ID(product.get_ValueAsInt("Z_ProductoRubro_ID"));
+                if (product.get_ValueAsInt(X_Z_ProductoFamilia.COLUMNNAME_Z_ProductoFamilia_ID) > 0){
+                    this.setZ_ProductoFamilia_ID(product.get_ValueAsInt(X_Z_ProductoFamilia.COLUMNNAME_Z_ProductoFamilia_ID));
+                }
+                if (product.get_ValueAsInt(X_Z_ProductoSubfamilia.COLUMNNAME_Z_ProductoSubfamilia_ID) > 0){
+                    this.setZ_ProductoSubfamilia_ID(product.get_ValueAsInt(X_Z_ProductoSubfamilia.COLUMNNAME_Z_ProductoSubfamilia_ID));
+                }
+
+                this.setC_UOM_ID(product.getC_UOM_ID());
+                this.setC_TaxCategory_ID(product.getC_TaxCategory_ID());
+
+                // Precios
+                // Precios de compra
+                // Obtengo socio de negocio de la ultima factura, sino hay facturas, obtengo socio de ultima gestión de precios de proveedor.
+                MZProductoSocio productoSocio = MZProductoSocio.getByLastInvoice(getCtx(), product.get_ID(), null);
+                if ((productoSocio == null) || (productoSocio.get_ID() <= 0)){
+                    productoSocio = MZProductoSocio.getByLastPriceOC(getCtx(), product.get_ID(), null);
+                }
+
+                if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+                    this.setPriceFinal(productoSocio.getPriceFinal());
+                    this.setPriceInvoiced(productoSocio.getPriceInvoiced());
+                    this.setPricePO(productoSocio.getPricePO());
+                }
+
+                BigDecimal priceSO = Env.ZERO;
+                Timestamp validFrom = null;
+
+                // Obtengo y seteo precio de venta actual desde lista de precios de venta del cabezal
+                MProductPrice productPrice = MProductPrice.get(getCtx(), actualizacionPVP.getM_PriceList_Version_ID(), product.get_ID(), null);
+                if (productPrice != null){
+                    priceSO = productPrice.getPriceList();
+                    validFrom = (Timestamp)productPrice.get_Value("ValidFrom");
+                }
+
+                // Verifico si este producto tiene una oferta vigente para la fecha actual.
+                // Si es asi, el precio que tiene que considerarse es el precio oferta y no el precio de lista.
+                Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+                MZProductoOferta productoOferta = MZProductoOferta.getByProductDate(getCtx(), product.get_ID(), fechaHoy, fechaHoy, null);
+                if ((productoOferta != null) && (productoOferta.get_ID() > 0)){
+                    MZOfertaVenta ofertaVenta = (MZOfertaVenta) productoOferta.getZ_OfertaVenta();
+                    MZOfertaVentaLin ventaLin = ofertaVenta.getLineByProduct(product.get_ID());
+                    if ((ventaLin != null) && (ventaLin.get_ID() > 0)){
+                        if ((ventaLin.getNewPriceSO() != null) && (ventaLin.getNewPriceSO().compareTo(Env.ZERO) > 0)){
+                            priceSO = ventaLin.getNewPriceSO();
+                        }
+                    }
+                    validFrom = ofertaVenta.getStartDate();
+                }
+                if (productPrice != null){
+                    this.setPriceSO(priceSO);
+                    if ((this.getNewPriceSO() == null) || (this.getNewPriceSO().compareTo(Env.ZERO) <= 0)){
+                        this.setNewPriceSO(priceSO);
+                    }
+                    this.setDateValidSO(validFrom);
+                }
+            }
+        }
 
         // Si se modifica nuevo precio de venta
         if ((!newRecord) && (is_ValueChanged(X_Z_PreciosProvLin.COLUMNNAME_NewPriceSO))){
