@@ -750,7 +750,7 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 					pvpArch.saveEx();
 				}
 
-				MZActualizacionPiiVPLin pvpLin = new MZActualizacionPVPLin(getCtx(), 0, get_TrxName());
+				MZActualizacionPVPLin pvpLin = new MZActualizacionPVPLin(getCtx(), 0, get_TrxName());
 				pvpLin.setZ_ActualizacionPVP_ID(this.get_ID());
 				pvpLin.setM_Product_ID(pvpArch.getM_Product_ID());
 				pvpLin.setNewPriceSO(pvpArch.getPriceSO());

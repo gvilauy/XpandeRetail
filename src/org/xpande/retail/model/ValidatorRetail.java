@@ -537,6 +537,8 @@ public class ValidatorRetail implements ModelValidator {
 
                                     // Genero linea de bonificación en factura
                                     MZInvoiceBonifica bonifica = new MZInvoiceBonifica(ctx, 0, trxName);
+                                    bonifica.set_ValueOfColumn("AD_Client_ID", invoice.getAD_Client_ID());
+                                    bonifica.setAD_Org_ID(invoice.getAD_Org_ID());
                                     bonifica.setZ_PautaComercialSet_ID(setDto.getZ_PautaComercialSet_ID());
                                     bonifica.setC_Invoice_ID(invoice.get_ID());
                                     bonifica.setC_InvoiceLine_ID(invoiceLine.get_ID());
