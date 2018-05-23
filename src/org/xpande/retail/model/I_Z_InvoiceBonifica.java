@@ -176,6 +176,19 @@ public interface I_Z_InvoiceBonifica
 	  */
 	public int getM_Product_To_ID();
 
+    /** Column name PricePO */
+    public static final String COLUMNNAME_PricePO = "PricePO";
+
+	/** Set PO Price.
+	  * Price based on a purchase order
+	  */
+	public void setPricePO(BigDecimal PricePO);
+
+	/** Get PO Price.
+	  * Price based on a purchase order
+	  */
+	public BigDecimal getPricePO();
+
     /** Column name QtyBase */
     public static final String COLUMNNAME_QtyBase = "QtyBase";
 

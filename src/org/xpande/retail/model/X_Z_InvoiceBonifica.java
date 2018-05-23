@@ -32,7 +32,7 @@ public class X_Z_InvoiceBonifica extends PO implements I_Z_InvoiceBonifica, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180427L;
+	private static final long serialVersionUID = 20180521L;
 
     /** Standard Constructor */
     public X_Z_InvoiceBonifica (Properties ctx, int Z_InvoiceBonifica_ID, String trxName)
@@ -232,6 +232,26 @@ public class X_Z_InvoiceBonifica extends PO implements I_Z_InvoiceBonifica, I_Pe
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set PO Price.
+		@param PricePO 
+		Price based on a purchase order
+	  */
+	public void setPricePO (BigDecimal PricePO)
+	{
+		set_Value (COLUMNNAME_PricePO, PricePO);
+	}
+
+	/** Get PO Price.
+		@return Price based on a purchase order
+	  */
+	public BigDecimal getPricePO () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PricePO);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set QtyBase.

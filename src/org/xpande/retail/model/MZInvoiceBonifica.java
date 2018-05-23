@@ -1,5 +1,7 @@
 package org.xpande.retail.model;
 
+import org.compiere.model.MInvoice;
+import org.compiere.model.MInvoiceLine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -27,6 +29,22 @@ public class MZInvoiceBonifica extends X_Z_InvoiceBonifica {
 
         if (this.getTipoBonificaQty().equalsIgnoreCase(X_Z_InvoiceBonifica.TIPOBONIFICAQTY_MISMOPRODUCTO)){
             this.setM_Product_To_ID(this.getM_Product_ID());
+        }
+
+        // En nuevos registros, obtengo precio OC del producto bonificado
+        if (newRecord){
+            // Si es una bonificacion simple del mismo producto, el precio OC = precio facturado
+            if (this.getM_Product_ID() == this.getM_Product_To_ID()){
+                MInvoiceLine invoiceLine = (MInvoiceLine) this.getC_InvoiceLine();
+                this.setPricePO(invoiceLine.getPriceEntered());
+            }
+            else{
+                MInvoice invoice = (MInvoice) this.getC_Invoice();
+                MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(getCtx(), invoice.getC_BPartner_ID(), this.getM_Product_To_ID(), null);
+                if ((productoSocio != null) && (productoSocio.getZ_ProductoSocio_ID() > 0)){
+                    this.setPricePO(productoSocio.getPricePO());
+                }
+            }
         }
 
         // Para bonificaciones manuales, al crearse le seteo cantidades en cero

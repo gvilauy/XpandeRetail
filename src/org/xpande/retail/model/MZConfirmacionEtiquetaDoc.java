@@ -1,6 +1,8 @@
 package org.xpande.retail.model;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.Query;
+import org.compiere.util.DB;
 
 import java.sql.ResultSet;
 import java.util.List;
@@ -44,4 +46,49 @@ public class MZConfirmacionEtiquetaDoc extends X_Z_ConfirmacionEtiquetaDoc {
         return false;
 
     }
+
+    /***
+     * Marca o desmarca los productos asociados a este documento de confirmacion de precios al local.
+     * Xpande. Created by Gabriel Vila on 5/23/18.
+     * @param marcarImprimir
+     */
+    public void setProductosImprimir(boolean marcarImprimir) {
+
+        try{
+
+            String marcar = "Y";
+            if (!marcarImprimir) marcar = "N";
+
+            String action = " update z_confirmacionetiquetaprod set isprinted ='" + marcar + "' " +
+                            " where z_confirmacionetiquetadoc_id =" + this.get_ID();
+            DB.executeUpdateEx(action, get_TrxName());
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
+
+    /***
+     * Marca o desmarca los productos asociados a este documento de confirmacion de precios al local.
+     * Xpande. Created by Gabriel Vila on 5/23/18.
+     * @param marcarOmitir
+     */
+    public void setProductosOmitir(boolean marcarOmitir) {
+
+        try{
+
+            String marcar = "Y";
+            if (!marcarOmitir) marcar = "N";
+
+            String action = " update z_confirmacionetiquetaprod set isomitted ='" + marcar + "' " +
+                    " where z_confirmacionetiquetadoc_id =" + this.get_ID();
+            DB.executeUpdateEx(action, get_TrxName());
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
+
 }
