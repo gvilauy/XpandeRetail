@@ -57,7 +57,6 @@ public class GenerarActPVPOferta extends SvrProcess {
             sql = " select z_ofertaventa_id, cast((EndDate +1) as timestamp without time zone) as DateToPos " +
                     " from z_ofertaventa " +
                     " where cast((EndDate -1) as timestamp without time zone) <= cast(date_trunc('day', now()) as timestamp without time zone) " +
-                    //" where cast((EndDate) as timestamp without time zone) = cast(date_trunc('day', now()) as timestamp without time zone) " +
                     " and DocStatus='CO' " +
                     " and Z_ActualizacionPVP_ID is null " +
                     " order by datedoc";
@@ -103,6 +102,10 @@ public class GenerarActPVPOferta extends SvrProcess {
                     actualizacionPVP.setOnlyOneOrg(false);
                 }
                 actualizacionPVP.saveEx();
+
+                // Asocio oferta con actualizacion pvp
+                ofertaVenta.setZ_ActualizacionPVP_ID(actualizacionPVP.get_ID());
+                ofertaVenta.saveEx();;
 
                 // Elimino organizaciones actuales de la actualización ya que tiene que ser identicas a las de la oferta
                 String action = " delete from z_actualizacionpvporg where z_actualizacionpvp_id =" + actualizacionPVP.get_ID();

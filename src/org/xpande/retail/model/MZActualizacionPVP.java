@@ -551,6 +551,27 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 		return true;
 	}
 
+
+	@Override
+	protected boolean beforeDelete() {
+
+		String action = "";
+
+		try{
+
+			// Si tengo oferta asociada a esta actualizacion, quito dicha asociación al eliminar esta actualizacion
+			if (this.getZ_OfertaVenta_ID() > 0){
+				action = " update z_ofertaventa set z_actualizacionpvp_id = null where z_ofertaventa_id =" + this.getZ_OfertaVenta_ID();
+				DB.executeUpdateEx(action, get_TrxName());
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return true;
+	}
+
 	/***
 	 * Obtiene y retorna organizaciones a procesar (no discrimina si estan o no seleccionadas).
 	 * Xpande. Created by Gabriel Vila on 7/19/17.
