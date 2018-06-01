@@ -776,12 +776,13 @@ public class ValidatorRetail implements ModelValidator {
             // Para comprobantes de compra del tipo API (facturas de proveedores)
             if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)) {
 
-                // Si para esta factura de proveedor tengo lineas de bonificacion, me aseguro que dichas lineas tengan producto a bonificar.
+                // Si para esta factura de proveedor tengo lineas de bonificacion,
+                // me aseguro que dichas lineas tengan producto a bonificar y bonificador.
                 sql = " select count(*) from z_invoicebonifica where c_invoice_id =" + model.get_ID() +
-                        " and (m_product_to_id is null or m_product_to_id <= 0)";
+                        " and ((m_product_to_id is null or m_product_to_id <= 0) or (m_product_id is null or m_product_id <= 0))";
                 int contador = DB.getSQLValueEx(model.get_TrxName(), sql);
                 if (contador > 0){
-                    throw new AdempiereException("Falta indicar Producto a Bonificar en líneas de Bonificación");
+                    throw new AdempiereException("Falta indicar Producto a Bonificar y/o Producto Bonificador en líneas de Bonificación");
                 }
 
             }

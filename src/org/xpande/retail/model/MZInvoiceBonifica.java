@@ -33,8 +33,9 @@ public class MZInvoiceBonifica extends X_Z_InvoiceBonifica {
 
         // En nuevos registros, obtengo precio OC del producto bonificado
         if (newRecord){
+
             // Si es una bonificacion simple del mismo producto, el precio OC = precio facturado
-            if (this.getM_Product_ID() == this.getM_Product_To_ID()){
+            if ((this.getM_Product_ID() > 0) && (this.getM_Product_ID() == this.getM_Product_To_ID())){
                 MInvoiceLine invoiceLine = (MInvoiceLine) this.getC_InvoiceLine();
                 this.setPricePO(invoiceLine.getPriceEntered());
             }
@@ -51,7 +52,9 @@ public class MZInvoiceBonifica extends X_Z_InvoiceBonifica {
         if ((newRecord) && (this.isManual())){
             this.setQtyBase(Env.ZERO);
             this.setQtyCalculated(Env.ZERO);
-            this.setQtyReward(Env.ZERO);
+            if (this.getQtyReward() == null){
+                this.setQtyReward(Env.ZERO);
+            }
         }
 
         return true;
@@ -63,8 +66,10 @@ public class MZInvoiceBonifica extends X_Z_InvoiceBonifica {
         if (!success) return success;
 
         // Marco la linea de factura asociada con esta bonificacion, como bonificada
-        String action = " update c_invoiceline set IsBonificada ='Y' where c_invoiceline_id =" + this.getC_InvoiceLine_ID();
-        DB.executeUpdateEx(action, get_TrxName());
+        if (this.getC_InvoiceLine_ID() > 0){
+            String action = " update c_invoiceline set IsBonificada ='Y' where c_invoiceline_id =" + this.getC_InvoiceLine_ID();
+            DB.executeUpdateEx(action, get_TrxName());
+        }
 
         return true;
     }
@@ -89,10 +94,12 @@ public class MZInvoiceBonifica extends X_Z_InvoiceBonifica {
 
         // En caso de no tener mas lineas de bonificación para la linea de facttura asociada a esta bonificacion,
         // marco la linea de factura como no bonificada
-        int contador = DB.getSQLValueEx(get_TrxName(), " select count(*) from z_invoicebonifica where c_invoiceline_id =" + this.getC_InvoiceLine_ID());
-        if (contador <= 0){
-            String action = " update c_invoiceline set IsBonificada ='N' where c_invoiceline_id =" + this.getC_InvoiceLine_ID();
-            DB.executeUpdateEx(action, get_TrxName());
+        if (this.getC_InvoiceLine_ID() > 0){
+            int contador = DB.getSQLValueEx(get_TrxName(), " select count(*) from z_invoicebonifica where c_invoiceline_id =" + this.getC_InvoiceLine_ID());
+            if (contador <= 0){
+                String action = " update c_invoiceline set IsBonificada ='N' where c_invoiceline_id =" + this.getC_InvoiceLine_ID();
+                DB.executeUpdateEx(action, get_TrxName());
+            }
         }
 
         return true;
