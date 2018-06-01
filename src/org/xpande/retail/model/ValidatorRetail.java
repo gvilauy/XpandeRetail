@@ -819,14 +819,13 @@ public class ValidatorRetail implements ModelValidator {
                 precision = MPriceList.getPricePrecision(model.getCtx(), model.getM_PriceList_ID());
             }
 
+            // Calculo de descuentos por Notas de Credito al Pago.
+            this.setNCAlPago(model, invoiceLines, precision);
+
             // Para comprobantes de compra del tipo API (facturas de proveedores)
             if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
 
-                // Calculo de descuentos por Notas de Credito al Pago.
                 // Calculo y generación de remitos por diferencia de cantidad y montos
-
-                // Recorro lineas del comprobante
-                boolean hayDescuntoNC = false;
 
                 // Instancio cabezal de remito por diferencia, si luego no tiene monto, lo elimino.
                 BigDecimal totalAmtRemito = Env.ZERO;
@@ -849,23 +848,11 @@ public class ValidatorRetail implements ModelValidator {
 
                     MInvoiceLine invoiceLine = invoiceLines[i];
 
-                    // Proceso notas de credito al pago
-                    boolean resultadoNC = this.setNCAlPago(model, invoiceLine, precision);
-                    if (resultadoNC){
-                        hayDescuntoNC = true;
-                    }
-
                     // Proceso remitos por diferencia
                     BigDecimal amtRemitoLin = this.setRemitoDiferencia(model, invoiceLine, remitoDif, precision);
                     if (amtRemitoLin != null){
                         totalAmtRemito = totalAmtRemito.add(amtRemitoLin);
                     }
-                }
-
-                if (hayDescuntoNC){
-                    action = " update c_invoice set TieneDtosNC ='Y' " +
-                            " where c_invoice_id =" + model.get_ID();
-                    DB.executeUpdateEx(action, model.get_TrxName());
                 }
 
                 if (totalAmtRemito.compareTo(Env.ZERO) > 0){
@@ -1020,6 +1007,52 @@ public class ValidatorRetail implements ModelValidator {
 
 
     /***
+     * Genera invoice por el concepto de nota de credito al pago para proveedores.
+     * Xpande. Created by Gabriel Vila on 6/1/18.
+     * @param invoice
+     * @param invoiceLines
+     * @param precision
+     */
+    private void setNCAlPago(MInvoice invoice, MInvoiceLine[] invoiceLines, int precision){
+
+        String action = "";
+
+        try{
+
+            MZComercialConfig comercialConfig = MZComercialConfig.getDefault(invoice.getCtx(), null);
+
+            // Si estoy completando una nota de credito proveedor que ya es por descuentos al pago, no hago nada
+            if (invoice.getC_DocTypeTarget_ID() == comercialConfig.getDefaultDocAPCDtoPag_ID()){
+                return;
+            }
+
+            boolean hayDescuntoNC = false;
+
+            // Recorro lineas del comprobante
+            for (int i = 0; i < invoiceLines.length; i++){
+
+                MInvoiceLine invoiceLine = invoiceLines[i];
+
+                // Proceso notas de credito al pago
+                boolean resultadoNC = this.setLineaNCAlPago(invoice, invoiceLine, precision);
+                if (resultadoNC){
+                    hayDescuntoNC = true;
+                }
+            }
+
+            if (hayDescuntoNC){
+                action = " update c_invoice set TieneDtosNC ='Y' " +
+                        " where c_invoice_id =" + invoice.get_ID();
+                DB.executeUpdateEx(action, invoice.get_TrxName());
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
+
+    /***
      * Dada una linea de factura verifica si para la misma corresponde o no un descuento con NC al pago.
      * Xpande. Created by Gabriel Vila on 3/5/18.
      * @param invoice
@@ -1027,7 +1060,7 @@ public class ValidatorRetail implements ModelValidator {
      * @param precision
      * @return
      */
-    private boolean setNCAlPago(MInvoice invoice, MInvoiceLine invoiceLine, int precision){
+    private boolean setLineaNCAlPago(MInvoice invoice, MInvoiceLine invoiceLine, int precision){
 
         boolean hayDescuntoNC = false;
         String action = "";
