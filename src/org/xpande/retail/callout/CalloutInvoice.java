@@ -1182,6 +1182,7 @@ public class CalloutInvoice extends CalloutEngine
 			mTab.setValue(X_Z_InvoiceBonifica.COLUMNNAME_M_Product_ID, null);
 			mTab.setValue(X_Z_InvoiceBonifica.COLUMNNAME_M_Product_To_ID, null);
 			mTab.setValue(X_Z_InvoiceBonifica.COLUMNNAME_Line, null);
+			mTab.setValue(X_Z_InvoiceBonifica.COLUMNNAME_QtyBase, Env.ZERO);
 			return "";
 		}
 
@@ -1191,11 +1192,13 @@ public class CalloutInvoice extends CalloutEngine
 		if (invoiceLine.getM_Product_ID() > 0){
 			mTab.setValue(X_Z_InvoiceBonifica.COLUMNNAME_M_Product_ID, invoiceLine.getM_Product_ID());
 			mTab.setValue(X_Z_InvoiceBonifica.COLUMNNAME_Line, invoiceLine.getLine());
+			mTab.setValue(X_Z_InvoiceBonifica.COLUMNNAME_QtyBase, invoiceLine.getQtyInvoiced());
 		}
 		else{
 			mTab.setValue(X_Z_InvoiceBonifica.COLUMNNAME_M_Product_ID, null);
 			mTab.setValue(X_Z_InvoiceBonifica.COLUMNNAME_M_Product_To_ID, null);
 			mTab.setValue(X_Z_InvoiceBonifica.COLUMNNAME_Line, null);
+			mTab.setValue(X_Z_InvoiceBonifica.COLUMNNAME_QtyBase, Env.ZERO);
 		}
 
 		return "";

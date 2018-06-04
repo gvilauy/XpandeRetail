@@ -32,18 +32,20 @@ public class MZInvoiceBonifica extends X_Z_InvoiceBonifica {
         }
 
         // En nuevos registros, obtengo precio OC del producto bonificado
-        if (newRecord){
+        if ((newRecord) || (is_ValueChanged(X_Z_InvoiceBonifica.COLUMNNAME_M_Product_ID)) || (is_ValueChanged(X_Z_InvoiceBonifica.COLUMNNAME_M_Product_To_ID))){
 
             // Si es una bonificacion simple del mismo producto, el precio OC = precio facturado
-            if ((this.getM_Product_ID() > 0) && (this.getM_Product_ID() == this.getM_Product_To_ID())){
+            if ((this.getM_Product_To_ID() > 0) && (this.getM_Product_ID() == this.getM_Product_To_ID())){
                 MInvoiceLine invoiceLine = (MInvoiceLine) this.getC_InvoiceLine();
                 this.setPricePO(invoiceLine.getPriceEntered());
             }
             else{
-                MInvoice invoice = (MInvoice) this.getC_Invoice();
-                MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(getCtx(), invoice.getC_BPartner_ID(), this.getM_Product_To_ID(), null);
-                if ((productoSocio != null) && (productoSocio.getZ_ProductoSocio_ID() > 0)){
-                    this.setPricePO(productoSocio.getPricePO());
+                if (this.getM_Product_To_ID() > 0){
+                    MInvoice invoice = (MInvoice) this.getC_Invoice();
+                    MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(getCtx(), invoice.getC_BPartner_ID(), this.getM_Product_To_ID(), null);
+                    if ((productoSocio != null) && (productoSocio.getZ_ProductoSocio_ID() > 0)){
+                        this.setPricePO(productoSocio.getPricePO());
+                    }
                 }
             }
         }

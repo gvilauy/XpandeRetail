@@ -73,6 +73,12 @@ public class GenerarBonifProv extends SvrProcess {
                 return "@Error@ " + "No existe Factura de Bonificación para ese Socio de Negocio y número ingresado.";
             }
 
+            // Elimino bonificaciones manuales anteriores
+            String action = " delete from z_invoicebonifica where c_invoice_id =" + this.invoiceDestino.get_ID() +
+                            " and IsManual ='Y' ";
+            DB.executeUpdateEx(action, get_TrxName());
+
+            // Cargo bonificaciones desde invoice origen
             sql = " select m_product_id, qtyentered, c_uom_id " +
                     " from c_invoiceline " +
                     " where c_invoice_id =" + cInvoiceOrigenID +
