@@ -33,7 +33,7 @@ public class X_Z_ProductoSocio extends PO implements I_Z_ProductoSocio, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180115L;
+	private static final long serialVersionUID = 20180604L;
 
     /** Standard Constructor */
     public X_Z_ProductoSocio (Properties ctx, int Z_ProductoSocio_ID, String trxName)
@@ -155,6 +155,34 @@ public class X_Z_ProductoSocio extends PO implements I_Z_ProductoSocio, I_Persis
 	public int getC_Currency_ID_SO () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID_SO);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_Invoice getC_Invoice() throws RuntimeException
+    {
+		return (I_C_Invoice)MTable.get(getCtx(), I_C_Invoice.Table_Name)
+			.getPO(getC_Invoice_ID(), get_TrxName());	}
+
+	/** Set Invoice.
+		@param C_Invoice_ID 
+		Invoice Identifier
+	  */
+	public void setC_Invoice_ID (int C_Invoice_ID)
+	{
+		if (C_Invoice_ID < 1) 
+			set_Value (COLUMNNAME_C_Invoice_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
+	}
+
+	/** Get Invoice.
+		@return Invoice Identifier
+	  */
+	public int getC_Invoice_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

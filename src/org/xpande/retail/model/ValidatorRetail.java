@@ -820,6 +820,27 @@ public class ValidatorRetail implements ModelValidator {
                 precision = MPriceList.getPricePrecision(model.getCtx(), model.getM_PriceList_ID());
             }
 
+
+            // Recorro lineas del comprobante y actualizo datos de ultima factura en ficha producto-socio
+            for (int i = 0; i < invoiceLines.length; i++){
+
+                MInvoiceLine invoiceLine = invoiceLines[i];
+
+                // Instancio modelo producto-socio, y si este modelo tiene pauta comercial asociada, calculo descuentos por NC al pago.
+                if (invoiceLine.getM_Product_ID() > 0){
+                    MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(Env.getCtx(), model.getC_BPartner_ID(), invoiceLine.getM_Product_ID(), model.get_TrxName());
+                    if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+                        String serieDocumento = model.get_ValueAsString("DocumentSerie");
+                        if (serieDocumento == null) serieDocumento = "";
+                        productoSocio.setInvoiceNo(serieDocumento + model.getDocumentNo());
+                        productoSocio.setDateInvoiced(model.getDateInvoiced());
+                        productoSocio.setPriceInvoiced(invoiceLine.getPriceEntered());
+                        productoSocio.setC_Invoice_ID(model.get_ID());
+                        productoSocio.saveEx();
+                    }
+                }
+            }
+
             // Calculo de descuentos por Notas de Credito al Pago.
             this.setNCAlPago(model, invoiceLines, precision);
 
@@ -1100,14 +1121,6 @@ public class ValidatorRetail implements ModelValidator {
                     }
                 }
 
-                // Guardo datos de ultima factura en ficha de producto-proveedor
-                String serieDocumento = invoice.get_ValueAsString("DocumentSerie");
-                if (serieDocumento == null) serieDocumento = "";
-
-                productoSocio.setInvoiceNo(serieDocumento + invoice.getDocumentNo());
-                productoSocio.setDateInvoiced(invoice.getDateInvoiced());
-                productoSocio.setPriceInvoiced(invoiceLine.getPriceEntered());
-                productoSocio.saveEx();
             }
 
         }
