@@ -276,7 +276,6 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 		else if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
 
 			// Proceso interface de salida por scanntech.
-
 			org.xpande.stech.utils.ProcesadorInterfaceOut procesadorInterfaceOut = new org.xpande.stech.utils.ProcesadorInterfaceOut(getCtx(), get_TrxName());
 			m_processMsg = procesadorInterfaceOut.executeInterfaceOut(this.getAD_Org_ID(), this.get_ID(), processPrices, true, true);
 			if (m_processMsg != null)
