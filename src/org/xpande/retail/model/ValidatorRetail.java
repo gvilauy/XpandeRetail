@@ -1,11 +1,13 @@
 package org.xpande.retail.model;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.apache.commons.lang.math.NumberUtils;
 import org.compiere.acct.Doc;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.acct.model.MZAcctConfig;
 import org.xpande.comercial.model.MZComercialConfig;
 import org.xpande.core.model.MZActividadDocumento;
 import org.xpande.core.model.MZProductoUPC;
@@ -686,6 +688,34 @@ public class ValidatorRetail implements ModelValidator {
                     if (model.isSold() && model.isPurchased()){
                         model.set_ValueOfColumn("EsProductoBalanza", true);
                     }
+                }
+            }
+
+            // En retail si el producto es de balanza hago validaciones de codigo y nombre
+            if (model.get_ValueAsBoolean("EsProductoBalanza")){
+
+                // Codigo númerico, máximo cuantro digitos (9999)
+                if ((!NumberUtils.isNumber(model.getValue())) || (model.getValue().length() > 4)){
+                    return "Código interno del Producto debe ser númerico y no mayor a 9999 : " + model.getValue() + " - " + model.getName();
+                }
+
+                // Nombre corto del producto máximo 20 caracteres
+                if (model.getDescription().trim().length() > 20){
+                    return "Nombre corto de Producto supera los 20 caracteres para Balanza : " + model.getValue() + " - " + model.getName();
+                }
+            }
+        }
+
+        else if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)){
+
+            // Para productos nuevos o modificados en su categoría de impuesto
+            if ((type == ModelValidator.TYPE_AFTER_NEW) || (model.is_ValueChanged(X_M_Product.COLUMNNAME_C_TaxCategory_ID))){
+
+                // Seteo Configuración contable para este producto
+                MZRetailConfig retailConfig = MZRetailConfig.getDefault(model.getCtx(), model.get_TrxName());
+                MZAcctConfig acctConfig = MZAcctConfig.getDefault(model.getCtx(), model.get_TrxName());
+                if ((acctConfig != null) && (acctConfig.get_ID() > 0)){
+                    acctConfig.setRetailProdAcct(model.getAD_Client_ID(), model.get_ID(), model.getC_TaxCategory_ID(), retailConfig.get_ID());
                 }
             }
         }
