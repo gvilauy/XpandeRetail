@@ -1100,6 +1100,11 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				// Producto a considerar
 				MProduct prod = (MProduct) productoSocio.getM_Product();
 
+				// Si ya tengo este producto en la grilla de productos para esta gestión de precios, no lo duplico
+				if (this.contieneProducto(prod.get_ID())){
+					continue;
+				}
+
 				// Precio de lista compra actual tomado desde la propia lista
 				BigDecimal priceListPO = null;
 				MProductPrice productPrice = MProductPrice.get(getCtx(), plVersionCompra.get_ID(), prod.get_ID(), get_TrxName());
@@ -1191,6 +1196,32 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		catch (Exception e){
 		    throw new AdempiereException(e);
 		}
+	}
+
+
+	/***
+	 * Verifica y retorna si un determinado producto esta contenido en una de las lineas de este documento.
+	 * Xpande. Created by Gabriel Vila on 8/3/18.
+	 * @param mProductID
+	 * @return
+	 */
+	private boolean contieneProducto(int mProductID) {
+
+		boolean result = false;
+
+		try{
+
+			MZPreciosProvLin provLin = MZPreciosProvLin.getByProduct(getCtx(), this.get_ID(), mProductID, get_TrxName());
+			if ((provLin != null) && (provLin.get_ID() > 0)){
+				result = true;
+			}
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return result;
 	}
 
 	/***

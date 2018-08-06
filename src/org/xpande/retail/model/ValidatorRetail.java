@@ -709,13 +709,21 @@ public class ValidatorRetail implements ModelValidator {
         else if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)){
 
             // Para productos nuevos o modificados en su categoría de impuesto
-            if ((type == ModelValidator.TYPE_AFTER_NEW) || (model.is_ValueChanged(X_M_Product.COLUMNNAME_C_TaxCategory_ID))){
+            if ((type == ModelValidator.TYPE_AFTER_NEW) || (model.is_ValueChanged(X_M_Product.COLUMNNAME_C_TaxCategory_ID))
+                    || (model.is_ValueChanged("C_TaxCategory_ID_2"))){
 
                 // Seteo Configuración contable para este producto
                 MZRetailConfig retailConfig = MZRetailConfig.getDefault(model.getCtx(), model.get_TrxName());
                 MZAcctConfig acctConfig = MZAcctConfig.getDefault(model.getCtx(), model.get_TrxName());
                 if ((acctConfig != null) && (acctConfig.get_ID() > 0)){
-                    acctConfig.setRetailProdAcct(model.getAD_Client_ID(), model.get_ID(), model.getC_TaxCategory_ID(), retailConfig.get_ID());
+
+                    int cTaxCategoryID = model.getC_TaxCategory_ID();
+
+                    // Impuesto especial de compra para productos en retail.
+                    if (model.get_ValueAsInt("C_TaxCategory_ID_2") > 0){
+                        cTaxCategoryID = model.get_ValueAsInt("C_TaxCategory_ID_2");
+                    }
+                    acctConfig.setRetailProdAcct(model.getAD_Client_ID(), model.get_ID(), cTaxCategoryID, retailConfig.get_ID());
                 }
             }
         }

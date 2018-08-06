@@ -27,6 +27,7 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
         super(ctx, rs, trxName);
     }
 
+
     @Override
     protected boolean beforeSave(boolean newRecord) {
 
@@ -799,4 +800,25 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
 
         return true;
     }
+
+
+    /***
+     * Obtiene y retorna modelo según ID de cabezal e ID de producto recibido.
+     * Xpande. Created by Gabriel Vila on 8/3/18.
+     * @param ctx
+     * @param zPreciosProvCabID
+     * @param mProductID
+     * @param trxName
+     * @return
+     */
+    public static MZPreciosProvLin getByProduct(Properties ctx, int zPreciosProvCabID, int mProductID, String trxName) {
+
+        String whereClause = X_Z_PreciosProvLin.COLUMNNAME_Z_PreciosProvCab_ID + " =" + zPreciosProvCabID +
+                " AND " + X_Z_PreciosProvLin.COLUMNNAME_M_Product_ID + " =" + mProductID;
+        MZPreciosProvLin model = new Query(ctx, I_Z_PreciosProvLin.Table_Name, whereClause, trxName).first();
+
+        return model;
+
+    }
+
 }
