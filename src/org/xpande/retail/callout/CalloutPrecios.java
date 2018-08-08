@@ -746,6 +746,34 @@ public class CalloutPrecios extends CalloutEngine {
                 mTab.setValue("UPC", null);
             }
         }
+        else if (column.equalsIgnoreCase("InternalCode")){
+
+            String codInterno = (String) value;
+            if (codInterno == null) codInterno ="";
+            if (codInterno.trim().equalsIgnoreCase("")){
+                mTab.setValue("UPC", null);
+                mTab.setValue("M_Product_ID", null);
+                return "";
+            }
+
+            MProduct[] prods = MProduct.get(ctx, " Value ='" + codInterno + "'", null);
+            if (prods.length <= 0){
+                mTab.setValue("UPC", null);
+                mTab.setValue("M_Product_ID", null);
+                return "";
+            }
+            else{
+                prod = prods[0];
+                mTab.setValue("M_Product_ID", prod.get_ID());
+            }
+            MZProductoUPC pupc = MZProductoUPC.getByProduct(ctx, prod.get_ID(), null);
+            if ((pupc != null) && (pupc.get_ID() > 0)){
+                mTab.setValue("UPC", pupc.getUPC());
+            }
+            else{
+                mTab.setValue("UPC", null);
+            }
+        }
 
         // Seteo atrbutos asociados al producto
         if ((prod != null) && (prod.get_ID() > 0)){
