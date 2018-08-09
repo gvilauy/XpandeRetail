@@ -273,6 +273,11 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		// Recorro y proceso lineas (ya fueron validadas)
 		for (MZPreciosProvLin line: lines){
 
+			// Si este producto esta marcado para no considerarse en esta gestión, no hago nada con él.
+			if (line.isNoConsiderar()){
+				continue;
+			}
+
 			// Sete de producto de la linea, en caso de ser un nuevo producto se crea en este momento.
 			line.setProduct();
 

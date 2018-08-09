@@ -483,6 +483,11 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
 
         try{
 
+            // Si este producto esta marcado para no considerarse en esta gestión, no valido nada.
+            if (this.isNoConsiderar()){
+                return null;
+            }
+
             if ((this.getName() == null) || (this.getName().trim().equalsIgnoreCase(""))){
                 return "Producto no tiene Nombre";
             }
@@ -501,6 +506,12 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
 
             if ((this.getNewPriceSO() == null) || (this.getNewPriceSO().compareTo(Env.ZERO) <= 0)){
                 return "Producto no tiene Nuevo Precio de Venta";
+            }
+
+            if (this.getPriceFinal() != null){
+                if (this.getNewPriceSO().compareTo(this.getPriceFinal()) <= 0){
+                    return "Producto con Precio de Venta menor o igual a Precio Final";
+                }
             }
 
             // Codigo de barras duplicado en otro producto
@@ -793,7 +804,7 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
             MZPreciosProvCab cab = (MZPreciosProvCab)this.getZ_PreciosProvCab();
             // No permito eliminar productos que no son nuevos y que no estan en modalidad asociación de productos existentes al proveedor seleccionado
             if (!cab.getModalidadPreciosProv().equalsIgnoreCase(X_Z_PreciosProvCab.MODALIDADPRECIOSPROV_ASOCIACION)){
-                log.saveError("ATENCIÓN", "No es posible Eliminar un Producto Existente.");
+                log.saveError("ATENCIÓN", "No es posible Eliminar un Producto Encontrado. Marquelo para no considerarlo en la gestión");
                 return false;
             }
         }

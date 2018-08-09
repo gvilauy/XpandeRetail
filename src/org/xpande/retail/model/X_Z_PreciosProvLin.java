@@ -32,7 +32,7 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20171108L;
+	private static final long serialVersionUID = 20180809L;
 
     /** Standard Constructor */
     public X_Z_PreciosProvLin (Properties ctx, int Z_PreciosProvLin_ID, String trxName)
@@ -51,6 +51,8 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 			setIsConfirmed (true);
 // Y
 			setIsNew (false);
+// N
+			setNoConsiderar (false);
 // N
 			setOrgDifferentPricePO (false);
 // N
@@ -429,6 +431,30 @@ public class X_Z_PreciosProvLin extends PO implements I_Z_PreciosProvLin, I_Pers
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	/** Set NoConsiderar.
+		@param NoConsiderar 
+		Si se debe o no considerar
+	  */
+	public void setNoConsiderar (boolean NoConsiderar)
+	{
+		set_Value (COLUMNNAME_NoConsiderar, Boolean.valueOf(NoConsiderar));
+	}
+
+	/** Get NoConsiderar.
+		@return Si se debe o no considerar
+	  */
+	public boolean isNoConsiderar () 
+	{
+		Object oo = get_Value(COLUMNNAME_NoConsiderar);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set OrgDifferentPricePO.

@@ -652,6 +652,30 @@ public class ValidatorRetail implements ModelValidator {
                     }
                 }
             }
+            // Devoluciones de proveedores.
+            else if (model.getMovementType().equalsIgnoreCase(X_M_InOut.MOVEMENTTYPE_VendorReturns)){
+
+                // Valido que la devolución tenga la marca de confirmada antes de completarla
+                if (!model.get_ValueAsBoolean("IsConfirmed")){
+                    return "Debe confirmar la Devolución antes de Completarla.";
+                }
+
+                // Obtengo y recorro lineas
+                MInOutLine[] mInOutLines = model.getLines();
+                for (int i = 0; i < mInOutLines.length; i++){
+                    MInOutLine mInOutLine = mInOutLines[i];
+
+                    // Valido que este linea de devolución tenga seteado el destino.
+                    String destino = (String) mInOutLine.get_Value("DestinoDevol");
+                    if ((destino == null) || (destino.trim().equalsIgnoreCase(""))){
+                        MProduct product = (MProduct) mInOutLine.getM_Product();
+                        return "Falta indicar Destino de Devolución para el Producto : " + product.getValue() + " - " + product.getName();
+                    }
+
+                    // Valido cantidad confirmada no nula y que no sea nunca superior a la cantidad original a devolver.
+
+                }
+            }
         }
 
         return null;

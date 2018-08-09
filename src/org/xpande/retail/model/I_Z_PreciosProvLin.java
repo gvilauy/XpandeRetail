@@ -284,6 +284,19 @@ public interface I_Z_PreciosProvLin
 	  */
 	public BigDecimal getNewPriceSO();
 
+    /** Column name NoConsiderar */
+    public static final String COLUMNNAME_NoConsiderar = "NoConsiderar";
+
+	/** Set NoConsiderar.
+	  * Si se debe o no considerar
+	  */
+	public void setNoConsiderar(boolean NoConsiderar);
+
+	/** Get NoConsiderar.
+	  * Si se debe o no considerar
+	  */
+	public boolean isNoConsiderar();
+
     /** Column name OrgDifferentPricePO */
     public static final String COLUMNNAME_OrgDifferentPricePO = "OrgDifferentPricePO";
 
