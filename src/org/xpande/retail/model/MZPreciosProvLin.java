@@ -504,13 +504,21 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
                 return "Producto no tiene Impuesto";
             }
 
-            if ((this.getNewPriceSO() == null) || (this.getNewPriceSO().compareTo(Env.ZERO) <= 0)){
-                return "Producto no tiene Nuevo Precio de Venta";
-            }
+            // Valido precio de venta para productos existentes y que esten marcados para la venta.
+            if (!this.isNew()){
+                MProduct product = (MProduct) this.getM_Product();
+                if ((product != null) && (product.get_ID() > 0)){
+                    if (product.isSold()){
+                        if ((this.getNewPriceSO() == null) || (this.getNewPriceSO().compareTo(Env.ZERO) <= 0)){
+                            return "Producto no tiene Nuevo Precio de Venta";
+                        }
 
-            if (this.getPriceFinal() != null){
-                if (this.getNewPriceSO().compareTo(this.getPriceFinal()) <= 0){
-                    return "Producto con Precio de Venta menor o igual a Precio Final";
+                        if (this.getPriceFinal() != null){
+                            if (this.getNewPriceSO().compareTo(this.getPriceFinal()) <= 0){
+                                return "Producto con Precio de Venta menor o igual a Precio Final";
+                            }
+                        }
+                    }
                 }
             }
 
