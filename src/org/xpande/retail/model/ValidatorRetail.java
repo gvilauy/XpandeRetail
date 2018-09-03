@@ -606,23 +606,6 @@ public class ValidatorRetail implements ModelValidator {
             // En recepciones de productos
             if (model.getMovementType().equalsIgnoreCase(X_M_InOut.MOVEMENTTYPE_VendorReceipts)){
 
-                // Instancio cabezal de remito por diferencia de cantidad, si luego no tiene monto, lo elimino.
-                BigDecimal totalAmtRemito = Env.ZERO;
-                MZRemitoDifInv remitoDif = null;
-                MDocType[] docTypeRemitoList = MDocType.getOfDocBaseType(model.getCtx(), "RDC");
-                if (docTypeRemitoList.length <= 0){
-                    throw new AdempiereException("No esta definido el Documento para Remito por Diferencia de Cantidad (RDC)");
-                }
-                MDocType docRemito = docTypeRemitoList[0];
-                remitoDif = new MZRemitoDifInv(model.getCtx(), 0, model.get_TrxName());
-                remitoDif.setC_BPartner_ID(model.getC_BPartner_ID());
-                remitoDif.setC_Currency_ID(model.getC_Currency_ID());
-                remitoDif.setC_DocType_ID(docRemito.get_ID());
-                remitoDif.setM_InOut_ID(model.get_ID());
-                remitoDif.setDateDoc(model.getMovementDate());
-                remitoDif.setAD_Org_ID(model.getAD_Org_ID());
-                remitoDif.setTotalAmt(Env.ZERO);
-
                 // Obtengo y recorro lineas
                 MInOutLine[] mInOutLines = model.getLines();
                 for (int i = 0; i < mInOutLines.length; i++){
@@ -668,27 +651,9 @@ public class ValidatorRetail implements ModelValidator {
                         }
                     }
 
-                    // Proceso remito por diferencia de cantidad
-                    BigDecimal amtRemitoLin = remitoDif.setRemDifCantidad(model, mInOutLine, remitoDif, 2);
-                    if (amtRemitoLin != null){
-                        totalAmtRemito = totalAmtRemito.add(amtRemitoLin);
-                    }
                 }
-
-                // Si tengo remito por diferencia de cantidades
-                if (totalAmtRemito.compareTo(Env.ZERO) > 0){
-                    remitoDif.setTotalAmt(totalAmtRemito);
-                    if (!remitoDif.processIt(DocAction.ACTION_Complete)){
-                        message = remitoDif.getProcessMsg();
-                        if (message == null){
-                            message = "Error al completar documento de Remito por Diferencia de Cantidad (número: " + remitoDif.getDocumentNo() + " )";
-                        }
-                        return message;
-                    }
-                    remitoDif.saveEx();
-                }
-
             }
+
             // Devoluciones de proveedores.
             else if (model.getMovementType().equalsIgnoreCase(X_M_InOut.MOVEMENTTYPE_VendorReturns)){
 
@@ -967,7 +932,7 @@ public class ValidatorRetail implements ModelValidator {
                     MInvoiceLine invoiceLine = invoiceLines[i];
 
                     // Proceso remitos por diferencia
-                    BigDecimal amtRemitoLin = remitoDif.setRemitoDiferencia(model, invoiceLine, remitoDif, precision);
+                    BigDecimal amtRemitoLin = remitoDif.setRemitoDiferencia(model, invoiceLine, precision, false);
                     if (amtRemitoLin != null){
                         totalAmtRemito = totalAmtRemito.add(amtRemitoLin);
                     }

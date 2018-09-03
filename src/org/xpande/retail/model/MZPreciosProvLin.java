@@ -758,6 +758,15 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
 
                 // Seteo datos de este producto-socio-org
                 MZProductoSocioOrg productoSocioOrg = productoSocio.getOrg(preciosProvOrg.getAD_OrgTrx_ID());
+                if ((productoSocioOrg == null) || (productoSocioOrg.get_ID() <= 0)){
+                    productoSocioOrg = new MZProductoSocioOrg(getCtx(), 0, get_TrxName());
+                    productoSocioOrg.setZ_ProductoSocio_ID(productoSocio.get_ID());
+                    productoSocioOrg.setAD_OrgTrx_ID(preciosProvOrg.getAD_OrgTrx_ID());
+                    productoSocioOrg.setDateValidPO(preciosProvCab.getDateValidPO());
+                    productoSocioOrg.setDateValidSO(preciosProvCab.getDateValidPO());
+                    productoSocioOrg.setPriceList(preciosProvLinOrg.getPriceList());
+                    productoSocioOrg.setPriceSO(preciosProvLinOrg.getNewPriceSO());
+                }
                 preciosProvLinOrg.setC_Currency_ID(productoSocio.getC_Currency_ID());
                 preciosProvLinOrg.setC_Currency_ID_SO(productoSocio.getC_Currency_ID_SO());
                 preciosProvLinOrg.setNewPriceSO(productoSocioOrg.getPriceSO());

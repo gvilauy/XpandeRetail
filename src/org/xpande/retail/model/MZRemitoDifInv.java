@@ -421,11 +421,11 @@ public class MZRemitoDifInv extends X_Z_RemitoDifInv implements DocAction, DocOp
 	 * Xpande. Created by Gabriel Vila on 9/3/18.
 	 * @param invoice
 	 * @param invoiceLine
-	 * @param remitoDif
 	 * @param precision
+	 * @param soloDifCantidad
 	 * @return
 	 */
-	public BigDecimal setRemitoDiferencia(MInvoice invoice, MInvoiceLine invoiceLine, MZRemitoDifInv remitoDif, int precision){
+	public BigDecimal setRemitoDiferencia(MInvoice invoice, MInvoiceLine invoiceLine, int precision, boolean soloDifCantidad){
 
 		BigDecimal amtRemito = Env.ZERO;
 
@@ -471,13 +471,13 @@ public class MZRemitoDifInv extends X_Z_RemitoDifInv implements DocAction, DocOp
 
 			// Tengo diferencia de monto o cantidad
 			if (hayDiferenciaCantidad || hayDiferenciaNeto){
-				if (remitoDif.get_ID() <= 0){
-					remitoDif.saveEx();
+				if (this.get_ID() <= 0){
+					this.saveEx();
 				}
 				// Genero un linea de diferencia por cantidad y una linea de diferencia por monto (para el mismo producto, dos lineas).
 				if (hayDiferenciaCantidad){
 					MZRemitoDifInvLin remitoLin = new MZRemitoDifInvLin(invoice.getCtx(), 0, invoice.get_TrxName());
-					remitoLin.setZ_RemitoDifInv_ID(remitoDif.get_ID());
+					remitoLin.setZ_RemitoDifInv_ID(this.get_ID());
 					remitoLin.setC_InvoiceLine_ID(invoiceLine.get_ID());
 					remitoLin.setC_Invoice_ID(invoice.get_ID());
 					remitoLin.setM_InOutLine_ID(invoiceLine.getM_InOutLine_ID());
@@ -506,41 +506,41 @@ public class MZRemitoDifInv extends X_Z_RemitoDifInv implements DocAction, DocOp
 				}
 
 				if (hayDiferenciaNeto){
-					MZRemitoDifInvLin remitoLin = new MZRemitoDifInvLin(invoice.getCtx(), 0, invoice.get_TrxName());
-					remitoLin.setZ_RemitoDifInv_ID(remitoDif.get_ID());
-					remitoLin.setC_InvoiceLine_ID(invoiceLine.get_ID());
-					remitoLin.setC_Invoice_ID(invoice.get_ID());
-					remitoLin.setM_InOutLine_ID(invoiceLine.getM_InOutLine_ID());
-					remitoLin.setM_Product_ID(invoiceLine.getM_Product_ID());
-					remitoLin.setC_UOM_ID(invoiceLine.getC_UOM_ID());
-					remitoLin.setQtyDelivered(cantRecepcionada);
-					remitoLin.setQtyInvoiced(cantFacturada);
-					remitoLin.setDifferenceQty(cantDiferencia);
-					remitoLin.setQtyOpen(cantDiferencia);
-					remitoLin.setPricePO(pricePO);
-					remitoLin.setPriceInvoiced(invoiceLine.getPriceEntered());
-					remitoLin.setDifferencePrice(priceDiferencia);
-					remitoLin.setAmtSubtotal(netoFacturado);
-					remitoLin.setAmtSubtotalPO(netoPO);
+					if (!soloDifCantidad){
+						MZRemitoDifInvLin remitoLin = new MZRemitoDifInvLin(invoice.getCtx(), 0, invoice.get_TrxName());
+						remitoLin.setZ_RemitoDifInv_ID(this.get_ID());
+						remitoLin.setC_InvoiceLine_ID(invoiceLine.get_ID());
+						remitoLin.setC_Invoice_ID(invoice.get_ID());
+						remitoLin.setM_InOutLine_ID(invoiceLine.getM_InOutLine_ID());
+						remitoLin.setM_Product_ID(invoiceLine.getM_Product_ID());
+						remitoLin.setC_UOM_ID(invoiceLine.getC_UOM_ID());
+						remitoLin.setQtyDelivered(cantRecepcionada);
+						remitoLin.setQtyInvoiced(cantFacturada);
+						remitoLin.setDifferenceQty(cantDiferencia);
+						remitoLin.setQtyOpen(cantDiferencia);
+						remitoLin.setPricePO(pricePO);
+						remitoLin.setPriceInvoiced(invoiceLine.getPriceEntered());
+						remitoLin.setDifferencePrice(priceDiferencia);
+						remitoLin.setAmtSubtotal(netoFacturado);
+						remitoLin.setAmtSubtotalPO(netoPO);
 
-					// Neto diferencia de la linea por diferencia de monto depende si ademas este producto tiene o no diferencia de cantidad
-					if (hayDiferenciaCantidad){
-						// Neto diferencia se calcula multiplicando la cantidad recepcionada por el precio diferencia
-						remitoLin.setDifferenceAmt(remitoLin.getQtyDelivered().multiply(remitoLin.getDifferencePrice()).setScale(precision, RoundingMode.HALF_UP));
+						// Neto diferencia de la linea por diferencia de monto depende si ademas este producto tiene o no diferencia de cantidad
+						if (hayDiferenciaCantidad){
+							// Neto diferencia se calcula multiplicando la cantidad recepcionada por el precio diferencia
+							remitoLin.setDifferenceAmt(remitoLin.getQtyDelivered().multiply(remitoLin.getDifferencePrice()).setScale(precision, RoundingMode.HALF_UP));
+						}
+						else{
+							// El producto solo tiene diferencia por monto y ya esta calculada
+							remitoLin.setDifferenceAmt(netoDiferencia);
+						}
+
+						remitoLin.setAmtOpen(remitoLin.getDifferenceAmt());
+						remitoLin.setIsDifferenceQty(false);
+						remitoLin.setIsDifferenceAmt(true);
+						remitoLin.saveEx();
+
+						amtRemito = remitoLin.getDifferenceAmt();
 					}
-					else{
-						// El producto solo tiene diferencia por monto y ya esta calculada
-						remitoLin.setDifferenceAmt(netoDiferencia);
-					}
-
-					remitoLin.setAmtOpen(remitoLin.getDifferenceAmt());
-					remitoLin.setIsDifferenceQty(false);
-					remitoLin.setIsDifferenceAmt(true);
-					remitoLin.saveEx();
-
-					amtRemito = remitoLin.getDifferenceAmt();
-
-					//totalAmtRemito = totalAmtRemito.add(remitoLin.getDifferenceAmt());
 				}
 			}
 		}
@@ -551,61 +551,4 @@ public class MZRemitoDifInv extends X_Z_RemitoDifInv implements DocAction, DocOp
 		return amtRemito;
 	}
 
-
-	/***
-	 * Segun linea de recepción, se verifica si la misma tiene diferencias de cantidad.
-	 * Si es asi genera nueva linea por este concepto.
-	 * Xpande. Created by Gabriel Vila on 9/3/18.
-	 * @param inOut
-	 * @param inOutLine
-	 * @param remitoDif
-	 * @param precision
-	 * @return
-	 */
-	public BigDecimal setRemDifCantidad(MInOut inOut, MInOutLine inOutLine, MZRemitoDifInv remitoDif, int precision){
-
-		BigDecimal amtRemito = Env.ZERO;
-
-		try{
-			if (inOutLine.getM_Product_ID() <= 0){
-				return Env.ZERO;
-			}
-			// Verifico diferencias entre cantidad recibida y cantidad facturada, si es que tengo recepcion asociada
-			BigDecimal cantRecepcionada = inOutLine.getMovementQty();
-			BigDecimal cantFacturada = (BigDecimal) inOutLine.get_Value("QtyEnteredInvoice");
-			if (cantFacturada == null) cantFacturada = Env.ZERO;
-
-			BigDecimal cantDiferencia = cantFacturada.subtract(cantRecepcionada);
-			if (cantDiferencia.compareTo(Env.ZERO) <= 0){
-				return amtRemito;
-			}
-
-			// Al haber diferencia de cantidad, me aseguro de guardar el cabezal del documento de remito por diferencia recibido.
-			if (remitoDif.get_ID() <= 0){
-				remitoDif.saveEx();
-			}
-
-			// Genero nueva linea de diferencia por cantidad y una linea de diferencia por monto (para el mismo producto, dos lineas).
-			MZRemitoDifInvLin remitoLin = new MZRemitoDifInvLin(inOut.getCtx(), 0, inOut.get_TrxName());
-			remitoLin.setZ_RemitoDifInv_ID(remitoDif.get_ID());
-			remitoLin.setM_InOutLine_ID(inOutLine.get_ID());
-			remitoLin.setM_Product_ID(inOutLine.getM_Product_ID());
-			remitoLin.setC_UOM_ID(inOutLine.getC_UOM_ID());
-			remitoLin.setQtyDelivered(cantRecepcionada);
-			remitoLin.setQtyInvoiced(cantFacturada);
-			remitoLin.setDifferenceQty(cantDiferencia);
-			remitoLin.setQtyOpen(cantDiferencia);
-			remitoLin.setIsDifferenceQty(true);
-			remitoLin.setIsDifferenceAmt(false);
-			remitoLin.saveEx();
-
-			amtRemito = remitoLin.getDifferenceAmt();
-
-		}
-		catch (Exception e){
-			throw new AdempiereException(e);
-		}
-
-		return amtRemito;
-	}
 }
