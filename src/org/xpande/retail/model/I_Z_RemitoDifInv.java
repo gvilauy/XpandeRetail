@@ -230,6 +230,21 @@ public interface I_Z_RemitoDifInv
 	  */
 	public boolean isApproved();
 
+    /** Column name M_InOut_ID */
+    public static final String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
+
+	/** Set Shipment/Receipt.
+	  * Material Shipment Document
+	  */
+	public void setM_InOut_ID(int M_InOut_ID);
+
+	/** Get Shipment/Receipt.
+	  * Material Shipment Document
+	  */
+	public int getM_InOut_ID();
+
+	public I_M_InOut getM_InOut() throws RuntimeException;
+
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
@@ -264,6 +279,19 @@ public interface I_Z_RemitoDifInv
 	  * Total Amount
 	  */
 	public BigDecimal getTotalAmt();
+
+    /** Column name TotalInvAmt */
+    public static final String COLUMNNAME_TotalInvAmt = "TotalInvAmt";
+
+	/** Set Total Invoice Amount.
+	  * Cumulative total lifetime invoice amount
+	  */
+	public void setTotalInvAmt(BigDecimal TotalInvAmt);
+
+	/** Get Total Invoice Amount.
+	  * Cumulative total lifetime invoice amount
+	  */
+	public BigDecimal getTotalInvAmt();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";

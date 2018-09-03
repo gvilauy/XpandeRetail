@@ -33,7 +33,7 @@ public class X_Z_RemitoDifInv extends PO implements I_Z_RemitoDifInv, I_Persiste
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180226L;
+	private static final long serialVersionUID = 20180903L;
 
     /** Standard Constructor */
     public X_Z_RemitoDifInv (Properties ctx, int Z_RemitoDifInv_ID, String trxName)
@@ -44,7 +44,6 @@ public class X_Z_RemitoDifInv extends PO implements I_Z_RemitoDifInv, I_Persiste
 			setC_BPartner_ID (0);
 			setC_Currency_ID (0);
 			setC_DocType_ID (0);
-			setC_Invoice_ID (0);
 			setDateDoc (new Timestamp( System.currentTimeMillis() ));
 // @#Date@
 			setDocAction (null);
@@ -370,6 +369,34 @@ public class X_Z_RemitoDifInv extends PO implements I_Z_RemitoDifInv, I_Persiste
 		return false;
 	}
 
+	public I_M_InOut getM_InOut() throws RuntimeException
+    {
+		return (I_M_InOut)MTable.get(getCtx(), I_M_InOut.Table_Name)
+			.getPO(getM_InOut_ID(), get_TrxName());	}
+
+	/** Set Shipment/Receipt.
+		@param M_InOut_ID 
+		Material Shipment Document
+	  */
+	public void setM_InOut_ID (int M_InOut_ID)
+	{
+		if (M_InOut_ID < 1) 
+			set_Value (COLUMNNAME_M_InOut_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_InOut_ID, Integer.valueOf(M_InOut_ID));
+	}
+
+	/** Get Shipment/Receipt.
+		@return Material Shipment Document
+	  */
+	public int getM_InOut_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOut_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Processed.
 		@param Processed 
 		The document has been processed
@@ -430,6 +457,25 @@ public class X_Z_RemitoDifInv extends PO implements I_Z_RemitoDifInv, I_Persiste
 	public BigDecimal getTotalAmt () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalAmt);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Total Invoice Amount.
+		@param TotalInvAmt 
+		Cumulative total lifetime invoice amount
+	  */
+	public void setTotalInvAmt (BigDecimal TotalInvAmt)
+	{
+		throw new IllegalArgumentException ("TotalInvAmt is virtual column");	}
+
+	/** Get Total Invoice Amount.
+		@return Cumulative total lifetime invoice amount
+	  */
+	public BigDecimal getTotalInvAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalInvAmt);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
