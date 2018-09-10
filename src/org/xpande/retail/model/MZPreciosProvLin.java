@@ -50,6 +50,7 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
             if (newRecord){
                 this.setInfoIngresoManual(cab);
             }
+            this.setIsNew(true);
         }
         // Si estoy en modalidad de Asociación de producto existente al proveedor seleccionado
         else if (cab.getModalidadPreciosProv().equalsIgnoreCase(X_Z_PreciosProvCab.MODALIDADPRECIOSPROV_ASOCIACION)){

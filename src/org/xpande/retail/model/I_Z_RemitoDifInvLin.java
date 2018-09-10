@@ -349,6 +349,19 @@ public interface I_Z_RemitoDifInvLin
 	  */
 	public BigDecimal getQtyOpen();
 
+    /** Column name UPC */
+    public static final String COLUMNNAME_UPC = "UPC";
+
+	/** Set UPC/EAN.
+	  * Bar Code (Universal Product Code or its superset European Article Number)
+	  */
+	public void setUPC(String UPC);
+
+	/** Get UPC/EAN.
+	  * Bar Code (Universal Product Code or its superset European Article Number)
+	  */
+	public String getUPC();
+
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -364,6 +377,19 @@ public interface I_Z_RemitoDifInvLin
 	  * User who updated this records
 	  */
 	public int getUpdatedBy();
+
+    /** Column name VendorProductNo */
+    public static final String COLUMNNAME_VendorProductNo = "VendorProductNo";
+
+	/** Set Partner Product Key.
+	  * Product Key of the Business Partner
+	  */
+	public void setVendorProductNo(String VendorProductNo);
+
+	/** Get Partner Product Key.
+	  * Product Key of the Business Partner
+	  */
+	public String getVendorProductNo();
 
     /** Column name Z_RemitoDifInv_ID */
     public static final String COLUMNNAME_Z_RemitoDifInv_ID = "Z_RemitoDifInv_ID";

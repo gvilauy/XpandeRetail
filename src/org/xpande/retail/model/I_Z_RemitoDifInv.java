@@ -245,6 +245,15 @@ public interface I_Z_RemitoDifInv
 
 	public I_M_InOut getM_InOut() throws RuntimeException;
 
+    /** Column name ProcessButton */
+    public static final String COLUMNNAME_ProcessButton = "ProcessButton";
+
+	/** Set ProcessButton	  */
+	public void setProcessButton(String ProcessButton);
+
+	/** Get ProcessButton	  */
+	public String getProcessButton();
+
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
@@ -266,6 +275,19 @@ public interface I_Z_RemitoDifInv
 
 	/** Get Process Now	  */
 	public boolean isProcessing();
+
+    /** Column name RemDifCant_ID */
+    public static final String COLUMNNAME_RemDifCant_ID = "RemDifCant_ID";
+
+	/** Set RemDifCant_ID.
+	  * ID del remito por diferencia de cantidad en módulo de Retail
+	  */
+	public void setRemDifCant_ID(int RemDifCant_ID);
+
+	/** Get RemDifCant_ID.
+	  * ID del remito por diferencia de cantidad en módulo de Retail
+	  */
+	public int getRemDifCant_ID();
 
     /** Column name TotalAmt */
     public static final String COLUMNNAME_TotalAmt = "TotalAmt";

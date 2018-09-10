@@ -33,7 +33,7 @@ public class X_Z_RemitoDifInv extends PO implements I_Z_RemitoDifInv, I_Persiste
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180903L;
+	private static final long serialVersionUID = 20180910L;
 
     /** Standard Constructor */
     public X_Z_RemitoDifInv (Properties ctx, int Z_RemitoDifInv_ID, String trxName)
@@ -397,6 +397,20 @@ public class X_Z_RemitoDifInv extends PO implements I_Z_RemitoDifInv, I_Persiste
 		return ii.intValue();
 	}
 
+	/** Set ProcessButton.
+		@param ProcessButton ProcessButton	  */
+	public void setProcessButton (String ProcessButton)
+	{
+		set_Value (COLUMNNAME_ProcessButton, ProcessButton);
+	}
+
+	/** Get ProcessButton.
+		@return ProcessButton	  */
+	public String getProcessButton () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton);
+	}
+
 	/** Set Processed.
 		@param Processed 
 		The document has been processed
@@ -440,6 +454,29 @@ public class X_Z_RemitoDifInv extends PO implements I_Z_RemitoDifInv, I_Persiste
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set RemDifCant_ID.
+		@param RemDifCant_ID 
+		ID del remito por diferencia de cantidad en módulo de Retail
+	  */
+	public void setRemDifCant_ID (int RemDifCant_ID)
+	{
+		if (RemDifCant_ID < 1) 
+			set_Value (COLUMNNAME_RemDifCant_ID, null);
+		else 
+			set_Value (COLUMNNAME_RemDifCant_ID, Integer.valueOf(RemDifCant_ID));
+	}
+
+	/** Get RemDifCant_ID.
+		@return ID del remito por diferencia de cantidad en módulo de Retail
+	  */
+	public int getRemDifCant_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_RemDifCant_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Total Amount.

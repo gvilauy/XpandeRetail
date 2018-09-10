@@ -30,7 +30,7 @@ public class X_Z_RetailConfig extends PO implements I_Z_RetailConfig, I_Persiste
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20171106L;
+	private static final long serialVersionUID = 20180910L;
 
     /** Standard Constructor */
     public X_Z_RetailConfig (Properties ctx, int Z_RetailConfig_ID, String trxName)
@@ -70,6 +70,29 @@ public class X_Z_RetailConfig extends PO implements I_Z_RetailConfig, I_Persiste
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set DefDocRemDifCant_ID.
+		@param DefDocRemDifCant_ID 
+		ID por defecto para documento de remito de diferencia de cantidad en módulo Retail
+	  */
+	public void setDefDocRemDifCant_ID (int DefDocRemDifCant_ID)
+	{
+		if (DefDocRemDifCant_ID < 1) 
+			set_Value (COLUMNNAME_DefDocRemDifCant_ID, null);
+		else 
+			set_Value (COLUMNNAME_DefDocRemDifCant_ID, Integer.valueOf(DefDocRemDifCant_ID));
+	}
+
+	/** Get DefDocRemDifCant_ID.
+		@return ID por defecto para documento de remito de diferencia de cantidad en módulo Retail
+	  */
+	public int getDefDocRemDifCant_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DefDocRemDifCant_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** Set Search Key.
 		@param Value 

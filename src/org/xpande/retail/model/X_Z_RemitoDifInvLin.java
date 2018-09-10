@@ -32,7 +32,7 @@ public class X_Z_RemitoDifInvLin extends PO implements I_Z_RemitoDifInvLin, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180228L;
+	private static final long serialVersionUID = 20180910L;
 
     /** Standard Constructor */
     public X_Z_RemitoDifInvLin (Properties ctx, int Z_RemitoDifInvLin_ID, String trxName)
@@ -40,7 +40,6 @@ public class X_Z_RemitoDifInvLin extends PO implements I_Z_RemitoDifInvLin, I_Pe
       super (ctx, Z_RemitoDifInvLin_ID, trxName);
       /** if (Z_RemitoDifInvLin_ID == 0)
         {
-			setC_InvoiceLine_ID (0);
 			setC_UOM_ID (0);
 			setIsClosed (false);
 // N
@@ -511,6 +510,40 @@ public class X_Z_RemitoDifInvLin extends PO implements I_Z_RemitoDifInvLin, I_Pe
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	/** Set UPC/EAN.
+		@param UPC 
+		Bar Code (Universal Product Code or its superset European Article Number)
+	  */
+	public void setUPC (String UPC)
+	{
+		set_Value (COLUMNNAME_UPC, UPC);
+	}
+
+	/** Get UPC/EAN.
+		@return Bar Code (Universal Product Code or its superset European Article Number)
+	  */
+	public String getUPC () 
+	{
+		return (String)get_Value(COLUMNNAME_UPC);
+	}
+
+	/** Set Partner Product Key.
+		@param VendorProductNo 
+		Product Key of the Business Partner
+	  */
+	public void setVendorProductNo (String VendorProductNo)
+	{
+		set_Value (COLUMNNAME_VendorProductNo, VendorProductNo);
+	}
+
+	/** Get Partner Product Key.
+		@return Product Key of the Business Partner
+	  */
+	public String getVendorProductNo () 
+	{
+		return (String)get_Value(COLUMNNAME_VendorProductNo);
 	}
 
 	public I_Z_RemitoDifInv getZ_RemitoDifInv() throws RuntimeException

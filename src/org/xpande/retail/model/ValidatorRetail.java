@@ -534,7 +534,7 @@ public class ValidatorRetail implements ModelValidator {
                             if ((setDto.getBreakValue() != null) && (setDto.getBreakValue().compareTo(Env.ZERO) > 0)){
                                 // Calculo la cantidad que tengo que bonificar segun la cantidad de la linea de la factura y la cantidad de corte
                                 if (invoiceLine.getQtyInvoiced().compareTo(setDto.getBreakValue()) >= 0){
-                                    long intPart = (invoiceLine.getQtyInvoiced().divide(setDto.getBreakValue())).longValue();
+                                    long intPart = (invoiceLine.getQtyInvoiced().divide(setDto.getBreakValue(), 2, RoundingMode.HALF_UP)).longValue();
                                     BigDecimal qtyBonifica = new BigDecimal(intPart).multiply(setDto.getQtyReward()).setScale(2, RoundingMode.HALF_UP);
 
                                     // Genero linea de bonificación en factura
@@ -826,6 +826,7 @@ public class ValidatorRetail implements ModelValidator {
         String action = "";
 
         MDocType docType = (MDocType) model.getC_DocTypeTarget();
+        MZRetailConfig retailConfig = MZRetailConfig.getDefault(model.getCtx(), model.get_TrxName());
 
         if (timing == TIMING_BEFORE_COMPLETE) {
 
@@ -946,6 +947,14 @@ public class ValidatorRetail implements ModelValidator {
                             message = "Error al completar documento de Remito por Diferencia";
                         }
                         return message;
+                    }
+
+                    // Si esta factura esta asociada a un Remito por Diferencia de Cantidad, asocio este nuevo remito por diferencias con
+                    // dicho documento anterior.
+                    MZRemitoDifInv remDifCant = MZRemitoDifInv.getByDocInvoice(model.getCtx(), model.get_ID(), retailConfig.getDefDocRemDifCant_ID(), null);
+                    if ((remDifCant != null) && (remDifCant.get_ID() > 0)){
+                        remitoDif.setM_InOut_ID(remDifCant.getM_InOut_ID());
+                        remitoDif.setRemDifCant_ID(remDifCant.get_ID());
                     }
                     remitoDif.saveEx();
 

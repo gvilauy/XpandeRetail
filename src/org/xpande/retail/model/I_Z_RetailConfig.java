@@ -79,6 +79,19 @@ public interface I_Z_RetailConfig
 	  */
 	public int getCreatedBy();
 
+    /** Column name DefDocRemDifCant_ID */
+    public static final String COLUMNNAME_DefDocRemDifCant_ID = "DefDocRemDifCant_ID";
+
+	/** Set DefDocRemDifCant_ID.
+	  * ID por defecto para documento de remito de diferencia de cantidad en módulo Retail
+	  */
+	public void setDefDocRemDifCant_ID(int DefDocRemDifCant_ID);
+
+	/** Get DefDocRemDifCant_ID.
+	  * ID por defecto para documento de remito de diferencia de cantidad en módulo Retail
+	  */
+	public int getDefDocRemDifCant_ID();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 

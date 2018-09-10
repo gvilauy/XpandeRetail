@@ -482,6 +482,8 @@ public class MZRemitoDifInv extends X_Z_RemitoDifInv implements DocAction, DocOp
 					remitoLin.setC_Invoice_ID(invoice.get_ID());
 					remitoLin.setM_InOutLine_ID(invoiceLine.getM_InOutLine_ID());
 					remitoLin.setM_Product_ID(invoiceLine.getM_Product_ID());
+					remitoLin.setUPC(invoiceLine.get_ValueAsString("UPC"));
+					remitoLin.setVendorProductNo(invoiceLine.get_ValueAsString("VendorProductNo"));
 					remitoLin.setC_UOM_ID(invoiceLine.getC_UOM_ID());
 					remitoLin.setQtyDelivered(cantRecepcionada);
 					remitoLin.setQtyInvoiced(cantFacturada);
@@ -549,6 +551,26 @@ public class MZRemitoDifInv extends X_Z_RemitoDifInv implements DocAction, DocOp
 		}
 
 		return amtRemito;
+	}
+
+	/***
+	 * Retorna modelo de este documento, según id de invoice y documento recibido.
+	 * Xpande. Created by Gabriel Vila on 9/10/18.
+	 * @param ctx
+	 * @param cInvoiceID
+	 * @param cDocTypeID
+	 * @param trxName
+	 * @return
+	 */
+	public static MZRemitoDifInv getByDocInvoice(Properties ctx, int cInvoiceID, int cDocTypeID, String trxName){
+
+		String whereClause = X_Z_RemitoDifInv.COLUMNNAME_C_Invoice_ID + " =" + cInvoiceID +
+				" AND " + X_Z_RemitoDifInv.COLUMNNAME_C_DocType_ID + " =" + cDocTypeID +
+				" AND " + X_Z_RemitoDifInv.COLUMNNAME_DocStatus + " IN ('CO', 'CL') ";
+
+		MZRemitoDifInv model = new Query(ctx, I_Z_RemitoDifInv.Table_Name, whereClause, trxName).first();
+
+		return model;
 	}
 
 }
