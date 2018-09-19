@@ -654,6 +654,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			if (prodbp == null){
 				prodbp = new MZProductoSocio(getCtx(), 0, get_TrxName());
 				prodbp.setM_Product_ID(line.getM_Product_ID());
+				prodbp.setVendorProductNo(line.getVendorProductNo());
 				prodbp.setC_BPartner_ID(cBPartnerID);
 				prodbp.setDateValidPO(fechaHoy);
 				prodbp.setDateValidSO(fechaHoy);

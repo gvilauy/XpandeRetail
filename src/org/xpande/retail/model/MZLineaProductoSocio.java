@@ -121,6 +121,7 @@ public class MZLineaProductoSocio extends X_Z_LineaProductoSocio {
                 // Nuevo modelo producto-socio para el distribuidor
                 MZProductoSocio productoDistribuidor = new MZProductoSocio(getCtx(), 0, get_TrxName());
                 productoDistribuidor.setM_Product_ID(productoSocio.getM_Product_ID());
+                productoDistribuidor.setVendorProductNo(productoSocio.getVendorProductNo());
                 productoDistribuidor.setC_BPartner_ID(lineaProductoDistri.getC_BPartner_ID());
                 productoDistribuidor.setDateValidPO(productoSocio.getDateValidPO());
                 productoDistribuidor.setDateValidSO(productoSocio.getDateValidSO());

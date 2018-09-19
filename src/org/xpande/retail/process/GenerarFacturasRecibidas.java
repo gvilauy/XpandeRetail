@@ -3,6 +3,7 @@ package org.xpande.retail.process;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.acct.Doc;
 import org.compiere.model.*;
+import org.compiere.process.DocAction;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -35,7 +36,13 @@ public class GenerarFacturasRecibidas extends SvrProcess {
     @Override
     protected String doIt() throws Exception {
 
+        String message = null;
+        boolean tieneConstancia = false;
+
         try{
+
+            // Configuración de Retail
+            MZRetailConfig retailConfig = MZRetailConfig.getDefault(getCtx(), get_TrxName());
 
             // Obtengo documento a utilizar para generar facturas del proveedor recibidas
             MDocType[] docTypes = MDocType.getOfDocBaseType(getCtx(), Doc.DOCTYPE_APInvoice);
@@ -91,6 +98,30 @@ public class GenerarFacturasRecibidas extends SvrProcess {
                 invoice.setIsTaxIncluded(priceList.isTaxIncluded());
 
                 invoice.saveEx();
+
+                // Instancio cabezal de remito por diferencia de cantidad para esta Recepción-Factura, si luego no tiene monto, lo elimino.
+                BigDecimal totalAmtRemito = Env.ZERO;
+                MZRemitoDifInv remitoDif = null;
+
+                if (retailConfig.getDefDocRemDifCant_ID() <= 0){
+                    throw new AdempiereException("No esta definido el Documento para Remito por Diferencia de Cantidad (RDC) en la Configuración de Retail.");
+                }
+
+                MDocType docRemito = new MDocType(getCtx(), retailConfig.getDefDocRemDifCant_ID(), null);
+                if ((docRemito == null) || (docRemito.get_ID() <= 0)){
+                    throw new AdempiereException("No esta definido el Documento para Remito por Diferencia de Cantidad (RDC)");
+                }
+
+                remitoDif = new MZRemitoDifInv(getCtx(), 0, get_TrxName());
+                remitoDif.setC_BPartner_ID(invoice.getC_BPartner_ID());
+                remitoDif.setC_Currency_ID(invoice.getC_Currency_ID());
+                remitoDif.setC_DocType_ID(docRemito.get_ID());
+                remitoDif.setC_Invoice_ID(invoice.get_ID());
+                remitoDif.setM_InOut_ID(mInOut.get_ID());
+                remitoDif.setDateDoc(mInOut.getMovementDate());
+                remitoDif.setAD_Org_ID(invoice.getAD_Org_ID());
+                remitoDif.setTotalAmt(Env.ZERO);
+
 
                 // Seteo lineas de nueva factura según lineas de recepcion
                 List<MInOutLine> inOutLines = recepcionProdFact.getInOutLines();
@@ -173,7 +204,32 @@ public class GenerarFacturasRecibidas extends SvrProcess {
                     invLine.setM_InOutLine_ID(inOutLine.get_ID());
 
                     invLine.saveEx();
+
+                    // Proceso remito por diferencia de cantidad
+                    BigDecimal amtRemitoLin = remitoDif.setRemitoDiferencia(invoice, invLine, 2, true);
+                    if (amtRemitoLin != null){
+                        totalAmtRemito = totalAmtRemito.add(amtRemitoLin);
+                    }
+
                 }
+
+                // Si tengo remito por diferencia de cantidades
+                if (totalAmtRemito.compareTo(Env.ZERO) > 0){
+                    remitoDif.setTotalAmt(totalAmtRemito);
+                    if (!remitoDif.processIt(DocAction.ACTION_Complete)){
+                        message = remitoDif.getProcessMsg();
+                        if (message == null){
+                            return "@Error@ " + "Error al completar documento de Remito por Diferencia de Cantidad (número: " + remitoDif.getDocumentNo() + " )";
+                        }
+                    }
+                    remitoDif.saveEx();
+                    tieneConstancia = true;
+                }
+            }
+
+            if (tieneConstancia){
+                mInOut.set_ValueOfColumn("TieneConstancia", true);
+                mInOut.saveEx();
             }
         }
         catch (Exception e){
