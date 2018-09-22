@@ -600,6 +600,7 @@ public class ValidatorRetail implements ModelValidator {
     private String docValidate(MInOut model, int timing) {
 
         String message = null;
+        String action = "";
 
         if (timing == TIMING_BEFORE_COMPLETE){
 
@@ -651,6 +652,19 @@ public class ValidatorRetail implements ModelValidator {
                         }
                     }
 
+                    // Si tengo diferencia entre cantidad facturada y recibida (cuanto me facturan mas de lo que me entregan), lo seteo aca.
+                    if (mInOutLine.get_Value("QtyEnteredInvoice") != null){
+                        BigDecimal qtyInvoiced = (BigDecimal) mInOutLine.get_Value("QtyEnteredInvoice");
+                        if (qtyInvoiced.compareTo(mInOutLine.getQtyEntered()) > 0){
+                            action = " update m_inoutline set DifferenceQty =" + qtyInvoiced.subtract(mInOutLine.getQtyEntered()) +
+                                    " where m_inoutline_id =" + mInOutLine.get_ID();
+                        }
+                        else{
+                            action = " update m_inoutline set DifferenceQty = null " +
+                                    " where m_inoutline_id =" + mInOutLine.get_ID();
+                        }
+                        DB.executeUpdateEx(action, model.get_TrxName());
+                    }
                 }
             }
 

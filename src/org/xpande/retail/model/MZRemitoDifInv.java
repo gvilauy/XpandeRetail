@@ -515,6 +515,8 @@ public class MZRemitoDifInv extends X_Z_RemitoDifInv implements DocAction, DocOp
 						remitoLin.setC_Invoice_ID(invoice.get_ID());
 						remitoLin.setM_InOutLine_ID(invoiceLine.getM_InOutLine_ID());
 						remitoLin.setM_Product_ID(invoiceLine.getM_Product_ID());
+						remitoLin.setUPC(invoiceLine.get_ValueAsString("UPC"));
+						remitoLin.setVendorProductNo(invoiceLine.get_ValueAsString("VendorProductNo"));
 						remitoLin.setC_UOM_ID(invoiceLine.getC_UOM_ID());
 						remitoLin.setQtyDelivered(cantRecepcionada);
 						remitoLin.setQtyInvoiced(cantFacturada);
