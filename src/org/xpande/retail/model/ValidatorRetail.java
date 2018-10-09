@@ -8,6 +8,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.comercial.model.MZComercialConfig;
+import org.xpande.comercial.utils.ComercialUtils;
 import org.xpande.core.model.MZActividadDocumento;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.retail.utils.AcctUtils;
@@ -693,6 +694,31 @@ public class ValidatorRetail implements ModelValidator {
                 }
             }
         }
+        else if (timing == TIMING_BEFORE_REACTIVATE){
+
+            // En recepciones de productos
+            if (model.getMovementType().equalsIgnoreCase(X_M_InOut.MOVEMENTTYPE_VendorReceipts)){
+
+                // Valido que esta recepcion no tenga facturas asociadas que esten completas o cerradas.
+                // Obtengo lista de facturas que pueden estar asociadas
+                List<MInvoice> invoiceList = ComercialUtils.getInvoicesByInOut(model.getCtx(), model.get_ID(), true, model.get_TrxName());
+                if (invoiceList.size() > 0){
+                    message = "No se puede reactivar este documento ya que tiene las siguientes facturas completas asociadas : ";
+                    for (MInvoice invoice: invoiceList){
+                        message += invoice.getDocumentNo() + ", ";
+                    }
+                    message += " debe reactivarlas para poder continuar.";
+                    return message;
+                }
+
+                // Cuando reactivo una recepción de proveedor, me aseguro de eliminar posibles documentos de Remitos por Cantidad que
+                // puedan estar asociados a dicha recepción.
+                action = " delete from z_remitodifinv where m_inout_id =" + model.get_ID() +
+                        " and c_doctype_id in (select c_doctype_id from c_doctype where docbasetype ='RDC')";
+                DB.executeUpdateEx(action, model.get_TrxName());
+
+            }
+        }
 
         return null;
     }
@@ -1044,6 +1070,12 @@ public class ValidatorRetail implements ModelValidator {
                 // Elimino remito por diferencia que pueda tener asociada esta factura
                 action = " delete from " + X_Z_RemitoDifInv.Table_Name +
                         " where c_invoice_id =" + model.get_ID();
+                DB.executeUpdateEx(action, model.get_TrxName());
+
+                // Cuando reactivo una factura de proveedor, me aseguro de eliminar un posible documento de Remito por Diferencia que
+                // pueda estar asociado a dicha factura.
+                action = " delete from z_remitodifinv where c_invoice_id =" + model.get_ID() +
+                        " and c_doctype_id in (select c_doctype_id from c_doctype where docbasetype ='RDI')";
                 DB.executeUpdateEx(action, model.get_TrxName());
             }
 

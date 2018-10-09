@@ -38,6 +38,7 @@ public class GenerarFacturasRecibidas extends SvrProcess {
 
         String message = null;
         boolean tieneConstancia = false;
+        String action = "";
 
         try{
 
@@ -98,6 +99,12 @@ public class GenerarFacturasRecibidas extends SvrProcess {
                 invoice.setIsTaxIncluded(priceList.isTaxIncluded());
 
                 invoice.saveEx();
+
+                // Dejo asociada la invoice creada con la relación de factura - inout
+                action = " update z_recepcionprodfact set c_invoice_id =" + invoice.get_ID() +
+                        " where z_recepcionprodfact_id =" + recepcionProdFact.get_ID();
+                DB.executeUpdateEx(action, get_TrxName());
+
 
                 // Instancio cabezal de remito por diferencia de cantidad para esta Recepción-Factura, si luego no tiene monto, lo elimino.
                 BigDecimal totalAmtRemito = Env.ZERO;
