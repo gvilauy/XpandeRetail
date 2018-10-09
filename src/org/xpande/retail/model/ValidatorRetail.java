@@ -711,6 +711,10 @@ public class ValidatorRetail implements ModelValidator {
                     return message;
                 }
 
+                // Para cada linea de esta inout, dejo seteada en null la cantidad diferencia entre recibida y facturada.
+                action = " update m_inoutline set DifferenceQty = null where m_inout_id =" + model.get_ID();
+                DB.executeUpdateEx(action, model.get_TrxName());
+                
                 // Cuando reactivo una recepción de proveedor, me aseguro de eliminar posibles documentos de Remitos por Cantidad que
                 // puedan estar asociados a dicha recepción.
                 action = " delete from z_remitodifinv where m_inout_id =" + model.get_ID() +
