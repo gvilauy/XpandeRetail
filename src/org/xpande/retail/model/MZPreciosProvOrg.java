@@ -71,12 +71,12 @@ public class MZPreciosProvOrg extends X_Z_PreciosProvOrg {
                 pprice = new MProductPrice(plVersionVenta, mProductID, newPriceSO, newPriceSO, newPriceSO);
             }
             else{
-                // Actualizo precios
-                if (pprice.getPriceList().compareTo(newPriceSO) != 0){
+                // Actualizo precios si hay cambios
+                //if (pprice.getPriceList().compareTo(newPriceSO) != 0){
                     pprice.setPriceList(newPriceSO);
                     pprice.setPriceStd(newPriceSO);
                     pprice.setPriceLimit(newPriceSO);
-                }
+                //}
             }
             pprice.set_ValueOfColumn("C_DocType_ID", preciosProvCab.getC_DocType_ID());
             pprice.set_ValueOfColumn("DocumentNoRef", preciosProvCab.getDocumentNo());

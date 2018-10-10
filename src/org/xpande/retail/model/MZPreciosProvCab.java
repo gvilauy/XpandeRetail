@@ -485,11 +485,11 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			}
 			else{
 				// Actualizo precios si hay cambios
-				if (pprice.getPriceList().compareTo(line.getNewPriceSO()) != 0){
+				//if (pprice.getPriceList().compareTo(line.getNewPriceSO()) != 0){
 					pprice.setPriceList(line.getNewPriceSO());
 					pprice.setPriceStd(line.getNewPriceSO());
 					pprice.setPriceLimit(line.getNewPriceSO());
-				}
+				//}
 			}
 			pprice.set_ValueOfColumn("C_DocType_ID", this.getC_DocType_ID());
 			pprice.set_ValueOfColumn("DocumentNoRef", this.getDocumentNo());
