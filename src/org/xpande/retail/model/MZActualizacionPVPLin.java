@@ -202,7 +202,8 @@ public class MZActualizacionPVPLin extends X_Z_ActualizacionPVPLin {
      */
     public MZActualizacionPVPLinOrg getOrg(int adOrgTrxID) {
 
-        String whereClause = X_Z_ActualizacionPVPLinOrg.COLUMNNAME_Z_ActualizacionPVPLin_ID + " =" + this.get_ID();
+        String whereClause = X_Z_ActualizacionPVPLinOrg.COLUMNNAME_Z_ActualizacionPVPLin_ID + " =" + this.get_ID() +
+                " AND " + X_Z_ActualizacionPVPLinOrg.COLUMNNAME_AD_OrgTrx_ID + " =" + adOrgTrxID;
 
         MZActualizacionPVPLinOrg model = new Query(getCtx(), I_Z_ActualizacionPVPLinOrg.Table_Name, whereClause, get_TrxName()).first();
 

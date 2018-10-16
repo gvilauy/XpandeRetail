@@ -1,5 +1,6 @@
 package org.xpande.retail.model;
 
+import org.compiere.model.MInvoiceLine;
 import org.compiere.model.Query;
 
 import java.sql.ResultSet;
@@ -36,5 +37,33 @@ public class MZRemDifInvLinAfecta extends X_Z_RemDifInvLinAfecta {
         MZRemDifInvLinAfecta model = new Query(ctx, I_Z_RemDifInvLinAfecta.Table_Name, whereClause, trxName).first();
 
         return model;
+    }
+
+    /*
+    @Override
+    protected boolean beforeDelete() {
+
+        // Elimino lineas de factura asociadas a esta afectación de linea de remito.
+        MInvoiceLine invoiceLine = (MInvoiceLine) this.getC_InvoiceLine();
+        if ((invoiceLine != null) && (invoiceLine.get_ID() > 0)){
+            invoiceLine.deleteEx(false);
+        }
+
+        return true;
+    }
+    */
+
+    @Override
+    protected boolean afterDelete(boolean success) {
+
+        if (!success) return success;
+
+        // Elimino lineas de factura asociadas a esta afectación de linea de remito.
+        MInvoiceLine invoiceLine = (MInvoiceLine) this.getC_InvoiceLine();
+        if ((invoiceLine != null) && (invoiceLine.get_ID() > 0)){
+            invoiceLine.deleteEx(false);
+        }
+
+        return true;
     }
 }
