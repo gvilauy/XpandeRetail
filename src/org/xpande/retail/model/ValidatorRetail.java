@@ -423,7 +423,7 @@ public class ValidatorRetail implements ModelValidator {
                 || (type == ModelValidator.TYPE_BEFORE_DELETE)){
 
             MInvoice invoice = (MInvoice)model.getC_Invoice();
-
+            MDocType docType = (MDocType) invoice.getC_DocTypeTarget();
 
             // Cuando estoy en comprobantes de compra
             if (type == ModelValidator.TYPE_BEFORE_NEW){
@@ -474,6 +474,46 @@ public class ValidatorRetail implements ModelValidator {
                                 priceEntered = MUOMConversion.convertProductFrom(model.getCtx(), model.getM_Product_ID(), model.getC_UOM_ID(), priceActual);
                                 if (priceEntered == null) priceEntered = priceActual;
                                 model.set_ValueOfColumn("PricePO", pricePO);
+                                model.setPriceActual(priceActual);
+                                model.setPriceEntered(priceEntered);
+                                model.setLineNetAmt();
+                                model.setTaxAmt();
+                            }
+                        }
+                    }
+                }
+                else{
+                    // Para facturas de venta, en caso de facturación entre organizaciones, se debe tomar precio de ultima factura de proveedor
+                    // Instancio modelo de socio de negocio para verificar si esta linkeado con una organización de este compañia.
+                    if (model.getM_Product_ID() > 0){
+                        MBPartner partner = (MBPartner) invoice.getC_BPartner();
+                        if (partner.getAD_OrgBP_ID_Int() > 0){
+                            MOrg orgLinked = new MOrg(model.getCtx(), partner.getAD_OrgBP_ID_Int(), null);
+                            if ((orgLinked != null) && (orgLinked.get_ID() > 0)){
+
+                                // Obtengo precio de ultima factura de compra (API), para producto y organización de este comprobante de venta.
+                                BigDecimal priceActual = ComercialUtils.getProdOrgLastAPInvoicePrice(model.getCtx(), model.getM_Product_ID(), invoice.getAD_Org_ID(), null);
+
+                                // Si no tengo facturas de proveedor para este articulo, busco precio OC del ultimo proveedor para esta organización
+                                if ((priceActual == null) || (priceActual.compareTo(Env.ZERO) <= 0)){
+                                    // Instancio modelo de producto-socio con ultima vigencia de precio OC
+                                    MZProductoSocio productoSocio = MZProductoSocio.getByLastPriceOC(model.getCtx(), model.getM_Product_ID(), null);
+
+                                    // Si tengo producto soccio, obtengo precio OC para esta organizacion
+                                    if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+                                        MZProductoSocioOrg socioOrg = productoSocio.getOrg(invoice.getAD_Org_ID());
+                                        if ((socioOrg != null) && (socioOrg.get_ID() > 0)){
+                                            priceActual = socioOrg.getPricePO();
+                                        }
+                                        else{
+                                            priceActual = productoSocio.getPricePO();
+                                        }
+                                    }
+                                }
+
+                                if (priceActual == null) priceActual = Env.ZERO;
+                                BigDecimal priceEntered = MUOMConversion.convertProductFrom(model.getCtx(), model.getM_Product_ID(), model.getC_UOM_ID(), priceActual);
+                                if (priceEntered == null) priceEntered = priceActual;
                                 model.setPriceActual(priceActual);
                                 model.setPriceEntered(priceEntered);
                                 model.setLineNetAmt();
