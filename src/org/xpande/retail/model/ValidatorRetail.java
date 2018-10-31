@@ -299,7 +299,8 @@ public class ValidatorRetail implements ModelValidator {
 
         }
 
-        if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)){
+        /*
+        else if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)){
 
             // Debo considerar la posibilidad de que el usuario haya ingresado de manera manual un monto de Redondeo para el comprobante.
             // Si es asi, debo reflejarlo en el total del comprobante.
@@ -319,6 +320,7 @@ public class ValidatorRetail implements ModelValidator {
             }
 
         }
+        */
 
         return mensaje;
     }
@@ -370,12 +372,12 @@ public class ValidatorRetail implements ModelValidator {
 
         String mensaje = null;
 
-        if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)
-                || (type == ModelValidator.TYPE_AFTER_DELETE)){
+        if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)){
 
             MInvoice invoice = (MInvoice)model.getC_Invoice();
             MDocType docType = (MDocType) invoice.getC_DocTypeTarget();
 
+            /*
             // Cuando modifico linea de comprobante, me aseguro que se calcule bien el campo del cabezal
             // para subtotal en retail. Esto es porque Adempiere de fábrica, cuando maneja lista de precios con
             // impuestos incluídos, me muestra el total de lineas = grand total en el cabezal del comprobante.
@@ -401,6 +403,7 @@ public class ValidatorRetail implements ModelValidator {
                 invoice.set_ValueOfColumn("AmtSubtotal", grandTotal.subtract(sumImpuestos));
                 invoice.saveEx();
             }
+            */
 
             if ((type == ModelValidator.TYPE_AFTER_NEW) || ((type == ModelValidator.TYPE_AFTER_CHANGE) && model.is_ValueChanged(X_C_InvoiceLine.COLUMNNAME_QtyInvoiced))){
 
@@ -524,6 +527,7 @@ public class ValidatorRetail implements ModelValidator {
                 }
             }
 
+            /*
             // Siguiendo el mismo concepto que el cabezal, se actualiza subtotal de esta linea.
             // Nuevo campo de subtotal, no se toca el original de ADempiere.
             BigDecimal lineTotal = model.getLineTotalAmt();
@@ -536,6 +540,7 @@ public class ValidatorRetail implements ModelValidator {
                     model.set_ValueOfColumn("AmtSubtotal", lineTotal);
                 }
             }
+            */
         }
 
         return mensaje;
