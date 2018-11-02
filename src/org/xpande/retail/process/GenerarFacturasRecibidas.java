@@ -66,7 +66,7 @@ public class GenerarFacturasRecibidas extends SvrProcess {
                 // Seteo cabezal de nueva factura
                 MInvoice invoice = new MInvoice(mInOut, dateInvoiced);
                 invoice.setDateInvoiced(dateInvoiced);
-                invoice.setDateAcct(fechaHoy);
+                invoice.setDateAcct(dateInvoiced);
                 invoice.setC_DocTypeTarget_ID(docType.get_ID());
                 invoice.setC_DocType_ID(docType.get_ID());
                 invoice.set_ValueOfColumn("DocumentSerie", recepcionProdFact.getDocumentSerie());

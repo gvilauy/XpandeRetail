@@ -749,14 +749,6 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
             List<MZPreciosProvOrg> preciosProvOrgs = preciosProvCab.getOrgsSelected();
             for (MZPreciosProvOrg preciosProvOrg: preciosProvOrgs){
 
-                // Si no esta creada esta organizacion para esta linea, la creo ahora
-                MZPreciosProvLinOrg preciosProvLinOrg = this.getOrganizacion(preciosProvOrg.getAD_OrgTrx_ID());
-                if ((preciosProvLinOrg == null) || (preciosProvLinOrg.get_ID() <= 0)){
-                    preciosProvLinOrg = new MZPreciosProvLinOrg(getCtx(), 0, get_TrxName());
-                    preciosProvLinOrg.setZ_PreciosProvLin_ID(this.get_ID());
-                    preciosProvLinOrg.setAD_OrgTrx_ID(preciosProvOrg.getAD_OrgTrx_ID());
-                }
-
                 // Seteo datos de este producto-socio-org
                 MZProductoSocioOrg productoSocioOrg = productoSocio.getOrg(preciosProvOrg.getAD_OrgTrx_ID());
                 if ((productoSocioOrg == null) || (productoSocioOrg.get_ID() <= 0)){
@@ -765,9 +757,67 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
                     productoSocioOrg.setAD_OrgTrx_ID(preciosProvOrg.getAD_OrgTrx_ID());
                     productoSocioOrg.setDateValidPO(preciosProvCab.getDateValidPO());
                     productoSocioOrg.setDateValidSO(preciosProvCab.getDateValidPO());
-                    productoSocioOrg.setPriceList(preciosProvLinOrg.getPriceList());
-                    productoSocioOrg.setPriceSO(preciosProvLinOrg.getNewPriceSO());
+                    productoSocioOrg.setPriceList(this.getPriceList());
+                    productoSocioOrg.setPriceSO(this.getNewPriceSO());
+                    productoSocioOrg.setPricePO(this.getPricePO());
+                    productoSocioOrg.setPriceFinal(this.getPriceFinal());
+                    productoSocioOrg.setPriceList(this.getPriceList());
+                    productoSocioOrg.setPricePOMargin(this.getPricePOMargin());
+                    productoSocioOrg.setPriceFinalMargin(this.getPriceFinalMargin());
+                    productoSocioOrg.setC_Currency_ID(this.getC_Currency_ID());
+                    productoSocioOrg.setC_Currency_ID_SO(this.getC_Currency_ID_SO());
                 }
+
+                // Si no esta creada esta organizacion para esta linea, la creo ahora
+                MZPreciosProvLinOrg preciosProvLinOrg = this.getOrganizacion(preciosProvOrg.getAD_OrgTrx_ID());
+                if ((preciosProvLinOrg == null) || (preciosProvLinOrg.get_ID() <= 0)){
+                    preciosProvLinOrg = new MZPreciosProvLinOrg(getCtx(), 0, get_TrxName());
+                    preciosProvLinOrg.setZ_PreciosProvLin_ID(this.get_ID());
+                    preciosProvLinOrg.setAD_OrgTrx_ID(preciosProvOrg.getAD_OrgTrx_ID());
+                    preciosProvLinOrg.setPricePO(this.getPricePO());
+                    preciosProvLinOrg.setPriceFinal(this.getPriceFinal());
+                    preciosProvLinOrg.setPriceList(this.getPriceList());
+                    preciosProvLinOrg.setPriceSO(productoSocioOrg.getPriceSO());
+                    preciosProvLinOrg.setNewPriceSO(this.getNewPriceSO());
+                    preciosProvLinOrg.setPricePOMargin(this.getPricePOMargin());
+                    preciosProvLinOrg.setPriceFinalMargin(this.getPriceFinalMargin());
+                    preciosProvLinOrg.setC_Currency_ID(this.getC_Currency_ID());
+                    preciosProvLinOrg.setC_Currency_ID_SO(this.getC_Currency_ID_SO());
+
+                }
+                else{
+                    // Si ya existe organización para esta linea, me aseguro que si la linea no es *PC o no es *PVP, tenga los mismos precios que la linea.
+                    if (!this.isDistinctPricePO()){
+                        preciosProvLinOrg.setC_Currency_ID(this.getC_Currency_ID());
+                        preciosProvLinOrg.setPricePO(this.getPricePO());
+                        preciosProvLinOrg.setPriceFinal(this.getPriceFinal());
+                        preciosProvLinOrg.setPriceList(this.getPriceList());
+                        preciosProvLinOrg.setPricePOMargin(this.getPricePOMargin());
+                        preciosProvLinOrg.setPriceFinalMargin(this.getPriceFinalMargin());
+                    }
+                    else{
+                        preciosProvLinOrg.setPricePO(productoSocioOrg.getPricePO());
+                        preciosProvLinOrg.setPriceFinal(productoSocioOrg.getPriceFinal());
+                        preciosProvLinOrg.setPriceList(productoSocioOrg.getPriceList());
+                        preciosProvLinOrg.setPricePOMargin(productoSocioOrg.getPricePOMargin());
+                        preciosProvLinOrg.setPriceFinalMargin(productoSocioOrg.getPriceFinalMargin());
+                    }
+                    if (!this.isDistinctPriceSO()){
+                        preciosProvLinOrg.setC_Currency_ID_SO(this.getC_Currency_ID_SO());
+                        preciosProvLinOrg.setPriceSO(this.getPriceSO());
+                        preciosProvLinOrg.setNewPriceSO(this.getNewPriceSO());
+                    }
+                    else{
+                        preciosProvLinOrg.setPriceSO(productoSocioOrg.getPriceSO());
+                        preciosProvLinOrg.setNewPriceSO(productoSocioOrg.getPriceSO());
+                    }
+                    preciosProvLinOrg.calculateMargins(preciosProvCab.getRate());
+                }
+
+                preciosProvLinOrg.saveEx();
+
+
+                /*
                 preciosProvLinOrg.setC_Currency_ID(productoSocio.getC_Currency_ID());
                 preciosProvLinOrg.setC_Currency_ID_SO(productoSocio.getC_Currency_ID_SO());
                 preciosProvLinOrg.setNewPriceSO(productoSocioOrg.getPriceSO());
@@ -778,6 +828,7 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
                 preciosProvLinOrg.setPricePO(productoSocioOrg.getPricePO());
                 preciosProvLinOrg.setPricePOMargin(productoSocioOrg.getPricePOMargin());
                 preciosProvLinOrg.saveEx();
+                */
             }
         }
         catch (Exception e){

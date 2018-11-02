@@ -715,6 +715,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 				if (rs.getInt("z_preciosprovcab_id") != zPreciosProvCabID){
 					// Nuevo documento
 					etiquetaDoc = new MZConfirmacionEtiquetaDoc(getCtx(), 0, get_TrxName());
+					etiquetaDoc.setAD_Org_ID(this.getAD_Org_ID());
 					etiquetaDoc.setZ_ConfirmacionEtiqueta_ID(this.get_ID());
 					etiquetaDoc.setAD_Table_ID(adTableID);
 					etiquetaDoc.setRecord_ID(rs.getInt("z_preciosprovcab_id"));
@@ -741,6 +742,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 				// Nuevo producto
 				MZConfirmacionEtiquetaProd etiquetaProd = new MZConfirmacionEtiquetaProd(getCtx(), 0, get_TrxName());
 				etiquetaProd.setZ_ConfirmacionEtiquetaDoc_ID(etiquetaDoc.get_ID());
+				etiquetaProd.setAD_Org_ID(this.getAD_Org_ID());
 				etiquetaProd.setM_Product_ID(rs.getInt("m_product_id"));
 				etiquetaProd.setPriceSO(rs.getBigDecimal("newpriceso"));
 				etiquetaProd.setDateValidSO(rs.getTimestamp("datevalidpo"));

@@ -30,7 +30,7 @@ public class X_Z_RetailConfig extends PO implements I_Z_RetailConfig, I_Persiste
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180910L;
+	private static final long serialVersionUID = 20181102L;
 
     /** Standard Constructor */
     public X_Z_RetailConfig (Properties ctx, int Z_RetailConfig_ID, String trxName)
@@ -38,6 +38,8 @@ public class X_Z_RetailConfig extends PO implements I_Z_RetailConfig, I_Persiste
       super (ctx, Z_RetailConfig_ID, trxName);
       /** if (Z_RetailConfig_ID == 0)
         {
+			setCompletaRecepcion (false);
+// N
 			setValue (null);
 			setZ_RetailConfig_ID (0);
         } */
@@ -70,6 +72,30 @@ public class X_Z_RetailConfig extends PO implements I_Z_RetailConfig, I_Persiste
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set CompletaRecepcion.
+		@param CompletaRecepcion 
+		Si completa o no recepcion de mercadería de manera automatica
+	  */
+	public void setCompletaRecepcion (boolean CompletaRecepcion)
+	{
+		set_Value (COLUMNNAME_CompletaRecepcion, Boolean.valueOf(CompletaRecepcion));
+	}
+
+	/** Get CompletaRecepcion.
+		@return Si completa o no recepcion de mercadería de manera automatica
+	  */
+	public boolean isCompletaRecepcion () 
+	{
+		Object oo = get_Value(COLUMNNAME_CompletaRecepcion);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
 
 	/** Set DefDocRemDifCant_ID.
 		@param DefDocRemDifCant_ID 
