@@ -527,7 +527,7 @@ public class ValidatorRetail implements ModelValidator {
                 }
             }
 
-            /*
+
             // Siguiendo el mismo concepto que el cabezal, se actualiza subtotal de esta linea.
             // Nuevo campo de subtotal, no se toca el original de ADempiere.
             BigDecimal lineTotal = model.getLineTotalAmt();
@@ -540,7 +540,7 @@ public class ValidatorRetail implements ModelValidator {
                     model.set_ValueOfColumn("AmtSubtotal", lineTotal);
                 }
             }
-            */
+
         }
 
         return mensaje;
