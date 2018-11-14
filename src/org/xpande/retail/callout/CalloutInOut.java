@@ -93,7 +93,7 @@ public class CalloutInOut extends CalloutEngine {
             // Seteo UPC traído del producto, cuando el usuario no ingreso UPC
             if ((mTab.getValue("UPC") == null) || (mTab.getValue("UPC").toString().trim().equalsIgnoreCase(""))){
                 MZProductoUPC pupc = MZProductoUPC.getByProduct(ctx, mProductID, null);
-                if ((pupc != null) & (pupc.get_ID() > 0)){
+                if ((pupc != null) && (pupc.get_ID() > 0)){
                     mTab.setValue("UPC", pupc.getUPC());
                 }
             }
@@ -106,7 +106,7 @@ public class CalloutInOut extends CalloutEngine {
                 if ((pupc != null) && (pupc.get_ID() > 0)){
                     if (pupc.getM_Product_ID() != mProductID){
                         MZProductoUPC pupcProd = MZProductoUPC.getByProduct(ctx, mProductID, null);
-                        if ((pupcProd != null) & (pupcProd.get_ID() > 0)){
+                        if ((pupcProd != null) && (pupcProd.get_ID() > 0)){
                             mTab.setValue("UPC", pupcProd.getUPC());
                         }
                         else{
