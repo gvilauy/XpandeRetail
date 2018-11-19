@@ -9,6 +9,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.xpande.comercial.model.MZComercialConfig;
+import org.xpande.comercial.utils.ComercialUtils;
 import org.xpande.core.model.MZSocioListaPrecio;
 import org.xpande.retail.model.*;
 import org.xpande.retail.model.MProductPricing;
@@ -60,6 +61,13 @@ public class GenerarFacturasRecibidas extends SvrProcess {
             // Obtengo y recorro modelos de facturas recibidas
             List<MZRecepcionProdFact> recepcionProdFacts = MZRecepcionProdFact.getByInOut(getCtx(), mInOut.get_ID(), get_TrxName());
             for (MZRecepcionProdFact recepcionProdFact: recepcionProdFacts){
+
+                // Verifico si no existe un comprobante con el mismo: numero, tipo de documento y socio de negocio.
+                // En caso de existir, no genero de nuevo este comprobante.
+                MInvoice invoiceAux = ComercialUtils.getInvoiceByDocPartner(getCtx(), docType.get_ID(), recepcionProdFact.getManualDocumentNo(), mInOut.getC_BPartner_ID(), get_TrxName());
+                if ((invoiceAux != null) && (invoiceAux.get_ID() > 0)){
+                    continue;
+                }
 
                 Timestamp dateInvoiced = TimeUtil.trunc(recepcionProdFact.getDateDoc(), TimeUtil.TRUNC_DAY);
 
