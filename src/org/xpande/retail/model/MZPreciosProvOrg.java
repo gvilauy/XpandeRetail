@@ -31,9 +31,13 @@ public class MZPreciosProvOrg extends X_Z_PreciosProvOrg {
     /***
      * Actualiza lista de precios de venta de esta organización para el producto de la linea recibida.
      * Xpande. Created by Gabriel Vila on 6/21/17.
+     * @param mProductID
+     * @param cCurrencyID
+     * @param newPriceSO
      * @param validFrom
+     * @param vigenciaPasada
      */
-    public void updateProductPriceListSO(int mProductID, int cCurrencyID, BigDecimal newPriceSO, Timestamp validFrom ) {
+    public void updateProductPriceListSO(int mProductID, int cCurrencyID, BigDecimal newPriceSO, Timestamp validFrom, boolean vigenciaPasada) {
 
         try{
 
@@ -71,6 +75,20 @@ public class MZPreciosProvOrg extends X_Z_PreciosProvOrg {
                 pprice = new MProductPrice(plVersionVenta, mProductID, newPriceSO, newPriceSO, newPriceSO);
             }
             else{
+                // Ya existe precio para este producto en la lista
+
+                // Si este documento tiene marcada fecha de vigencia pasada
+                if (vigenciaPasada){
+                    // Si el precio que esta en la lista tiene vigencia
+                    Timestamp vigenciaPrecioProd = (Timestamp) pprice.get_Value("ValidFrom");
+                    if (vigenciaPrecioProd != null){
+                        // Si la vigencia actual del precio de este producto es mayor a la fecha de vigencia para este documento, no hago nada.
+                        if (vigenciaPrecioProd.after(validFrom)){
+                            return;
+                        }
+                    }
+                }
+
                 // Actualizo precios si hay cambios
                 if (pprice.getPriceList().compareTo(newPriceSO) != 0){
                     pprice.setPriceList(newPriceSO);

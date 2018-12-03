@@ -36,8 +36,10 @@ public class MZLineaProductoDistri extends X_Z_LineaProductoDistri {
      * @param cCurrencyID
      * @param mProductID
      * @param priceList
+     * @param validFrom
+     * @param vigenciaPasada
      */
-    public void updateProductPriceListPO (int cCurrencyID, int mProductID, BigDecimal priceList, Timestamp validFrom) {
+    public void updateProductPriceListPO (int cCurrencyID, int mProductID, BigDecimal priceList, Timestamp validFrom, boolean vigenciaPasada) {
 
         try{
 
@@ -54,6 +56,20 @@ public class MZLineaProductoDistri extends X_Z_LineaProductoDistri {
                 pprice = new MProductPrice(plVersionCompra, mProductID, priceList, priceList, priceList);
             }
             else{
+                // Ya existe precio para este producto en la lista
+
+                // Si este documento tiene marcada fecha de vigencia pasada
+                if (vigenciaPasada){
+                    // Si el precio que esta en la lista tiene vigencia
+                    Timestamp vigenciaPrecioProd = (Timestamp) pprice.get_Value("ValidFrom");
+                    if (vigenciaPrecioProd != null){
+                        // Si la vigencia actual del precio de este producto es mayor a la fecha de vigencia para este documento, no hago nada.
+                        if (vigenciaPrecioProd.after(validFrom)){
+                            return;
+                        }
+                    }
+                }
+
                 // Actualizo precios
                 pprice.setPriceList(priceList);
                 pprice.setPriceStd(priceList);

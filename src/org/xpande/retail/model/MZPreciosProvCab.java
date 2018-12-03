@@ -52,6 +52,9 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 	 */
 	private static final long serialVersionUID = 20170613L;
 
+	private boolean vigenciaPasada = false;
+	private boolean vigenciaFutura = false;
+
     /** Standard Constructor */
     public MZPreciosProvCab (Properties ctx, int Z_PreciosProvCab_ID, String trxName)
     {
@@ -233,6 +236,26 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		}
 
 		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+		Timestamp validFrom = TimeUtil.trunc(this.getDateValidPO(), TimeUtil.TRUNC_DAY);
+
+		// Seteo flags para determinar si la vigencia de esta gestión de precios es con fecha pasada o futura.
+		// Si es con vigencia en el pasado, solo debo actualizar un historico de costos.
+		// Si es con vigencia en el futuro, no hago nada ahora. Dejo este documento completo y luego cuando llegue la fecha
+		// de vigencia, un proceso batch simulará el completar de este documento como se debe,
+		this.vigenciaPasada = false;
+		this.vigenciaFutura = false;
+		if (validFrom.compareTo(fechaHoy) != 0){
+			if (validFrom.before(fechaHoy)){
+				this.vigenciaPasada = true;
+			}
+			else if (validFrom.after(fechaHoy)){
+				this.vigenciaFutura = true;
+			}
+		}
+
+		if (this.vigenciaFutura){
+
+		}
 
 		// Obtengo lista de precios de compra y versión de la misma a procesar
 		this.setPriceListPO();
@@ -296,7 +319,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 						MZPreciosProvLinOrg provLinOrg = line.getOrganizacion(preciosProvOrg.getAD_OrgTrx_ID());
 						newPriceSO = provLinOrg.getNewPriceSO();
 					}
-					preciosProvOrg.updateProductPriceListSO(line.getM_Product_ID(), plVenta.getC_Currency_ID(), newPriceSO, this.getDateValidPO());
+					preciosProvOrg.updateProductPriceListSO(line.getM_Product_ID(), plVenta.getC_Currency_ID(), newPriceSO, this.getDateValidPO(), this.vigenciaPasada);
 				}
 			}
 
@@ -341,7 +364,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				}
 
 				// Actualizo precios de compra de este producto en lista de precios de compra del distribuidor
-				lineaProductoDistri.updateProductPriceListPO(this.getC_Currency_ID(), line.getM_Product_ID(), line.getPriceList(), this.getDateValidPO());
+				lineaProductoDistri.updateProductPriceListPO(this.getC_Currency_ID(), line.getM_Product_ID(), line.getPriceList(), this.getDateValidPO(), this.vigenciaPasada);
 
 				// Asocio producto a distribuidor y organizaciones
 				this.setProductSocioOrgs(lineaProductoDistri.getC_BPartner_ID(), lineaProductoSocioDistri.get_ID(), line, fechaHoy,
@@ -451,6 +474,20 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				pprice = new MProductPrice(plVersionCompra, line.getM_Product_ID(), line.getPriceList(), line.getPriceList(), line.getPriceList());
 			}
 			else{
+				// Ya existe precio para este producto en la lista
+
+				// Si este documento tiene marcada fecha de vigencia pasada
+				if (this.vigenciaPasada){
+					// Si el precio que esta en la lista tiene vigencia
+					Timestamp vigenciaPrecioProd = (Timestamp) pprice.get_Value("ValidFrom");
+					if (vigenciaPrecioProd != null){
+						// Si la vigencia actual del precio de este producto es mayor a la fecha de vigencia para este documento, no hago nada.
+						if (vigenciaPrecioProd.after(this.getDateValidPO())){
+							return;
+						}
+					}
+				}
+
 				// Actualizo precios
 				pprice.setPriceList(line.getPriceList());
 				pprice.setPriceStd(line.getPriceList());
@@ -484,6 +521,20 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				pprice = new MProductPrice(plVersionVenta, line.getM_Product_ID(), line.getNewPriceSO(), line.getNewPriceSO(), line.getNewPriceSO());
 			}
 			else{
+				// Ya existe precio para este producto en la lista
+
+				// Si este documento tiene marcada fecha de vigencia pasada
+				if (this.vigenciaPasada){
+					// Si el precio que esta en la lista tiene vigencia
+					Timestamp vigenciaPrecioProd = (Timestamp) pprice.get_Value("ValidFrom");
+					if (vigenciaPrecioProd != null){
+						// Si la vigencia actual del precio de este producto es mayor a la fecha de vigencia para este documento, no hago nada.
+						if (vigenciaPrecioProd.after(this.getDateValidPO())){
+							return;
+						}
+					}
+				}
+
 				// Actualizo precios si hay cambios
 				if (pprice.getPriceList().compareTo(line.getNewPriceSO()) != 0){
 					pprice.setPriceList(line.getNewPriceSO());
@@ -663,6 +714,19 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				prodbp.setPriceSO(line.getNewPriceSO());
 			}
 			else{
+				// Ya existe modelo para este producto - socio.
+
+				// Si este documento tiene marcada fecha de vigencia pasada
+				if (this.vigenciaPasada){
+					// Si el modelo producto-socio tiene fecha vigencia de compra
+					if (prodbp.getDateValidPO() != null){
+						// Si la vigencia actual del precio de este producto es mayor a la fecha de vigencia para este documento, no hago nada.
+						if (prodbp.getDateValidPO().after(this.getDateValidPO())){
+							return;
+						}
+					}
+				}
+
 				// Si precio de lista compra cambia
 				if (prodbp.getPriceList().compareTo(line.getPriceList()) != 0){
 					// Actualizo info precios compra para este producto-socio
@@ -781,6 +845,19 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 					prodbpOrg.setPriceSO(preciosProvLinOrg.getNewPriceSO());
 				}
 				else{
+					// Ya existe modelo para este producto - socio.
+
+					// Si este documento tiene marcada fecha de vigencia pasada
+					if (this.vigenciaPasada){
+						// Si el modelo producto-socio tiene fecha vigencia de compra
+						if (prodbpOrg.getDateValidPO() != null){
+							// Si la vigencia actual del precio de este producto es mayor a la fecha de vigencia para este documento, no hago nada.
+							if (prodbpOrg.getDateValidPO().after(this.getDateValidPO())){
+								return;
+							}
+						}
+					}
+
 					// Si precio de lista compra cambia
 					if (prodbpOrg.getPriceList().compareTo(preciosProvLinOrg.getPriceList()) != 0){
 						// Actualizo info precios compra para este producto-socio-organizacion

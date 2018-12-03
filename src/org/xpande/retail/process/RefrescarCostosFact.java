@@ -54,7 +54,7 @@ public class RefrescarCostosFact extends SvrProcess {
                     }
                     else{
                         invoiceLine.set_ValueOfColumn("PricePO", productoSocio.getPricePO());
-                        invoiceLine.set_ValueOfColumn("PricePONoDto", productoSocioOrg.getPricePO());
+                        invoiceLine.set_ValueOfColumn("PricePONoDto", productoSocio.getPricePO());
                     }
                     invoiceLine.saveEx();
 
