@@ -531,6 +531,32 @@ public interface I_Z_PreciosProvCab
 	  */
 	public int getUpdatedBy();
 
+    /** Column name VigenciaFutura */
+    public static final String COLUMNNAME_VigenciaFutura = "VigenciaFutura";
+
+	/** Set VigenciaFutura.
+	  * Si un documento tiene fecha de vigencia futura o no.
+	  */
+	public void setVigenciaFutura(boolean VigenciaFutura);
+
+	/** Get VigenciaFutura.
+	  * Si un documento tiene fecha de vigencia futura o no.
+	  */
+	public boolean isVigenciaFutura();
+
+    /** Column name VigenciaProcesada */
+    public static final String COLUMNNAME_VigenciaProcesada = "VigenciaProcesada";
+
+	/** Set VigenciaProcesada.
+	  * Si se proceso o no un documento que tenía fecha de vigencia futura
+	  */
+	public void setVigenciaProcesada(boolean VigenciaProcesada);
+
+	/** Get VigenciaProcesada.
+	  * Si se proceso o no un documento que tenía fecha de vigencia futura
+	  */
+	public boolean isVigenciaProcesada();
+
     /** Column name Z_LineaProductoSocio_ID */
     public static final String COLUMNNAME_Z_LineaProductoSocio_ID = "Z_LineaProductoSocio_ID";
 

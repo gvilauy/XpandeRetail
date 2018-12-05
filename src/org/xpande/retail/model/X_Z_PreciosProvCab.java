@@ -33,7 +33,7 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20171108L;
+	private static final long serialVersionUID = 20181205L;
 
     /** Standard Constructor */
     public X_Z_PreciosProvCab (Properties ctx, int Z_PreciosProvCab_ID, String trxName)
@@ -68,6 +68,10 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 			setOnlyOneOrg (true);
 // Y
 			setProcessed (false);
+// N
+			setVigenciaFutura (false);
+// N
+			setVigenciaProcesada (false);
 // N
 			setZ_PreciosProvCab_ID (0);
         } */
@@ -846,6 +850,54 @@ public class X_Z_PreciosProvCab extends PO implements I_Z_PreciosProvCab, I_Pers
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	/** Set VigenciaFutura.
+		@param VigenciaFutura 
+		Si un documento tiene fecha de vigencia futura o no.
+	  */
+	public void setVigenciaFutura (boolean VigenciaFutura)
+	{
+		set_Value (COLUMNNAME_VigenciaFutura, Boolean.valueOf(VigenciaFutura));
+	}
+
+	/** Get VigenciaFutura.
+		@return Si un documento tiene fecha de vigencia futura o no.
+	  */
+	public boolean isVigenciaFutura () 
+	{
+		Object oo = get_Value(COLUMNNAME_VigenciaFutura);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set VigenciaProcesada.
+		@param VigenciaProcesada 
+		Si se proceso o no un documento que tenía fecha de vigencia futura
+	  */
+	public void setVigenciaProcesada (boolean VigenciaProcesada)
+	{
+		set_Value (COLUMNNAME_VigenciaProcesada, Boolean.valueOf(VigenciaProcesada));
+	}
+
+	/** Get VigenciaProcesada.
+		@return Si se proceso o no un documento que tenía fecha de vigencia futura
+	  */
+	public boolean isVigenciaProcesada () 
+	{
+		Object oo = get_Value(COLUMNNAME_VigenciaProcesada);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	public I_Z_LineaProductoSocio getZ_LineaProductoSocio() throws RuntimeException
