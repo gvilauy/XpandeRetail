@@ -11,6 +11,7 @@ import org.xpande.comercial.model.MZComercialConfig;
 import org.xpande.comercial.utils.ComercialUtils;
 import org.xpande.core.model.MZActividadDocumento;
 import org.xpande.core.model.MZProductoUPC;
+import org.xpande.core.utils.CurrencyUtils;
 import org.xpande.retail.utils.AcctUtils;
 import org.xpande.retail.utils.ProductPricesInfo;
 
@@ -501,21 +502,41 @@ public class ValidatorRetail implements ModelValidator {
                             if ((orgLinked != null) && (orgLinked.get_ID() > 0)){
 
                                 // Obtengo precio de ultima factura de compra (API), para producto y organización de este comprobante de venta.
-                                BigDecimal priceActual = ComercialUtils.getProdOrgLastAPInvoicePrice(model.getCtx(), model.getM_Product_ID(), invoice.getAD_Org_ID(), null);
+                                BigDecimal priceActual = ComercialUtils.getProdOrgLastAPInvoicePrice(model.getCtx(), model.getM_Product_ID(), invoice.getAD_Org_ID(), invoice.getC_Currency_ID(),null);
 
                                 // Si no tengo facturas de proveedor para este articulo, busco precio OC del ultimo proveedor para esta organización
                                 if ((priceActual == null) || (priceActual.compareTo(Env.ZERO) <= 0)){
+
                                     // Instancio modelo de producto-socio con ultima vigencia de precio OC
                                     MZProductoSocio productoSocio = MZProductoSocio.getByLastPriceOC(model.getCtx(), model.getM_Product_ID(), null);
 
                                     // Si tengo producto soccio, obtengo precio OC para esta organizacion
                                     if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+
+                                        int cCurrencyIDFrom = productoSocio.getC_Currency_ID();
+
                                         MZProductoSocioOrg socioOrg = productoSocio.getOrg(invoice.getAD_Org_ID());
                                         if ((socioOrg != null) && (socioOrg.get_ID() > 0)){
+
+                                            cCurrencyIDFrom = socioOrg.getC_Currency_ID();
+
                                             priceActual = socioOrg.getPricePO();
                                         }
                                         else{
                                             priceActual = productoSocio.getPricePO();
+                                        }
+
+                                        // Si la moneda del precio obtenido no es igual a la moneda de la invoice,
+                                        // debo convertir precio a moneda de invoice según tasa de cambio de la fecha del comprobante.
+                                        if (cCurrencyIDFrom != invoice.getC_Currency_ID()){
+
+                                            // Aplico conversión a tasa de cambio del día del comprobante
+                                            BigDecimal currencyRate = CurrencyUtils.getCurrencyRate(model.getCtx(), invoice.getAD_Client_ID(), 0, cCurrencyIDFrom, invoice.getC_Currency_ID(), 114, invoice.getDateInvoiced(), null);
+                                            if ((currencyRate == null) || (currencyRate.compareTo(Env.ZERO) == 0)){
+                                                currencyRate = Env.ONE;
+                                            }
+
+                                            priceActual = priceActual.multiply(currencyRate).setScale(2, RoundingMode.HALF_UP);
                                         }
                                     }
                                 }
