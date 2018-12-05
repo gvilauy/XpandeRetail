@@ -98,6 +98,11 @@ public class MProductPricing
 	private BigDecimal 	priceList = Env.ZERO;
 	private BigDecimal 	priceStd = Env.ZERO;
 	private BigDecimal 	priceLimit = Env.ZERO;
+
+	private boolean		isCostoHistorico = false;
+	private BigDecimal	pricePO = Env.ZERO;
+	private BigDecimal	priceFinal = Env.ZERO;
+
 	private int 		currencyId = 0;
 	private boolean 	isEnforcePriceLimit = false;
 	private int 		uomId = 0;
@@ -191,6 +196,28 @@ public class MProductPricing
 			if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
 
 				MProduct product = (MProduct)productoSocio.getM_Product();
+
+				// Si la fecha del documento es menor a la fecha de vigencia de costos del modelo producto-socio
+				if (this.dateDocument.before(productoSocio.getDateValidPO())){
+
+					// Veo si tengo precios en histórico de costos para esta fecha-organización-socio-producto-moneda
+					MZHistCostoProd histCostoProd = MZHistCostoProd.getByDateOrgProdPartner(Env.getCtx(), this.dateDocument, this.adOrgTrxID,
+																				this.partnerId, this.productId, this.currencyId, this.trxName);
+					if ((histCostoProd != null) && (histCostoProd.get_ID() > 0)){
+
+						this.tieneOfertaComercial = false;
+						this.priceStd = histCostoProd.getPriceList();
+						this.priceList = histCostoProd.getPriceList();
+						this.priceLimit = histCostoProd.getPriceList();
+						this.uomId = product.getC_UOM_ID();
+						this.currencyId = productoSocio.getC_Currency_ID();
+						this.productCategoryId = product.getM_Product_Category_ID();
+						this.isEnforcePriceLimit = false;
+						this.isTaxIncluded = true;
+
+						return true;
+					}
+				}
 
 				// Verifico si tengo oferta comercial, en cuyo caso dejo constancia y obtengo precio de oferta y su correspondiente moneda
 				MZProductoSocioOferta socioOferta = MZProductoSocioOferta.getByProductBPDate(Env.getCtx(), productoSocio.get_ID(), this.dateDocument, null);
@@ -1043,5 +1070,17 @@ public class MProductPricing
 	{
 		return calculated;
 	}	//	isCalculated
-	
+
+	public boolean isCostoHistorico() {
+		return isCostoHistorico;
+	}
+
+	public BigDecimal getPricePO() {
+		return pricePO;
+	}
+
+	public BigDecimal getPriceFinal() {
+		return priceFinal;
+	}
+
 }	//	MProductPrice

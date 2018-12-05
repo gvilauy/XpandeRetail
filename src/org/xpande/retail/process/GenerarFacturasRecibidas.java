@@ -213,8 +213,16 @@ public class GenerarFacturasRecibidas extends SvrProcess {
                     invLine.setPriceList(productPricing.getPriceList());
                     invLine.setPriceLimit(productPricing.getPriceLimit());
                     invLine.setPriceEntered(invLine.getPriceActual());
-                    invLine.set_ValueOfColumn("PricePO", invLine.getPriceEntered());
-                    invLine.set_ValueOfColumn("PricePONoDto", invLine.getPriceEntered());
+
+                    if (productPricing.isCostoHistorico()){
+                        invLine.set_ValueOfColumn("PricePO", productPricing.getPricePO());
+                        invLine.set_ValueOfColumn("PricePONoDto", productPricing.getPricePO());
+                    }
+                    else {
+                        invLine.set_ValueOfColumn("PricePO", invLine.getPriceEntered());
+                        invLine.set_ValueOfColumn("PricePONoDto", invLine.getPriceEntered());
+                    }
+
                     invLine.setLineNetAmt();
                     invLine.setM_InOutLine_ID(inOutLine.get_ID());
 

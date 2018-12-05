@@ -695,6 +695,8 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 									 MPriceList plCompra, MPriceListVersion plVersionCompra,
 									 MPriceList plVenta, MPriceListVersion plVersionVenta) {
 
+		boolean aplicoCambios = true;
+
 		try{
 
 			String action = "";
@@ -722,113 +724,122 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 					if (prodbp.getDateValidPO() != null){
 						// Si la vigencia actual del precio de este producto es mayor a la fecha de vigencia para este documento, no hago nada.
 						if (prodbp.getDateValidPO().after(this.getDateValidPO())){
-							return;
+
+							// No tengo que aplicar cambios en modelo de producto-socio ya que es vigencia pasada
+							aplicoCambios = false;
 						}
 					}
 				}
 
-				// Si precio de lista compra cambia
-				if (prodbp.getPriceList().compareTo(line.getPriceList()) != 0){
-					// Actualizo info precios compra para este producto-socio
-					prodbp.setDateValidPO(fechaHoy);
-					prodbp.setPriceList(line.getPriceList());
+				if (aplicoCambios){
+					// Si precio de lista compra cambia
+					if (prodbp.getPriceList().compareTo(line.getPriceList()) != 0){
+						// Actualizo info precios compra para este producto-socio
+						prodbp.setDateValidPO(fechaHoy);
+						prodbp.setPriceList(line.getPriceList());
+					}
+
+					// Si precio de lista venta cambia
+					if (prodbp.getPriceSO().compareTo(line.getNewPriceSO()) != 0){
+						prodbp.setDateValidSO(fechaHoy);
+						prodbp.setPriceSO(line.getNewPriceSO());
+					}
 				}
 
-				// Si precio de lista venta cambia
-				if (prodbp.getPriceSO().compareTo(line.getNewPriceSO()) != 0){
-					prodbp.setDateValidSO(fechaHoy);
-					prodbp.setPriceSO(line.getNewPriceSO());
-				}
 			}
 
-			// Precios OC, final y descuentos se actualizan siempre porque pueden haber cambiado las pautas comerciales
-			prodbp.setM_PriceList_ID(plCompra.get_ID());
-			prodbp.setM_PriceList_Version_ID(plVersionCompra.get_ID());
-			prodbp.setM_PriceList_ID_SO(plVenta.get_ID());
-			prodbp.setM_PriceList_Version_ID_SO(plVersionVenta.get_ID());
-			prodbp.setC_Currency_ID(plCompra.getC_Currency_ID());
-			prodbp.setC_Currency_ID_SO(this.getC_Currency_ID_SO());
-			prodbp.setPricePO(line.getPricePO());
-			prodbp.setPricePOMargin(line.getPricePOMargin());
-			prodbp.setPriceFinal(line.getPriceFinal());
-			prodbp.setPriceFinalMargin(line.getPriceFinalMargin());
+			if (aplicoCambios){
+				// Precios OC, final y descuentos se actualizan siempre porque pueden haber cambiado las pautas comerciales
+				prodbp.setM_PriceList_ID(plCompra.get_ID());
+				prodbp.setM_PriceList_Version_ID(plVersionCompra.get_ID());
+				prodbp.setM_PriceList_ID_SO(plVenta.get_ID());
+				prodbp.setM_PriceList_Version_ID_SO(plVersionVenta.get_ID());
+				prodbp.setC_Currency_ID(plCompra.getC_Currency_ID());
+				prodbp.setC_Currency_ID_SO(this.getC_Currency_ID_SO());
+				prodbp.setPricePO(line.getPricePO());
+				prodbp.setPricePOMargin(line.getPricePOMargin());
+				prodbp.setPriceFinal(line.getPriceFinal());
+				prodbp.setPriceFinalMargin(line.getPriceFinalMargin());
 
-			prodbp.setDistinctPricePO(line.isDistinctPricePO());
-			prodbp.setDistinctPriceSO(line.isDistinctPriceSO());
+				prodbp.setDistinctPricePO(line.isDistinctPricePO());
+				prodbp.setDistinctPriceSO(line.isDistinctPriceSO());
 
-			if (this.getZ_PautaComercial_ID() > 0){
-				prodbp.setZ_PautaComercial_ID(this.getZ_PautaComercial_ID());
-				prodbp.setTotalDiscountsPO(line.getTotalDiscountsPO());
-				prodbp.setTotalDiscountsFinal(line.getTotalDiscountsFinal());
+				if (this.getZ_PautaComercial_ID() > 0){
+					prodbp.setZ_PautaComercial_ID(this.getZ_PautaComercial_ID());
+					prodbp.setTotalDiscountsPO(line.getTotalDiscountsPO());
+					prodbp.setTotalDiscountsFinal(line.getTotalDiscountsFinal());
 
-				if (line.getZ_PautaComercialSet_ID_Gen() > 0){
-					prodbp.setZ_PautaComercialSet_ID_Gen(line.getZ_PautaComercialSet_ID_Gen());
+					if (line.getZ_PautaComercialSet_ID_Gen() > 0){
+						prodbp.setZ_PautaComercialSet_ID_Gen(line.getZ_PautaComercialSet_ID_Gen());
+					}
+					else{
+						prodbp.setZ_PautaComercialSet_ID_Gen(0);
+					}
+					if (line.getZ_PautaComercialSet_ID_1() > 0){
+						prodbp.setZ_PautaComercialSet_ID_1(line.getZ_PautaComercialSet_ID_1());
+					}
+					else{
+						prodbp.setZ_PautaComercialSet_ID_1(0);
+					}
+					if (line.getZ_PautaComercialSet_ID_2() > 0){
+						prodbp.setZ_PautaComercialSet_ID_2(line.getZ_PautaComercialSet_ID_2());
+					}
+					else{
+						prodbp.setZ_PautaComercialSet_ID_2(0);
+					}
 				}
 				else{
+					prodbp.setZ_PautaComercial_ID(0);
+					prodbp.setTotalDiscountsPO(null);
+					prodbp.setTotalDiscountsFinal(null);
 					prodbp.setZ_PautaComercialSet_ID_Gen(0);
-				}
-				if (line.getZ_PautaComercialSet_ID_1() > 0){
-					prodbp.setZ_PautaComercialSet_ID_1(line.getZ_PautaComercialSet_ID_1());
-				}
-				else{
 					prodbp.setZ_PautaComercialSet_ID_1(0);
-				}
-				if (line.getZ_PautaComercialSet_ID_2() > 0){
-					prodbp.setZ_PautaComercialSet_ID_2(line.getZ_PautaComercialSet_ID_2());
-				}
-				else{
 					prodbp.setZ_PautaComercialSet_ID_2(0);
 				}
-			}
-			else{
-				prodbp.setZ_PautaComercial_ID(0);
-				prodbp.setTotalDiscountsPO(null);
-				prodbp.setTotalDiscountsFinal(null);
-				prodbp.setZ_PautaComercialSet_ID_Gen(0);
-				prodbp.setZ_PautaComercialSet_ID_1(0);
-				prodbp.setZ_PautaComercialSet_ID_2(0);
-			}
 
-			if ((line.getVendorProductNo() != null) && (!line.getVendorProductNo().trim().equalsIgnoreCase(""))){
-				prodbp.setVendorProductNo(line.getVendorProductNo());
-			}
+				if ((line.getVendorProductNo() != null) && (!line.getVendorProductNo().trim().equalsIgnoreCase(""))){
+					prodbp.setVendorProductNo(line.getVendorProductNo());
+				}
 
-			prodbp.saveEx();
+				prodbp.saveEx();
 
-			// No dejo ids de pauta en cero en el producto-socio
-			if (prodbp.getZ_PautaComercial_ID() == 0){
-				action = " update z_productosocio set z_pautacomercial_id = null, z_pautacomercialset_id_gen = null, " +
-						 " z_pautacomercialset_id_1 = null, z_pautacomercialset_id_2 = null " +
-						 " where z_productosocio_id =" + prodbp.get_ID();
-				DB.executeUpdateEx(action, get_TrxName());
-			}
-			else{
-				boolean infoPautaCero = false;
-				String setInfo = "";
-				if (prodbp.getZ_PautaComercialSet_ID_Gen() == 0){
-					infoPautaCero = true;
-					setInfo = " z_pautacomercialset_id_gen = null ";
-				}
-				if (prodbp.getZ_PautaComercialSet_ID_1() == 0){
-					infoPautaCero = true;
-					if (!setInfo.equalsIgnoreCase("")) setInfo = setInfo + ", ";
-					setInfo = setInfo + " z_pautacomercialset_id_1 = null ";
-				}
-				if (prodbp.getZ_PautaComercialSet_ID_2() == 0){
-					infoPautaCero = true;
-					if (!setInfo.equalsIgnoreCase("")) setInfo = setInfo + ", ";
-					setInfo = setInfo + " z_pautacomercialset_id_2 = null ";
-				}
-				if (infoPautaCero){
-					action = " update z_productosocio set " + setInfo +
+				// No dejo ids de pauta en cero en el producto-socio
+				if (prodbp.getZ_PautaComercial_ID() == 0){
+					action = " update z_productosocio set z_pautacomercial_id = null, z_pautacomercialset_id_gen = null, " +
+							" z_pautacomercialset_id_1 = null, z_pautacomercialset_id_2 = null " +
 							" where z_productosocio_id =" + prodbp.get_ID();
 					DB.executeUpdateEx(action, get_TrxName());
+				}
+				else{
+					boolean infoPautaCero = false;
+					String setInfo = "";
+					if (prodbp.getZ_PautaComercialSet_ID_Gen() == 0){
+						infoPautaCero = true;
+						setInfo = " z_pautacomercialset_id_gen = null ";
+					}
+					if (prodbp.getZ_PautaComercialSet_ID_1() == 0){
+						infoPautaCero = true;
+						if (!setInfo.equalsIgnoreCase("")) setInfo = setInfo + ", ";
+						setInfo = setInfo + " z_pautacomercialset_id_1 = null ";
+					}
+					if (prodbp.getZ_PautaComercialSet_ID_2() == 0){
+						infoPautaCero = true;
+						if (!setInfo.equalsIgnoreCase("")) setInfo = setInfo + ", ";
+						setInfo = setInfo + " z_pautacomercialset_id_2 = null ";
+					}
+					if (infoPautaCero){
+						action = " update z_productosocio set " + setInfo +
+								" where z_productosocio_id =" + prodbp.get_ID();
+						DB.executeUpdateEx(action, get_TrxName());
+					}
 				}
 			}
 
 			// Proceso cada organización seleccionada para procesar
 			List<MZPreciosProvOrg> pporgs = this.getOrgsSelected();
 			for (MZPreciosProvOrg pporg: pporgs){
+
+				boolean aplicoCambiosOrg = true;
 
 				// Obtengo para esta linea de documento recibida, el modelo de organización con datos de precios de compra y venta
 				MZPreciosProvLinOrg preciosProvLinOrg = line.getOrganizacion(pporg.getAD_OrgTrx_ID());
@@ -853,35 +864,63 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 						if (prodbpOrg.getDateValidPO() != null){
 							// Si la vigencia actual del precio de este producto es mayor a la fecha de vigencia para este documento, no hago nada.
 							if (prodbpOrg.getDateValidPO().after(this.getDateValidPO())){
-								return;
+
+								// No aplico cambios en modelo de producto-socio-organizacion porque es vigencia pasada
+								aplicoCambiosOrg = false;
 							}
 						}
 					}
 
-					// Si precio de lista compra cambia
-					if (prodbpOrg.getPriceList().compareTo(preciosProvLinOrg.getPriceList()) != 0){
-						// Actualizo info precios compra para este producto-socio-organizacion
-						prodbpOrg.setDateValidPO(fechaHoy);
-						prodbpOrg.setPriceList(preciosProvLinOrg.getPriceList());
+					if (aplicoCambiosOrg){
+						// Si precio de lista compra cambia
+						if (prodbpOrg.getPriceList().compareTo(preciosProvLinOrg.getPriceList()) != 0){
+							// Actualizo info precios compra para este producto-socio-organizacion
+							prodbpOrg.setDateValidPO(fechaHoy);
+							prodbpOrg.setPriceList(preciosProvLinOrg.getPriceList());
+						}
+
+						// Si precio de lista venta cambia
+						if (prodbpOrg.getPriceSO().compareTo(preciosProvLinOrg.getNewPriceSO()) != 0){
+							prodbpOrg.setDateValidSO(fechaHoy);
+							prodbpOrg.setPriceSO(preciosProvLinOrg.getNewPriceSO());
+						}
 					}
 
-					// Si precio de lista venta cambia
-					if (prodbpOrg.getPriceSO().compareTo(preciosProvLinOrg.getNewPriceSO()) != 0){
-						prodbpOrg.setDateValidSO(fechaHoy);
-						prodbpOrg.setPriceSO(preciosProvLinOrg.getNewPriceSO());
-					}
 				}
-				prodbpOrg.setM_PriceList_ID(plCompra.get_ID());
-				prodbpOrg.setM_PriceList_Version_ID(plVersionCompra.get_ID());
-				prodbpOrg.setM_PriceList_ID_SO(pporg.getM_PriceList_ID_SO());
-				prodbpOrg.setM_PriceList_Version_ID_SO(pporg.getM_PriceList_Version_ID_SO());
-				prodbpOrg.setC_Currency_ID(plCompra.getC_Currency_ID());
-				prodbpOrg.setC_Currency_ID_SO(this.getC_Currency_ID_SO());
-				prodbpOrg.setPricePO(preciosProvLinOrg.getPricePO());
-				prodbpOrg.setPricePOMargin(preciosProvLinOrg.getPricePOMargin());
-				prodbpOrg.setPriceFinal(preciosProvLinOrg.getPriceFinal());
-				prodbpOrg.setPriceFinalMargin(preciosProvLinOrg.getPriceFinalMargin());
-				prodbpOrg.saveEx();
+
+				if (aplicoCambiosOrg){
+					prodbpOrg.setM_PriceList_ID(plCompra.get_ID());
+					prodbpOrg.setM_PriceList_Version_ID(plVersionCompra.get_ID());
+					prodbpOrg.setM_PriceList_ID_SO(pporg.getM_PriceList_ID_SO());
+					prodbpOrg.setM_PriceList_Version_ID_SO(pporg.getM_PriceList_Version_ID_SO());
+					prodbpOrg.setC_Currency_ID(plCompra.getC_Currency_ID());
+					prodbpOrg.setC_Currency_ID_SO(this.getC_Currency_ID_SO());
+					prodbpOrg.setPricePO(preciosProvLinOrg.getPricePO());
+					prodbpOrg.setPricePOMargin(preciosProvLinOrg.getPricePOMargin());
+					prodbpOrg.setPriceFinal(preciosProvLinOrg.getPriceFinal());
+					prodbpOrg.setPriceFinalMargin(preciosProvLinOrg.getPriceFinalMargin());
+					prodbpOrg.saveEx();
+				}
+
+				// Guardo historico de costos para este producto-socio-organizacion
+				MZHistCostoProd histCostoProd = new MZHistCostoProd(getCtx(), 0, get_TrxName());
+				histCostoProd.setAD_OrgTrx_ID(pporg.getAD_OrgTrx_ID());
+				histCostoProd.setC_BPartner_ID(cBPartnerID);
+				histCostoProd.setC_Currency_ID(plCompra.getC_Currency_ID());
+				histCostoProd.setC_Currency_ID_SO(this.getC_Currency_ID_SO());
+				histCostoProd.setDateValidPO(this.getDateValidPO());
+				histCostoProd.setDateValidSO(this.getDateValidPO());
+				histCostoProd.setM_PriceList_ID(plCompra.get_ID());
+				histCostoProd.setM_PriceList_ID_SO(plVenta.get_ID());
+				histCostoProd.setM_PriceList_Version_ID(plVersionCompra.get_ID());
+				histCostoProd.setM_PriceList_Version_ID_SO(plVersionVenta.get_ID());
+				histCostoProd.setM_Product_ID(line.getM_Product_ID());
+				histCostoProd.setPriceFinal(line.getPriceFinal());
+				histCostoProd.setPriceList(line.getPriceList());
+				histCostoProd.setPricePO(line.getPricePO());
+				histCostoProd.setPriceSO(line.getNewPriceSO());
+				histCostoProd.setAD_Org_ID(this.getAD_Org_ID());
+				histCostoProd.saveEx();
 			}
 
 		}

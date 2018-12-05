@@ -163,7 +163,13 @@ public class ValidatorRetail implements ModelValidator {
             // Nuevo registro, dejo fijo el precio OC en una columna para que en caso de haber descuentos manuales, se visualice diferencias
             // entre precio oc original, y el nuevo precio oc con descuentos manuales aplicados.
             if (type == ModelValidator.TYPE_BEFORE_NEW){
-                model.set_ValueOfColumn("PricePO", model.getPriceEntered());
+                if (productPricing.isCostoHistorico()){
+                    model.set_ValueOfColumn("PricePO", productPricing.getPricePO());
+                }
+                else{
+                    model.set_ValueOfColumn("PricePO", model.getPriceEntered());
+                }
+
             }
 
             // Calcula descuento manual

@@ -73,7 +73,15 @@ public class SeleccionProductosCompProv extends SeleccionProductosCompProvAbstra
 				invoiceLine.setPriceActual(productPricing.getPriceStd());
 				invoiceLine.setPriceList(productPricing.getPriceList());
 				invoiceLine.setPriceLimit(productPricing.getPriceLimit());
-				invoiceLine.set_ValueOfColumn("PricePO", invoiceLine.getPriceEntered());
+
+				if (productPricing.isCostoHistorico()){
+					invoiceLine.set_ValueOfColumn("PricePO", productPricing.getPricePO());
+					invoiceLine.set_ValueOfColumn("PricePONoDto", productPricing.getPricePO());
+				}
+				else{
+					invoiceLine.set_ValueOfColumn("PricePO", invoiceLine.getPriceEntered());
+					invoiceLine.set_ValueOfColumn("PricePONoDto", invoiceLine.getPriceEntered());
+				}
 
 				//
 				if (invoiceLine.getQtyEntered().compareTo(invoiceLine.getQtyInvoiced()) == 0)

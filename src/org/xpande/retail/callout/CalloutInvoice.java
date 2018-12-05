@@ -392,8 +392,14 @@ public class CalloutInvoice extends CalloutEngine
 		// Seteo precio de orden de compra para retail solo si es nulo
 		BigDecimal pricePO = (BigDecimal) mTab.getValue("PricePO");
 		if ((pricePO == null) || (pricePO.compareTo(Env.ZERO) <= 0)) {
-			mTab.setValue("PricePO", mTab.getValue("PriceEntered"));
-			mTab.setValue("PricePONoDto", mTab.getValue("PriceEntered"));
+			if (pp.isCostoHistorico()){
+				mTab.setValue("PricePO", pp.getPricePO());
+				mTab.setValue("PricePONoDto", pp.getPricePO());
+			}
+			else{
+				mTab.setValue("PricePO", mTab.getValue("PriceEntered"));
+				mTab.setValue("PricePONoDto", mTab.getValue("PriceEntered"));
+			}
 		}
 		// Xpande.
 
@@ -668,8 +674,14 @@ public class CalloutInvoice extends CalloutEngine
 			// Seteo precio de orden de compra para retail solo si es nulo
 			BigDecimal pricePO = (BigDecimal) mTab.getValue("PricePO");
 			if ((pricePO == null) || (pricePO.compareTo(Env.ZERO) <= 0)) {
-				mTab.setValue("PricePO", mTab.getValue("PriceEntered"));
-				mTab.setValue("PricePONoDto", mTab.getValue("PriceEntered"));
+				if (pp.isCostoHistorico()){
+					mTab.setValue("PricePO", pp.getPricePO());
+					mTab.setValue("PricePONoDto", pp.getPricePO());
+				}
+				else{
+					mTab.setValue("PricePO", mTab.getValue("PriceEntered"));
+					mTab.setValue("PricePONoDto", mTab.getValue("PriceEntered"));
+				}
 			}
 			// Xpande.
 
