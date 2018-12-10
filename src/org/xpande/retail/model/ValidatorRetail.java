@@ -1115,6 +1115,16 @@ public class ValidatorRetail implements ModelValidator {
                 }
             }
 
+            // Si el socio de negocio esta marcado para asiento manual en comprobantes de compra
+            MBPartner partner = (MBPartner) model.getC_BPartner();
+            if (partner.get_ValueAsBoolean("AsientoManualInvoice")){
+                // Elimino impuestos automáticos de este comprobante, ya que se cargaran a mano.
+                action = " delete from c_invoicetax " +
+                         "  where c_invoice_id =" + model.get_ID() +
+                         "  and IsManual ='N'";
+                DB.executeUpdateEx(action, model.get_TrxName());
+            }
+
         }
         else if (timing == TIMING_BEFORE_REACTIVATE){
 
