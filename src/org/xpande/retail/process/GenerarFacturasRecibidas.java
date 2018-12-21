@@ -69,6 +69,10 @@ public class GenerarFacturasRecibidas extends SvrProcess {
                     continue;
                 }
 
+                if (recepcionProdFact.getC_Currency_ID() <= 0){
+                    return "@Error@ " + "Falta indicar Moneda en Factura : " + recepcionProdFact.getManualDocumentNo();
+                }
+
                 Timestamp dateInvoiced = TimeUtil.trunc(recepcionProdFact.getDateDoc(), TimeUtil.TRUNC_DAY);
 
                 // Seteo cabezal de nueva factura
