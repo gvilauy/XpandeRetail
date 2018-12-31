@@ -5,8 +5,8 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MProduct;
 import org.compiere.process.SvrProcess;
-import org.xpande.retail.model.MZProductoSocio;
-import org.xpande.retail.model.MZProductoSocioOrg;
+import org.compiere.util.Env;
+import org.xpande.retail.model.*;
 
 /**
  * Proceso que refresca costos (campo precio OC) en las lineas de un comprobante de proveedor.
@@ -47,6 +47,8 @@ public class RefrescarCostosFact extends SvrProcess {
                 // Refresco precio OC de esta linea de comprobante.
                 MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(getCtx(), this.invoice.getC_BPartner_ID(), invoiceLine.getM_Product_ID(), null);
                 if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+
+                    /*
                     MZProductoSocioOrg productoSocioOrg = productoSocio.getOrg(invoice.getAD_Org_ID());
                     if ((productoSocioOrg != null) && (productoSocioOrg.get_ID() > 0)){
                         invoiceLine.set_ValueOfColumn("PricePO", productoSocioOrg.getPricePO());
@@ -56,6 +58,52 @@ public class RefrescarCostosFact extends SvrProcess {
                         invoiceLine.set_ValueOfColumn("PricePO", productoSocio.getPricePO());
                         invoiceLine.set_ValueOfColumn("PricePONoDto", productoSocio.getPricePO());
                     }
+                    invoiceLine.saveEx();
+
+                    contador++;
+                    */
+
+                    // Si la fecha del comprobante es menor a la fecha de vigencia de costos del modelo producto-socio
+                    if (this.invoice.getDateInvoiced().before(productoSocio.getDateValidPO())){
+
+                        // Veo si tengo precios en histórico de costos para esta fecha-organización-socio-producto-moneda
+                        MZHistCostoProd histCostoProd = MZHistCostoProd.getByDateOrgProdPartner(getCtx(), this.invoice.getDateInvoiced(),
+                                this.invoice.getAD_Org_ID(), this.invoice.getC_BPartner_ID(), invoiceLine.getM_Product_ID(), this.invoice.getC_Currency_ID(), get_TrxName());
+                        if ((histCostoProd != null) && (histCostoProd.get_ID() > 0)){
+
+                            invoiceLine.set_ValueOfColumn("PricePO", histCostoProd.getPricePO());
+                            invoiceLine.set_ValueOfColumn("PricePONoDto", histCostoProd.getPricePO());
+                        }
+                    }
+                    else{
+
+                        // Verifico si tengo oferta comercial, en cuyo caso dejo constancia y obtengo precio de oferta y su correspondiente moneda
+                        MZProductoSocioOferta socioOferta = MZProductoSocioOferta.getByProductBPDate(Env.getCtx(), productoSocio.get_ID(), this.invoice.getDateInvoiced(), null);
+                        if ((socioOferta != null) && (socioOferta.get_ID() > 0)){
+
+                            // Tengo oferta, tomo el precio de la oferta
+                            MZOfertaVentaLinBP ofertaVentaLinBP = (MZOfertaVentaLinBP) socioOferta.getZ_OfertaVentaLinBP();
+                            if ((ofertaVentaLinBP != null) && (ofertaVentaLinBP.get_ID() > 0)){
+
+                                invoiceLine.set_ValueOfColumn("PricePO", ofertaVentaLinBP.getNewPricePO());
+                                invoiceLine.set_ValueOfColumn("PricePONoDto", ofertaVentaLinBP.getNewPricePO());
+                            }
+                        }
+                        else{
+
+                            MZProductoSocioOrg productoSocioOrg = productoSocio.getOrg(this.invoice.getAD_Org_ID());
+                            if ((productoSocioOrg != null) && (productoSocioOrg.get_ID() > 0)){
+                                invoiceLine.set_ValueOfColumn("PricePO", productoSocioOrg.getPricePO());
+                                invoiceLine.set_ValueOfColumn("PricePONoDto", productoSocioOrg.getPricePO());
+                            }
+                            else{
+                                invoiceLine.set_ValueOfColumn("PricePO", productoSocio.getPricePO());
+                                invoiceLine.set_ValueOfColumn("PricePONoDto", productoSocio.getPricePO());
+                            }
+                        }
+
+                    }
+
                     invoiceLine.saveEx();
 
                     contador++;
