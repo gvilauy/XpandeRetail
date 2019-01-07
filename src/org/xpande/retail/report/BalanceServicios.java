@@ -27,6 +27,8 @@ public class BalanceServicios extends SvrProcess {
     private int zProductoRubroID = 0;
     private int zProductoFamiliaID = 0;
     private int zProductoSubfamiliaID = 0;
+    private int mProductID = 0;
+    private String upc = "";
     private int cCurrencyID = 142;
 
     private Timestamp startDate = null;
@@ -61,6 +63,13 @@ public class BalanceServicios extends SvrProcess {
                     else if (name.trim().equalsIgnoreCase("Z_ProductoSubfamilia_ID")){
                         this.zProductoSubfamiliaID = ((BigDecimal)para[i].getParameter()).intValueExact();
                     }
+                    else if (name.trim().equalsIgnoreCase("M_Product_ID")){
+                        this.mProductID = ((BigDecimal)para[i].getParameter()).intValueExact();
+                    }
+                    else if (name.trim().equalsIgnoreCase("UPC")){
+                        this.upc = para[i].getParameter().toString().trim();
+                    }
+
                     else if (name.trim().equalsIgnoreCase("DateTrx")){
                         this.startDate = (Timestamp)para[i].getParameter();
                         this.endDate = (Timestamp)para[i].getParameter_To();
@@ -111,7 +120,7 @@ public class BalanceServicios extends SvrProcess {
 
             // Cadenas de insert en tablas del reporte
             action = " insert into " + TABLA_REPORTE + " (ad_client_id, ad_org_id, ad_user_id, c_bpartner_id, m_product_id, value, name, datetrx, " +
-                    "z_productoseccion_id, z_productorubro_id, z_productofamilia_id, z_productosubfamilia_id) ";
+                    "z_productoseccion_id, z_productorubro_id, z_productofamilia_id, z_productosubfamilia_id, z_productoupc_id, upc) ";
 
             // Armo condicion where dinámica del reporte
             String whereClause = "";
@@ -134,12 +143,22 @@ public class BalanceServicios extends SvrProcess {
             if (this.zProductoSubfamiliaID > 0){
                 whereClause += " and p.z_productosubfamilia_id =" + this.zProductoSubfamiliaID;
             }
+            if (this.mProductID > 0){
+                whereClause += " and p.m_product_id =" + this.mProductID;
+            }
+            if ((this.upc != null) && (!this.upc.trim().equalsIgnoreCase(""))){
+                whereClause += " and pupc.upc ='" + this.upc + "' ";
+            }
+
 
             sql = " select p.ad_client_id, " + this.adOrgID + ", " + this.getAD_User_ID() + ", "
                     + ((cBPartnerID > 0) ? String.valueOf(this.cBPartnerID) : "null") + "::numeric(10,0), " +
                     " p.m_product_id, p.value, p.name, '" +  this.startDate + "', p.z_productoseccion_id, p.z_productorubro_id,  " +
-                    " p.z_productofamilia_id, p.z_productosubfamilia_id " +
+                    " p.z_productofamilia_id, p.z_productosubfamilia_id, " +
+                    " pupc.z_productoupc_id, pupc.upc " +
                     " from m_product p " +
+                    " left outer join zv_ultimoproductoupc vupc on p.m_product_id = vupc.m_product_id " +
+                    " left outer join z_productoupc pupc on vupc.z_productoupc_id = pupc.z_productoupc_id " +
                     " where p.issold ='Y' and p.ispurchased ='Y' and p.isactive ='Y' " + whereClause +
                     " order by p.name ";
 
