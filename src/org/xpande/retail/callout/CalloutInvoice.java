@@ -318,10 +318,6 @@ public class CalloutInvoice extends CalloutEngine
 
 		// Xpande. Gabriel Vila.
 		// Llamo a callout para setear los datos : codigo de barras - codigo prod.prov - producto
-
-		if (isCalloutActive() || value == null)
-			return "";
-
 		String message = upcVendProdNoProduct(ctx, WindowNo, mTab, mField, value);
 		if (!message.equalsIgnoreCase("")){
 			return  message;
@@ -493,9 +489,6 @@ public class CalloutInvoice extends CalloutEngine
 	 */
 	public String tax (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
 	{
-
-		if (isCalloutActive()) return "";
-
 		String column = mField.getColumnName();
 		if (value == null)
 			return "";
