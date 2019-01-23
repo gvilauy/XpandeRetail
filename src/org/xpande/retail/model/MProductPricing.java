@@ -190,12 +190,19 @@ public class MProductPricing
 
 		try{
 
+			this.isCostoHistorico = false;
+
 			if (this.adOrgTrxID <= 0) return false;
 
 			MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(Env.getCtx(), partnerId, productId, null);
 			if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
 
+
+
 				MProduct product = (MProduct)productoSocio.getM_Product();
+
+				this.currencyId = productoSocio.getC_Currency_ID();
+				this.productCategoryId = product.getM_Product_Category_ID();
 
 				// Si la fecha del documento es menor a la fecha de vigencia de costos del modelo producto-socio
 				if (this.dateDocument.before(productoSocio.getDateValidPO())){
@@ -206,14 +213,15 @@ public class MProductPricing
 					if ((histCostoProd != null) && (histCostoProd.get_ID() > 0)){
 
 						this.tieneOfertaComercial = false;
+						this.pricePO = histCostoProd.getPriceList();
 						this.priceStd = histCostoProd.getPriceList();
 						this.priceList = histCostoProd.getPriceList();
 						this.priceLimit = histCostoProd.getPriceList();
 						this.uomId = product.getC_UOM_ID();
-						this.currencyId = productoSocio.getC_Currency_ID();
-						this.productCategoryId = product.getM_Product_Category_ID();
 						this.isEnforcePriceLimit = false;
 						this.isTaxIncluded = true;
+
+						this.isCostoHistorico = true;
 
 						return true;
 					}
