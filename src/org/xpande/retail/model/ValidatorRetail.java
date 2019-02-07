@@ -472,6 +472,11 @@ public class ValidatorRetail implements ModelValidator {
                         if (discount2 == null) discount2 = Env.ZERO;
                         if (discount3 == null) discount3 = Env.ZERO;
 
+                        // Cuando el registro es nuevo y se digita precio, la base del calculo es ese precio.
+                        if (model.get_ID() <= 0){
+                            pricePONoDto = model.getPriceEntered();
+                        }
+
                         if (pricePONoDto != null) {
                             if (pricePONoDto.compareTo(Env.ZERO) != 0) {
                                 pricePO = new BigDecimal((100.0 - discount1.doubleValue()) / 100.0 * pricePONoDto.doubleValue());
