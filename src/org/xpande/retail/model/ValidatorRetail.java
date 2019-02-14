@@ -499,7 +499,8 @@ public class ValidatorRetail implements ModelValidator {
                 }
                 else{
 
-                    if ((model.getPriceActual() == null) || (model.getPriceActual().compareTo(Env.ZERO) == 0)){
+                    if ((model.get_ValueAsBoolean("IsBySelection")) ||
+                            ((model.getPriceActual() == null) || (model.getPriceActual().compareTo(Env.ZERO) == 0))){
                         // Para facturas de venta, en caso de facturación entre organizaciones, se debe tomar precio de ultima factura de proveedor
                         // Instancio modelo de socio de negocio para verificar si esta linkeado con una organización de este compañia.
                         if (model.getM_Product_ID() > 0){
