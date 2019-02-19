@@ -42,7 +42,7 @@ public class MZHistCostoProd extends X_Z_HistCostoProd {
                 " AND " + X_Z_HistCostoProd.COLUMNNAME_C_Currency_ID + " =" + currencyId +
                 " AND " + X_Z_HistCostoProd.COLUMNNAME_DateValidPO + " <='" + dateDocument + "'";
 
-        MZHistCostoProd model = new Query(ctx, I_Z_HistCostoProd.Table_Name, whereClause, trxName).setOrderBy(X_Z_HistCostoProd.COLUMNNAME_DateValidPO).first();
+        MZHistCostoProd model = new Query(ctx, I_Z_HistCostoProd.Table_Name, whereClause, trxName).setOrderBy(X_Z_HistCostoProd.COLUMNNAME_DateValidPO + " DESC ").first();
 
         return model;
     }

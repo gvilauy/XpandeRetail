@@ -510,7 +510,13 @@ public class ValidatorRetail implements ModelValidator {
                                 if ((orgLinked != null) && (orgLinked.get_ID() > 0)){
 
                                     // Obtengo precio de ultima factura de compra (API), para producto y organización de este comprobante de venta.
-                                    BigDecimal priceActual = ComercialUtils.getProdOrgLastAPInvoicePrice(model.getCtx(), model.getM_Product_ID(), invoice.getAD_Org_ID(), invoice.getC_Currency_ID(),null);
+                                    // Si tengo entrega asociada, tomo fecha de este remito para obtener precio de ultima factura.
+                                    Timestamp dateInvoiced = invoice.getDateInvoiced();
+                                    if (model.getM_InOutLine_ID() > 0){
+                                        MInOut inOut =(MInOut)((MInOutLine) model.getM_InOutLine()).getM_InOut();
+                                        dateInvoiced = inOut.getMovementDate();
+                                    }
+                                    BigDecimal priceActual = ComercialUtils.getProdOrgLastAPInvoicePrice(model.getCtx(), model.getM_Product_ID(), invoice.getAD_Org_ID(), invoice.getC_Currency_ID(),dateInvoiced,null);
 
                                     // Si no tengo facturas de proveedor para este articulo, busco precio OC del ultimo proveedor para esta organización
                                     if ((priceActual == null) || (priceActual.compareTo(Env.ZERO) <= 0)){
