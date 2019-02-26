@@ -338,7 +338,7 @@ public class CalloutInvoice extends CalloutEngine
 
 		int adOrgID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
 
-		int cInvoiceID = ((Integer)mTab.getValue("C_Invoice_ID")).intValue();
+		int cInvoiceID = Env.getContextAsInt(ctx, WindowNo, "C_Invoice_ID");
 		if (cInvoiceID <= 0) {
 			return "No se obtuvo ID interno de Factura";
 		}
@@ -599,7 +599,7 @@ public class CalloutInvoice extends CalloutEngine
 		int M_Product_ID = Env.getContextAsInt(ctx, WindowNo, "M_Product_ID");
 		int adOrgID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
 
-		int cInvoiceID = ((Integer)mTab.getValue("C_Invoice_ID")).intValue();
+		int cInvoiceID = Env.getContextAsInt(ctx, WindowNo, "C_Invoice_ID");
 		if (cInvoiceID <= 0) {
 			return "No se obtuvo ID interno de Comprobante";
 		}

@@ -6,6 +6,7 @@ import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProductPrice;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.core.utils.DateUtils;
 import org.xpande.core.utils.PriceListUtils;
 
 import java.math.BigDecimal;
@@ -223,16 +224,22 @@ public final class ComercialUtils {
         ResultSet rs = null;
 
         try{
+
+            Timestamp fechaConsultaAuxDesde = new Timestamp(startDate.getTime());
+            Timestamp fechaConsultaAuxHasta = new Timestamp(endDate.getTime());
+            Timestamp fechaDesde = DateUtils.getTSManualHour(fechaConsultaAuxDesde, 0, 0, 0, 0);
+            Timestamp fechaHasta = DateUtils.getTSManualHour(fechaConsultaAuxHasta, 23, 59, 59, 0);
+
             sql = " select coalesce(sum(qtyinvoiced),0) as cantidad " +
                 " from z_bi_vtaproddia " +
                 " where ad_org_id =" + adOrgID +
-                " and cast(dateinvoiced as date) >= ? " +
-                " and cast(dateinvoiced as date) <= ? " +
+                " and dateinvoiced >= ? " +
+                " and dateinvoiced <= ? " +
                 " and m_product_id =" + mProductID;
 
             pstmt = DB.prepareStatement(sql, trxName);
-            pstmt.setTimestamp(1, startDate);
-            pstmt.setTimestamp(2, endDate);
+            pstmt.setTimestamp(1, fechaDesde);
+            pstmt.setTimestamp(2, fechaHasta);
 
             rs = pstmt.executeQuery();
 
@@ -273,16 +280,22 @@ public final class ComercialUtils {
         ResultSet rs = null;
 
         try{
+
+            Timestamp fechaConsultaAuxDesde = new Timestamp(startDate.getTime());
+            Timestamp fechaConsultaAuxHasta = new Timestamp(endDate.getTime());
+            Timestamp fechaDesde = DateUtils.getTSManualHour(fechaConsultaAuxDesde, 0, 0, 0, 0);
+            Timestamp fechaHasta = DateUtils.getTSManualHour(fechaConsultaAuxHasta, 23, 59, 59, 0);
+
             sql = " select coalesce(sum(amtsubtotal),0) as importe " +
                     " from z_bi_vtaproddia " +
                     " where ad_org_id =" + adOrgID +
-                    " and cast(dateinvoiced as date) >= ? " +
-                    " and cast(dateinvoiced as date) <= ? " +
+                    " and dateinvoiced >= ? " +
+                    " and dateinvoiced <= ? " +
                     " and m_product_id =" + mProductID;
 
             pstmt = DB.prepareStatement(sql, trxName);
-            pstmt.setTimestamp(1, startDate);
-            pstmt.setTimestamp(2, endDate);
+            pstmt.setTimestamp(1, fechaDesde);
+            pstmt.setTimestamp(2, fechaHasta);
 
             rs = pstmt.executeQuery();
 
