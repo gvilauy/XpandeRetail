@@ -403,7 +403,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		catch (Exception e){
 		    throw new AdempiereException(e);
 		}
-		
+
 		return message;
 	}
 
