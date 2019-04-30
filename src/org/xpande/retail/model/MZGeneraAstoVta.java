@@ -18,8 +18,11 @@ package org.xpande.retail.model;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -28,6 +31,7 @@ import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 /** Generated Model for Z_GeneraAstoVta
  *  @author Adempiere (generated) 
@@ -393,12 +397,56 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
     }
 
 
-    public String getVentasMedioPago(){
+	@Override
+	protected boolean beforeSave(boolean newRecord) {
+
+		if (this.getAD_Org_ID() == 0){
+			log.saveError("ATENCIÓN", "Debe Indicar Organización a considerar (no se acepta organización = * )");
+			return false;
+		}
+
+		// Seteo POS Vendor según organización de este documento
+		if ((newRecord) || (is_ValueChanged(X_Z_GeneraAstoVta.COLUMNNAME_AD_Org_ID))){
+			MZPosVendorOrg posVendorOrg = MZPosVendor.getByOrg(getCtx(), this.getAD_Org_ID(), null);
+			if ((posVendorOrg == null) || (posVendorOrg.get_ID() <= 0)){
+				log.saveError("ATENCIÓN", "No hay Proveedor de POS asociado a la Organización seleccionada.");
+				return false;
+			}
+			this.setZ_PosVendorOrg_ID(posVendorOrg.get_ID());
+			this.setZ_PosVendor_ID(posVendorOrg.getZ_PosVendor_ID());
+		}
+
+		return true;
+	}
+
+
+	/***
+	 * Obtiene y carga información resumida de ventas por medios de pago según proveedor de POS.
+	 * Xpande. Created by Gabriel Vila on 4/26/19.
+	 * @return
+	 */
+	public String getVentasMedioPago(){
 
 		String message = null;
 
 		try{
 
+			// Elimino registros anteriores
+			String action = " delete from " + X_Z_GeneraAstoVtaSumMP.Table_Name +
+					" where " + X_Z_GeneraAstoVtaSumMP.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
+			if (this.getZ_PosVendor_ID() <= 0){
+				return "Falta indicar Proveedor de POS para la Organización seleccionada";
+			}
+
+			MZPosVendor posVendor = (MZPosVendor) this.getZ_PosVendor();
+			if (posVendor.getValue().equalsIgnoreCase("SISTECO")){
+				message = this.getVentasMedioPagoSisteco();
+			}
+			else if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
+
+			}
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);
@@ -406,5 +454,219 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 		return message;
 	}
+
+
+	/***
+	 * Obtiene y carga información de ventas por medios de pago desde SISTECO.
+	 * Xpande. Created by Gabriel Vila on 4/29/19.
+	 * @return
+	 */
+	private String getVentasMedioPagoSisteco(){
+
+		String message = null;
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+		    sql = " select st_codigomediopago, st_nombremediopago, st_tipotarjetacredito, st_nombretarjeta, st_codigomoneda, " +
+					" sum(st_totalentregado) as st_totalentregado, sum(st_totalmppagomoneda) as st_totalmppagomoneda, " +
+					" sum(st_totalentregadomonedaref) as st_totalentregadomonedaref, sum(st_totalmppagomonedaref) as st_totalmppagomonedaref, " +
+					" sum(st_cambio) as st_cambio, sum(totalamt) as totalamt " +
+					" from zv_sisteco_vtasmpagodet " +
+					" where ad_org_id =" + this.getAD_Org_ID() +
+					" and datetrx ='" + this.getDateTo() + "' " +
+					" group by st_codigomediopago, st_nombremediopago, st_tipotarjetacredito, st_nombretarjeta, st_codigomoneda " +
+					" order by st_codigomediopago, st_nombremediopago, st_tipotarjetacredito, st_nombretarjeta, st_codigomoneda ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			MZGeneraAstoVtaSumMP astoVtaSumMP = null;
+
+			while(rs.next()){
+
+				String codigoMP = rs.getString("st_tipotarjetacredito");
+				String nombreMP = rs.getString("st_nombretarjeta");
+
+				if ((codigoMP == null) || (codigoMP.trim().equalsIgnoreCase(""))){
+					codigoMP = rs.getString("st_codigomediopago");
+				}
+				if ((nombreMP == null) || (nombreMP.trim().equalsIgnoreCase(""))){
+					nombreMP = rs.getString("st_nombremediopago");
+				}
+
+				// Si ya tengo registro para este medio de pago, lo obtengo, sino lo instancio.
+				astoVtaSumMP = this.getAstoVtaSumMPByCod(codigoMP);
+				if ((astoVtaSumMP == null) || (astoVtaSumMP.get_ID() <= 0)){
+					astoVtaSumMP = new MZGeneraAstoVtaSumMP(getCtx(), 0, get_TrxName());
+					astoVtaSumMP.setZ_GeneraAstoVta_ID(this.get_ID());
+					astoVtaSumMP.setAD_Org_ID(this.getAD_Org_ID());
+					astoVtaSumMP.setCodMedioPagoPOS(codigoMP);
+					astoVtaSumMP.setNomMedioPagoPOS(nombreMP);
+					astoVtaSumMP.setC_Currency_ID(142);
+					astoVtaSumMP.setC_Currency_2_ID(100);
+				}
+
+				int cCurrencyID = 142, cCurrencyID2 = 100;
+				BigDecimal currencyRate = Env.ONE;
+
+				String codMoneda = rs.getString("st_codigomoneda");
+				if ((codMoneda == null) || (codMoneda.trim().equalsIgnoreCase(""))){
+					return "Hay información de ventas por medios de pago que no tiene MONEDA.";
+				}
+
+				if (codMoneda.trim().equalsIgnoreCase("PESOS")){
+					if (rs.getBigDecimal("totalamt") != null){
+						astoVtaSumMP.setAmtTotal1(rs.getBigDecimal("totalamt"));
+					}
+					else{
+						astoVtaSumMP.setAmtTotal1(rs.getBigDecimal("st_totalmppagomonedaref"));
+					}
+
+					if (astoVtaSumMP.getCurrencyRate() == null){
+						astoVtaSumMP.setCurrencyRate(Env.ONE);
+					}
+					if (astoVtaSumMP.getAmtTotal2() == null){
+						astoVtaSumMP.setAmtTotal2(Env.ZERO);
+					}
+				}
+				else if (codMoneda.trim().equalsIgnoreCase("DOLARES")){
+					astoVtaSumMP.setAmtTotal2(rs.getBigDecimal("st_totalmppagomoneda"));
+					if (rs.getBigDecimal("st_totalmppagomoneda").compareTo(Env.ZERO) > 0){
+						currencyRate = rs.getBigDecimal("st_totalmppagomonedaref").divide(rs.getBigDecimal("st_totalmppagomoneda"), 3, RoundingMode.HALF_UP);
+					}
+					astoVtaSumMP.setCurrencyRate(currencyRate);
+					if (astoVtaSumMP.getAmtTotal1() == null){
+						astoVtaSumMP.setAmtTotal1(Env.ZERO);
+					}
+
+				}
+				else {
+					return "Se encontró una Moneda disinta a PESOS o DOLARES y no es posible procesarla : " + codMoneda;
+				}
+
+				if (astoVtaSumMP.getAmtTotal() == null){
+					astoVtaSumMP.setAmtTotal(Env.ZERO);
+				}
+				BigDecimal amtTotal = astoVtaSumMP.getAmtTotal();
+				if (rs.getBigDecimal("totalamt") != null){
+					amtTotal = amtTotal.add(rs.getBigDecimal("totalamt"));
+				}
+				astoVtaSumMP.setAmtTotal(amtTotal);
+
+				astoVtaSumMP.saveEx();
+
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+		finally {
+		    DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return message;
+	}
+
+
+	/***
+	 * Obtiene y carga información resumida de ventas por impuesto según proveedor de POS.
+	 * @return
+	 */
+	public String getVentasImpuesto(){
+
+		String message = null;
+
+		try{
+
+			// Elimino registros anteriores
+			String action = " delete from " + X_Z_GeneraAstoVtaSumTax.Table_Name +
+					" where " + X_Z_GeneraAstoVtaSumTax.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
+			if (this.getZ_PosVendor_ID() <= 0){
+				return "Falta indicar Proveedor de POS para la Organización seleccionada";
+			}
+
+			MZPosVendor posVendor = (MZPosVendor) this.getZ_PosVendor();
+			if (posVendor.getValue().equalsIgnoreCase("SISTECO")){
+				message = this.getVentasImpuestoSisteco();
+			}
+			else if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
+
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+		return message;
+	}
+
+	/***
+	 * Obtiene y carga información de ventas por impuesto desde SISTECO.
+	 * Xpande. Created by Gabriel Vila on 4/29/19.
+	 * @return
+	 */
+	private String getVentasImpuestoSisteco(){
+
+		String message = null;
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+			sql = " select c_taxcategory_id, name, taxamt, taxbaseamt " +
+					" from zv_sisteco_vtastax " +
+					" where ad_org_id =" + this.getAD_Org_ID() +
+					" and datetrx ='" + this.getDateTo() + "' ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+
+				MZGeneraAstoVtaSumTax astoVtaSumTax = new MZGeneraAstoVtaSumTax(getCtx(), 0, get_TrxName());
+				astoVtaSumTax.setZ_GeneraAstoVta_ID(this.get_ID());
+				astoVtaSumTax.setAD_Org_ID(this.getAD_Org_ID());
+				astoVtaSumTax.setC_TaxCategory_ID(rs.getInt("c_taxcategory_id"));
+				astoVtaSumTax.setC_Currency_ID(142);
+				astoVtaSumTax.setTaxAmt(rs.getBigDecimal("taxamt"));
+				astoVtaSumTax.setTaxBaseAmt(rs.getBigDecimal("taxbaseamt"));
+				astoVtaSumTax.saveEx();
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return message;
+	}
+
+
+	/***
+	 * Obtiene y retorna modelo resumen de venta por medio de pago según código de medio de pago recibido.
+	 * Xpande. Created by Gabriel Vila on 4/29/19.
+	 * @param codigoMedioPagoPOS
+	 * @return
+	 */
+	private MZGeneraAstoVtaSumMP getAstoVtaSumMPByCod(String codigoMedioPagoPOS){
+
+		String whereClause = X_Z_GeneraAstoVtaSumMP.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID() +
+				" AND " + X_Z_GeneraAstoVtaSumMP.COLUMNNAME_CodMedioPagoPOS + " ='" + codigoMedioPagoPOS + "' ";
+
+		MZGeneraAstoVtaSumMP model = new Query(getCtx(), I_Z_GeneraAstoVtaSumMP.Table_Name, whereClause, get_TrxName()).first();
+
+		return model;
+	}
+
 
 }
