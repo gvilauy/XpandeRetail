@@ -473,7 +473,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		    sql = " select st_codigomediopago, st_nombremediopago, st_tipotarjetacredito, st_nombretarjeta, st_codigomoneda, " +
 					" sum(st_totalentregado) as st_totalentregado, sum(st_totalmppagomoneda) as st_totalmppagomoneda, " +
 					" sum(st_totalentregadomonedaref) as st_totalentregadomonedaref, sum(st_totalmppagomonedaref) as st_totalmppagomonedaref, " +
-					" sum(st_cambio) as st_cambio, sum(totalamt) as totalamt " +
+					" sum(coalesce(st_cambio,0)) as st_cambio, sum(totalamt) as totalamt " +
 					" from zv_sisteco_vtasmpagodet " +
 					" where ad_org_id =" + this.getAD_Org_ID() +
 					" and datetrx ='" + this.getDateTo() + "' " +
@@ -497,68 +497,64 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 					nombreMP = rs.getString("st_nombremediopago");
 				}
 
-				// Si ya tengo registro para este medio de pago, lo obtengo, sino lo instancio.
-				astoVtaSumMP = this.getAstoVtaSumMPByCod(codigoMP);
-				if ((astoVtaSumMP == null) || (astoVtaSumMP.get_ID() <= 0)){
-					astoVtaSumMP = new MZGeneraAstoVtaSumMP(getCtx(), 0, get_TrxName());
-					astoVtaSumMP.setZ_GeneraAstoVta_ID(this.get_ID());
-					astoVtaSumMP.setAD_Org_ID(this.getAD_Org_ID());
-					astoVtaSumMP.setCodMedioPagoPOS(codigoMP);
-					astoVtaSumMP.setNomMedioPagoPOS(nombreMP);
-					astoVtaSumMP.setC_Currency_ID(142);
-					astoVtaSumMP.setC_Currency_2_ID(100);
-				}
-
-				int cCurrencyID = 142, cCurrencyID2 = 100;
-				BigDecimal currencyRate = Env.ONE;
+				astoVtaSumMP = new MZGeneraAstoVtaSumMP(getCtx(), 0, get_TrxName());
+				astoVtaSumMP.setZ_GeneraAstoVta_ID(this.get_ID());
+				astoVtaSumMP.setAD_Org_ID(this.getAD_Org_ID());
+				astoVtaSumMP.setCodMedioPagoPOS(codigoMP);
+				astoVtaSumMP.setNomMedioPagoPOS(nombreMP);
+				astoVtaSumMP.setC_Currency_ID(142);
+				astoVtaSumMP.setC_Currency_2_ID(100);
 
 				String codMoneda = rs.getString("st_codigomoneda");
 				if ((codMoneda == null) || (codMoneda.trim().equalsIgnoreCase(""))){
 					return "Hay información de ventas por medios de pago que no tiene MONEDA.";
 				}
 
+				BigDecimal amt1 = Env.ZERO, amt2 = Env.ZERO;
+				BigDecimal currencyRate = Env.ONE;
+
 				if (codMoneda.trim().equalsIgnoreCase("PESOS")){
-					if (rs.getBigDecimal("totalamt") != null){
-						astoVtaSumMP.setAmtTotal1(rs.getBigDecimal("totalamt"));
-					}
-					else{
-						astoVtaSumMP.setAmtTotal1(rs.getBigDecimal("st_totalmppagomonedaref"));
+
+					amt1 = rs.getBigDecimal("st_totalentregadomonedaref");
+					if (amt1 == null) amt1 = Env.ZERO;
+
+					// Resto cambio
+					if (rs.getBigDecimal("st_cambio") != null){
+						amt1 = amt1.subtract(rs.getBigDecimal("st_cambio"));
 					}
 
-					if (astoVtaSumMP.getCurrencyRate() == null){
-						astoVtaSumMP.setCurrencyRate(Env.ONE);
-					}
-					if (astoVtaSumMP.getAmtTotal2() == null){
-						astoVtaSumMP.setAmtTotal2(Env.ZERO);
-					}
 				}
 				else if (codMoneda.trim().equalsIgnoreCase("DOLARES")){
-					astoVtaSumMP.setAmtTotal2(rs.getBigDecimal("st_totalmppagomoneda"));
+
+					amt2 = rs.getBigDecimal("st_totalentregado");
+					amt1 = rs.getBigDecimal("st_totalentregadomonedaref");
+
+					if (amt2 == null) amt2 = Env.ZERO;
+					if (amt1 == null) amt1 = Env.ZERO;
+
 					if (rs.getBigDecimal("st_totalmppagomoneda").compareTo(Env.ZERO) > 0){
 						currencyRate = rs.getBigDecimal("st_totalmppagomonedaref").divide(rs.getBigDecimal("st_totalmppagomoneda"), 3, RoundingMode.HALF_UP);
 					}
-					astoVtaSumMP.setCurrencyRate(currencyRate);
-					if (astoVtaSumMP.getAmtTotal1() == null){
-						astoVtaSumMP.setAmtTotal1(Env.ZERO);
-					}
-
 				}
 				else {
 					return "Se encontró una Moneda disinta a PESOS o DOLARES y no es posible procesarla : " + codMoneda;
 				}
 
-				if (astoVtaSumMP.getAmtTotal() == null){
-					astoVtaSumMP.setAmtTotal(Env.ZERO);
+				astoVtaSumMP.setAmtTotal1(amt1);
+				astoVtaSumMP.setAmtTotal2(amt2);
+				astoVtaSumMP.setCurrencyRate(currencyRate);
+				astoVtaSumMP.setAmtTotal(amt1);
+
+				if (rs.getBigDecimal("st_cambio") != null){
+					astoVtaSumMP.setChangeAmt(rs.getBigDecimal("st_cambio"));
 				}
-				BigDecimal amtTotal = astoVtaSumMP.getAmtTotal();
-				if (rs.getBigDecimal("totalamt") != null){
-					amtTotal = amtTotal.add(rs.getBigDecimal("totalamt"));
-				}
-				astoVtaSumMP.setAmtTotal(amtTotal);
 
 				astoVtaSumMP.saveEx();
-
 			}
+
+			// Refresco montos en pesos, cuando para el mismo medio de pago pero en dolares, hubo cambio en pesos.
+			this.updateMontoCambios();
+
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);
@@ -569,6 +565,48 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		}
 
 		return message;
+	}
+
+	/***
+	 * Cuando para un medio de pago, como por ejemplo EFECTIVO, hubo ventas en pesos y en dolares, debo considerar un posible
+	 * cambio dado en pesos para las ventas en dolares. Considerarlo significa que debo restarlo a las ventas en pesos de ese
+	 * medio de pago.
+	 * Xpande. Created by Gabriel Vila on 4/30/19.
+	 */
+	private void updateMontoCambios() {
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		String action = "";
+
+		try{
+		    sql = " select codmediopagopos, coalesce(changeamt,0) as changeamt  " +
+					" from z_generaastovtasummp " +
+					" where z_generaastovta_id =" + this.get_ID() +
+					" and amttotal2 > 0 and changeamt > 0 ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+				action = " update z_generaastovtasummp " +
+						 " set amttotal1 = amttotal1 - " + rs.getBigDecimal("changeamt") + ", " +
+						 " amttotal = amttotal - " + rs.getBigDecimal("changeamt") +
+						 " where z_generaastovta_id =" + this.get_ID() +
+						 " and codmediopagopos ='" + rs.getString("codmediopagopos") + "' " +
+						 " and amttotal2 <= 0 ";
+				DB.executeUpdateEx(action, get_TrxName());
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+		finally {
+		    DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
 	}
 
 

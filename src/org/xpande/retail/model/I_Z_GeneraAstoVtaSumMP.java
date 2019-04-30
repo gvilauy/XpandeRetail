@@ -130,6 +130,15 @@ public interface I_Z_GeneraAstoVtaSumMP
 
 	public I_C_Currency getC_Currency() throws RuntimeException;
 
+    /** Column name ChangeAmt */
+    public static final String COLUMNNAME_ChangeAmt = "ChangeAmt";
+
+	/** Set ChangeAmt	  */
+	public void setChangeAmt(BigDecimal ChangeAmt);
+
+	/** Get ChangeAmt	  */
+	public BigDecimal getChangeAmt();
+
     /** Column name CodMedioPagoPOS */
     public static final String COLUMNNAME_CodMedioPagoPOS = "CodMedioPagoPOS";
 

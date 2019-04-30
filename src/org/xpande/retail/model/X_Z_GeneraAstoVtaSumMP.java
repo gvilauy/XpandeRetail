@@ -32,7 +32,7 @@ public class X_Z_GeneraAstoVtaSumMP extends PO implements I_Z_GeneraAstoVtaSumMP
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190416L;
+	private static final long serialVersionUID = 20190430L;
 
     /** Standard Constructor */
     public X_Z_GeneraAstoVtaSumMP (Properties ctx, int Z_GeneraAstoVtaSumMP_ID, String trxName)
@@ -41,7 +41,6 @@ public class X_Z_GeneraAstoVtaSumMP extends PO implements I_Z_GeneraAstoVtaSumMP
       /** if (Z_GeneraAstoVtaSumMP_ID == 0)
         {
 			setAmtTotal (Env.ZERO);
-			setAmtTotal1 (Env.ZERO);
 			setC_Currency_ID (0);
 			setCodMedioPagoPOS (null);
 			setNomMedioPagoPOS (null);
@@ -187,6 +186,23 @@ public class X_Z_GeneraAstoVtaSumMP extends PO implements I_Z_GeneraAstoVtaSumMP
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set ChangeAmt.
+		@param ChangeAmt ChangeAmt	  */
+	public void setChangeAmt (BigDecimal ChangeAmt)
+	{
+		set_Value (COLUMNNAME_ChangeAmt, ChangeAmt);
+	}
+
+	/** Get ChangeAmt.
+		@return ChangeAmt	  */
+	public BigDecimal getChangeAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChangeAmt);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set CodMedioPagoPOS.
