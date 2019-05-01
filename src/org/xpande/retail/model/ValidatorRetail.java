@@ -498,6 +498,7 @@ public class ValidatorRetail implements ModelValidator {
                     }
                 }
                 else{
+                    // Si este registro se genera como producto de un proceso de seleccion (Ej: Seleccion de Remitos en comprobante de venta
                     if ((model.get_ValueAsBoolean("IsBySelection")) ||
                             ((model.getPriceActual() == null) || (model.getPriceActual().compareTo(Env.ZERO) == 0))){
 
