@@ -17,6 +17,8 @@ import org.xpande.retail.utils.ProductPricesInfo;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
@@ -1133,14 +1135,13 @@ public class ValidatorRetail implements ModelValidator {
                 }
             }
 
-            // Si el socio de negocio esta marcado para asiento manual en comprobantes de compra
-            MBPartner partner = (MBPartner) model.getC_BPartner();
-            if (partner.get_ValueAsBoolean("AsientoManualInvoice")){
-                // Elimino impuestos automáticos de este comprobante, ya que se cargaran a mano.
-                action = " delete from c_invoicetax " +
-                         "  where c_invoice_id =" + model.get_ID() +
-                         "  and IsManual ='N'";
-                DB.executeUpdateEx(action, model.get_TrxName());
+            // Proceso comprobantes marcados con Asiento Manual Contable (Ej: facturas de carnes)
+            if (model.get_ValueAsBoolean("AsientoManualInvoice")){
+                // Elimino impuestos y genero los mismos según datos ingresados en la grilla de Asiento Manual.
+                message = this.setInvoiceTaxAsientoManual(model);
+                if (message != null){
+                    return message;
+                }
             }
 
         }
@@ -1186,6 +1187,65 @@ public class ValidatorRetail implements ModelValidator {
         }
 
         return null;
+    }
+
+    /***
+     * Setea impuestos para invoices marcadas con asiento manual contable.
+     * Xpande. Created by Gabriel Vila on 5/10/19.
+     * @param model
+     * @return
+     */
+    private String setInvoiceTaxAsientoManual(MInvoice model) {
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        String message = null;
+        String action = "";
+
+        try{
+
+            // Primero elimino impuestos actuales
+            // Elimino impuestos automáticos de este comprobante, ya que se cargaran a mano.
+            action = " delete from c_invoicetax " +
+                    "  where c_invoice_id =" + model.get_ID() +
+                    "  and IsManual ='N'";
+            DB.executeUpdateEx(action, model.get_TrxName());
+
+            // Obtengo lineas de asientos manuales que se correspondan a impuestos
+            sql = " select c_tax_id, coalesce(amtacctdr,0) as amtacctdr, coalesce(amtacctcr,0) as amtacctcr " +
+                    " from z_invoiceastomanual " +
+                    " where c_invoice_id =" + model.get_ID() +
+                    " and c_tax_id > 0 ";
+
+        	pstmt = DB.prepareStatement(sql, model.get_TrxName());
+        	rs = pstmt.executeQuery();
+
+        	while(rs.next()){
+
+        	    BigDecimal amtTax = rs.getBigDecimal("amtacctdr").subtract(rs.getBigDecimal("amtacctcr"));
+
+                // Genero linea para este impuesto
+                MInvoiceTax invoiceTax = new MInvoiceTax(model.getCtx(), 0, model.get_TrxName());
+                invoiceTax.setC_Invoice_ID(model.get_ID());
+                invoiceTax.setAD_Org_ID(model.getAD_Org_ID());
+                invoiceTax.setC_Tax_ID(rs.getInt("c_tax_id"));
+                invoiceTax.setTaxBaseAmt(Env.ZERO);
+                invoiceTax.setTaxAmt(amtTax);
+                invoiceTax.set_ValueOfColumn("IsManual", true);
+                invoiceTax.saveEx();
+        	}
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
+        }
+
+        return message;
     }
 
 
