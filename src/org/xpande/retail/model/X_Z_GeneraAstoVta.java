@@ -17,10 +17,12 @@
 /** Generated Model - DO NOT CHANGE */
 package org.xpande.retail.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 import org.compiere.model.*;
+import org.compiere.util.Env;
 
 /** Generated Model for Z_GeneraAstoVta
  *  @author Adempiere (generated) 
@@ -31,7 +33,7 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190416L;
+	private static final long serialVersionUID = 20190516L;
 
     /** Standard Constructor */
     public X_Z_GeneraAstoVta (Properties ctx, int Z_GeneraAstoVta_ID, String trxName)
@@ -40,6 +42,7 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
       /** if (Z_GeneraAstoVta_ID == 0)
         {
 			setC_AcctSchema_ID (0);
+			setC_Currency_ID (0);
 			setC_DocType_ID (0);
 			setDateDoc (new Timestamp( System.currentTimeMillis() ));
 // @#Date@
@@ -50,6 +53,8 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
 // DR
 			setDocumentNo (null);
 			setIsApproved (false);
+// N
+			setPosted (false);
 // N
 			setProcessed (false);
 // N
@@ -87,6 +92,26 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
       return sb.toString();
     }
 
+	/** Set AmtRounding.
+		@param AmtRounding 
+		Monto de redondeo
+	  */
+	public void setAmtRounding (BigDecimal AmtRounding)
+	{
+		set_Value (COLUMNNAME_AmtRounding, AmtRounding);
+	}
+
+	/** Get AmtRounding.
+		@return Monto de redondeo
+	  */
+	public BigDecimal getAmtRounding () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtRounding);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
 	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException
     {
 		return (I_C_AcctSchema)MTable.get(getCtx(), I_C_AcctSchema.Table_Name)
@@ -110,6 +135,34 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
 	public int getC_AcctSchema_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_AcctSchema_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_Currency getC_Currency() throws RuntimeException
+    {
+		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
+			.getPO(getC_Currency_ID(), get_TrxName());	}
+
+	/** Set Currency.
+		@param C_Currency_ID 
+		The Currency for this record
+	  */
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Currency.
+		@return The Currency for this record
+	  */
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -141,6 +194,23 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Account Date.
+		@param DateAcct 
+		Accounting Date
+	  */
+	public void setDateAcct (Timestamp DateAcct)
+	{
+		set_Value (COLUMNNAME_DateAcct, DateAcct);
+	}
+
+	/** Get Account Date.
+		@return Accounting Date
+	  */
+	public Timestamp getDateAcct () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DateAcct);
 	}
 
 	/** Set Document Date.
@@ -327,6 +397,30 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
 		return false;
 	}
 
+	/** Set Posted.
+		@param Posted 
+		Posting status
+	  */
+	public void setPosted (boolean Posted)
+	{
+		set_Value (COLUMNNAME_Posted, Boolean.valueOf(Posted));
+	}
+
+	/** Get Posted.
+		@return Posting status
+	  */
+	public boolean isPosted () 
+	{
+		Object oo = get_Value(COLUMNNAME_Posted);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set ProcessButton.
 		@param ProcessButton ProcessButton	  */
 	public void setProcessButton (String ProcessButton)
@@ -380,6 +474,26 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Processed On.
+		@param ProcessedOn 
+		The date+time (expressed in decimal format) when the document has been processed
+	  */
+	public void setProcessedOn (BigDecimal ProcessedOn)
+	{
+		set_Value (COLUMNNAME_ProcessedOn, ProcessedOn);
+	}
+
+	/** Get Processed On.
+		@return The date+time (expressed in decimal format) when the document has been processed
+	  */
+	public BigDecimal getProcessedOn () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ProcessedOn);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set Process Now.

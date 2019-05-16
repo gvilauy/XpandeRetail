@@ -152,6 +152,19 @@ public interface I_Z_GeneraAstoVtaSumMP
 	  */
 	public String getCodMedioPagoPOS();
 
+    /** Column name CodTipoLineaPOS */
+    public static final String COLUMNNAME_CodTipoLineaPOS = "CodTipoLineaPOS";
+
+	/** Set CodTipoLineaPOS.
+	  * Código de tipo de linea para POS en Retail
+	  */
+	public void setCodTipoLineaPOS(String CodTipoLineaPOS);
+
+	/** Get CodTipoLineaPOS.
+	  * Código de tipo de linea para POS en Retail
+	  */
+	public String getCodTipoLineaPOS();
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -206,6 +219,19 @@ public interface I_Z_GeneraAstoVtaSumMP
 	  * Nombre de Medio de Pago del POS en Retail
 	  */
 	public String getNomMedioPagoPOS();
+
+    /** Column name NomTipoLineaPOS */
+    public static final String COLUMNNAME_NomTipoLineaPOS = "NomTipoLineaPOS";
+
+	/** Set NomTipoLineaPOS.
+	  * Nombre de tipo de linea POS para Retail
+	  */
+	public void setNomTipoLineaPOS(String NomTipoLineaPOS);
+
+	/** Get NomTipoLineaPOS.
+	  * Nombre de tipo de linea POS para Retail
+	  */
+	public String getNomTipoLineaPOS();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";

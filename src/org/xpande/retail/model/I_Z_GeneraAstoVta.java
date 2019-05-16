@@ -63,6 +63,19 @@ public interface I_Z_GeneraAstoVta
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name AmtRounding */
+    public static final String COLUMNNAME_AmtRounding = "AmtRounding";
+
+	/** Set AmtRounding.
+	  * Monto de redondeo
+	  */
+	public void setAmtRounding(BigDecimal AmtRounding);
+
+	/** Get AmtRounding.
+	  * Monto de redondeo
+	  */
+	public BigDecimal getAmtRounding();
+
     /** Column name C_AcctSchema_ID */
     public static final String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
 
@@ -77,6 +90,21 @@ public interface I_Z_GeneraAstoVta
 	public int getC_AcctSchema_ID();
 
 	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException;
+
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/** Set Currency.
+	  * The Currency for this record
+	  */
+	public void setC_Currency_ID(int C_Currency_ID);
+
+	/** Get Currency.
+	  * The Currency for this record
+	  */
+	public int getC_Currency_ID();
+
+	public I_C_Currency getC_Currency() throws RuntimeException;
 
     /** Column name C_DocType_ID */
     public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
@@ -108,6 +136,19 @@ public interface I_Z_GeneraAstoVta
 	  * User who created this records
 	  */
 	public int getCreatedBy();
+
+    /** Column name DateAcct */
+    public static final String COLUMNNAME_DateAcct = "DateAcct";
+
+	/** Set Account Date.
+	  * Accounting Date
+	  */
+	public void setDateAcct(Timestamp DateAcct);
+
+	/** Get Account Date.
+	  * Accounting Date
+	  */
+	public Timestamp getDateAcct();
 
     /** Column name DateDoc */
     public static final String COLUMNNAME_DateDoc = "DateDoc";
@@ -213,6 +254,19 @@ public interface I_Z_GeneraAstoVta
 	  */
 	public boolean isApproved();
 
+    /** Column name Posted */
+    public static final String COLUMNNAME_Posted = "Posted";
+
+	/** Set Posted.
+	  * Posting status
+	  */
+	public void setPosted(boolean Posted);
+
+	/** Get Posted.
+	  * Posting status
+	  */
+	public boolean isPosted();
+
     /** Column name ProcessButton */
     public static final String COLUMNNAME_ProcessButton = "ProcessButton";
 
@@ -247,6 +301,19 @@ public interface I_Z_GeneraAstoVta
 	  * The document has been processed
 	  */
 	public boolean isProcessed();
+
+    /** Column name ProcessedOn */
+    public static final String COLUMNNAME_ProcessedOn = "ProcessedOn";
+
+	/** Set Processed On.
+	  * The date+time (expressed in decimal format) when the document has been processed
+	  */
+	public void setProcessedOn(BigDecimal ProcessedOn);
+
+	/** Get Processed On.
+	  * The date+time (expressed in decimal format) when the document has been processed
+	  */
+	public BigDecimal getProcessedOn();
 
     /** Column name Processing */
     public static final String COLUMNNAME_Processing = "Processing";

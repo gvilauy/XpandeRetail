@@ -23,6 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -416,6 +417,15 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 			this.setZ_PosVendor_ID(posVendorOrg.getZ_PosVendor_ID());
 		}
 
+		if ((newRecord) || (is_ValueChanged(X_Z_GeneraAstoVta.COLUMNNAME_C_AcctSchema_ID))){
+			MAcctSchema acctSchema = (MAcctSchema) this.getC_AcctSchema();
+			this.setC_Currency_ID(acctSchema.getC_Currency_ID());
+		}
+
+		if (this.getDateAcct() == null){
+			this.setDateAcct(this.getDateTo());
+		}
+
 		return true;
 	}
 
@@ -447,6 +457,10 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 			else if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
 
 			}
+
+			// Actualizo monto redondeo
+			this.setRedondeo();
+
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);
@@ -470,15 +484,17 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		ResultSet rs = null;
 
 		try{
-		    sql = " select st_codigomediopago, st_nombremediopago, st_tipotarjetacredito, st_nombretarjeta, st_codigomoneda, " +
-					" sum(st_totalentregado) as st_totalentregado, sum(st_totalmppagomoneda) as st_totalmppagomoneda, " +
-					" sum(st_totalentregadomonedaref) as st_totalentregadomonedaref, sum(st_totalmppagomonedaref) as st_totalmppagomonedaref, " +
-					" sum(coalesce(st_cambio,0)) as st_cambio, sum(totalamt) as totalamt " +
-					" from zv_sisteco_vtasmpagodet " +
-					" where ad_org_id =" + this.getAD_Org_ID() +
-					" and datetrx ='" + this.getDateTo() + "' " +
-					" group by st_codigomediopago, st_nombremediopago, st_tipotarjetacredito, st_nombretarjeta, st_codigomoneda " +
-					" order by st_codigomediopago, st_nombremediopago, st_tipotarjetacredito, st_nombretarjeta, st_codigomoneda ";
+		    sql = " select a.st_codigomediopago, a.st_nombremediopago, a.st_tipolinea, b.name as nomtipolinea, a.st_tipotarjetacredito, " +
+					" a.st_nombretarjeta, a.st_codigomoneda, " +
+					" sum(a.st_totalentregado) as st_totalentregado, sum(a.st_totalmppagomoneda) as st_totalmppagomoneda, " +
+					" sum(a.st_totalentregadomonedaref) as st_totalentregadomonedaref, sum(a.st_totalmppagomonedaref) as st_totalmppagomonedaref, " +
+					" sum(coalesce(a.st_cambio,0)) as st_cambio, sum(a.totalamt) as totalamt " +
+					" from zv_sisteco_vtasmpagodet a " +
+					" left outer join z_sistecotipolineapazos b on a.st_tipolinea = b.value " +
+					" where a.ad_org_id =" + this.getAD_Org_ID() +
+					" and a.datetrx ='" + this.getDateTo() + "' " +
+					" group by a.st_codigomediopago, a.st_nombremediopago, a.st_tipolinea, b.name, a.st_tipotarjetacredito, a.st_nombretarjeta, a.st_codigomoneda " +
+					" order by a.st_codigomediopago, a.st_nombremediopago, a.st_tipolinea, b.name, a.st_tipotarjetacredito, a.st_nombretarjeta, a.st_codigomoneda ";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();
@@ -504,6 +520,8 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 				astoVtaSumMP.setNomMedioPagoPOS(nombreMP);
 				astoVtaSumMP.setC_Currency_ID(142);
 				astoVtaSumMP.setC_Currency_2_ID(100);
+				astoVtaSumMP.setCodTipoLineaPOS(rs.getString("st_tipolinea"));
+				astoVtaSumMP.setNomTipoLineaPOS(rs.getString("nomtipolinea"));
 
 				String codMoneda = rs.getString("st_codigomoneda");
 				if ((codMoneda == null) || (codMoneda.trim().equalsIgnoreCase(""))){
@@ -636,12 +654,59 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 			else if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
 
 			}
+
+			// Actualizo monto redondeo
+			this.setRedondeo();
+
 		}
 		catch (Exception e){
 			throw new AdempiereException(e);
 		}
 
 		return message;
+	}
+
+	/***
+	 * Setea importe de Redondeo, producto de total medios de pago menos total impuestos.
+	 * Xpande. Created by Gabriel Vila on 5/16/19.
+	 */
+	private void setRedondeo() {
+
+		String sql = "";
+
+		try{
+
+			// Obtengo total de medios de pago
+			sql = " select sum(amttotal) as total " +
+					" from " + X_Z_GeneraAstoVtaSumMP.Table_Name +
+					" where " + X_Z_GeneraAstoVtaSumMP.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID();
+
+			BigDecimal amtMediosPago = DB.getSQLValueBDEx(get_TrxName(), sql);
+			if (amtMediosPago == null) amtMediosPago = Env.ZERO;
+
+			// Obtengo total de impuestos
+			sql = " select sum(taxamt) as total " +
+					" from " + X_Z_GeneraAstoVtaSumTax.Table_Name +
+					" where " + X_Z_GeneraAstoVtaSumTax.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID();
+
+			BigDecimal amtImpuestos = DB.getSQLValueBDEx(get_TrxName(), sql);
+			if (amtImpuestos == null) amtImpuestos = Env.ZERO;
+
+			// Obtengo total base de impuestos
+			sql = " select sum(taxbaseamt) as total " +
+					" from " + X_Z_GeneraAstoVtaSumTax.Table_Name +
+					" where " + X_Z_GeneraAstoVtaSumTax.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID();
+
+			BigDecimal amtBaseImp = DB.getSQLValueBDEx(get_TrxName(), sql);
+			if (amtBaseImp == null) amtBaseImp = Env.ZERO;
+
+			this.setAmtRounding(amtMediosPago.subtract(amtBaseImp).subtract(amtImpuestos));
+			this.saveEx();
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
 	}
 
 	/***
@@ -705,6 +770,36 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 		return model;
 	}
+
+
+	/***
+	 * Obtiene y retorna lista de medios de pago sumarizados asociados a este documento.
+	 * Xpande. Created by Gabriel Vila on 5/14/19.
+	 * @return
+	 */
+	public List<MZGeneraAstoVtaSumMP> getLineasMediosPago(){
+
+		String whereClause = X_Z_GeneraAstoVtaSumMP.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID();
+
+		List<MZGeneraAstoVtaSumMP> lines = new Query(getCtx(), I_Z_GeneraAstoVtaSumMP.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+	/***
+	 * Obtiene y retorna lista de impuestos sumarizados asociados a este documento.
+	 * Xpande. Created by Gabriel Vila on 5/14/19.
+	 * @return
+	 */
+	public List<MZGeneraAstoVtaSumTax> getLineasImpuestos(){
+
+		String whereClause = X_Z_GeneraAstoVtaSumTax.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID();
+
+		List<MZGeneraAstoVtaSumTax> lines = new Query(getCtx(), I_Z_GeneraAstoVtaSumTax.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
 
 
 }

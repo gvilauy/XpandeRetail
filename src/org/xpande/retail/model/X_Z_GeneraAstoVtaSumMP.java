@@ -32,7 +32,7 @@ public class X_Z_GeneraAstoVtaSumMP extends PO implements I_Z_GeneraAstoVtaSumMP
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190430L;
+	private static final long serialVersionUID = 20190514L;
 
     /** Standard Constructor */
     public X_Z_GeneraAstoVtaSumMP (Properties ctx, int Z_GeneraAstoVtaSumMP_ID, String trxName)
@@ -222,6 +222,23 @@ public class X_Z_GeneraAstoVtaSumMP extends PO implements I_Z_GeneraAstoVtaSumMP
 		return (String)get_Value(COLUMNNAME_CodMedioPagoPOS);
 	}
 
+	/** Set CodTipoLineaPOS.
+		@param CodTipoLineaPOS 
+		Código de tipo de linea para POS en Retail
+	  */
+	public void setCodTipoLineaPOS (String CodTipoLineaPOS)
+	{
+		set_Value (COLUMNNAME_CodTipoLineaPOS, CodTipoLineaPOS);
+	}
+
+	/** Get CodTipoLineaPOS.
+		@return Código de tipo de linea para POS en Retail
+	  */
+	public String getCodTipoLineaPOS () 
+	{
+		return (String)get_Value(COLUMNNAME_CodTipoLineaPOS);
+	}
+
 	/** Set Rate.
 		@param CurrencyRate 
 		Currency Conversion Rate
@@ -257,6 +274,23 @@ public class X_Z_GeneraAstoVtaSumMP extends PO implements I_Z_GeneraAstoVtaSumMP
 	public String getNomMedioPagoPOS () 
 	{
 		return (String)get_Value(COLUMNNAME_NomMedioPagoPOS);
+	}
+
+	/** Set NomTipoLineaPOS.
+		@param NomTipoLineaPOS 
+		Nombre de tipo de linea POS para Retail
+	  */
+	public void setNomTipoLineaPOS (String NomTipoLineaPOS)
+	{
+		set_Value (COLUMNNAME_NomTipoLineaPOS, NomTipoLineaPOS);
+	}
+
+	/** Get NomTipoLineaPOS.
+		@return Nombre de tipo de linea POS para Retail
+	  */
+	public String getNomTipoLineaPOS () 
+	{
+		return (String)get_Value(COLUMNNAME_NomTipoLineaPOS);
 	}
 
 	/** Set Immutable Universally Unique Identifier.
