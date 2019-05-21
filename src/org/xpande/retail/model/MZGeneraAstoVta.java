@@ -493,6 +493,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 					" left outer join z_sistecotipolineapazos b on a.st_tipolinea = b.value " +
 					" where a.ad_org_id =" + this.getAD_Org_ID() +
 					" and a.datetrx ='" + this.getDateTo() + "' " +
+					" and b.IsAsientoVtaPOS ='Y' " +
 					" group by a.st_codigomediopago, a.st_nombremediopago, a.st_tipolinea, b.name, a.st_tipotarjetacredito, a.st_nombretarjeta, a.st_codigomoneda " +
 					" order by a.st_codigomediopago, a.st_nombremediopago, a.st_tipolinea, b.name, a.st_tipotarjetacredito, a.st_nombretarjeta, a.st_codigomoneda ";
 
