@@ -1207,10 +1207,9 @@ public class ValidatorRetail implements ModelValidator {
         try{
 
             // Primero elimino impuestos actuales
-            // Elimino impuestos automáticos de este comprobante, ya que se cargaran a mano.
+            // Elimino impuestos de este comprobante, ya que se cargaran a mano.
             action = " delete from c_invoicetax " +
-                    "  where c_invoice_id =" + model.get_ID() +
-                    "  and IsManual ='N'";
+                    "  where c_invoice_id =" + model.get_ID();
             DB.executeUpdateEx(action, model.get_TrxName());
 
             // Obtengo lineas de asientos manuales que se correspondan a impuestos
