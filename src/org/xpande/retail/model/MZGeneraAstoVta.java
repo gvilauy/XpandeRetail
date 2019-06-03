@@ -455,7 +455,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 				message = this.getVentasMedioPagoSisteco();
 			}
 			else if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
-
+				message = this.getVentasMedioPagoScanntech();
 			}
 
 			// Actualizo monto redondeo
@@ -585,6 +585,105 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 		return message;
 	}
+
+
+	/***
+	 * Obtiene y carga información de ventas por medios de pago desde SCANNTECH.
+	 * Xpande. Created by Gabriel Vila on 6/3/19.
+	 * @return
+	 */
+	private String getVentasMedioPagoScanntech(){
+
+		String message = null;
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+			sql = " select a.sc_codigotipopago, mp.name as nomtipopago, a.sc_codigocredito, cc.name as nomcredito, " +
+					" a.sc_codigomoneda, a.sc_cotizacionventa, sum(a.sc_importe) as sc_importe " +
+					" from z_stech_tk_movpago a " +
+					" left outer join z_stechmediopago mp on a.z_stechmediopago_id = mp.z_stechmediopago_id " +
+					" left outer join z_stechcreditos cc on a.z_stechcreditos_id = cc.z_stechcreditos_id " +
+					" where a.ad_org_id =" + this.getAD_Org_ID() +
+					" and a.datetrx='" + this.getDateTo() + "' " +
+					" group by a.sc_codigotipopago, mp.name, a.sc_codigocredito, cc.name, a.sc_codigomoneda, a.sc_cotizacionventa " +
+					" order by a.sc_codigotipopago, mp.name, a.sc_codigocredito, cc.name, a.sc_codigomoneda, a.sc_cotizacionventa ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			MZGeneraAstoVtaSumMP astoVtaSumMP = null;
+
+			while(rs.next()){
+
+				String codigoMP = rs.getString("sc_codigocredito");
+				String nombreMP = rs.getString("nomcredito");
+
+				if ((codigoMP == null) || (codigoMP.trim().equalsIgnoreCase(""))){
+					codigoMP = rs.getString("sc_codigotipopago");
+				}
+				if ((nombreMP == null) || (nombreMP.trim().equalsIgnoreCase(""))){
+					nombreMP = rs.getString("nomtipopago");
+				}
+
+				astoVtaSumMP = new MZGeneraAstoVtaSumMP(getCtx(), 0, get_TrxName());
+				astoVtaSumMP.setZ_GeneraAstoVta_ID(this.get_ID());
+				astoVtaSumMP.setAD_Org_ID(this.getAD_Org_ID());
+				astoVtaSumMP.setCodMedioPagoPOS(codigoMP);
+				astoVtaSumMP.setNomMedioPagoPOS(nombreMP);
+				astoVtaSumMP.setC_Currency_ID(142);
+				astoVtaSumMP.setC_Currency_2_ID(100);
+
+				String codMoneda = rs.getString("sc_codigomoneda");
+				if ((codMoneda == null) || (codMoneda.trim().equalsIgnoreCase(""))){
+					return "Hay información de ventas por medios de pago que no tiene MONEDA.";
+				}
+
+				BigDecimal amt1 = Env.ZERO, amt2 = Env.ZERO;
+				BigDecimal currencyRate = Env.ONE;
+
+				if (codMoneda.trim().equalsIgnoreCase("858")){
+
+					amt1 = rs.getBigDecimal("sc_importe");
+					if (amt1 == null) amt1 = Env.ZERO;
+
+				}
+				else if (codMoneda.trim().equalsIgnoreCase("840")){
+
+					amt2 = rs.getBigDecimal("sc_importe");
+					if (amt2 == null) amt2 = Env.ZERO;
+
+					currencyRate = rs.getBigDecimal("sc_cotizacionventa");
+					if (currencyRate == null) currencyRate = Env.ONE;
+
+					amt1 = amt2.multiply(currencyRate).setScale(2, RoundingMode.HALF_UP);
+					if (amt1 == null) amt1 = Env.ZERO;
+				}
+				else {
+					return "Se encontró una Moneda disinta a PESOS o DOLARES y no es posible procesarla : " + codMoneda;
+				}
+
+				astoVtaSumMP.setAmtTotal1(amt1);
+				astoVtaSumMP.setAmtTotal2(amt2);
+				astoVtaSumMP.setCurrencyRate(currencyRate);
+				astoVtaSumMP.setAmtTotal(amt1);
+
+				astoVtaSumMP.saveEx();
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return message;
+	}
+
 
 	/***
 	 * Cuando para un medio de pago, como por ejemplo EFECTIVO, hubo ventas en pesos y en dolares, debo considerar un posible
