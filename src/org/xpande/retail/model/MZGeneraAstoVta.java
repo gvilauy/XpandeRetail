@@ -601,15 +601,22 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		ResultSet rs = null;
 
 		try{
-			sql = " select a.sc_codigotipopago, mp.name as nomtipopago, a.sc_codigocredito, cc.name as nomcredito, " +
+			sql = " select coalesce(a.sc_codigocredito, a.sc_codigotipopago) as codmpago,  coalesce(cc.name,mp.name) as nommpago, " +
 					" a.sc_codigomoneda, a.sc_cotizacionventa, sum(a.sc_importe) as sc_importe " +
 					" from z_stech_tk_movpago a " +
 					" left outer join z_stechmediopago mp on a.z_stechmediopago_id = mp.z_stechmediopago_id " +
 					" left outer join z_stechcreditos cc on a.z_stechcreditos_id = cc.z_stechcreditos_id " +
 					" where a.ad_org_id =" + this.getAD_Org_ID() +
 					" and a.datetrx='" + this.getDateTo() + "' " +
+					" and mp.IsAsientoVtaPOS ='Y' " +
+					" group by 1,2,3,4 " +
+					" order by 1,2,3,4 ";
+
+					/*
 					" group by a.sc_codigotipopago, mp.name, a.sc_codigocredito, cc.name, a.sc_codigomoneda, a.sc_cotizacionventa " +
 					" order by a.sc_codigotipopago, mp.name, a.sc_codigocredito, cc.name, a.sc_codigomoneda, a.sc_cotizacionventa ";
+
+					 */
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();
@@ -618,15 +625,18 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 			while(rs.next()){
 
-				String codigoMP = rs.getString("sc_codigocredito");
-				String nombreMP = rs.getString("nomcredito");
+				String codigoMP = rs.getString("codmpago");
+				String nombreMP = rs.getString("nommpago");
 
+				/*
 				if ((codigoMP == null) || (codigoMP.trim().equalsIgnoreCase(""))){
 					codigoMP = rs.getString("sc_codigotipopago");
 				}
 				if ((nombreMP == null) || (nombreMP.trim().equalsIgnoreCase(""))){
 					nombreMP = rs.getString("nomtipopago");
 				}
+				*/
+
 
 				astoVtaSumMP = new MZGeneraAstoVtaSumMP(getCtx(), 0, get_TrxName());
 				astoVtaSumMP.setZ_GeneraAstoVta_ID(this.get_ID());
@@ -752,7 +762,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 				message = this.getVentasImpuestoSisteco();
 			}
 			else if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
-
+				message = this.getVentasImpuestoScanntech();
 			}
 
 			// Actualizo monto redondeo
@@ -809,6 +819,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		}
 	}
 
+
 	/***
 	 * Obtiene y carga información de ventas por impuesto desde SISTECO.
 	 * Xpande. Created by Gabriel Vila on 4/29/19.
@@ -827,6 +838,55 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 					" from zv_sisteco_vtastax " +
 					" where ad_org_id =" + this.getAD_Org_ID() +
 					" and datetrx ='" + this.getDateTo() + "' ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+
+				MZGeneraAstoVtaSumTax astoVtaSumTax = new MZGeneraAstoVtaSumTax(getCtx(), 0, get_TrxName());
+				astoVtaSumTax.setZ_GeneraAstoVta_ID(this.get_ID());
+				astoVtaSumTax.setAD_Org_ID(this.getAD_Org_ID());
+				astoVtaSumTax.setC_TaxCategory_ID(rs.getInt("c_taxcategory_id"));
+				astoVtaSumTax.setC_Currency_ID(142);
+				astoVtaSumTax.setTaxAmt(rs.getBigDecimal("taxamt"));
+				astoVtaSumTax.setTaxBaseAmt(rs.getBigDecimal("taxbaseamt"));
+				astoVtaSumTax.saveEx();
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return message;
+	}
+
+
+	/***
+	 * Obtiene y carga información de ventas por impuesto desde SCANNTECH
+	 * Xpande. Created by Gabriel Vila on 6/4/19.
+	 * @return
+	 */
+	private String getVentasImpuestoScanntech(){
+
+		String message = null;
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+			sql = " select a.c_taxcategory_id, b.name, sum(a.sc_montoiva) as taxamt, " +
+					" sum(round((a.sc_importe*100)/122,2)) as taxbaseamt " +
+					" from zv_scanntech_detvtas a " +
+					" inner join c_taxcategory b on a.c_taxcategory_id = b.c_taxcategory_id " +
+					" where a.ad_org_id =" + this.getAD_Org_ID() +
+					" and a.datetrx ='" + this.getDateTo() + "' " +
+					" group by a.c_taxcategory_id, b.name ";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();
