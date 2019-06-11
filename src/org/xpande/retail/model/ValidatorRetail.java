@@ -791,28 +791,57 @@ public class ValidatorRetail implements ModelValidator {
             // En recepciones de productos
             if (model.getMovementType().equalsIgnoreCase(X_M_InOut.MOVEMENTTYPE_VendorReceipts)){
 
-                // Valido que esta recepcion no tenga facturas asociadas que esten completas o cerradas.
+                // Valido que esta recepcion no tenga facturas asociadas que NO esten completas o cerradas.
                 // Obtengo lista de facturas que pueden estar asociadas
-                List<MInvoice> invoiceList = ComercialUtils.getInvoicesByInOut(model.getCtx(), model.get_ID(), true, model.get_TrxName());
+                List<MInvoice> invoiceList = ComercialUtils.getInvoicesByInOut(model.getCtx(), model.get_ID(), false, model.get_TrxName());
                 if (invoiceList.size() > 0){
-                    message = "No se puede reactivar este documento ya que tiene las siguientes facturas completas asociadas : ";
+
+                    message = "No se puede reactivar este documento ya que tiene las siguientes facturas NO COMPLETAS y asociadas : ";
                     for (MInvoice invoice: invoiceList){
                         message += invoice.getDocumentNo() + ", ";
                     }
-                    message += " debe reactivarlas para poder continuar.";
+                    message += " debe eliminarlas para poder continuar.";
                     return message;
                 }
 
                 // Para cada linea de esta inout, dejo seteada en null la cantidad diferencia entre recibida y facturada.
-                action = " update m_inoutline set DifferenceQty = null where m_inout_id =" + model.get_ID();
+                //action = " update m_inoutline set DifferenceQty = null where m_inout_id =" + model.get_ID();
+                action = " update m_inoutline set DifferenceQty = null where m_inout_id =" + model.get_ID() +
+                            " and m_inoutline_id in (select m_inoutline_id from c_invoiceline where c_invoice_id not in " +
+                            " (select a.c_invoice_id from z_recepcionprodfact a " +
+                            " inner join c_invoice b on a.c_invoice_id = b.c_invoice_id " +
+                            " where a.m_inout_id =" + model.get_ID() + " and b.docstatus='CO')) ";
+
                 DB.executeUpdateEx(action, model.get_TrxName());
                 
                 // Cuando reactivo una recepción de proveedor, me aseguro de eliminar posibles documentos de Remitos por Cantidad que
                 // puedan estar asociados a dicha recepción.
+
+                /*
                 action = " delete from z_remitodifinv where m_inout_id =" + model.get_ID() +
                         " and c_doctype_id in (select c_doctype_id from c_doctype where docbasetype ='RDC')";
+                 */
+
+                action = " delete from z_remitodifinv where m_inout_id =" + model.get_ID() +
+                        " and c_doctype_id in (select c_doctype_id from c_doctype where docbasetype ='RDC') " +
+                        " and c_invoice_id not in " +
+                        " (select a.c_invoice_id from z_recepcionprodfact a " +
+                        " inner join c_invoice b on a.c_invoice_id = b.c_invoice_id " +
+                        " where a.m_inout_id =" + model.get_ID() + " and b.docstatus='CO')) ";
+
                 DB.executeUpdateEx(action, model.get_TrxName());
 
+
+                // Refreso estado de marca de invoiced en lineas de esta recepcion, esto es para no permitir editar lineas que estan facturadas
+                action = " update m_inoutline set isinvoiced ='N' where m_inout_id =" + model.get_ID();
+                DB.executeUpdateEx(action, model.get_TrxName());
+
+                action = " update m_inoutline set isinvoiced ='Y' where m_inout_id =" + model.get_ID() +
+                        " and m_inoutline_id in (select m_inoutline_id from c_invoiceline where c_invoice_id in " +
+                        " (select a.c_invoice_id from z_recepcionprodfact a " +
+                        " inner join c_invoice b on a.c_invoice_id = b.c_invoice_id " +
+                        " where a.m_inout_id =" + model.get_ID() + " and b.docstatus='CO')) ";
+                DB.executeUpdateEx(action, model.get_TrxName());
             }
         }
 
