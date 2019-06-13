@@ -827,7 +827,7 @@ public class ValidatorRetail implements ModelValidator {
                         " and c_invoice_id not in " +
                         " (select a.c_invoice_id from z_recepcionprodfact a " +
                         " inner join c_invoice b on a.c_invoice_id = b.c_invoice_id " +
-                        " where a.m_inout_id =" + model.get_ID() + " and b.docstatus='CO')) ";
+                        " where a.m_inout_id =" + model.get_ID() + " and b.docstatus='CO') ";
 
                 DB.executeUpdateEx(action, model.get_TrxName());
 
