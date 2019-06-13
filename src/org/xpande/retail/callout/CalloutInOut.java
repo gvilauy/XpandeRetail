@@ -77,7 +77,7 @@ public class CalloutInOut extends CalloutEngine {
         else if (column.equalsIgnoreCase("M_Product_ID")){
             int mProductID = ((Integer) value).intValue();
             MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(ctx, cBPartnerID, mProductID, null);
-            if ((productoSocio != null) || (productoSocio.get_ID() > 0)){
+            if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
                 if (productoSocio.getVendorProductNo() != null){
                     if (!productoSocio.getVendorProductNo().trim().equalsIgnoreCase("")){
                         mTab.setValue("VendorProductNo", productoSocio.getVendorProductNo().trim());
