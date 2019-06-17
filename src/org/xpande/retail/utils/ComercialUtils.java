@@ -17,7 +17,7 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 /**
- * Clase de métodos staticos referidos a funcionalidades comerciales para Retail.
+ * Clase de métodos staticos referidos a funcionalidades comerciales.
  * Product: Adempiere ERP & CRM Smart Business Solution. Localization : Uruguay - Xpande
  * Xpande. Created by Gabriel Vila on 9/11/17.
  */
