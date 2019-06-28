@@ -833,7 +833,7 @@ public class ValidatorRetail implements ModelValidator {
 
 
                 // Refreso estado de marca de invoiced en lineas de esta recepcion, esto es para no permitir editar lineas que estan facturadas
-                action = " update m_inoutline set isinvoiced ='N' where m_inout_id =" + model.get_ID();
+                action = " update m_inoutline set isinvoiced ='N', processed='N' where m_inout_id =" + model.get_ID();
                 DB.executeUpdateEx(action, model.get_TrxName());
 
                 action = " update m_inoutline set isinvoiced ='Y' where m_inout_id =" + model.get_ID() +
