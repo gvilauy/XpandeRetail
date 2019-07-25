@@ -743,10 +743,11 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 				}
 				else{
 					// Obtengo ID para el codigo interno leído
-					sql = " select m_product_id from m_product where value='" + pvpArch.getValue().trim() + "'";
+					sql = " select m_product_id from m_product where value='" + pvpArch.getValue().trim() + "' " +
+							" and isactive ='Y' ";
 					int mProductID = DB.getSQLValueEx(null, sql);
 					if (mProductID <= 0){
-						pvpArch.setErrorMsg("Codigo Interno de Producto incorrecto.");
+						pvpArch.setErrorMsg("Codigo Interno de Producto incorrecto o el Producto NO esta ACTIVO en el sistema: " + pvpArch.getValue());
 						pvpArch.setIsConfirmed(false);
 						pvpArch.saveEx();
 						inconsistente = true;
@@ -757,9 +758,18 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 					}
 				}
 
+				System.out.println(pvpArch.getValue());
+
+				if (pvpArch.getM_Product_ID() <= 0){
+					pvpArch.setErrorMsg("Codigo Interno de Producto incorrecto o el Producto NO esta ACTIVO en el sistema: " + pvpArch.getValue());
+					pvpArch.setIsConfirmed(false);
+					pvpArch.saveEx();
+					inconsistente = true;
+				}
+
 				// Valido precio de venta de esta linea
 				if ((pvpArch.getPriceSO() == null) || (pvpArch.getPriceSO().compareTo(Env.ZERO) <= 0)){
-					pvpArch.setErrorMsg("Precio de Venta incorrecto.");
+					pvpArch.setErrorMsg("Precio de Venta incorrecto, para codigo interno de producto :" + pvpArch.getValue());
 					pvpArch.setIsConfirmed(false);
 					pvpArch.saveEx();
 					inconsistente = true;
@@ -769,19 +779,16 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 				if (!inconsistente){
 					pvpArch.setIsConfirmed(true);
 					pvpArch.saveEx();
+
+					// Guardo linea
+					MZActualizacionPVPLin pvpLin = new MZActualizacionPVPLin(getCtx(), 0, get_TrxName());
+					pvpLin.setZ_ActualizacionPVP_ID(this.get_ID());
+					pvpLin.setM_Product_ID(pvpArch.getM_Product_ID());
+					pvpLin.setC_Currency_ID(this.getC_Currency_ID());
+					pvpLin.setNewPriceSO(pvpArch.getPriceSO());
+					pvpLin.saveEx();
 				}
-
-				MZActualizacionPVPLin pvpLin = new MZActualizacionPVPLin(getCtx(), 0, get_TrxName());
-				pvpLin.setZ_ActualizacionPVP_ID(this.get_ID());
-				pvpLin.setM_Product_ID(pvpArch.getM_Product_ID());
-				pvpLin.setC_Currency_ID(this.getC_Currency_ID());
-				pvpLin.setNewPriceSO(pvpArch.getPriceSO());
-				pvpLin.saveEx();
-
 			}
-
-
-
 		}
 		catch (Exception e){
 			throw new AdempiereException(e);
