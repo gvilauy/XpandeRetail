@@ -49,7 +49,7 @@ public class MZPreciosProvOrg extends X_Z_PreciosProvOrg {
             MZPreciosProvCab preciosProvCab = (MZPreciosProvCab) this.getZ_PreciosProvCab();
 
             if (this.getM_PriceList_ID_SO() <= 0){
-                plVenta = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), this.getAD_OrgTrx_ID(), cCurrencyID, true, get_TrxName());
+                plVenta = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), this.getAD_OrgTrx_ID(), cCurrencyID, true, null, get_TrxName());
                 if ((plVenta == null) || (plVenta.get_ID() <= 0)){
                     throw new AdempiereException("No se pudo obtener Lista de Precios de Venta para organización : " + this.getAD_OrgTrx_ID() + ", moneda : " + cCurrencyID);
                 }

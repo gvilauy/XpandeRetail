@@ -2072,7 +2072,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 				// Obtengo lista de precios para organización y moneda de este documento
 				MPriceList priceList = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), this.getAD_Org_ID(),
-						this.getC_Currency_ID_SO(), true, null);
+						this.getC_Currency_ID_SO(), true, null,null);
 
 				if ((priceList != null) && (priceList.get_ID() > 0)) {
 					this.setM_PriceList_ID_SO(priceList.getM_PriceList_ID());

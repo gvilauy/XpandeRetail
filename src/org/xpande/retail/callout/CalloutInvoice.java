@@ -1148,7 +1148,7 @@ public class CalloutInvoice extends CalloutEngine
 			// Intento con lista de precios de compra por defecto para moneda del comprobante
 			int adClientID = ((Integer)mTab.getValue("AD_Client_ID")).intValue();
 			int adOrgID = ((Integer)mTab.getValue("AD_Org_ID")).intValue();
-			MPriceList priceList = PriceListUtils.getPriceListByOrg(ctx, adClientID, adOrgID, cCurrencyID, false, null);
+			MPriceList priceList = PriceListUtils.getPriceListByOrg(ctx, adClientID, adOrgID, cCurrencyID, false, null, null);
 			if ((priceList != null) && (priceList.get_ID() > 0)){
 				mTab.setValue("M_PriceList_ID", priceList.get_ID());
 			}

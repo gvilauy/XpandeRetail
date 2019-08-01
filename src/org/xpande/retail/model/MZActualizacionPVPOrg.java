@@ -48,7 +48,7 @@ public class MZActualizacionPVPOrg extends X_Z_ActualizacionPVPOrg {
             MZActualizacionPVP actualizacionPVP = (MZActualizacionPVP) this.getZ_ActualizacionPVP();
 
             if (this.getM_PriceList_ID() <= 0){
-                plVenta = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), this.getAD_OrgTrx_ID(), cCurrencyID, true, get_TrxName());
+                plVenta = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), this.getAD_OrgTrx_ID(), cCurrencyID, true, null, get_TrxName());
                 if ((plVenta == null) || (plVenta.get_ID() <= 0)){
                     throw new AdempiereException("No se pudo obtener Lista de Precios de Venta para organización : " + this.getAD_OrgTrx_ID() + ", moneda : " + cCurrencyID);
                 }

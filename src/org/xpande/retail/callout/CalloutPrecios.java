@@ -73,7 +73,7 @@ public class CalloutPrecios extends CalloutEngine {
         else if (column.equalsIgnoreCase("C_Currency_ID_SO")){
 
             // Obtengo lista de venta para organización seleccionada en este documento y moneda
-            MPriceList priceList = PriceListUtils.getPriceListByOrg(ctx, adClientID, adOrgID, cCurrencyID, true, null);
+            MPriceList priceList = PriceListUtils.getPriceListByOrg(ctx, adClientID, adOrgID, cCurrencyID, true, null, null);
 
             if ((priceList != null) && (priceList.get_ID() > 0)){
 
@@ -119,7 +119,7 @@ public class CalloutPrecios extends CalloutEngine {
         int adOrgID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
 
         // Obtengo lista de precios para organización y moneda de este documento
-        MPriceList priceList = PriceListUtils.getPriceListByOrg(ctx, adClientID, adOrgID, cCurrencyID, true, null);
+        MPriceList priceList = PriceListUtils.getPriceListByOrg(ctx, adClientID, adOrgID, cCurrencyID, true, null, null);
 
         if ((priceList != null) && (priceList.get_ID() > 0)){
 
@@ -664,7 +664,7 @@ public class CalloutPrecios extends CalloutEngine {
         int cCurrencyID = ((Integer)value).intValue();
 
         // Obtengo lista de venta para organización seleccionada en este documento y moneda
-        MPriceList priceList = PriceListUtils.getPriceListByOrg(ctx, adClientID, adOrgID, cCurrencyID, true, null);
+        MPriceList priceList = PriceListUtils.getPriceListByOrg(ctx, adClientID, adOrgID, cCurrencyID, true, null,null);
 
         if ((priceList != null) && (priceList.get_ID() > 0)){
 

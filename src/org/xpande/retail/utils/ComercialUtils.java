@@ -73,7 +73,7 @@ public final class ComercialUtils {
             else{
         	    // No tengo aun datos de evolucion de precios para este producto.
                 // Tomo precio de venta vigente en la moneda y organización recibidos.
-                MPriceList priceList = PriceListUtils.getPriceListByOrg(ctx, adClientID, adOrgID, cCurrencyID, true, trxName);
+                MPriceList priceList = PriceListUtils.getPriceListByOrg(ctx, adClientID, adOrgID, cCurrencyID, true, null, trxName);
                 if ((priceList != null) && (priceList.get_ID() > 0)){
                     MPriceListVersion priceListVersion = priceList.getPriceListVersion(null);
                     if ((priceListVersion != null) && (priceListVersion.get_ID() > 0)){

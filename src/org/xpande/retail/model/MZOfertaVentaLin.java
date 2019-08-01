@@ -138,7 +138,7 @@ public class MZOfertaVentaLin extends X_Z_OfertaVentaLin {
 
                 // Obtengo lista de venta para organización y moneda de venta
                 MPriceList priceList = PriceListUtils.getPriceListByOrg(getCtx(), ofertaVenta.getAD_Client_ID(), ventaOrg.getAD_OrgTrx_ID(),
-                        ofertaVenta.getC_Currency_ID_SO(), true, null);
+                        ofertaVenta.getC_Currency_ID_SO(), true, null, null);
 
                 if (priceList != null){
                     // Obtengo versión de lista vigente

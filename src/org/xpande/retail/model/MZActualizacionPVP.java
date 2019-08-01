@@ -528,7 +528,7 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 			List<MZActualizacionPVPOrg> pvpOrgs = this.getAllOrgs();
 			for (MZActualizacionPVPOrg pvpOrg: pvpOrgs){
 				// Obtengo lista de precios para organización y moneda de este documento
-				MPriceList priceList = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), pvpOrg.getAD_OrgTrx_ID(), this.getC_Currency_ID(), true, null);
+				MPriceList priceList = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), pvpOrg.getAD_OrgTrx_ID(), this.getC_Currency_ID(), true, null,null);
 				if ((priceList == null) || (priceList.get_ID() <= 0)){
 					log.saveError("ATENCIÓN", "No se pudo obtener Lista de Precios de Venta para Moneda y Organización (ID: " + pvpOrg.getAD_OrgTrx_ID() + ")");
 					return false;
