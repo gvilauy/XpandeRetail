@@ -446,6 +446,11 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 					" where " + X_Z_GeneraAstoVtaSumMP.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 
+			action = " delete from " + X_Z_GeneraAstoVtaDetMPST.Table_Name +
+					" where " + X_Z_GeneraAstoVtaDetMPST.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
+
 			if (this.getZ_PosVendor_ID() <= 0){
 				return "Falta indicar Proveedor de POS para la Organización seleccionada";
 			}
@@ -453,6 +458,9 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 			MZPosVendor posVendor = (MZPosVendor) this.getZ_PosVendor();
 			if (posVendor.getValue().equalsIgnoreCase("SISTECO")){
 				message = this.getVentasMedioPagoSisteco();
+				if (message == null){
+					message = this.getVentasDetMedioPagoSisteco();
+				}
 			}
 			else if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
 				message = this.getVentasMedioPagoScanntech();
@@ -471,7 +479,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 
 	/***
-	 * Obtiene y carga información de ventas por medios de pago desde SISTECO.
+	 * Obtiene y carga información de ventas SUMARIZADAS por medios de pago desde SISTECO.
 	 * Xpande. Created by Gabriel Vila on 4/29/19.
 	 * @return
 	 */
@@ -580,6 +588,81 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		}
 		finally {
 		    DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return message;
+	}
+
+
+	/***
+	 * Obtiene y carga información de detalle de ventas por medios de pago desde SISTECO.
+	 * Xpande. Created by Gabriel Vila on 8/2/19.
+	 * @return
+	 */
+	private String getVentasDetMedioPagoSisteco(){
+
+		String message = null;
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+			sql = " select a.st_numeroticket, a.st_timestampticket, a.st_codigocaja, a.st_codigocajera, a.st_codigomediopago, " +
+					" a.st_nombremediopago, a.st_tipotarjetacredito, a.name, a.st_descripcioncfe, a.st_codigomoneda, a.st_totalentregado, " +
+					" a.st_totalmppagomoneda, a.st_totalentregadomonedaref, a.st_totalmppagomonedaref, a.st_cambio, a.totalamt, " +
+					" a.st_montodescuentoleyiva, a.st_descuentoafam, a.st_tipolinea, a.st_numerotarjeta, a.st_textoley, a.st_codigocc, " +
+					" a.st_nombrecc " +
+					" from zv_sisteco_vtasmpagodet a " +
+					" left outer join z_sistecotipolineapazos b on a.st_tipolinea = b.value " +
+					" where a.ad_org_id =" + this.getAD_Org_ID() +
+					" and a.datetrx ='" + this.getDateTo() + "' " +
+					" and b.IsAsientoVtaPOS ='Y' " +
+					" order by a.st_codigomediopago, a.st_nombremediopago, a.st_tipolinea, b.name, a.st_tipotarjetacredito, a.st_nombretarjeta, a.st_codigomoneda, a.datetrx ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+
+				MZGeneraAstoVtaDetMPST vtaDetMPST = new MZGeneraAstoVtaDetMPST(getCtx(), 0, get_TrxName());
+				vtaDetMPST.setZ_GeneraAstoVta_ID(this.get_ID());
+				vtaDetMPST.setAD_Org_ID(this.getAD_Org_ID());
+				vtaDetMPST.setDateTrx(this.getDateTo());
+				vtaDetMPST.setST_NumeroTicket(rs.getString("st_numeroticket"));
+				vtaDetMPST.setST_TimestampTicket(rs.getTimestamp("st_timestampticket"));
+				vtaDetMPST.setST_CodigoCaja(rs.getString("st_codigocaja"));
+				vtaDetMPST.setST_CodigoCajera(rs.getString("st_codigocajera"));
+				vtaDetMPST.setST_CodigoMedioPago(rs.getString("st_codigomediopago"));
+				vtaDetMPST.setST_NombreMedioPago(rs.getString("st_nombremediopago"));
+				vtaDetMPST.setST_TipoTarjetaCredito(rs.getString("st_tipotarjetacredito"));
+				vtaDetMPST.setName(rs.getString("name"));
+				vtaDetMPST.setST_DescripcionCFE(rs.getString("st_descripcioncfe"));
+				vtaDetMPST.setST_CodigoMoneda(rs.getString("st_codigomoneda"));
+				vtaDetMPST.setST_TotalEntregado(rs.getBigDecimal("st_totalentregado"));
+				vtaDetMPST.setST_TotalMPPagoMoneda(rs.getBigDecimal("st_totalmppagomoneda"));
+				vtaDetMPST.setST_TotalEntregadoMonedaRef(rs.getBigDecimal("st_totalentregadomonedaref"));
+				vtaDetMPST.setST_TotalMPPagoMonedaRef(rs.getBigDecimal("st_totalmppagomonedaref"));
+				vtaDetMPST.setST_Cambio(rs.getBigDecimal("st_cambio"));
+				vtaDetMPST.setTotalAmt(rs.getBigDecimal("totalamt"));
+				vtaDetMPST.setST_MontoDescuentoLeyIVA(rs.getBigDecimal("st_montodescuentoleyiva"));
+				vtaDetMPST.setST_DescuentoAfam(rs.getBigDecimal("st_descuentoafam"));
+				vtaDetMPST.setST_TipoLinea(rs.getString("st_tipolinea"));
+				vtaDetMPST.setST_NumeroTarjeta(rs.getString("st_numerotarjeta"));
+				vtaDetMPST.setST_TextoLey(rs.getString("st_textoley"));
+				vtaDetMPST.setST_CodigoCC(rs.getString("st_codigocc"));
+				vtaDetMPST.setST_NombreCC(rs.getString("st_nombrecc"));
+
+				vtaDetMPST.saveEx();
+
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
 
