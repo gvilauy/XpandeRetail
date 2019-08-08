@@ -17,9 +17,11 @@
 /** Generated Model - DO NOT CHANGE */
 package org.xpande.retail.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import org.compiere.model.*;
+import org.compiere.util.Env;
 
 /** Generated Model for Z_RetailConfig
  *  @author Adempiere (generated) 
@@ -30,7 +32,7 @@ public class X_Z_RetailConfig extends PO implements I_Z_RetailConfig, I_Persiste
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190521L;
+	private static final long serialVersionUID = 20190808L;
 
     /** Standard Constructor */
     public X_Z_RetailConfig (Properties ctx, int Z_RetailConfig_ID, String trxName)
@@ -146,6 +148,46 @@ public class X_Z_RetailConfig extends PO implements I_Z_RetailConfig, I_Persiste
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set ToleraRemDifLin.
+		@param ToleraRemDifLin 
+		Porcentaje de tolerancia para lineas en la generación de Remitos por Diferencia
+	  */
+	public void setToleraRemDifLin (BigDecimal ToleraRemDifLin)
+	{
+		set_Value (COLUMNNAME_ToleraRemDifLin, ToleraRemDifLin);
+	}
+
+	/** Get ToleraRemDifLin.
+		@return Porcentaje de tolerancia para lineas en la generación de Remitos por Diferencia
+	  */
+	public BigDecimal getToleraRemDifLin () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ToleraRemDifLin);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set ToleraRemDifTot.
+		@param ToleraRemDifTot 
+		Porcentaje de tolerancia para Total en la generación de Remitos por Diferencia
+	  */
+	public void setToleraRemDifTot (BigDecimal ToleraRemDifTot)
+	{
+		set_Value (COLUMNNAME_ToleraRemDifTot, ToleraRemDifTot);
+	}
+
+	/** Get ToleraRemDifTot.
+		@return Porcentaje de tolerancia para Total en la generación de Remitos por Diferencia
+	  */
+	public BigDecimal getToleraRemDifTot () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ToleraRemDifTot);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set Search Key.

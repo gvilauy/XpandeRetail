@@ -133,6 +133,32 @@ public interface I_Z_RetailConfig
 	  */
 	public boolean isActive();
 
+    /** Column name ToleraRemDifLin */
+    public static final String COLUMNNAME_ToleraRemDifLin = "ToleraRemDifLin";
+
+	/** Set ToleraRemDifLin.
+	  * Porcentaje de tolerancia para lineas en la generación de Remitos por Diferencia
+	  */
+	public void setToleraRemDifLin(BigDecimal ToleraRemDifLin);
+
+	/** Get ToleraRemDifLin.
+	  * Porcentaje de tolerancia para lineas en la generación de Remitos por Diferencia
+	  */
+	public BigDecimal getToleraRemDifLin();
+
+    /** Column name ToleraRemDifTot */
+    public static final String COLUMNNAME_ToleraRemDifTot = "ToleraRemDifTot";
+
+	/** Set ToleraRemDifTot.
+	  * Porcentaje de tolerancia para Total en la generación de Remitos por Diferencia
+	  */
+	public void setToleraRemDifTot(BigDecimal ToleraRemDifTot);
+
+	/** Get ToleraRemDifTot.
+	  * Porcentaje de tolerancia para Total en la generación de Remitos por Diferencia
+	  */
+	public BigDecimal getToleraRemDifTot();
+
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 

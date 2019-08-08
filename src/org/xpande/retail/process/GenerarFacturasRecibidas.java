@@ -233,7 +233,7 @@ public class GenerarFacturasRecibidas extends SvrProcess {
                     invLine.saveEx();
 
                     // Proceso remito por diferencia de cantidad
-                    BigDecimal amtRemitoLin = remitoDif.setRemitoDiferencia(invoice, invLine, 2, true);
+                    BigDecimal amtRemitoLin = remitoDif.setRemitoDiferencia(invoice, invLine, 2, retailConfig.getToleraRemDifLin(), true);
                     if (amtRemitoLin != null){
                         totalAmtRemito = totalAmtRemito.add(amtRemitoLin);
                     }
@@ -242,15 +242,30 @@ public class GenerarFacturasRecibidas extends SvrProcess {
 
                 // Si tengo remito por diferencia de cantidades
                 if (totalAmtRemito.compareTo(Env.ZERO) > 0){
-                    remitoDif.setTotalAmt(totalAmtRemito);
-                    if (!remitoDif.processIt(DocAction.ACTION_Complete)){
-                        message = remitoDif.getProcessMsg();
-                        if (message == null){
-                            return "@Error@ " + "Error al completar documento de Remito por Diferencia de Cantidad (número: " + remitoDif.getDocumentNo() + " )";
+
+                    boolean generarRemito = true;
+
+                    // Verifico total del remito contra tolerancia sobre total de la configuración de retail
+                    if (retailConfig.getToleraRemDifTot() != null){
+                        if (totalAmtRemito.compareTo(retailConfig.getToleraRemDifTot()) < 0){
+                            generarRemito = false;
                         }
                     }
-                    remitoDif.saveEx();
-                    tieneConstancia = true;
+
+                    if (generarRemito){
+                        remitoDif.setTotalAmt(totalAmtRemito);
+                        if (!remitoDif.processIt(DocAction.ACTION_Complete)){
+                            message = remitoDif.getProcessMsg();
+                            if (message == null){
+                                return "@Error@ " + "Error al completar documento de Remito por Diferencia de Cantidad (número: " + remitoDif.getDocumentNo() + " )";
+                            }
+                        }
+                        remitoDif.saveEx();
+                        tieneConstancia = true;
+                    }
+                    else {
+                        remitoDif.deleteEx(true);
+                    }
                 }
             }
 

@@ -1046,33 +1046,48 @@ public class ValidatorRetail implements ModelValidator {
                     MInvoiceLine invoiceLine = invoiceLines[i];
 
                     // Proceso remitos por diferencia
-                    BigDecimal amtRemitoLin = remitoDif.setRemitoDiferencia(model, invoiceLine, precision, false);
+                    BigDecimal amtRemitoLin = remitoDif.setRemitoDiferencia(model, invoiceLine, precision, retailConfig.getToleraRemDifLin(), false);
                     if (amtRemitoLin != null){
                         totalAmtRemito = totalAmtRemito.add(amtRemitoLin);
                     }
                 }
 
                 if (totalAmtRemito.compareTo(Env.ZERO) > 0){
-                    remitoDif.setTotalAmt(totalAmtRemito);
-                    if (!remitoDif.processIt(DocAction.ACTION_Complete)){
-                        message = remitoDif.getProcessMsg();
-                        if (message == null){
-                            message = "Error al completar documento de Remito por Diferencia";
+
+                    boolean generarRemito = true;
+
+                    // Verifico total del remito contra tolerancia sobre total de la configuración de retail
+                    if (retailConfig.getToleraRemDifTot() != null){
+                        if (totalAmtRemito.compareTo(retailConfig.getToleraRemDifTot()) < 0){
+                            generarRemito = false;
                         }
-                        return message;
                     }
 
-                    // Si esta factura esta asociada a un Remito por Diferencia de Cantidad, asocio este nuevo remito por diferencias con
-                    // dicho documento anterior.
-                    MZRemitoDifInv remDifCant = MZRemitoDifInv.getByDocInvoice(model.getCtx(), model.get_ID(), retailConfig.getDefDocRemDifCant_ID(), null);
-                    if ((remDifCant != null) && (remDifCant.get_ID() > 0)){
-                        remitoDif.setM_InOut_ID(remDifCant.getM_InOut_ID());
-                        remitoDif.setRemDifCant_ID(remDifCant.get_ID());
-                    }
-                    remitoDif.saveEx();
+                    if (generarRemito){
+                        remitoDif.setTotalAmt(totalAmtRemito);
+                        if (!remitoDif.processIt(DocAction.ACTION_Complete)){
+                            message = remitoDif.getProcessMsg();
+                            if (message == null){
+                                message = "Error al completar documento de Remito por Diferencia";
+                            }
+                            return message;
+                        }
 
-                    // Marco invoice como Bloqueada ya que tiene diferencias
-                    DB.executeUpdateEx(" update c_invoice set EstadoAprobacion ='BLOQUEADO' where c_invoice_id =" + model.get_ID(), model.get_TrxName());
+                        // Si esta factura esta asociada a un Remito por Diferencia de Cantidad, asocio este nuevo remito por diferencias con
+                        // dicho documento anterior.
+                        MZRemitoDifInv remDifCant = MZRemitoDifInv.getByDocInvoice(model.getCtx(), model.get_ID(), retailConfig.getDefDocRemDifCant_ID(), null);
+                        if ((remDifCant != null) && (remDifCant.get_ID() > 0)){
+                            remitoDif.setM_InOut_ID(remDifCant.getM_InOut_ID());
+                            remitoDif.setRemDifCant_ID(remDifCant.get_ID());
+                        }
+                        remitoDif.saveEx();
+
+                        // Marco invoice como Bloqueada ya que tiene diferencias
+                        DB.executeUpdateEx(" update c_invoice set EstadoAprobacion ='BLOQUEADO' where c_invoice_id =" + model.get_ID(), model.get_TrxName());
+                    }
+                    else {
+                        remitoDif.deleteEx(true);
+                    }
                 }
             }
             else if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APCredit)){

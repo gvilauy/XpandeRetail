@@ -422,14 +422,20 @@ public class MZRemitoDifInv extends X_Z_RemitoDifInv implements DocAction, DocOp
 	 * @param invoice
 	 * @param invoiceLine
 	 * @param precision
+	 * @param toleranciaLinea
 	 * @param soloDifCantidad
 	 * @return
 	 */
-	public BigDecimal setRemitoDiferencia(MInvoice invoice, MInvoiceLine invoiceLine, int precision, boolean soloDifCantidad){
+	public BigDecimal setRemitoDiferencia(MInvoice invoice, MInvoiceLine invoiceLine, int precision, BigDecimal toleranciaLinea, boolean soloDifCantidad){
 
 		BigDecimal amtRemito = Env.ZERO;
 
 		try{
+
+			BigDecimal toleranciaNeto = new BigDecimal(1.50);
+			if (toleranciaLinea != null){
+				toleranciaNeto = toleranciaLinea;
+			}
 
 			if (invoiceLine.getM_Product_ID() <= 0){
 				return Env.ZERO;
@@ -462,9 +468,11 @@ public class MZRemitoDifInv extends X_Z_RemitoDifInv implements DocAction, DocOp
 					netoPO = pricePO.multiply(cantFacturada).setScale(precision, RoundingMode.HALF_UP);
 					netoDiferencia = netoFacturado.subtract(netoPO);
 					priceDiferencia = invoiceLine.getPriceEntered().subtract(pricePO);
-					BigDecimal toleranciaNeto = new BigDecimal(1.50);
-					if (netoDiferencia.compareTo(toleranciaNeto) > 0){
-						hayDiferenciaNeto = true;
+					if ((priceDiferencia.compareTo(Env.ZERO) > 0) && (netoDiferencia.compareTo(Env.ZERO) > 0)){
+
+						if (netoDiferencia.compareTo(toleranciaNeto) >= 0){
+							hayDiferenciaNeto = true;
+						}
 					}
 				}
 			}
