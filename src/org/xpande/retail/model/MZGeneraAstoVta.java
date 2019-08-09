@@ -1043,6 +1043,20 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		return lines;
 	}
 
+	/***
+	 * Obtiene y retorna lineas de detalle de medios de pago de sisteco, que tuvieron modificaciones en medio de pago o tarjeta.
+	 * Xpande. Created by Gabriel Vila on 8/9/19.
+ 	 * @return
+	 */
+	public List<MZGeneraAstoVtaDetMPST> getMediosPagoModifSisteco(){
 
+		String whereClause = X_Z_GeneraAstoVtaDetMPST.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID() +
+				" AND (" + X_Z_GeneraAstoVtaDetMPST.COLUMNNAME_Z_SistecoMedioPago_ID + " is not null OR " +
+				X_Z_GeneraAstoVtaDetMPST.COLUMNNAME_Z_SistecoTipoTarjeta_ID + " is not null) ";
+
+		List<MZGeneraAstoVtaDetMPST> lines = new Query(getCtx(), I_Z_GeneraAstoVtaDetMPST.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
 
 }
