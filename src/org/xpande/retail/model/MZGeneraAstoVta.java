@@ -33,6 +33,9 @@ import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.financial.model.MZMedioPagoItem;
+import org.xpande.financial.model.MZOrdenPago;
+import org.xpande.financial.model.MZPago;
 
 /** Generated Model for Z_GeneraAstoVta
  *  @author Adempiere (generated) 
@@ -70,8 +73,8 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		}
 		else if (docStatus.equalsIgnoreCase(STATUS_Completed)){
 
-			//options[newIndex++] = DocumentEngine.ACTION_ReActivate;
-			//options[newIndex++] = DocumentEngine.ACTION_Void;
+			options[newIndex++] = DocumentEngine.ACTION_ReActivate;
+			options[newIndex++] = DocumentEngine.ACTION_Void;
 		}
 
 		return newIndex;
@@ -281,8 +284,28 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 	 */
 	public boolean voidIt()
 	{
-		log.info("voidIt - " + toString());
-		return closeIt();
+		log.info(toString());
+
+		// Before Void
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_VOID);
+		if (m_processMsg != null)
+			return false;
+
+		// Control de período contable
+		MPeriod.testPeriodOpen(getCtx(), this.getDateAcct(), this.getC_DocType_ID(), this.getAD_Org_ID());
+
+		// Elimino asientos contables
+		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
+
+		// After Void
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_VOID);
+		if (m_processMsg != null)
+			return false;
+
+		setProcessed(true);
+		setDocStatus(DOCSTATUS_Voided);
+		setDocAction(DOCACTION_None);
+		return true;
 	}	//	voidIt
 	
 	/**
@@ -326,10 +349,29 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 	public boolean reActivateIt()
 	{
 		log.info("reActivateIt - " + toString());
-		setProcessed(false);
-		if (reverseCorrectIt())
-			return true;
-		return false;
+
+		// Before reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		// Control de período contable
+		MPeriod.testPeriodOpen(getCtx(), this.getDateAcct(), this.getC_DocType_ID(), this.getAD_Org_ID());
+
+		// Elimino asientos contables
+		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
+
+		// After reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		this.setProcessed(false);
+		this.setPosted(false);
+		this.setDocStatus(DOCSTATUS_InProgress);
+		this.setDocAction(DOCACTION_Complete);
+
+		return true;
 	}	//	reActivateIt
 	
 	
