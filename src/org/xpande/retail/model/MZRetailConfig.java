@@ -2,6 +2,7 @@ package org.xpande.retail.model;
 
 import org.compiere.model.Query;
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -50,4 +51,17 @@ public class MZRetailConfig extends X_Z_RetailConfig {
         return model;
     }
 
+    /***
+     * Obtiene y retorna conceptos de formulario de movimientos de efectivo en Retail.
+     * Xpande. Created by Gabriel Vila on 8/29/19.
+     * @return
+     */
+    public List<MZRetailConfigForEfe> getConceptosFormEfe(){
+
+        String whereClause = X_Z_RetailConfigForEfe.COLUMNNAME_Z_RetailConfig_ID + " =" + this.get_ID();
+
+        List<MZRetailConfigForEfe> lines = new Query(getCtx(), I_Z_RetailConfigForEfe.Table_Name, whereClause, get_TrxName()).setOnlyActiveRecords(true).list();
+
+        return lines;
+    }
 }
