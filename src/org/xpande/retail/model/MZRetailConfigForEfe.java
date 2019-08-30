@@ -28,11 +28,12 @@ public class MZRetailConfigForEfe extends X_Z_RetailConfigForEfe {
     /***
      * Obtiene y retorna configuración contable de este concepto.
      * Xpande. Created by Gabriel Vila on 8/30/19.
+     * @param adOrgID
      * @param cAcctSchemaID
      * @param cCurrencyID
      * @return
      */
-    public X_Z_RetailConfForEfe_Acct getAccountConfig(int cAcctSchemaID, int cCurrencyID) {
+    public X_Z_RetailConfForEfe_Acct getAccountConfig(int adOrgID, int cAcctSchemaID, int cCurrencyID) {
 
         X_Z_RetailConfForEfe_Acct confForEfe_acct = null;
 
@@ -44,6 +45,7 @@ public class MZRetailConfigForEfe extends X_Z_RetailConfigForEfe {
             sql = " select z_retailconfforefe_acct_id " +
                     " from z_retailconfforefe_acct " +
                     " where z_retailconfigforefe_id =" + this.get_ID() +
+                    " and ad_orgtrx_id =" + adOrgID +
                     " and c_acctschema_id =" + cAcctSchemaID +
                     " and c_currency_id =" + cCurrencyID;
 

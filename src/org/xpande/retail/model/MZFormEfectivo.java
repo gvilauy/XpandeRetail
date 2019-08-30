@@ -429,7 +429,20 @@ public class MZFormEfectivo extends X_Z_FormEfectivo implements DocAction, DocOp
       return sb.toString();
     }
 
-    public String getConceptos(){
+	@Override
+	protected boolean beforeSave(boolean newRecord) {
+
+		if (newRecord){
+			this.setAmtBalanceo(Env.ZERO);
+			this.setAmtBalanceo2(Env.ZERO);
+			this.setDifferenceAmt(Env.ZERO);
+			this.setDifferenceAmt2(Env.ZERO);
+		}
+
+		return true;
+	}
+
+	public String getConceptos(){
 
 		String message = null;
 
@@ -451,6 +464,7 @@ public class MZFormEfectivo extends X_Z_FormEfectivo implements DocAction, DocOp
 			for (MZRetailConfigForEfe configForEfe: configForEfeList){
 				MZFormEfectivoLin efectivoLin = new MZFormEfectivoLin(getCtx(), 0, get_TrxName());
 				efectivoLin.setZ_FormEfectivo_ID(this.get_ID());
+				efectivoLin.setAD_Org_ID(this.getAD_Org_ID());
 				efectivoLin.setZ_RetailConfigForEfe_ID(configForEfe.get_ID());
 				efectivoLin.setTipoConceptoForEfe(configForEfe.getTipoConceptoForEfe());
 				efectivoLin.setName(configForEfe.getName());
@@ -480,4 +494,79 @@ public class MZFormEfectivo extends X_Z_FormEfectivo implements DocAction, DocOp
 
     	return lines;
     }
+
+	/***
+	 * Actualiza totalizadores de este documento.
+	 * Xpande. Created by Gabriel Vila on 8/30/19.
+	 */
+	public void updateTotals() {
+
+    	String sql = "", action = "";
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+
+    	try{
+    	    sql = " select tipoconceptoforefe, coalesce(sum(amtsubtotal1),0) as monto1, coalesce(sum(amtsubtotal2),0) as monto2 " +
+					" from z_formefectivolin " +
+					" where z_formefectivo_id =" + this.get_ID() +
+					" group by tipoconceptoforefe ";
+
+    		pstmt = DB.prepareStatement(sql, get_TrxName());
+    		rs = pstmt.executeQuery();
+
+    		while(rs.next()){
+    			if (rs.getString("tipoconceptoforefe").equalsIgnoreCase(X_Z_FormEfectivoLin.TIPOCONCEPTOFOREFE_SALDOINICIAL)){
+    				action = " update z_formefectivo set amttotal1 =" + rs.getBigDecimal("monto1") + ", " +
+							" amttotal2 =" + rs.getBigDecimal("monto2") +
+							" where z_formefectivo_id =" + this.get_ID();
+					DB.executeUpdateEx(action, get_TrxName());
+				}
+    			else if (rs.getString("tipoconceptoforefe").equalsIgnoreCase(X_Z_FormEfectivoLin.TIPOCONCEPTOFOREFE_ENTRADASDEEFECTIVO)){
+					action = " update z_formefectivo set amttotal3 =" + rs.getBigDecimal("monto1") + ", " +
+							" amttotal4 =" + rs.getBigDecimal("monto2") +
+							" where z_formefectivo_id =" + this.get_ID();
+					DB.executeUpdateEx(action, get_TrxName());
+				}
+				else if (rs.getString("tipoconceptoforefe").equalsIgnoreCase(X_Z_FormEfectivoLin.TIPOCONCEPTOFOREFE_SALIDASDEEFECTIVO)){
+					action = " update z_formefectivo set amttotal5 =" + rs.getBigDecimal("monto1") + ", " +
+							" amttotal6 =" + rs.getBigDecimal("monto2") +
+							" where z_formefectivo_id =" + this.get_ID();
+					DB.executeUpdateEx(action, get_TrxName());
+				}
+				else if (rs.getString("tipoconceptoforefe").equalsIgnoreCase(X_Z_FormEfectivoLin.TIPOCONCEPTOFOREFE_RESULTADODELARQUEO)){
+					action = " update z_formefectivo set amttotal7 =" + rs.getBigDecimal("monto1") + ", " +
+							" amttotal8 =" + rs.getBigDecimal("monto2") +
+							" where z_formefectivo_id =" + this.get_ID();
+					DB.executeUpdateEx(action, get_TrxName());
+				}
+			}
+
+    		// Actualizo montos de balanceos
+			action = " update z_formefectivo set amtbalanceo = coalesce(amttotal3,0) - coalesce(amttotal5,0), " +
+					" amtbalanceo2 = coalesce(amttotal4,0) - coalesce(amttotal6,0) " +
+					" where z_formefectivo_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
+			// Actualizo montos de diferencias
+			if (this.getAmtTotal7().compareTo(Env.ZERO) != 0){
+				action = " update z_formefectivo set differenceamt = coalesce(amttotal7,0) - (coalesce(amttotal3,0) - coalesce(amttotal5,0)) " +
+						" where z_formefectivo_id =" + this.get_ID();
+				DB.executeUpdateEx(action, get_TrxName());
+			}
+
+			if (this.getAmtTotal8().compareTo(Env.ZERO) != 0){
+				action = " update z_formefectivo set differenceamt2 = coalesce(amttotal8,0) - (coalesce(amttotal4,0) - coalesce(amttotal6,0)) " +
+						" where z_formefectivo_id =" + this.get_ID();
+				DB.executeUpdateEx(action, get_TrxName());
+			}
+
+    	}
+    	catch (Exception e){
+    	    throw new AdempiereException(e);
+    	}
+    	finally {
+    	    DB.close(rs, pstmt);
+    		rs = null; pstmt = null;
+    	}
+	}
 }

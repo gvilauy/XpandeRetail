@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_RetailConfForEfe_Acct
+/** Generated Interface for Z_RetailForEfe_Acct
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_RetailConfForEfe_Acct 
+public interface I_Z_RetailForEfe_Acct 
 {
 
-    /** TableName=Z_RetailConfForEfe_Acct */
-    public static final String Table_Name = "Z_RetailConfForEfe_Acct";
+    /** TableName=Z_RetailForEfe_Acct */
+    public static final String Table_Name = "Z_RetailForEfe_Acct";
 
-    /** AD_Table_ID=1000311 */
+    /** AD_Table_ID=1000313 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -41,17 +41,6 @@ public interface I_Z_RetailConfForEfe_Acct
     BigDecimal accessLevel = BigDecimal.valueOf(3);
 
     /** Load Meta Data */
-
-    /** Column name Account_Acct */
-    public static final String COLUMNNAME_Account_Acct = "Account_Acct";
-
-	/** Set Account_Acct	  */
-	public void setAccount_Acct(int Account_Acct);
-
-	/** Get Account_Acct	  */
-	public int getAccount_Acct();
-
-	public I_C_ValidCombination getAccount_A() throws RuntimeException;
 
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
@@ -73,19 +62,6 @@ public interface I_Z_RetailConfForEfe_Acct
 	  * Organizational entity within client
 	  */
 	public int getAD_Org_ID();
-
-    /** Column name AD_OrgTrx_ID */
-    public static final String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
-
-	/** Set Trx Organization.
-	  * Performing or initiating organization
-	  */
-	public void setAD_OrgTrx_ID(int AD_OrgTrx_ID);
-
-	/** Get Trx Organization.
-	  * Performing or initiating organization
-	  */
-	public int getAD_OrgTrx_ID();
 
     /** Column name C_AcctSchema_ID */
     public static final String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
@@ -146,18 +122,20 @@ public interface I_Z_RetailConfForEfe_Acct
 	  */
 	public boolean isActive();
 
-    /** Column name IsDebito */
-    public static final String COLUMNNAME_IsDebito = "IsDebito";
+    /** Column name P_Revenue_Acct */
+    public static final String COLUMNNAME_P_Revenue_Acct = "P_Revenue_Acct";
 
-	/** Set IsDebito.
-	  * Si se comporta como un débito para la contabilidad o no
+	/** Set Product Revenue.
+	  * Account for Product Revenue (Sales Account)
 	  */
-	public void setIsDebito(boolean IsDebito);
+	public void setP_Revenue_Acct(int P_Revenue_Acct);
 
-	/** Get IsDebito.
-	  * Si se comporta como un débito para la contabilidad o no
+	/** Get Product Revenue.
+	  * Account for Product Revenue (Sales Account)
 	  */
-	public boolean isDebito();
+	public int getP_Revenue_Acct();
+
+	public I_C_ValidCombination getP_Revenue_A() throws RuntimeException;
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -188,23 +166,23 @@ public interface I_Z_RetailConfForEfe_Acct
 	  */
 	public String getUUID();
 
-    /** Column name Z_RetailConfForEfe_Acct_ID */
-    public static final String COLUMNNAME_Z_RetailConfForEfe_Acct_ID = "Z_RetailConfForEfe_Acct_ID";
+    /** Column name Z_RetailConfig_ID */
+    public static final String COLUMNNAME_Z_RetailConfig_ID = "Z_RetailConfig_ID";
 
-	/** Set Z_RetailConfForEfe_Acct ID	  */
-	public void setZ_RetailConfForEfe_Acct_ID(int Z_RetailConfForEfe_Acct_ID);
+	/** Set Z_RetailConfig ID	  */
+	public void setZ_RetailConfig_ID(int Z_RetailConfig_ID);
 
-	/** Get Z_RetailConfForEfe_Acct ID	  */
-	public int getZ_RetailConfForEfe_Acct_ID();
+	/** Get Z_RetailConfig ID	  */
+	public int getZ_RetailConfig_ID();
 
-    /** Column name Z_RetailConfigForEfe_ID */
-    public static final String COLUMNNAME_Z_RetailConfigForEfe_ID = "Z_RetailConfigForEfe_ID";
+	public I_Z_RetailConfig getZ_RetailConfig() throws RuntimeException;
 
-	/** Set Z_RetailConfigForEfe ID	  */
-	public void setZ_RetailConfigForEfe_ID(int Z_RetailConfigForEfe_ID);
+    /** Column name Z_RetailForEfe_Acct_ID */
+    public static final String COLUMNNAME_Z_RetailForEfe_Acct_ID = "Z_RetailForEfe_Acct_ID";
 
-	/** Get Z_RetailConfigForEfe ID	  */
-	public int getZ_RetailConfigForEfe_ID();
+	/** Set Z_RetailForEfe_Acct ID	  */
+	public void setZ_RetailForEfe_Acct_ID(int Z_RetailForEfe_Acct_ID);
 
-	public I_Z_RetailConfigForEfe getZ_RetailConfigForEfe() throws RuntimeException;
+	/** Get Z_RetailForEfe_Acct ID	  */
+	public int getZ_RetailForEfe_Acct_ID();
 }

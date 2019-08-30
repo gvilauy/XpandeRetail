@@ -63,6 +63,32 @@ public interface I_Z_FormEfectivo
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name AmtBalanceo */
+    public static final String COLUMNNAME_AmtBalanceo = "AmtBalanceo";
+
+	/** Set AmtBalanceo.
+	  * Monto para balanceo contable
+	  */
+	public void setAmtBalanceo(BigDecimal AmtBalanceo);
+
+	/** Get AmtBalanceo.
+	  * Monto para balanceo contable
+	  */
+	public BigDecimal getAmtBalanceo();
+
+    /** Column name AmtBalanceo2 */
+    public static final String COLUMNNAME_AmtBalanceo2 = "AmtBalanceo2";
+
+	/** Set AmtBalanceo2.
+	  * Monto para balanceo contable 2
+	  */
+	public void setAmtBalanceo2(BigDecimal AmtBalanceo2);
+
+	/** Get AmtBalanceo2.
+	  * Monto para balanceo contable 2
+	  */
+	public BigDecimal getAmtBalanceo2();
+
     /** Column name AmtTotal1 */
     public static final String COLUMNNAME_AmtTotal1 = "AmtTotal1";
 
@@ -236,6 +262,32 @@ public interface I_Z_FormEfectivo
 	  * Optional short description of the record
 	  */
 	public String getDescription();
+
+    /** Column name DifferenceAmt */
+    public static final String COLUMNNAME_DifferenceAmt = "DifferenceAmt";
+
+	/** Set Difference.
+	  * Difference Amount
+	  */
+	public void setDifferenceAmt(BigDecimal DifferenceAmt);
+
+	/** Get Difference.
+	  * Difference Amount
+	  */
+	public BigDecimal getDifferenceAmt();
+
+    /** Column name DifferenceAmt2 */
+    public static final String COLUMNNAME_DifferenceAmt2 = "DifferenceAmt2";
+
+	/** Set DifferenceAmt2.
+	  * Monto diferencia 2
+	  */
+	public void setDifferenceAmt2(BigDecimal DifferenceAmt2);
+
+	/** Get DifferenceAmt2.
+	  * Monto diferencia 2
+	  */
+	public BigDecimal getDifferenceAmt2();
 
     /** Column name DocAction */
     public static final String COLUMNNAME_DocAction = "DocAction";

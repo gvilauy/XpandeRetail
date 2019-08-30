@@ -21,10 +21,10 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import org.compiere.model.*;
 
-/** Generated Model for Z_RetailConfForEfe_Acct
+/** Generated Model for Z_RetailForEfe_Acct
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0 - $Id$ */
-public class X_Z_RetailConfForEfe_Acct extends PO implements I_Z_RetailConfForEfe_Acct, I_Persistent 
+public class X_Z_RetailForEfe_Acct extends PO implements I_Z_RetailForEfe_Acct, I_Persistent 
 {
 
 	/**
@@ -33,23 +33,21 @@ public class X_Z_RetailConfForEfe_Acct extends PO implements I_Z_RetailConfForEf
 	private static final long serialVersionUID = 20190830L;
 
     /** Standard Constructor */
-    public X_Z_RetailConfForEfe_Acct (Properties ctx, int Z_RetailConfForEfe_Acct_ID, String trxName)
+    public X_Z_RetailForEfe_Acct (Properties ctx, int Z_RetailForEfe_Acct_ID, String trxName)
     {
-      super (ctx, Z_RetailConfForEfe_Acct_ID, trxName);
-      /** if (Z_RetailConfForEfe_Acct_ID == 0)
+      super (ctx, Z_RetailForEfe_Acct_ID, trxName);
+      /** if (Z_RetailForEfe_Acct_ID == 0)
         {
-			setAccount_Acct (0);
 			setC_AcctSchema_ID (0);
 			setC_Currency_ID (0);
-			setIsDebito (false);
-// N
-			setZ_RetailConfForEfe_Acct_ID (0);
-			setZ_RetailConfigForEfe_ID (0);
+			setP_Revenue_Acct (0);
+			setZ_RetailConfig_ID (0);
+			setZ_RetailForEfe_Acct_ID (0);
         } */
     }
 
     /** Load Constructor */
-    public X_Z_RetailConfForEfe_Acct (Properties ctx, ResultSet rs, String trxName)
+    public X_Z_RetailForEfe_Acct (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -71,55 +69,10 @@ public class X_Z_RetailConfForEfe_Acct extends PO implements I_Z_RetailConfForEf
 
     public String toString()
     {
-      StringBuffer sb = new StringBuffer ("X_Z_RetailConfForEfe_Acct[")
+      StringBuffer sb = new StringBuffer ("X_Z_RetailForEfe_Acct[")
         .append(get_ID()).append("]");
       return sb.toString();
     }
-
-	public I_C_ValidCombination getAccount_A() throws RuntimeException
-    {
-		return (I_C_ValidCombination)MTable.get(getCtx(), I_C_ValidCombination.Table_Name)
-			.getPO(getAccount_Acct(), get_TrxName());	}
-
-	/** Set Account_Acct.
-		@param Account_Acct Account_Acct	  */
-	public void setAccount_Acct (int Account_Acct)
-	{
-		set_Value (COLUMNNAME_Account_Acct, Integer.valueOf(Account_Acct));
-	}
-
-	/** Get Account_Acct.
-		@return Account_Acct	  */
-	public int getAccount_Acct () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Account_Acct);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Trx Organization.
-		@param AD_OrgTrx_ID 
-		Performing or initiating organization
-	  */
-	public void setAD_OrgTrx_ID (int AD_OrgTrx_ID)
-	{
-		if (AD_OrgTrx_ID < 1) 
-			set_Value (COLUMNNAME_AD_OrgTrx_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_OrgTrx_ID, Integer.valueOf(AD_OrgTrx_ID));
-	}
-
-	/** Get Trx Organization.
-		@return Performing or initiating organization
-	  */
-	public int getAD_OrgTrx_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_OrgTrx_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
 
 	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException
     {
@@ -177,28 +130,29 @@ public class X_Z_RetailConfForEfe_Acct extends PO implements I_Z_RetailConfForEf
 		return ii.intValue();
 	}
 
-	/** Set IsDebito.
-		@param IsDebito 
-		Si se comporta como un débito para la contabilidad o no
+	public I_C_ValidCombination getP_Revenue_A() throws RuntimeException
+    {
+		return (I_C_ValidCombination)MTable.get(getCtx(), I_C_ValidCombination.Table_Name)
+			.getPO(getP_Revenue_Acct(), get_TrxName());	}
+
+	/** Set Product Revenue.
+		@param P_Revenue_Acct 
+		Account for Product Revenue (Sales Account)
 	  */
-	public void setIsDebito (boolean IsDebito)
+	public void setP_Revenue_Acct (int P_Revenue_Acct)
 	{
-		set_Value (COLUMNNAME_IsDebito, Boolean.valueOf(IsDebito));
+		set_Value (COLUMNNAME_P_Revenue_Acct, Integer.valueOf(P_Revenue_Acct));
 	}
 
-	/** Get IsDebito.
-		@return Si se comporta como un débito para la contabilidad o no
+	/** Get Product Revenue.
+		@return Account for Product Revenue (Sales Account)
 	  */
-	public boolean isDebito () 
+	public int getP_Revenue_Acct () 
 	{
-		Object oo = get_Value(COLUMNNAME_IsDebito);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		Integer ii = (Integer)get_Value(COLUMNNAME_P_Revenue_Acct);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Immutable Universally Unique Identifier.
@@ -218,46 +172,46 @@ public class X_Z_RetailConfForEfe_Acct extends PO implements I_Z_RetailConfForEf
 		return (String)get_Value(COLUMNNAME_UUID);
 	}
 
-	/** Set Z_RetailConfForEfe_Acct ID.
-		@param Z_RetailConfForEfe_Acct_ID Z_RetailConfForEfe_Acct ID	  */
-	public void setZ_RetailConfForEfe_Acct_ID (int Z_RetailConfForEfe_Acct_ID)
+	public I_Z_RetailConfig getZ_RetailConfig() throws RuntimeException
+    {
+		return (I_Z_RetailConfig)MTable.get(getCtx(), I_Z_RetailConfig.Table_Name)
+			.getPO(getZ_RetailConfig_ID(), get_TrxName());	}
+
+	/** Set Z_RetailConfig ID.
+		@param Z_RetailConfig_ID Z_RetailConfig ID	  */
+	public void setZ_RetailConfig_ID (int Z_RetailConfig_ID)
 	{
-		if (Z_RetailConfForEfe_Acct_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Z_RetailConfForEfe_Acct_ID, null);
+		if (Z_RetailConfig_ID < 1) 
+			set_Value (COLUMNNAME_Z_RetailConfig_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_Z_RetailConfForEfe_Acct_ID, Integer.valueOf(Z_RetailConfForEfe_Acct_ID));
+			set_Value (COLUMNNAME_Z_RetailConfig_ID, Integer.valueOf(Z_RetailConfig_ID));
 	}
 
-	/** Get Z_RetailConfForEfe_Acct ID.
-		@return Z_RetailConfForEfe_Acct ID	  */
-	public int getZ_RetailConfForEfe_Acct_ID () 
+	/** Get Z_RetailConfig ID.
+		@return Z_RetailConfig ID	  */
+	public int getZ_RetailConfig_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_RetailConfForEfe_Acct_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_RetailConfig_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
 	}
 
-	public I_Z_RetailConfigForEfe getZ_RetailConfigForEfe() throws RuntimeException
-    {
-		return (I_Z_RetailConfigForEfe)MTable.get(getCtx(), I_Z_RetailConfigForEfe.Table_Name)
-			.getPO(getZ_RetailConfigForEfe_ID(), get_TrxName());	}
-
-	/** Set Z_RetailConfigForEfe ID.
-		@param Z_RetailConfigForEfe_ID Z_RetailConfigForEfe ID	  */
-	public void setZ_RetailConfigForEfe_ID (int Z_RetailConfigForEfe_ID)
+	/** Set Z_RetailForEfe_Acct ID.
+		@param Z_RetailForEfe_Acct_ID Z_RetailForEfe_Acct ID	  */
+	public void setZ_RetailForEfe_Acct_ID (int Z_RetailForEfe_Acct_ID)
 	{
-		if (Z_RetailConfigForEfe_ID < 1) 
-			set_Value (COLUMNNAME_Z_RetailConfigForEfe_ID, null);
+		if (Z_RetailForEfe_Acct_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Z_RetailForEfe_Acct_ID, null);
 		else 
-			set_Value (COLUMNNAME_Z_RetailConfigForEfe_ID, Integer.valueOf(Z_RetailConfigForEfe_ID));
+			set_ValueNoCheck (COLUMNNAME_Z_RetailForEfe_Acct_ID, Integer.valueOf(Z_RetailForEfe_Acct_ID));
 	}
 
-	/** Get Z_RetailConfigForEfe ID.
-		@return Z_RetailConfigForEfe ID	  */
-	public int getZ_RetailConfigForEfe_ID () 
+	/** Get Z_RetailForEfe_Acct ID.
+		@return Z_RetailForEfe_Acct ID	  */
+	public int getZ_RetailForEfe_Acct_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_RetailConfigForEfe_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_RetailForEfe_Acct_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

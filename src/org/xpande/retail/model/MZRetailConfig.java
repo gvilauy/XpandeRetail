@@ -1,6 +1,10 @@
 package org.xpande.retail.model;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.Query;
+import org.compiere.util.DB;
+
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
@@ -64,4 +68,47 @@ public class MZRetailConfig extends X_Z_RetailConfig {
 
         return lines;
     }
+
+    /***
+     * Obtiene y retorna configuración contable para formulario de movimientos de efectivo.
+     * Xpande. Created by Gabriel Vila on 8/30/19.
+     * @param adOrgID
+     * @param cAcctSchemaID
+     * @param cCurrencyID
+     * @return
+     */
+    public X_Z_RetailForEfe_Acct getFormEfectivoAcct(int cAcctSchemaID, int cCurrencyID) {
+
+        X_Z_RetailForEfe_Acct forEfeAcct = null;
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select z_retailforefe_acct_id " +
+                    " from z_retailforefe_acct " +
+                    " where z_retailconfig_id =" + this.get_ID() +
+                    " and c_acctschema_id =" + cAcctSchemaID +
+                    " and c_currency_id =" + cCurrencyID;
+
+            pstmt = DB.prepareStatement(sql, get_TrxName());
+            rs = pstmt.executeQuery();
+
+            if(rs.next()){
+                forEfeAcct = new X_Z_RetailForEfe_Acct(getCtx(), rs.getInt("z_retailforefe_acct_id"), null);
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+
+        return forEfeAcct;
+    }
+
+
 }

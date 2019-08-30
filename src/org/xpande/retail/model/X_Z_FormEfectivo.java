@@ -33,7 +33,7 @@ public class X_Z_FormEfectivo extends PO implements I_Z_FormEfectivo, I_Persiste
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190829L;
+	private static final long serialVersionUID = 20190830L;
 
     /** Standard Constructor */
     public X_Z_FormEfectivo (Properties ctx, int Z_FormEfectivo_ID, String trxName)
@@ -89,6 +89,46 @@ public class X_Z_FormEfectivo extends PO implements I_Z_FormEfectivo, I_Persiste
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set AmtBalanceo.
+		@param AmtBalanceo 
+		Monto para balanceo contable
+	  */
+	public void setAmtBalanceo (BigDecimal AmtBalanceo)
+	{
+		set_Value (COLUMNNAME_AmtBalanceo, AmtBalanceo);
+	}
+
+	/** Get AmtBalanceo.
+		@return Monto para balanceo contable
+	  */
+	public BigDecimal getAmtBalanceo () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtBalanceo);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set AmtBalanceo2.
+		@param AmtBalanceo2 
+		Monto para balanceo contable 2
+	  */
+	public void setAmtBalanceo2 (BigDecimal AmtBalanceo2)
+	{
+		set_Value (COLUMNNAME_AmtBalanceo2, AmtBalanceo2);
+	}
+
+	/** Get AmtBalanceo2.
+		@return Monto para balanceo contable 2
+	  */
+	public BigDecimal getAmtBalanceo2 () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtBalanceo2);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
 
 	/** Set AmtTotal1.
 		@param AmtTotal1 
@@ -327,6 +367,46 @@ public class X_Z_FormEfectivo extends PO implements I_Z_FormEfectivo, I_Persiste
 	public String getDescription () 
 	{
 		return (String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Difference.
+		@param DifferenceAmt 
+		Difference Amount
+	  */
+	public void setDifferenceAmt (BigDecimal DifferenceAmt)
+	{
+		set_Value (COLUMNNAME_DifferenceAmt, DifferenceAmt);
+	}
+
+	/** Get Difference.
+		@return Difference Amount
+	  */
+	public BigDecimal getDifferenceAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DifferenceAmt);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set DifferenceAmt2.
+		@param DifferenceAmt2 
+		Monto diferencia 2
+	  */
+	public void setDifferenceAmt2 (BigDecimal DifferenceAmt2)
+	{
+		set_Value (COLUMNNAME_DifferenceAmt2, DifferenceAmt2);
+	}
+
+	/** Get DifferenceAmt2.
+		@return Monto diferencia 2
+	  */
+	public BigDecimal getDifferenceAmt2 () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DifferenceAmt2);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** DocAction AD_Reference_ID=135 */
