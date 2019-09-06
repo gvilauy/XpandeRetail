@@ -118,6 +118,21 @@ public interface I_Z_RetailConfigForEfe
 	  */
 	public String getName();
 
+    /** Column name SeqNo */
+    public static final String COLUMNNAME_SeqNo = "SeqNo";
+
+	/** Set Sequence.
+	  * Method of ordering records;
+ lowest number comes first
+	  */
+	public void setSeqNo(int SeqNo);
+
+	/** Get Sequence.
+	  * Method of ordering records;
+ lowest number comes first
+	  */
+	public int getSeqNo();
+
     /** Column name TipoConceptoForEfe */
     public static final String COLUMNNAME_TipoConceptoForEfe = "TipoConceptoForEfe";
 

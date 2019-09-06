@@ -30,7 +30,7 @@ public class X_Z_RetailConfigForEfe extends PO implements I_Z_RetailConfigForEfe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190829L;
+	private static final long serialVersionUID = 20190906L;
 
     /** Standard Constructor */
     public X_Z_RetailConfigForEfe (Properties ctx, int Z_RetailConfigForEfe_ID, String trxName)
@@ -105,6 +105,26 @@ public class X_Z_RetailConfigForEfe extends PO implements I_Z_RetailConfigForEfe
 	public String getName () 
 	{
 		return (String)get_Value(COLUMNNAME_Name);
+	}
+
+	/** Set Sequence.
+		@param SeqNo 
+		Method of ordering records; lowest number comes first
+	  */
+	public void setSeqNo (int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+	}
+
+	/** Get Sequence.
+		@return Method of ordering records; lowest number comes first
+	  */
+	public int getSeqNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** TipoConceptoForEfe AD_Reference_ID=1000058 */

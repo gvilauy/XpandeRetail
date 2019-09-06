@@ -64,7 +64,8 @@ public class MZRetailConfig extends X_Z_RetailConfig {
 
         String whereClause = X_Z_RetailConfigForEfe.COLUMNNAME_Z_RetailConfig_ID + " =" + this.get_ID();
 
-        List<MZRetailConfigForEfe> lines = new Query(getCtx(), I_Z_RetailConfigForEfe.Table_Name, whereClause, get_TrxName()).setOnlyActiveRecords(true).list();
+        List<MZRetailConfigForEfe> lines = new Query(getCtx(), I_Z_RetailConfigForEfe.Table_Name, whereClause, get_TrxName())
+                .setOnlyActiveRecords(true).setOrderBy(" SeqNo ").list();
 
         return lines;
     }

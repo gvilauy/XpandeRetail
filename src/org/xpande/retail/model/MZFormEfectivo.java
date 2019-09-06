@@ -542,20 +542,20 @@ public class MZFormEfectivo extends X_Z_FormEfectivo implements DocAction, DocOp
 			}
 
     		// Actualizo montos de balanceos
-			action = " update z_formefectivo set amtbalanceo = coalesce(amttotal3,0) - coalesce(amttotal5,0), " +
-					" amtbalanceo2 = coalesce(amttotal4,0) - coalesce(amttotal6,0) " +
+			action = " update z_formefectivo set amtbalanceo = (coalesce(amttotal1,0) + coalesce(amttotal3,0)) - coalesce(amttotal5,0), " +
+					" amtbalanceo2 = (coalesce(amttotal2,0) + coalesce(amttotal4,0)) - coalesce(amttotal6,0) " +
 					" where z_formefectivo_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 
 			// Actualizo montos de diferencias
 			if (this.getAmtTotal7().compareTo(Env.ZERO) != 0){
-				action = " update z_formefectivo set differenceamt = coalesce(amttotal7,0) - (coalesce(amttotal3,0) - coalesce(amttotal5,0)) " +
+				action = " update z_formefectivo set differenceamt = coalesce(amttotal7,0) - coalesce(amtbalanceo,0) " +
 						" where z_formefectivo_id =" + this.get_ID();
 				DB.executeUpdateEx(action, get_TrxName());
 			}
 
 			if (this.getAmtTotal8().compareTo(Env.ZERO) != 0){
-				action = " update z_formefectivo set differenceamt2 = coalesce(amttotal8,0) - (coalesce(amttotal4,0) - coalesce(amttotal6,0)) " +
+				action = " update z_formefectivo set differenceamt2 = coalesce(amttotal8,0) - coalesce(amtbalanceo2,0) " +
 						" where z_formefectivo_id =" + this.get_ID();
 				DB.executeUpdateEx(action, get_TrxName());
 			}

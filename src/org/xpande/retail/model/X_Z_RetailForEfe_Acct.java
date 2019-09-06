@@ -30,7 +30,7 @@ public class X_Z_RetailForEfe_Acct extends PO implements I_Z_RetailForEfe_Acct, 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190830L;
+	private static final long serialVersionUID = 20190906L;
 
     /** Standard Constructor */
     public X_Z_RetailForEfe_Acct (Properties ctx, int Z_RetailForEfe_Acct_ID, String trxName)
@@ -125,6 +125,31 @@ public class X_Z_RetailForEfe_Acct extends PO implements I_Z_RetailForEfe_Acct, 
 	public int getC_Currency_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_ValidCombination getP_Expense_A() throws RuntimeException
+    {
+		return (I_C_ValidCombination)MTable.get(getCtx(), I_C_ValidCombination.Table_Name)
+			.getPO(getP_Expense_Acct(), get_TrxName());	}
+
+	/** Set Product Expense.
+		@param P_Expense_Acct 
+		Account for Product Expense
+	  */
+	public void setP_Expense_Acct (int P_Expense_Acct)
+	{
+		set_Value (COLUMNNAME_P_Expense_Acct, Integer.valueOf(P_Expense_Acct));
+	}
+
+	/** Get Product Expense.
+		@return Account for Product Expense
+	  */
+	public int getP_Expense_Acct () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_P_Expense_Acct);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

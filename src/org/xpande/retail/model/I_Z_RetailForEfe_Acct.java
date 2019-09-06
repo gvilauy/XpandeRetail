@@ -122,6 +122,21 @@ public interface I_Z_RetailForEfe_Acct
 	  */
 	public boolean isActive();
 
+    /** Column name P_Expense_Acct */
+    public static final String COLUMNNAME_P_Expense_Acct = "P_Expense_Acct";
+
+	/** Set Product Expense.
+	  * Account for Product Expense
+	  */
+	public void setP_Expense_Acct(int P_Expense_Acct);
+
+	/** Get Product Expense.
+	  * Account for Product Expense
+	  */
+	public int getP_Expense_Acct();
+
+	public I_C_ValidCombination getP_Expense_A() throws RuntimeException;
+
     /** Column name P_Revenue_Acct */
     public static final String COLUMNNAME_P_Revenue_Acct = "P_Revenue_Acct";
 
