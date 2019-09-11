@@ -357,7 +357,7 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 
 		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 
-		if (!this.getEndDate().before(fechaHoy)){
+		if (this.getEndDate().before(fechaHoy)){
 			m_processMsg =  "No es posible reactivar una oferta que ya caducó.";
 			return false;
 		}
