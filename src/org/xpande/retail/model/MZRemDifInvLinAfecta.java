@@ -3,6 +3,8 @@ package org.xpande.retail.model;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.Query;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -62,6 +64,31 @@ public class MZRemDifInvLinAfecta extends X_Z_RemDifInvLinAfecta {
         MInvoiceLine invoiceLine = (MInvoiceLine) this.getC_InvoiceLine();
         if ((invoiceLine != null) && (invoiceLine.get_ID() > 0)){
             invoiceLine.deleteEx(false);
+        }
+
+        return true;
+    }
+
+    @Override
+    protected boolean beforeSave(boolean newRecord) {
+
+        // Si se modifica precio o cantidad, recalculo importe de la linea y refreso linea de factura asociada
+        if (!newRecord){
+            if ((is_ValueChanged(X_Z_RemDifInvLinAfecta.COLUMNNAME_PriceEntered)) || (is_ValueChanged(X_Z_RemDifInvLinAfecta.COLUMNNAME_QtyEntered))){
+                this.setLineTotalAmt(this.getQtyEntered().multiply(this.getPriceEntered()).setScale(2, RoundingMode.HALF_UP));
+
+                MInvoiceLine invoiceLine = (MInvoiceLine) this.getC_InvoiceLine();
+                if ((invoiceLine != null) && (invoiceLine.get_ID() > 0)){
+                    invoiceLine.setQtyInvoiced(this.getQtyEntered());
+                    invoiceLine.setQtyEntered(this.getQtyEntered());
+                    invoiceLine.setPriceActual(this.getPriceEntered());
+                    invoiceLine.setPriceEntered(this.getPriceEntered());
+                    invoiceLine.setLineNetAmt();
+                    invoiceLine.setTaxAmt();
+                    invoiceLine.saveEx();
+                }
+
+            }
         }
 
         return true;

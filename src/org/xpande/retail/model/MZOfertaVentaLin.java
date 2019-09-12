@@ -101,6 +101,7 @@ public class MZOfertaVentaLin extends X_Z_OfertaVentaLin {
             linDel.setZ_OfertaVenta_ID(ofertaVenta.get_ID());
             linDel.setM_Product_ID(this.getM_Product_ID());
             linDel.setZ_OfertaVentaLin_ID(this.get_ID());
+            linDel.setValidFrom(ofertaVenta.getStartDate());
             linDel.saveEx();
         }
 
