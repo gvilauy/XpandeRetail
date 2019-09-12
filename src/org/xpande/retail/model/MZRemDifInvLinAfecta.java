@@ -1,7 +1,7 @@
 package org.xpande.retail.model;
 
-import org.compiere.model.MInvoiceLine;
-import org.compiere.model.Query;
+import org.compiere.model.*;
+import org.xpande.comercial.model.MZComercialConfig;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -83,6 +83,30 @@ public class MZRemDifInvLinAfecta extends X_Z_RemDifInvLinAfecta {
                     invoiceLine.setQtyEntered(this.getQtyEntered());
                     invoiceLine.setPriceActual(this.getPriceEntered());
                     invoiceLine.setPriceEntered(this.getPriceEntered());
+
+                    MProduct prod = (MProduct) invoiceLine.getM_Product();
+
+                    // Impuesto del producto (primero impuesto especial de compra, y si no tiene, entonces el impuesto normal
+                    if (prod.get_ValueAsInt("C_TaxCategory_ID_2") > 0) {
+                        MTaxCategory taxCat = new MTaxCategory(getCtx(), prod.get_ValueAsInt("C_TaxCategory_ID_2"), null);
+                        MTax tax = taxCat.getDefaultTax();
+                        if (tax != null) {
+                            if (tax.get_ID() > 0) {
+                                invoiceLine.setC_Tax_ID(tax.get_ID());
+                            }
+                        }
+                    } else {
+                        if (prod.getC_TaxCategory_ID() > 0) {
+                            MTaxCategory taxCat = (MTaxCategory) prod.getC_TaxCategory();
+                            MTax tax = taxCat.getDefaultTax();
+                            if (tax != null) {
+                                if (tax.get_ID() > 0) {
+                                    invoiceLine.setC_Tax_ID(tax.get_ID());
+                                }
+                            }
+                        }
+                    }
+
                     invoiceLine.setLineNetAmt();
                     invoiceLine.setTaxAmt();
                     invoiceLine.saveEx();
