@@ -133,6 +133,19 @@ public interface I_Z_RetailConfigForEfe
 	  */
 	public int getSeqNo();
 
+    /** Column name TieneCaja */
+    public static final String COLUMNNAME_TieneCaja = "TieneCaja";
+
+	/** Set TieneCaja.
+	  * Si requiere o no una caja asociada
+	  */
+	public void setTieneCaja(boolean TieneCaja);
+
+	/** Get TieneCaja.
+	  * Si requiere o no una caja asociada
+	  */
+	public boolean isTieneCaja();
+
     /** Column name TipoConceptoForEfe */
     public static final String COLUMNNAME_TipoConceptoForEfe = "TipoConceptoForEfe";
 

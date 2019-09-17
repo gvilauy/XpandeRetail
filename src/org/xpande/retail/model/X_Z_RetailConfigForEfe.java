@@ -30,7 +30,7 @@ public class X_Z_RetailConfigForEfe extends PO implements I_Z_RetailConfigForEfe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190906L;
+	private static final long serialVersionUID = 20190916L;
 
     /** Standard Constructor */
     public X_Z_RetailConfigForEfe (Properties ctx, int Z_RetailConfigForEfe_ID, String trxName)
@@ -39,6 +39,8 @@ public class X_Z_RetailConfigForEfe extends PO implements I_Z_RetailConfigForEfe
       /** if (Z_RetailConfigForEfe_ID == 0)
         {
 			setName (null);
+			setTieneCaja (false);
+// N
 			setTipoConceptoForEfe (null);
 			setZ_RetailConfigForEfe_ID (0);
 			setZ_RetailConfig_ID (0);
@@ -125,6 +127,30 @@ public class X_Z_RetailConfigForEfe extends PO implements I_Z_RetailConfigForEfe
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set TieneCaja.
+		@param TieneCaja 
+		Si requiere o no una caja asociada
+	  */
+	public void setTieneCaja (boolean TieneCaja)
+	{
+		set_Value (COLUMNNAME_TieneCaja, Boolean.valueOf(TieneCaja));
+	}
+
+	/** Get TieneCaja.
+		@return Si requiere o no una caja asociada
+	  */
+	public boolean isTieneCaja () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneCaja);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** TipoConceptoForEfe AD_Reference_ID=1000058 */

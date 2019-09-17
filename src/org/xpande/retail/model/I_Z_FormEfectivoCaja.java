@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_FormEfectivoLin
+/** Generated Interface for Z_FormEfectivoCaja
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_FormEfectivoLin 
+public interface I_Z_FormEfectivoCaja 
 {
 
-    /** TableName=Z_FormEfectivoLin */
-    public static final String Table_Name = "Z_FormEfectivoLin";
+    /** TableName=Z_FormEfectivoCaja */
+    public static final String Table_Name = "Z_FormEfectivoCaja";
 
-    /** AD_Table_ID=1000310 */
+    /** AD_Table_ID=1000318 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -133,19 +133,6 @@ public interface I_Z_FormEfectivoLin
 	  */
 	public int getCreatedBy();
 
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
-
-	/** Set Description.
-	  * Optional short description of the record
-	  */
-	public void setDescription(String Description);
-
-	/** Get Description.
-	  * Optional short description of the record
-	  */
-	public String getDescription();
-
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -158,45 +145,6 @@ public interface I_Z_FormEfectivoLin
 	  * The record is active in the system
 	  */
 	public boolean isActive();
-
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
-
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public void setName(String Name);
-
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public String getName();
-
-    /** Column name TieneCaja */
-    public static final String COLUMNNAME_TieneCaja = "TieneCaja";
-
-	/** Set TieneCaja.
-	  * Si requiere o no una caja asociada
-	  */
-	public void setTieneCaja(boolean TieneCaja);
-
-	/** Get TieneCaja.
-	  * Si requiere o no una caja asociada
-	  */
-	public boolean isTieneCaja();
-
-    /** Column name TipoConceptoForEfe */
-    public static final String COLUMNNAME_TipoConceptoForEfe = "TipoConceptoForEfe";
-
-	/** Set TipoConceptoForEfe.
-	  * Tipo de concepto de formulario de movimientos de efectivo en Retail
-	  */
-	public void setTipoConceptoForEfe(String TipoConceptoForEfe);
-
-	/** Get TipoConceptoForEfe.
-	  * Tipo de concepto de formulario de movimientos de efectivo en Retail
-	  */
-	public String getTipoConceptoForEfe();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -227,16 +175,27 @@ public interface I_Z_FormEfectivoLin
 	  */
 	public String getUUID();
 
-    /** Column name Z_FormEfectivo_ID */
-    public static final String COLUMNNAME_Z_FormEfectivo_ID = "Z_FormEfectivo_ID";
+    /** Column name Value */
+    public static final String COLUMNNAME_Value = "Value";
 
-	/** Set Z_FormEfectivo ID	  */
-	public void setZ_FormEfectivo_ID(int Z_FormEfectivo_ID);
+	/** Set Search Key.
+	  * Search key for the record in the format required - must be unique
+	  */
+	public void setValue(String Value);
 
-	/** Get Z_FormEfectivo ID	  */
-	public int getZ_FormEfectivo_ID();
+	/** Get Search Key.
+	  * Search key for the record in the format required - must be unique
+	  */
+	public String getValue();
 
-	public I_Z_FormEfectivo getZ_FormEfectivo() throws RuntimeException;
+    /** Column name Z_FormEfectivoCaja_ID */
+    public static final String COLUMNNAME_Z_FormEfectivoCaja_ID = "Z_FormEfectivoCaja_ID";
+
+	/** Set Z_FormEfectivoCaja ID	  */
+	public void setZ_FormEfectivoCaja_ID(int Z_FormEfectivoCaja_ID);
+
+	/** Get Z_FormEfectivoCaja ID	  */
+	public int getZ_FormEfectivoCaja_ID();
 
     /** Column name Z_FormEfectivoLin_ID */
     public static final String COLUMNNAME_Z_FormEfectivoLin_ID = "Z_FormEfectivoLin_ID";
@@ -247,14 +206,5 @@ public interface I_Z_FormEfectivoLin
 	/** Get Z_FormEfectivoLin ID	  */
 	public int getZ_FormEfectivoLin_ID();
 
-    /** Column name Z_RetailConfigForEfe_ID */
-    public static final String COLUMNNAME_Z_RetailConfigForEfe_ID = "Z_RetailConfigForEfe_ID";
-
-	/** Set Z_RetailConfigForEfe ID	  */
-	public void setZ_RetailConfigForEfe_ID(int Z_RetailConfigForEfe_ID);
-
-	/** Get Z_RetailConfigForEfe ID	  */
-	public int getZ_RetailConfigForEfe_ID();
-
-	public I_Z_RetailConfigForEfe getZ_RetailConfigForEfe() throws RuntimeException;
+	public I_Z_FormEfectivoLin getZ_FormEfectivoLin() throws RuntimeException;
 }

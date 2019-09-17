@@ -470,7 +470,25 @@ public class MZFormEfectivo extends X_Z_FormEfectivo implements DocAction, DocOp
 				efectivoLin.setName(configForEfe.getName());
 				efectivoLin.setC_Currency_ID(142);
 				efectivoLin.setC_Currency_2_ID(100);
+				efectivoLin.setTieneCaja(configForEfe.isTieneCaja());
 				efectivoLin.saveEx();
+
+				/*
+				// Si para este concepto debo tener apertura por caja
+				if (efectivoLin.isTieneCaja()){
+					// Cargo cajas según POS asociado a esta organización
+					MZPosVendorOrg posVendorOrg = MZPosVendor.getByOrg(getCtx(), this.getAD_Org_ID(), null);
+					if (posVendorOrg != null) {
+						MZPosVendor posVendor = (MZPosVendor) posVendorOrg.getZ_PosVendor();
+						if (posVendor.getValue().equalsIgnoreCase("SISTECO")) {
+
+						}
+						else if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")) {
+
+						}
+					}
+				}
+				*/
 			}
 
 		}
