@@ -242,6 +242,31 @@ public class ValoracionInventario extends SvrProcess {
                         " and m_product_id =" + mProductID;
                 DB.executeUpdateEx(action, null);
             }
+            else{
+                // Si no tengo historico de costos, puedo tener precio de venta y debo considerarlo
+                DB.close(rs, pstmt);
+                rs = null; pstmt = null;
+
+                sql = " select c_currency_id, priceso " +
+                        " from Z_EvolPrecioVtaProdOrg " +
+                        " where ad_orgtrx_id =" + this.adOrgID +
+                        " and m_product_id =" + mProductID +
+                        " and datevalidso <='" + this.endDate + "' " +
+                        " order by datevalidso desc ";
+
+                pstmt = DB.prepareStatement(sql, get_TrxName());
+                rs = pstmt.executeQuery();
+
+                if(rs.next()){
+
+                    String action = " update " + TABLA_REPORTE +
+                            " set c_currency_id_so =" + rs.getInt("c_currency_id") + ", " +
+                            " priceso =" + rs.getBigDecimal("priceso") +
+                            " where ad_user_id =" + this.getAD_User_ID() +
+                            " and m_product_id =" + mProductID;
+                    DB.executeUpdateEx(action, null);
+                }
+            }
         }
         catch (Exception e){
             throw new AdempiereException(e);
