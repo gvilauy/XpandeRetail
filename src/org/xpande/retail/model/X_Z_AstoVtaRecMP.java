@@ -24,10 +24,10 @@ import java.util.Properties;
 import org.compiere.model.*;
 import org.compiere.util.Env;
 
-/** Generated Model for Z_GeneraAstoVta
+/** Generated Model for Z_AstoVtaRecMP
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0 - $Id$ */
-public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persistent 
+public class X_Z_AstoVtaRecMP extends PO implements I_Z_AstoVtaRecMP, I_Persistent 
 {
 
 	/**
@@ -36,18 +36,15 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
 	private static final long serialVersionUID = 20191001L;
 
     /** Standard Constructor */
-    public X_Z_GeneraAstoVta (Properties ctx, int Z_GeneraAstoVta_ID, String trxName)
+    public X_Z_AstoVtaRecMP (Properties ctx, int Z_AstoVtaRecMP_ID, String trxName)
     {
-      super (ctx, Z_GeneraAstoVta_ID, trxName);
-      /** if (Z_GeneraAstoVta_ID == 0)
+      super (ctx, Z_AstoVtaRecMP_ID, trxName);
+      /** if (Z_AstoVtaRecMP_ID == 0)
         {
-			setC_AcctSchema_ID (0);
-			setC_Currency_ID (0);
 			setC_DocType_ID (0);
 			setDateAcct (new Timestamp( System.currentTimeMillis() ));
 			setDateDoc (new Timestamp( System.currentTimeMillis() ));
 // @#Date@
-			setDateTo (new Timestamp( System.currentTimeMillis() ));
 			setDocAction (null);
 // CO
 			setDocStatus (null);
@@ -61,12 +58,14 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
 // N
 			setProcessing (false);
 // N
+			setZ_AstoVtaRecMP_ID (0);
 			setZ_GeneraAstoVta_ID (0);
+			setZ_PosVendor_ID (0);
         } */
     }
 
     /** Load Constructor */
-    public X_Z_GeneraAstoVta (Properties ctx, ResultSet rs, String trxName)
+    public X_Z_AstoVtaRecMP (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -88,86 +87,10 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
 
     public String toString()
     {
-      StringBuffer sb = new StringBuffer ("X_Z_GeneraAstoVta[")
+      StringBuffer sb = new StringBuffer ("X_Z_AstoVtaRecMP[")
         .append(get_ID()).append("]");
       return sb.toString();
     }
-
-	/** Set AmtRounding.
-		@param AmtRounding 
-		Monto de redondeo
-	  */
-	public void setAmtRounding (BigDecimal AmtRounding)
-	{
-		set_Value (COLUMNNAME_AmtRounding, AmtRounding);
-	}
-
-	/** Get AmtRounding.
-		@return Monto de redondeo
-	  */
-	public BigDecimal getAmtRounding () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtRounding);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException
-    {
-		return (I_C_AcctSchema)MTable.get(getCtx(), I_C_AcctSchema.Table_Name)
-			.getPO(getC_AcctSchema_ID(), get_TrxName());	}
-
-	/** Set Accounting Schema.
-		@param C_AcctSchema_ID 
-		Rules for accounting
-	  */
-	public void setC_AcctSchema_ID (int C_AcctSchema_ID)
-	{
-		if (C_AcctSchema_ID < 1) 
-			set_Value (COLUMNNAME_C_AcctSchema_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_AcctSchema_ID, Integer.valueOf(C_AcctSchema_ID));
-	}
-
-	/** Get Accounting Schema.
-		@return Rules for accounting
-	  */
-	public int getC_AcctSchema_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_AcctSchema_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	public I_C_Currency getC_Currency() throws RuntimeException
-    {
-		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
-			.getPO(getC_Currency_ID(), get_TrxName());	}
-
-	/** Set Currency.
-		@param C_Currency_ID 
-		The Currency for this record
-	  */
-	public void setC_Currency_ID (int C_Currency_ID)
-	{
-		if (C_Currency_ID < 1) 
-			set_Value (COLUMNNAME_C_Currency_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
-	}
-
-	/** Get Currency.
-		@return The Currency for this record
-	  */
-	public int getC_Currency_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
 
 	public I_C_DocType getC_DocType() throws RuntimeException
     {
@@ -229,23 +152,6 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
 	public Timestamp getDateDoc () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_DateDoc);
-	}
-
-	/** Set Date To.
-		@param DateTo 
-		End date of a date range
-	  */
-	public void setDateTo (Timestamp DateTo)
-	{
-		set_Value (COLUMNNAME_DateTo, DateTo);
-	}
-
-	/** Get Date To.
-		@return End date of a date range
-	  */
-	public Timestamp getDateTo () 
-	{
-		return (Timestamp)get_Value(COLUMNNAME_DateTo);
 	}
 
 	/** Set Description.
@@ -422,37 +328,6 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
 		return false;
 	}
 
-	/** Set ProcessButton.
-		@param ProcessButton ProcessButton	  */
-	public void setProcessButton (String ProcessButton)
-	{
-		set_Value (COLUMNNAME_ProcessButton, ProcessButton);
-	}
-
-	/** Get ProcessButton.
-		@return ProcessButton	  */
-	public String getProcessButton () 
-	{
-		return (String)get_Value(COLUMNNAME_ProcessButton);
-	}
-
-	/** Set ProcessButton2.
-		@param ProcessButton2 
-		Botón de Proceso
-	  */
-	public void setProcessButton2 (String ProcessButton2)
-	{
-		set_Value (COLUMNNAME_ProcessButton2, ProcessButton2);
-	}
-
-	/** Get ProcessButton2.
-		@return Botón de Proceso
-	  */
-	public String getProcessButton2 () 
-	{
-		return (String)get_Value(COLUMNNAME_ProcessButton2);
-	}
-
 	/** Set Processed.
 		@param Processed 
 		The document has been processed
@@ -535,19 +410,14 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
 		return (String)get_Value(COLUMNNAME_UUID);
 	}
 
-	public I_Z_AstoVtaRecMP getZ_AstoVtaRecMP() throws RuntimeException
-    {
-		return (I_Z_AstoVtaRecMP)MTable.get(getCtx(), I_Z_AstoVtaRecMP.Table_Name)
-			.getPO(getZ_AstoVtaRecMP_ID(), get_TrxName());	}
-
 	/** Set Z_AstoVtaRecMP ID.
 		@param Z_AstoVtaRecMP_ID Z_AstoVtaRecMP ID	  */
 	public void setZ_AstoVtaRecMP_ID (int Z_AstoVtaRecMP_ID)
 	{
 		if (Z_AstoVtaRecMP_ID < 1) 
-			set_Value (COLUMNNAME_Z_AstoVtaRecMP_ID, null);
+			set_ValueNoCheck (COLUMNNAME_Z_AstoVtaRecMP_ID, null);
 		else 
-			set_Value (COLUMNNAME_Z_AstoVtaRecMP_ID, Integer.valueOf(Z_AstoVtaRecMP_ID));
+			set_ValueNoCheck (COLUMNNAME_Z_AstoVtaRecMP_ID, Integer.valueOf(Z_AstoVtaRecMP_ID));
 	}
 
 	/** Get Z_AstoVtaRecMP ID.
@@ -560,14 +430,19 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
 		return ii.intValue();
 	}
 
+	public I_Z_GeneraAstoVta getZ_GeneraAstoVta() throws RuntimeException
+    {
+		return (I_Z_GeneraAstoVta)MTable.get(getCtx(), I_Z_GeneraAstoVta.Table_Name)
+			.getPO(getZ_GeneraAstoVta_ID(), get_TrxName());	}
+
 	/** Set Z_GeneraAstoVta ID.
 		@param Z_GeneraAstoVta_ID Z_GeneraAstoVta ID	  */
 	public void setZ_GeneraAstoVta_ID (int Z_GeneraAstoVta_ID)
 	{
 		if (Z_GeneraAstoVta_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Z_GeneraAstoVta_ID, null);
+			set_Value (COLUMNNAME_Z_GeneraAstoVta_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_Z_GeneraAstoVta_ID, Integer.valueOf(Z_GeneraAstoVta_ID));
+			set_Value (COLUMNNAME_Z_GeneraAstoVta_ID, Integer.valueOf(Z_GeneraAstoVta_ID));
 	}
 
 	/** Get Z_GeneraAstoVta ID.
@@ -600,31 +475,6 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
 	public int getZ_PosVendor_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_PosVendor_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	public I_Z_PosVendorOrg getZ_PosVendorOrg() throws RuntimeException
-    {
-		return (I_Z_PosVendorOrg)MTable.get(getCtx(), I_Z_PosVendorOrg.Table_Name)
-			.getPO(getZ_PosVendorOrg_ID(), get_TrxName());	}
-
-	/** Set Z_PosVendorOrg ID.
-		@param Z_PosVendorOrg_ID Z_PosVendorOrg ID	  */
-	public void setZ_PosVendorOrg_ID (int Z_PosVendorOrg_ID)
-	{
-		if (Z_PosVendorOrg_ID < 1) 
-			set_Value (COLUMNNAME_Z_PosVendorOrg_ID, null);
-		else 
-			set_Value (COLUMNNAME_Z_PosVendorOrg_ID, Integer.valueOf(Z_PosVendorOrg_ID));
-	}
-
-	/** Get Z_PosVendorOrg ID.
-		@return Z_PosVendorOrg ID	  */
-	public int getZ_PosVendorOrg_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_PosVendorOrg_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

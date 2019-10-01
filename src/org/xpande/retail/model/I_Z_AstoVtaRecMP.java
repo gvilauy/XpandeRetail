@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_GeneraAstoVta
+/** Generated Interface for Z_AstoVtaRecMP
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_GeneraAstoVta 
+public interface I_Z_AstoVtaRecMP 
 {
 
-    /** TableName=Z_GeneraAstoVta */
-    public static final String Table_Name = "Z_GeneraAstoVta";
+    /** TableName=Z_AstoVtaRecMP */
+    public static final String Table_Name = "Z_AstoVtaRecMP";
 
-    /** AD_Table_ID=1000285 */
+    /** AD_Table_ID=1000325 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -62,49 +62,6 @@ public interface I_Z_GeneraAstoVta
 	  * Organizational entity within client
 	  */
 	public int getAD_Org_ID();
-
-    /** Column name AmtRounding */
-    public static final String COLUMNNAME_AmtRounding = "AmtRounding";
-
-	/** Set AmtRounding.
-	  * Monto de redondeo
-	  */
-	public void setAmtRounding(BigDecimal AmtRounding);
-
-	/** Get AmtRounding.
-	  * Monto de redondeo
-	  */
-	public BigDecimal getAmtRounding();
-
-    /** Column name C_AcctSchema_ID */
-    public static final String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
-
-	/** Set Accounting Schema.
-	  * Rules for accounting
-	  */
-	public void setC_AcctSchema_ID(int C_AcctSchema_ID);
-
-	/** Get Accounting Schema.
-	  * Rules for accounting
-	  */
-	public int getC_AcctSchema_ID();
-
-	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException;
-
-    /** Column name C_Currency_ID */
-    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
-
-	/** Set Currency.
-	  * The Currency for this record
-	  */
-	public void setC_Currency_ID(int C_Currency_ID);
-
-	/** Get Currency.
-	  * The Currency for this record
-	  */
-	public int getC_Currency_ID();
-
-	public I_C_Currency getC_Currency() throws RuntimeException;
 
     /** Column name C_DocType_ID */
     public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
@@ -162,19 +119,6 @@ public interface I_Z_GeneraAstoVta
 	  * Date of the Document
 	  */
 	public Timestamp getDateDoc();
-
-    /** Column name DateTo */
-    public static final String COLUMNNAME_DateTo = "DateTo";
-
-	/** Set Date To.
-	  * End date of a date range
-	  */
-	public void setDateTo(Timestamp DateTo);
-
-	/** Get Date To.
-	  * End date of a date range
-	  */
-	public Timestamp getDateTo();
 
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
@@ -267,28 +211,6 @@ public interface I_Z_GeneraAstoVta
 	  */
 	public boolean isPosted();
 
-    /** Column name ProcessButton */
-    public static final String COLUMNNAME_ProcessButton = "ProcessButton";
-
-	/** Set ProcessButton	  */
-	public void setProcessButton(String ProcessButton);
-
-	/** Get ProcessButton	  */
-	public String getProcessButton();
-
-    /** Column name ProcessButton2 */
-    public static final String COLUMNNAME_ProcessButton2 = "ProcessButton2";
-
-	/** Set ProcessButton2.
-	  * Botón de Proceso
-	  */
-	public void setProcessButton2(String ProcessButton2);
-
-	/** Get ProcessButton2.
-	  * Botón de Proceso
-	  */
-	public String getProcessButton2();
-
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
@@ -362,8 +284,6 @@ public interface I_Z_GeneraAstoVta
 	/** Get Z_AstoVtaRecMP ID	  */
 	public int getZ_AstoVtaRecMP_ID();
 
-	public I_Z_AstoVtaRecMP getZ_AstoVtaRecMP() throws RuntimeException;
-
     /** Column name Z_GeneraAstoVta_ID */
     public static final String COLUMNNAME_Z_GeneraAstoVta_ID = "Z_GeneraAstoVta_ID";
 
@@ -372,6 +292,8 @@ public interface I_Z_GeneraAstoVta
 
 	/** Get Z_GeneraAstoVta ID	  */
 	public int getZ_GeneraAstoVta_ID();
+
+	public I_Z_GeneraAstoVta getZ_GeneraAstoVta() throws RuntimeException;
 
     /** Column name Z_PosVendor_ID */
     public static final String COLUMNNAME_Z_PosVendor_ID = "Z_PosVendor_ID";
@@ -383,15 +305,4 @@ public interface I_Z_GeneraAstoVta
 	public int getZ_PosVendor_ID();
 
 	public I_Z_PosVendor getZ_PosVendor() throws RuntimeException;
-
-    /** Column name Z_PosVendorOrg_ID */
-    public static final String COLUMNNAME_Z_PosVendorOrg_ID = "Z_PosVendorOrg_ID";
-
-	/** Set Z_PosVendorOrg ID	  */
-	public void setZ_PosVendorOrg_ID(int Z_PosVendorOrg_ID);
-
-	/** Get Z_PosVendorOrg ID	  */
-	public int getZ_PosVendorOrg_ID();
-
-	public I_Z_PosVendorOrg getZ_PosVendorOrg() throws RuntimeException;
 }

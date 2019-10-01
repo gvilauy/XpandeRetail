@@ -240,7 +240,80 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 			approveIt();
 		log.info(toString());
 		//
-		
+
+		MZPosVendor posVendor = (MZPosVendor) this.getZ_PosVendor();
+		if (posVendor.getValue().equalsIgnoreCase("SISTECO")){
+
+			// Obtengo reclasficacion de medios de pago segun proveedor de POS, si es que tengo alguna.
+			List<MZGeneraAstoVtaDetMPST> vtaDetMPSTList = this.getMediosPagoModifSisteco();
+
+			// Si tengo medios de pago reclasificados
+			if (vtaDetMPSTList.size() > 0){
+
+				// Instancio y completo nuevo documento para asiento de reclasificación de medios de pago de sisteco
+				MDocType[] docTypeRecMPList = MDocType.getOfDocBaseType(getCtx(), "AVR");
+				if (docTypeRecMPList.length <= 0){
+					this.m_processMsg = "Falta definr Tipo de Documento para Asiento de Reclasificación de Medios de Pago.";
+					return DocAction.STATUS_Invalid;
+				}
+
+				MZAstoVtaRecMP astoVtaRecMP = new MZAstoVtaRecMP(getCtx(), 0, get_TrxName());
+				astoVtaRecMP.setZ_GeneraAstoVta_ID(this.get_ID());
+				astoVtaRecMP.setC_DocType_ID(docTypeRecMPList[0].get_ID());
+				astoVtaRecMP.setDateDoc(this.getDateDoc());
+				astoVtaRecMP.setDateAcct(this.getDateAcct());
+				astoVtaRecMP.setZ_PosVendor_ID(this.getZ_PosVendor_ID());
+				astoVtaRecMP.setDescription("Generado Automáticamente desde Generador de Asientos de Venta Nro. : " + this.getDocumentNo());
+
+				astoVtaRecMP.saveEx();
+
+				for (MZGeneraAstoVtaDetMPST vtaDetMPST: vtaDetMPSTList){
+					MZAstoVtaRecMPLinST astoVtaRecMPLinST = new MZAstoVtaRecMPLinST(getCtx(), 0, get_TrxName());
+					astoVtaRecMPLinST.setZ_AstoVtaRecMP_ID(astoVtaRecMP.get_ID());
+					astoVtaRecMPLinST.setZ_GeneraAstoVtaDetMPST_ID(vtaDetMPST.get_ID());
+					astoVtaRecMPLinST.setDateTrx(vtaDetMPST.getDateTrx());
+					astoVtaRecMPLinST.setName(vtaDetMPST.getName());
+					astoVtaRecMPLinST.setST_Cambio(vtaDetMPST.getST_Cambio());
+					astoVtaRecMPLinST.setST_CodigoCaja(vtaDetMPST.getST_CodigoCaja());
+					astoVtaRecMPLinST.setST_CodigoCajera(vtaDetMPST.getST_CodigoCajera());
+					astoVtaRecMPLinST.setST_CodigoCC(vtaDetMPST.getST_CodigoCC());
+					astoVtaRecMPLinST.setST_CodigoMedioPago(vtaDetMPST.getST_CodigoMedioPago());
+					astoVtaRecMPLinST.setST_CodigoMoneda(vtaDetMPST.getST_CodigoMoneda());
+					astoVtaRecMPLinST.setST_DescripcionCFE(vtaDetMPST.getST_DescripcionCFE());
+					astoVtaRecMPLinST.setST_DescuentoAfam(vtaDetMPST.getST_DescuentoAfam());
+					astoVtaRecMPLinST.setST_MontoDescuentoLeyIVA(vtaDetMPST.getST_MontoDescuentoLeyIVA());
+					astoVtaRecMPLinST.setST_NombreCC(vtaDetMPST.getST_NombreCC());
+					astoVtaRecMPLinST.setST_NombreMedioPago(vtaDetMPST.getST_NombreMedioPago());
+					astoVtaRecMPLinST.setST_NombreTarjeta(vtaDetMPST.getST_NombreTarjeta());
+					astoVtaRecMPLinST.setST_NumeroTarjeta(vtaDetMPST.getST_NumeroTarjeta());
+					astoVtaRecMPLinST.setST_NumeroTicket(vtaDetMPST.getST_NumeroTicket());
+					astoVtaRecMPLinST.setST_TextoLey(vtaDetMPST.getST_TextoLey());
+					astoVtaRecMPLinST.setST_TimestampTicket(vtaDetMPST.getST_TimestampTicket());
+					astoVtaRecMPLinST.setST_TipoLinea(vtaDetMPST.getST_TipoLinea());
+					astoVtaRecMPLinST.setST_TipoTarjetaCredito(vtaDetMPST.getST_TipoTarjetaCredito());
+					astoVtaRecMPLinST.setST_TotalEntregado(vtaDetMPST.getST_TotalEntregado());
+					astoVtaRecMPLinST.setST_TotalEntregadoMonedaRef(vtaDetMPST.getST_TotalEntregadoMonedaRef());
+					astoVtaRecMPLinST.setST_TotalMPPagoMoneda(vtaDetMPST.getST_TotalMPPagoMoneda());
+					astoVtaRecMPLinST.setST_TotalMPPagoMonedaRef(vtaDetMPST.getST_TotalMPPagoMonedaRef());
+					astoVtaRecMPLinST.setTotalAmt(vtaDetMPST.getTotalAmt());
+					astoVtaRecMPLinST.setZ_SistecoMedioPago_ID(vtaDetMPST.getZ_SistecoMedioPago_ID());
+					astoVtaRecMPLinST.setZ_SistecoTipoTarjeta_ID(vtaDetMPST.getZ_SistecoTipoTarjeta_ID());
+					astoVtaRecMPLinST.saveEx();
+				}
+
+				if (!astoVtaRecMP.processIt(DocAction.ACTION_Complete)){
+					if (astoVtaRecMP.getProcessMsg() != null){
+						this.m_processMsg = astoVtaRecMP.getProcessMsg();
+					}
+					else {
+						this.m_processMsg = "No se pudo generar y completar el documento de Asiento de Reclasificación de Medios de Pago.";
+					}
+					return DocAction.STATUS_Invalid;
+				}
+				astoVtaRecMP.saveEx();
+			}
+		}
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
