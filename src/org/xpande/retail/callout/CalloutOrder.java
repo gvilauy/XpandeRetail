@@ -844,10 +844,16 @@ public class CalloutOrder extends CalloutEngine {
                         (M_Warehouse_ID, M_Product_ID, M_AttributeSetInstance_ID, null);
                 if (available == null)
                     available = Env.ZERO;
-                if (available.signum() == 0)
-                    mTab.fireDataStatusEEvent ("NoQtyAvailable", "0", false);
-                else if (available.compareTo(QtyOrdered) < 0)
-                    mTab.fireDataStatusEEvent ("InsufficientQtyAvailable", available.toString(), false);
+
+                // Xpande. Gabriel Vila. 30/09/2019.
+                // Comento warnings por stock
+                if (available.signum() == 0){
+                    // mTab.fireDataStatusEEvent ("NoQtyAvailable", "0", false);
+                }
+                else if (available.compareTo(QtyOrdered) < 0){
+                    // mTab.fireDataStatusEEvent ("InsufficientQtyAvailable", available.toString(), false);
+                }
+                // Fin Xpande.
                 else
                 {
                     Integer C_OrderLine_ID = (Integer)mTab.getValue("C_OrderLine_ID");
@@ -861,10 +867,17 @@ public class CalloutOrder extends CalloutEngine {
                     BigDecimal total = available.subtract(notReserved);
                     if (total.compareTo(QtyOrdered) < 0)
                     {
+                        // Xpande. Gabriel Vila. 30/09/2019.
+                        // Comento warnings por stock
+
+                        /*
                         String info = Msg.parseTranslation(ctx, "@QtyAvailable@=" + available
                                 + "  -  @QtyNotReserved@=" + notReserved + "  =  " + total);
                         mTab.fireDataStatusEEvent ("InsufficientQtyAvailable",
                                 info, false);
+                        */
+
+                        // Fin Xpande
                     }
                 }
             }
