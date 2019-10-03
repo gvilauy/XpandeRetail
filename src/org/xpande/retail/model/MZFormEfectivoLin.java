@@ -30,14 +30,16 @@ public class MZFormEfectivoLin extends X_Z_FormEfectivoLin {
 
         if (!success) return success;
 
-        if (newRecord) return success;
+        MZFormEfectivo formEfectivo = (MZFormEfectivo) this.getZ_FormEfectivo();
 
-        if ((is_ValueChanged(X_Z_FormEfectivoLin.COLUMNNAME_AmtSubtotal1)) || (is_ValueChanged(X_Z_FormEfectivoLin.COLUMNNAME_AmtSubtotal2))) {
-
-            // Actualizo totales del documento
-            MZFormEfectivo formEfectivo = (MZFormEfectivo) this.getZ_FormEfectivo();
+        // Actualizo totales del documento
+        if (newRecord){
             formEfectivo.updateTotals();
-
+        }
+        else{
+            if ((is_ValueChanged(X_Z_FormEfectivoLin.COLUMNNAME_AmtSubtotal1)) || (is_ValueChanged(X_Z_FormEfectivoLin.COLUMNNAME_AmtSubtotal2))) {
+                formEfectivo.updateTotals();
+            }
         }
 
         return true;
