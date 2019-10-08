@@ -263,6 +263,7 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 
 		}
 
+		/*
 		// Guardo documento en tabla para informes de actividad por documento
 		MZActividadDocumento actividadDocumento = new MZActividadDocumento(getCtx(), 0, get_TrxName());
 		actividadDocumento.setAD_Table_ID(this.get_Table_ID());
@@ -279,6 +280,7 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 		}
 		actividadDocumento.setDiferenciaTiempo(new BigDecimal((actividadDocumento.getDateCompleted().getTime()-actividadDocumento.getDocDateCreated().getTime())/1000).divide(new BigDecimal(60),2,BigDecimal.ROUND_HALF_UP));
 		actividadDocumento.saveEx();
+		 */
 
 
 		//	User Validation

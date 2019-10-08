@@ -973,6 +973,7 @@ public class ValidatorRetail implements ModelValidator {
             MInvoiceLine[] invoiceLines = model.getLines();
 
             // Guardo documento en tabla para informes de actividad por documento
+            /*
             MZActividadDocumento actividadDocumento = new MZActividadDocumento(model.getCtx(), 0, model.get_TrxName());
             actividadDocumento.setAD_Table_ID(model.get_Table_ID());
             actividadDocumento.setRecord_ID(model.get_ID());
@@ -988,6 +989,7 @@ public class ValidatorRetail implements ModelValidator {
             actividadDocumento.setAD_Role_ID(Env.getAD_Role_ID(model.getCtx()));
             actividadDocumento.setDiferenciaTiempo(new BigDecimal((actividadDocumento.getDateCompleted().getTime()-actividadDocumento.getDocDateCreated().getTime())/1000).divide(new BigDecimal(60),2,BigDecimal.ROUND_HALF_UP));
             actividadDocumento.saveEx();
+            */
 
             // Precisión decimal de lista de precios de compra, si es que tengo.
             int precision = 2;
@@ -1146,11 +1148,13 @@ public class ValidatorRetail implements ModelValidator {
                 return null;
             }
 
+            /*
             // Elimino este documento de la tabla para informes de actividades de documentos.
             MZActividadDocumento actividadDocumento = MZActividadDocumento.getByTableRecord(model.getCtx(), model.get_Table_ID(), model.get_ID(), model.get_TrxName());
             if ((actividadDocumento != null) && (actividadDocumento.get_ID() > 0)){
                 actividadDocumento.deleteEx(true);
             }
+             */
 
             // Para comprobantes de compra del tipo API (facturas de proveedores)
             if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
@@ -1208,6 +1212,7 @@ public class ValidatorRetail implements ModelValidator {
 
             MOrderLine[] orderLines = model.getLines();
 
+            /*
             // Guardo documento en tabla para informes de actividad por documento
             MZActividadDocumento actividadDocumento = new MZActividadDocumento(model.getCtx(), 0, model.get_TrxName());
             actividadDocumento.setAD_Table_ID(model.get_Table_ID());
@@ -1222,6 +1227,7 @@ public class ValidatorRetail implements ModelValidator {
             actividadDocumento.setAD_Role_ID(Env.getAD_Role_ID(model.getCtx()));
             actividadDocumento.setDiferenciaTiempo(new BigDecimal((actividadDocumento.getDateCompleted().getTime()-actividadDocumento.getDocDateCreated().getTime())/1000).divide(new BigDecimal(60),2,BigDecimal.ROUND_HALF_UP));
             actividadDocumento.saveEx();
+             */
 
         }
         else if (timing == TIMING_BEFORE_REACTIVATE){
@@ -1233,11 +1239,13 @@ public class ValidatorRetail implements ModelValidator {
                 return null;
             }
 
+            /*
             // Elimino este documento de la tabla para informes de actividades de documentos.
             MZActividadDocumento actividadDocumento = MZActividadDocumento.getByTableRecord(model.getCtx(), model.get_Table_ID(), model.get_ID(), model.get_TrxName());
             if ((actividadDocumento != null) && (actividadDocumento.get_ID() > 0)){
                 actividadDocumento.deleteEx(true);
             }
+             */
         }
 
         return null;
