@@ -258,6 +258,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 				}
 
 				MZAstoVtaRecMP astoVtaRecMP = new MZAstoVtaRecMP(getCtx(), 0, get_TrxName());
+				astoVtaRecMP.setAD_Org_ID(this.getAD_Org_ID());
 				astoVtaRecMP.setZ_GeneraAstoVta_ID(this.get_ID());
 				astoVtaRecMP.setC_DocType_ID(docTypeRecMPList[0].get_ID());
 				astoVtaRecMP.setDateDoc(this.getDateDoc());
@@ -269,6 +270,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 				for (MZGeneraAstoVtaDetMPST vtaDetMPST: vtaDetMPSTList){
 					MZAstoVtaRecMPLinST astoVtaRecMPLinST = new MZAstoVtaRecMPLinST(getCtx(), 0, get_TrxName());
+					astoVtaRecMPLinST.setAD_Org_ID(this.getAD_Org_ID());
 					astoVtaRecMPLinST.setZ_AstoVtaRecMP_ID(astoVtaRecMP.get_ID());
 					astoVtaRecMPLinST.setZ_GeneraAstoVtaDetMPST_ID(vtaDetMPST.get_ID());
 					astoVtaRecMPLinST.setDateTrx(vtaDetMPST.getDateTrx());
@@ -311,6 +313,8 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 					return DocAction.STATUS_Invalid;
 				}
 				astoVtaRecMP.saveEx();
+
+				this.setZ_AstoVtaRecMP_ID(astoVtaRecMP.get_ID());
 			}
 		}
 
@@ -421,6 +425,8 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 	 */
 	public boolean reActivateIt()
 	{
+		String action = "";
+
 		log.info("reActivateIt - " + toString());
 
 		// Before reActivate
@@ -433,6 +439,25 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 		// Elimino asientos contables
 		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
+
+		// Si tengo asiento de reclasificación de medios de pago asociado a este asiento de venta
+		if (this.getZ_AstoVtaRecMP_ID() > 0){
+			// Elimino asiento de reclasificación
+			MZAstoVtaRecMP astoVtaRecMP = (MZAstoVtaRecMP) this.getZ_AstoVtaRecMP();
+			if (!astoVtaRecMP.processIt(DocumentEngine.ACTION_ReActivate)){
+				if (astoVtaRecMP.getProcessMsg() != null){
+					m_processMsg = astoVtaRecMP.getProcessMsg();
+				}
+				else {
+					m_processMsg = "No se pudo reactivar el asiento de reclasificación asociado a este asiento de venta.";
+				}
+				return false;
+			}
+			astoVtaRecMP.deleteEx(true);
+
+			action = " update z_generaastovta set z_astovtarecmp_id = null where z_generaastovta_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+		}
 
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);

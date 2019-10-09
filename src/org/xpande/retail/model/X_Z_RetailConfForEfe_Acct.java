@@ -30,7 +30,7 @@ public class X_Z_RetailConfForEfe_Acct extends PO implements I_Z_RetailConfForEf
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190830L;
+	private static final long serialVersionUID = 20191009L;
 
     /** Standard Constructor */
     public X_Z_RetailConfForEfe_Acct (Properties ctx, int Z_RetailConfForEfe_Acct_ID, String trxName)
@@ -199,6 +199,34 @@ public class X_Z_RetailConfForEfe_Acct extends PO implements I_Z_RetailConfForEf
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	public I_M_Product getM_Product() throws RuntimeException
+    {
+		return (I_M_Product)MTable.get(getCtx(), I_M_Product.Table_Name)
+			.getPO(getM_Product_ID(), get_TrxName());	}
+
+	/** Set Product.
+		@param M_Product_ID 
+		Product, Service, Item
+	  */
+	public void setM_Product_ID (int M_Product_ID)
+	{
+		if (M_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+	}
+
+	/** Get Product.
+		@return Product, Service, Item
+	  */
+	public int getM_Product_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Immutable Universally Unique Identifier.

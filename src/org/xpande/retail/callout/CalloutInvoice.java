@@ -147,7 +147,8 @@ public class CalloutInvoice extends CalloutEngine
 			+ " p.SO_Description,p.IsDiscountPrinted,"
 			+ " p.SO_CreditLimit, p.SO_CreditLimit-p.SO_CreditUsed AS CreditAvailable,"
 			+ " l.C_BPartner_Location_ID,c.AD_User_ID, coalesce(p.LiteralE,'N') as LiteralE, p.taxID, "
-			+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID " 
+			+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO, " +
+				" p.PO_PaymentTerm_ID, p.AsientoManualInvoice "
 			+ "FROM C_BPartner p"
 			+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"			
 			+ " LEFT OUTER JOIN C_BPartner_Location l ON (p.C_BPartner_ID=l.C_BPartner_ID AND l.IsBillTo='Y' AND l.IsActive='Y')"
@@ -259,6 +260,9 @@ public class CalloutInvoice extends CalloutEngine
 
 				// Xpande. TaxID (Número de identificación)
 				mTab.setValue("TaxID", rs.getString("TaxID"));
+
+				// Xpande. Asiento Manual en Invoices
+				mTab.setValue("AsientoManualInvoice", rs.getString("AsientoManualInvoice"));
 
 			}
 		}

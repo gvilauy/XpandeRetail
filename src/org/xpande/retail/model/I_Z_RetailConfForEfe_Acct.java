@@ -159,6 +159,21 @@ public interface I_Z_RetailConfForEfe_Acct
 	  */
 	public boolean isDebito();
 
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/** Set Product.
+	  * Product, Service, Item
+	  */
+	public void setM_Product_ID(int M_Product_ID);
+
+	/** Get Product.
+	  * Product, Service, Item
+	  */
+	public int getM_Product_ID();
+
+	public I_M_Product getM_Product() throws RuntimeException;
+
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
