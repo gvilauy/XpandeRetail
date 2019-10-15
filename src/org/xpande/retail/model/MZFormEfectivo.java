@@ -566,17 +566,13 @@ public class MZFormEfectivo extends X_Z_FormEfectivo implements DocAction, DocOp
 			DB.executeUpdateEx(action, get_TrxName());
 
 			// Actualizo montos de diferencias
-			if (this.getAmtTotal7().compareTo(Env.ZERO) != 0){
-				action = " update z_formefectivo set differenceamt = coalesce(amttotal7,0) - coalesce(amtbalanceo,0) " +
-						" where z_formefectivo_id =" + this.get_ID();
-				DB.executeUpdateEx(action, get_TrxName());
-			}
+			action = " update z_formefectivo set differenceamt = coalesce(amttotal7,0) - coalesce(amtbalanceo,0) " +
+					" where z_formefectivo_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
 
-			if (this.getAmtTotal8().compareTo(Env.ZERO) != 0){
-				action = " update z_formefectivo set differenceamt2 = coalesce(amttotal8,0) - coalesce(amtbalanceo2,0) " +
-						" where z_formefectivo_id =" + this.get_ID();
-				DB.executeUpdateEx(action, get_TrxName());
-			}
+			action = " update z_formefectivo set differenceamt2 = coalesce(amttotal8,0) - coalesce(amtbalanceo2,0) " +
+					" where z_formefectivo_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
 
     	}
     	catch (Exception e){
