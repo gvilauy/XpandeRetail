@@ -590,6 +590,10 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 					" where " + X_Z_GeneraAstoVtaDetMPST.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 
+			action = " delete from " + X_Z_GeneraAstoVtaDetMPSC.Table_Name +
+					" where " + X_Z_GeneraAstoVtaDetMPSC.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
 
 			if (this.getZ_PosVendor_ID() <= 0){
 				return "Falta indicar Proveedor de POS para la Organización seleccionada";
@@ -604,6 +608,9 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 			}
 			else if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
 				message = this.getVentasMedioPagoScanntech();
+				if (message == null){
+					message = this.getVentasDetMedioPagoScanntech();
+				}
 			}
 
 			// Actualizo monto redondeo
@@ -797,6 +804,61 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 				vtaDetMPST.saveEx();
 
 			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return message;
+	}
+
+	/***
+	 * Obtiene y carga información de detalle de ventas por medios de pago desde SCANNTECH.
+	 * Xpande. Created by Gabriel Vila on 10/21/19.
+	 * @return
+	 */
+	private String getVentasDetMedioPagoScanntech(){
+
+		String message = null;
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+			sql = " select coalesce(a.sc_codigocredito, a.sc_codigotipopago) as codmpago,  coalesce(cc.name,mp.name) as nommpago, " +
+					" a.sc_codigomoneda, a.sc_cotizacionventa, a.sc_importe, b.sc_fechaoperacion " +
+					" from z_stech_tk_movpago a " +
+					" inner join z_stech_tk_mov b on a.z_stech_tk_mov_id = b.z_stech_tk_mov_id " +
+					" left outer join z_stechmediopago mp on a.z_stechmediopago_id = mp.z_stechmediopago_id " +
+					" left outer join z_stechcreditos cc on a.z_stechcreditos_id = cc.z_stechcreditos_id " +
+					" where a.ad_org_id =" + this.getAD_Org_ID() +
+					" and a.datetrx='" + this.getDateTo() + "' " +
+					" and mp.IsAsientoVtaPOS ='Y' " +
+					" order by 1,2,3,4 ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+
+				MZGeneraAstoVtaDetMPSC vtaDetMPSC = new MZGeneraAstoVtaDetMPSC(getCtx(), 0, get_TrxName());
+				vtaDetMPSC.setZ_GeneraAstoVta_ID(this.get_ID());
+				vtaDetMPSC.setAD_Org_ID(this.getAD_Org_ID());
+				vtaDetMPSC.setDateTrx(rs.getTimestamp("sc_fechaoperacion"));
+				vtaDetMPSC.setCodMedioPagoPOS(rs.getString("codmpago"));
+				vtaDetMPSC.setNomMedioPagoPOS(rs.getString("nommpago"));
+				vtaDetMPSC.setSC_CodigoMoneda(rs.getString("sc_codigomoneda"));
+				vtaDetMPSC.setSC_CotizacionVenta(rs.getBigDecimal("sc_cotizacionventa"));
+				vtaDetMPSC.setSC_Importe(rs.getBigDecimal("sc_importe"));
+
+				vtaDetMPSC.saveEx();
+			}
+
 		}
 		catch (Exception e){
 			throw new AdempiereException(e);
