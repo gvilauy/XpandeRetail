@@ -556,6 +556,17 @@ public class CalloutInvoice extends CalloutEngine
 				if (taxLiteralE_ID > 0){
 					C_Tax_ID = taxLiteralE_ID;
 				}
+				else{
+					// Si es literal E pero en configuraciones comerciales no indica que impuesto usar, verifico si no tengo impuesto especial de compra.
+					MProduct product = new MProduct(ctx, M_Product_ID, null);
+					if (product.get_ValueAsInt("C_TaxCategory_ID_2") > 0){
+						//MTax taxAux = TaxUtils.getLastTaxByCategory(ctx, product.get_ValueAsInt("C_TaxCategory_ID_2"), null);
+						MTax taxAux = TaxUtils.getDefaultTaxByCategory(ctx, product.get_ValueAsInt("C_TaxCategory_ID_2"), null);
+						if ((taxAux != null) && (taxAux.get_ID() > 0)){
+							C_Tax_ID = taxAux.get_ID();
+						}
+					}
+				}
 			}
 		}
 		// Si no es Literal E, para invoices compra/venta en Retail, puede suceder que el producto tenga un impuesto especial de compra/venta.
