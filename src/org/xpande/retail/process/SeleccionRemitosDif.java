@@ -20,8 +20,11 @@ package org.xpande.retail.process;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
+import org.compiere.model.MProduct;
+import org.compiere.model.MTax;
 import org.compiere.util.Env;
 import org.xpande.core.model.MZProductoUPC;
+import org.xpande.core.utils.TaxUtils;
 import org.xpande.retail.model.*;
 
 import java.math.BigDecimal;
@@ -114,6 +117,15 @@ public class SeleccionRemitosDif extends SeleccionRemitosDifAbstract
 					MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(getCtx(), this.invoice.getC_BPartner_ID(), linAfecta.getM_Product_ID(), null);
 					if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
 						invoiceLine.set_ValueOfColumn("VendorProductNo", productoSocio.getVendorProductNo());
+					}
+
+					// Verifico impuesto especial de compra para este producto. Si tiene, seteo la linea de invoice con esta tasa de impuesto.
+					MProduct product = (MProduct) invoiceLine.getM_Product();
+					if (product.get_ValueAsInt("C_TaxCategory_ID_2") > 0){
+						MTax taxAux = TaxUtils.getDefaultTaxByCategory(getCtx(), product.get_ValueAsInt("C_TaxCategory_ID_2"), null);
+						if ((taxAux != null) && (taxAux.get_ID() > 0)){
+							invoiceLine.setC_Tax_ID(taxAux.get_ID());
+						}
 					}
 
 					invoiceLine.saveEx();
