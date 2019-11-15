@@ -73,6 +73,19 @@ public final class ComercialUtils {
             else{
         	    // No tengo aun datos de evolucion de precios para este producto.
                 // Tomo precio de venta vigente en la moneda y organización recibidos.
+                sql = " select coalesce(max(pp.pricelist),0) as pricelist " +
+                        "from m_productprice pp " +
+                        "inner join m_pricelist_version plv on pp.m_pricelist_version_id = plv.m_pricelist_version_id " +
+                        "inner join m_pricelist pl on plv.m_pricelist_id = pl.m_pricelist_id " +
+                        "where pl.ad_client_id =" + adClientID +
+                        "and pl.ad_org_id =" + adOrgID +
+                        "and pl.c_currency_id =" + cCurrencyID +
+                        "and pl.issopricelist='Y' " +
+                        "and pp.m_product_id =" + mProductID;
+
+                value = DB.getSQLValueBDEx(null, sql);
+
+                /*
                 MPriceList priceList = PriceListUtils.getPriceListByOrg(ctx, adClientID, adOrgID, cCurrencyID, true, null, trxName);
                 if ((priceList != null) && (priceList.get_ID() > 0)){
                     MPriceListVersion priceListVersion = priceList.getPriceListVersion(null);
@@ -83,6 +96,7 @@ public final class ComercialUtils {
                         }
                     }
                 }
+                */
             }
         }
         catch (Exception e){

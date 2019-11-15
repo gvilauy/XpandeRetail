@@ -4,6 +4,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.xpande.retail.model.X_Z_LineaProductoSocio;
 import org.xpande.retail.utils.ComercialUtils;
 
@@ -186,7 +187,7 @@ public class BalanceServicios extends SvrProcess {
             sql = " select * from " + TABLA_REPORTE + " where ad_user_id =" + this.getAD_User_ID() +
                     " order by m_product_id ";
 
-        	pstmt = DB.prepareStatement(sql, get_TrxName());
+        	pstmt = DB.prepareStatement(sql, null);
         	rs = pstmt.executeQuery();
 
         	while(rs.next()){
