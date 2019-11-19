@@ -1165,13 +1165,14 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		ResultSet rs = null;
 
 		try{
-			sql = " select a.c_taxcategory_id, b.name, sum(a.sc_montoiva) as taxamt, " +
-					" sum(round((a.sc_importe*100)/122,2)) as taxbaseamt " +
+			sql = " select a.c_taxcategory_id, b.name, a.sc_porcentajeiva, sum(a.sc_montoiva) as taxamt, " +
+					" case when sc_porcentajeiva > 0 then " +
+					" sum(round((a.sc_importe*100)/(100 + sc_porcentajeiva),2)) else 0 end as taxbaseamt " +
 					" from zv_scanntech_detvtas a " +
-					" inner join c_taxcategory b on a.c_taxcategory_id = b.c_taxcategory_id " +
+					" inner join c_taxcategory b on a.c_taxcategory_id = b.c_taxcategory_id  " +
 					" where a.ad_org_id =" + this.getAD_Org_ID() +
 					" and a.datetrx ='" + this.getDateTo() + "' " +
-					" group by a.c_taxcategory_id, b.name ";
+					" group by a.c_taxcategory_id, b.name, a.sc_porcentajeiva ";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();

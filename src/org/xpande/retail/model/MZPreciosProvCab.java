@@ -383,6 +383,23 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 					if (preciosProvDistri.getZ_LineaProductoDistri_ID() > 0){
 						lineaProductoDistri = (MZLineaProductoDistri) preciosProvDistri.getZ_LineaProductoDistri();
 						lineaProductoSocioDistri = MZLineaProductoSocio.getByLineaBPartner(getCtx(), lineaProductoGral.get_ID(), preciosProvDistri.getC_BPartner_ID(), get_TrxName());
+
+						// Si no tengo la creo ahora
+						if (lineaProductoSocioDistri == null){
+							// Creo asociacion de distribuidor con linea de negocio
+							lineaProductoSocioDistri = new MZLineaProductoSocio(getCtx(), 0, get_TrxName());
+							lineaProductoSocioDistri.setZ_LineaProductoGral_ID(lineaProductoGral.get_ID());
+							lineaProductoSocioDistri.setC_BPartner_ID(preciosProvDistri.getC_BPartner_ID());
+							lineaProductoSocioDistri.setIsOwn(false);
+							lineaProductoSocioDistri.setC_BPartnerRelation_ID(this.getC_BPartner_ID());
+							lineaProductoSocioDistri.setIsLockedPO(false);
+							lineaProductoSocioDistri.setM_PriceList_ID(lineaProductoDistri.getPlCompra(plCompra.getC_Currency_ID()).get_ID());
+							if (this.getZ_PautaComercial_ID() > 0) lineaProductoSocioDistri.setZ_PautaComercial_ID(this.getZ_PautaComercial_ID());
+							lineaProductoSocioDistri.saveEx();
+
+							preciosProvDistri.setZ_LineaProductoDistri_ID(lineaProductoDistri.get_ID());
+							preciosProvDistri.saveEx();
+						}
 					}
 					else{
 						lineaProductoDistri = new MZLineaProductoDistri(getCtx(), 0, get_TrxName());
