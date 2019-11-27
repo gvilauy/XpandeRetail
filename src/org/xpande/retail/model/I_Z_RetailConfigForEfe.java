@@ -63,6 +63,19 @@ public interface I_Z_RetailConfigForEfe
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name AfectaSaldo */
+    public static final String COLUMNNAME_AfectaSaldo = "AfectaSaldo";
+
+	/** Set AfectaSaldo.
+	  * Si afecta o no saldo
+	  */
+	public void setAfectaSaldo(boolean AfectaSaldo);
+
+	/** Get AfectaSaldo.
+	  * Si afecta o no saldo
+	  */
+	public boolean isAfectaSaldo();
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 

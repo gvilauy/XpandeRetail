@@ -524,10 +524,12 @@ public class MZFormEfectivo extends X_Z_FormEfectivo implements DocAction, DocOp
     	ResultSet rs = null;
 
     	try{
-    	    sql = " select tipoconceptoforefe, coalesce(sum(amtsubtotal1),0) as monto1, coalesce(sum(amtsubtotal2),0) as monto2 " +
-					" from z_formefectivolin " +
-					" where z_formefectivo_id =" + this.get_ID() +
-					" group by tipoconceptoforefe ";
+    	    sql = " select a.tipoconceptoforefe, coalesce(sum(a.amtsubtotal1),0) as monto1, coalesce(sum(a.amtsubtotal2),0) as monto2 " +
+					" from z_formefectivolin a " +
+					" inner join z_retailconfigforefe b on a.z_retailconfigforefe_id = b.z_retailconfigforefe_id " +
+					" where a.z_formefectivo_id =" + this.get_ID() +
+					" and b.afectasaldo ='Y' " +
+					" group by a.tipoconceptoforefe ";
 
     		pstmt = DB.prepareStatement(sql, get_TrxName());
     		rs = pstmt.executeQuery();

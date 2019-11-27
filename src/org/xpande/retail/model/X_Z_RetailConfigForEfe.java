@@ -30,7 +30,7 @@ public class X_Z_RetailConfigForEfe extends PO implements I_Z_RetailConfigForEfe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190916L;
+	private static final long serialVersionUID = 20191126L;
 
     /** Standard Constructor */
     public X_Z_RetailConfigForEfe (Properties ctx, int Z_RetailConfigForEfe_ID, String trxName)
@@ -38,6 +38,8 @@ public class X_Z_RetailConfigForEfe extends PO implements I_Z_RetailConfigForEfe
       super (ctx, Z_RetailConfigForEfe_ID, trxName);
       /** if (Z_RetailConfigForEfe_ID == 0)
         {
+			setAfectaSaldo (true);
+// Y
 			setName (null);
 			setTieneCaja (false);
 // N
@@ -74,6 +76,30 @@ public class X_Z_RetailConfigForEfe extends PO implements I_Z_RetailConfigForEfe
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set AfectaSaldo.
+		@param AfectaSaldo 
+		Si afecta o no saldo
+	  */
+	public void setAfectaSaldo (boolean AfectaSaldo)
+	{
+		set_Value (COLUMNNAME_AfectaSaldo, Boolean.valueOf(AfectaSaldo));
+	}
+
+	/** Get AfectaSaldo.
+		@return Si afecta o no saldo
+	  */
+	public boolean isAfectaSaldo () 
+	{
+		Object oo = get_Value(COLUMNNAME_AfectaSaldo);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
 
 	/** Set Description.
 		@param Description 
