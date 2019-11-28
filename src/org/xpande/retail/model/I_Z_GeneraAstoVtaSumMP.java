@@ -281,4 +281,22 @@ public interface I_Z_GeneraAstoVtaSumMP
 
 	/** Get Z_GeneraAstoVtaSumMP ID	  */
 	public int getZ_GeneraAstoVtaSumMP_ID();
+
+    /** Column name Z_MedioPago_ID */
+    public static final String COLUMNNAME_Z_MedioPago_ID = "Z_MedioPago_ID";
+
+	/** Set Z_MedioPago ID	  */
+	public void setZ_MedioPago_ID(int Z_MedioPago_ID);
+
+	/** Get Z_MedioPago ID	  */
+	public int getZ_MedioPago_ID();
+
+    /** Column name Z_MedioPagoIdent_ID */
+    public static final String COLUMNNAME_Z_MedioPagoIdent_ID = "Z_MedioPagoIdent_ID";
+
+	/** Set Z_MedioPagoIdent ID	  */
+	public void setZ_MedioPagoIdent_ID(int Z_MedioPagoIdent_ID);
+
+	/** Get Z_MedioPagoIdent ID	  */
+	public int getZ_MedioPagoIdent_ID();
 }

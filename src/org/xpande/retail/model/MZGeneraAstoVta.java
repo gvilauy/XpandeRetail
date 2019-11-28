@@ -640,16 +640,19 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 		try{
 		    sql = " select a.st_codigomediopago, a.st_nombremediopago, a.st_tipolinea, b.name as nomtipolinea, a.st_tipotarjetacredito, " +
-					" a.st_nombretarjeta, a.st_codigomoneda, " +
+					" a.st_nombretarjeta, sttar.z_mediopago_id as mptar, sttar.z_mediopagoident_id, stmp.z_mediopago_id as mpsis, a.st_codigomoneda, " +
 					" sum(a.st_totalentregado) as st_totalentregado, sum(a.st_totalmppagomoneda) as st_totalmppagomoneda, " +
 					" sum(a.st_totalentregadomonedaref) as st_totalentregadomonedaref, sum(a.st_totalmppagomonedaref) as st_totalmppagomonedaref, " +
 					" sum(coalesce(a.st_cambio,0)) as st_cambio, sum(a.totalamt) as totalamt " +
 					" from zv_sisteco_vtasmpagodet a " +
 					" left outer join z_sistecotipolineapazos b on a.st_tipolinea = b.value " +
+					" left outer join z_sistecotipotarjeta sttar on a.st_tipotarjetacredito = sttar.value " +
+					" left outer join z_sistecomediopago stmp on a.st_codigomediopago = stmp.value " +
 					" where a.ad_org_id =" + this.getAD_Org_ID() +
 					" and a.datetrx ='" + this.getDateTo() + "' " +
 					" and b.IsAsientoVtaPOS ='Y' " +
-					" group by a.st_codigomediopago, a.st_nombremediopago, a.st_tipolinea, b.name, a.st_tipotarjetacredito, a.st_nombretarjeta, a.st_codigomoneda " +
+					" group by a.st_codigomediopago, a.st_nombremediopago, a.st_tipolinea, b.name, a.st_tipotarjetacredito, a.st_nombretarjeta, " +
+					" sttar.z_mediopago_id, sttar.z_mediopagoident_id, stmp.z_mediopago_id, a.st_codigomoneda " +
 					" order by a.st_codigomediopago, a.st_nombremediopago, a.st_tipolinea, b.name, a.st_tipotarjetacredito, a.st_nombretarjeta, a.st_codigomoneda ";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
@@ -723,6 +726,18 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 					astoVtaSumMP.setChangeAmt(rs.getBigDecimal("st_cambio"));
 				}
 
+				if (rs.getInt("mptar") > 0){
+					astoVtaSumMP.setZ_MedioPago_ID(rs.getInt("mptar"));
+				}
+				else{
+					if (rs.getInt("mpsis") > 0){
+						astoVtaSumMP.setZ_MedioPago_ID(rs.getInt("mpsis"));
+					}
+				}
+				if (rs.getInt("z_mediopagoident_id") > 0){
+					astoVtaSumMP.setZ_MedioPagoIdent_ID(rs.getInt("z_mediopagoident_id"));
+				}
+
 				astoVtaSumMP.saveEx();
 			}
 
@@ -760,9 +775,11 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 					" a.st_nombremediopago, a.st_tipotarjetacredito, a.name, a.st_descripcioncfe, a.st_codigomoneda, a.st_totalentregado, " +
 					" a.st_totalmppagomoneda, a.st_totalentregadomonedaref, a.st_totalmppagomonedaref, a.st_cambio, a.totalamt, " +
 					" a.st_montodescuentoleyiva, a.st_descuentoafam, a.st_tipolinea, a.st_numerotarjeta, a.st_textoley, a.st_codigocc, " +
-					" a.st_nombrecc " +
+					" a.st_nombrecc, sttar.z_mediopago_id as mptar, sttar.z_mediopagoident_id, stmp.z_mediopago_id as mpsis " +
 					" from zv_sisteco_vtasmpagodet a " +
 					" left outer join z_sistecotipolineapazos b on a.st_tipolinea = b.value " +
+					" left outer join z_sistecotipotarjeta sttar on a.st_tipotarjetacredito = sttar.value " +
+					" left outer join z_sistecomediopago stmp on a.st_codigomediopago = stmp.value " +
 					" where a.ad_org_id =" + this.getAD_Org_ID() +
 					" and a.datetrx ='" + this.getDateTo() + "' " +
 					" and b.IsAsientoVtaPOS ='Y' " +
@@ -800,6 +817,18 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 				vtaDetMPST.setST_TextoLey(rs.getString("st_textoley"));
 				vtaDetMPST.setST_CodigoCC(rs.getString("st_codigocc"));
 				vtaDetMPST.setST_NombreCC(rs.getString("st_nombrecc"));
+
+				if (rs.getInt("mptar") > 0){
+					vtaDetMPST.setZ_MedioPago_ID(rs.getInt("mptar"));
+				}
+				else{
+					if (rs.getInt("mpsis") > 0){
+						vtaDetMPST.setZ_MedioPago_ID(rs.getInt("mpsis"));
+					}
+				}
+				if (rs.getInt("z_mediopagoident_id") > 0){
+					vtaDetMPST.setZ_MedioPagoIdent_ID(rs.getInt("z_mediopagoident_id"));
+				}
 
 				vtaDetMPST.saveEx();
 

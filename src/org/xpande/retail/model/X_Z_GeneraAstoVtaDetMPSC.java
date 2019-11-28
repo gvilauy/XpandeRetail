@@ -33,7 +33,7 @@ public class X_Z_GeneraAstoVtaDetMPSC extends PO implements I_Z_GeneraAstoVtaDet
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20191021L;
+	private static final long serialVersionUID = 20191128L;
 
     /** Standard Constructor */
     public X_Z_GeneraAstoVtaDetMPSC (Properties ctx, int Z_GeneraAstoVtaDetMPSC_ID, String trxName)
@@ -233,6 +233,46 @@ public class X_Z_GeneraAstoVtaDetMPSC extends PO implements I_Z_GeneraAstoVtaDet
 	public int getZ_GeneraAstoVta_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_GeneraAstoVta_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_MedioPago ID.
+		@param Z_MedioPago_ID Z_MedioPago ID	  */
+	public void setZ_MedioPago_ID (int Z_MedioPago_ID)
+	{
+		if (Z_MedioPago_ID < 1) 
+			set_Value (COLUMNNAME_Z_MedioPago_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_MedioPago_ID, Integer.valueOf(Z_MedioPago_ID));
+	}
+
+	/** Get Z_MedioPago ID.
+		@return Z_MedioPago ID	  */
+	public int getZ_MedioPago_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPago_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_MedioPagoIdent ID.
+		@param Z_MedioPagoIdent_ID Z_MedioPagoIdent ID	  */
+	public void setZ_MedioPagoIdent_ID (int Z_MedioPagoIdent_ID)
+	{
+		if (Z_MedioPagoIdent_ID < 1) 
+			set_Value (COLUMNNAME_Z_MedioPagoIdent_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_MedioPagoIdent_ID, Integer.valueOf(Z_MedioPagoIdent_ID));
+	}
+
+	/** Get Z_MedioPagoIdent ID.
+		@return Z_MedioPagoIdent ID	  */
+	public int getZ_MedioPagoIdent_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPagoIdent_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
