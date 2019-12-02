@@ -63,6 +63,21 @@ public interface I_Z_GeneraAstoVtaDetMPSC
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/** Set Currency.
+	  * The Currency for this record
+	  */
+	public void setC_Currency_ID(int C_Currency_ID);
+
+	/** Get Currency.
+	  * The Currency for this record
+	  */
+	public int getC_Currency_ID();
+
+	public I_C_Currency getC_Currency() throws RuntimeException;
+
     /** Column name CodMedioPagoPOS */
     public static final String COLUMNNAME_CodMedioPagoPOS = "CodMedioPagoPOS";
 
@@ -131,6 +146,15 @@ public interface I_Z_GeneraAstoVtaDetMPSC
 	  */
 	public String getNomMedioPagoPOS();
 
+    /** Column name SC_CodigoCaja */
+    public static final String COLUMNNAME_SC_CodigoCaja = "SC_CodigoCaja";
+
+	/** Set SC_CodigoCaja	  */
+	public void setSC_CodigoCaja(int SC_CodigoCaja);
+
+	/** Get SC_CodigoCaja	  */
+	public int getSC_CodigoCaja();
+
     /** Column name SC_CodigoMoneda */
     public static final String COLUMNNAME_SC_CodigoMoneda = "SC_CodigoMoneda";
 
@@ -149,6 +173,15 @@ public interface I_Z_GeneraAstoVtaDetMPSC
 	/** Get SC_CotizacionVenta	  */
 	public BigDecimal getSC_CotizacionVenta();
 
+    /** Column name SC_CuponCancelado */
+    public static final String COLUMNNAME_SC_CuponCancelado = "SC_CuponCancelado";
+
+	/** Set SC_CuponCancelado	  */
+	public void setSC_CuponCancelado(boolean SC_CuponCancelado);
+
+	/** Get SC_CuponCancelado	  */
+	public boolean isSC_CuponCancelado();
+
     /** Column name SC_Importe */
     public static final String COLUMNNAME_SC_Importe = "SC_Importe";
 
@@ -157,6 +190,51 @@ public interface I_Z_GeneraAstoVtaDetMPSC
 
 	/** Get SC_Importe	  */
 	public BigDecimal getSC_Importe();
+
+    /** Column name SC_NumeroMov */
+    public static final String COLUMNNAME_SC_NumeroMov = "SC_NumeroMov";
+
+	/** Set SC_NumeroMov	  */
+	public void setSC_NumeroMov(String SC_NumeroMov);
+
+	/** Get SC_NumeroMov	  */
+	public String getSC_NumeroMov();
+
+    /** Column name SC_NumeroOperacion */
+    public static final String COLUMNNAME_SC_NumeroOperacion = "SC_NumeroOperacion";
+
+	/** Set SC_NumeroOperacion	  */
+	public void setSC_NumeroOperacion(String SC_NumeroOperacion);
+
+	/** Get SC_NumeroOperacion	  */
+	public String getSC_NumeroOperacion();
+
+    /** Column name SC_NumeroTarjeta */
+    public static final String COLUMNNAME_SC_NumeroTarjeta = "SC_NumeroTarjeta";
+
+	/** Set SC_NumeroTarjeta	  */
+	public void setSC_NumeroTarjeta(String SC_NumeroTarjeta);
+
+	/** Get SC_NumeroTarjeta	  */
+	public String getSC_NumeroTarjeta();
+
+    /** Column name SC_SerieCfe */
+    public static final String COLUMNNAME_SC_SerieCfe = "SC_SerieCfe";
+
+	/** Set SC_SerieCfe	  */
+	public void setSC_SerieCfe(String SC_SerieCfe);
+
+	/** Get SC_SerieCfe	  */
+	public String getSC_SerieCfe();
+
+    /** Column name SC_TipoCfe */
+    public static final String COLUMNNAME_SC_TipoCfe = "SC_TipoCfe";
+
+	/** Set SC_TipoCfe	  */
+	public void setSC_TipoCfe(int SC_TipoCfe);
+
+	/** Get SC_TipoCfe	  */
+	public int getSC_TipoCfe();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";

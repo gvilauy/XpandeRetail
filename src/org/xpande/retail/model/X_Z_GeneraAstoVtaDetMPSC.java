@@ -33,7 +33,7 @@ public class X_Z_GeneraAstoVtaDetMPSC extends PO implements I_Z_GeneraAstoVtaDet
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20191128L;
+	private static final long serialVersionUID = 20191202L;
 
     /** Standard Constructor */
     public X_Z_GeneraAstoVtaDetMPSC (Properties ctx, int Z_GeneraAstoVtaDetMPSC_ID, String trxName)
@@ -43,6 +43,8 @@ public class X_Z_GeneraAstoVtaDetMPSC extends PO implements I_Z_GeneraAstoVtaDet
         {
 			setCodMedioPagoPOS (null);
 			setNomMedioPagoPOS (null);
+			setSC_CuponCancelado (false);
+// N
 			setSC_Importe (Env.ZERO);
 			setZ_GeneraAstoVtaDetMPSC_ID (0);
 			setZ_GeneraAstoVta_ID (0);
@@ -76,6 +78,34 @@ public class X_Z_GeneraAstoVtaDetMPSC extends PO implements I_Z_GeneraAstoVtaDet
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	public I_C_Currency getC_Currency() throws RuntimeException
+    {
+		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
+			.getPO(getC_Currency_ID(), get_TrxName());	}
+
+	/** Set Currency.
+		@param C_Currency_ID 
+		The Currency for this record
+	  */
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Currency.
+		@return The Currency for this record
+	  */
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** Set CodMedioPagoPOS.
 		@param CodMedioPagoPOS 
@@ -128,6 +158,23 @@ public class X_Z_GeneraAstoVtaDetMPSC extends PO implements I_Z_GeneraAstoVtaDet
 		return (String)get_Value(COLUMNNAME_NomMedioPagoPOS);
 	}
 
+	/** Set SC_CodigoCaja.
+		@param SC_CodigoCaja SC_CodigoCaja	  */
+	public void setSC_CodigoCaja (int SC_CodigoCaja)
+	{
+		set_Value (COLUMNNAME_SC_CodigoCaja, Integer.valueOf(SC_CodigoCaja));
+	}
+
+	/** Get SC_CodigoCaja.
+		@return SC_CodigoCaja	  */
+	public int getSC_CodigoCaja () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SC_CodigoCaja);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set SC_CodigoMoneda.
 		@param SC_CodigoMoneda SC_CodigoMoneda	  */
 	public void setSC_CodigoMoneda (String SC_CodigoMoneda)
@@ -159,6 +206,27 @@ public class X_Z_GeneraAstoVtaDetMPSC extends PO implements I_Z_GeneraAstoVtaDet
 		return bd;
 	}
 
+	/** Set SC_CuponCancelado.
+		@param SC_CuponCancelado SC_CuponCancelado	  */
+	public void setSC_CuponCancelado (boolean SC_CuponCancelado)
+	{
+		set_Value (COLUMNNAME_SC_CuponCancelado, Boolean.valueOf(SC_CuponCancelado));
+	}
+
+	/** Get SC_CuponCancelado.
+		@return SC_CuponCancelado	  */
+	public boolean isSC_CuponCancelado () 
+	{
+		Object oo = get_Value(COLUMNNAME_SC_CuponCancelado);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set SC_Importe.
 		@param SC_Importe SC_Importe	  */
 	public void setSC_Importe (BigDecimal SC_Importe)
@@ -174,6 +242,79 @@ public class X_Z_GeneraAstoVtaDetMPSC extends PO implements I_Z_GeneraAstoVtaDet
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	/** Set SC_NumeroMov.
+		@param SC_NumeroMov SC_NumeroMov	  */
+	public void setSC_NumeroMov (String SC_NumeroMov)
+	{
+		set_Value (COLUMNNAME_SC_NumeroMov, SC_NumeroMov);
+	}
+
+	/** Get SC_NumeroMov.
+		@return SC_NumeroMov	  */
+	public String getSC_NumeroMov () 
+	{
+		return (String)get_Value(COLUMNNAME_SC_NumeroMov);
+	}
+
+	/** Set SC_NumeroOperacion.
+		@param SC_NumeroOperacion SC_NumeroOperacion	  */
+	public void setSC_NumeroOperacion (String SC_NumeroOperacion)
+	{
+		set_Value (COLUMNNAME_SC_NumeroOperacion, SC_NumeroOperacion);
+	}
+
+	/** Get SC_NumeroOperacion.
+		@return SC_NumeroOperacion	  */
+	public String getSC_NumeroOperacion () 
+	{
+		return (String)get_Value(COLUMNNAME_SC_NumeroOperacion);
+	}
+
+	/** Set SC_NumeroTarjeta.
+		@param SC_NumeroTarjeta SC_NumeroTarjeta	  */
+	public void setSC_NumeroTarjeta (String SC_NumeroTarjeta)
+	{
+		set_Value (COLUMNNAME_SC_NumeroTarjeta, SC_NumeroTarjeta);
+	}
+
+	/** Get SC_NumeroTarjeta.
+		@return SC_NumeroTarjeta	  */
+	public String getSC_NumeroTarjeta () 
+	{
+		return (String)get_Value(COLUMNNAME_SC_NumeroTarjeta);
+	}
+
+	/** Set SC_SerieCfe.
+		@param SC_SerieCfe SC_SerieCfe	  */
+	public void setSC_SerieCfe (String SC_SerieCfe)
+	{
+		set_Value (COLUMNNAME_SC_SerieCfe, SC_SerieCfe);
+	}
+
+	/** Get SC_SerieCfe.
+		@return SC_SerieCfe	  */
+	public String getSC_SerieCfe () 
+	{
+		return (String)get_Value(COLUMNNAME_SC_SerieCfe);
+	}
+
+	/** Set SC_TipoCfe.
+		@param SC_TipoCfe SC_TipoCfe	  */
+	public void setSC_TipoCfe (int SC_TipoCfe)
+	{
+		set_Value (COLUMNNAME_SC_TipoCfe, Integer.valueOf(SC_TipoCfe));
+	}
+
+	/** Get SC_TipoCfe.
+		@return SC_TipoCfe	  */
+	public int getSC_TipoCfe () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SC_TipoCfe);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Immutable Universally Unique Identifier.

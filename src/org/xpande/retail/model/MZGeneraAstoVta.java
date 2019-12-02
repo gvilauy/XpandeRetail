@@ -860,7 +860,12 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 		try{
 			sql = " select coalesce(a.sc_codigocredito, a.sc_codigotipopago) as codmpago,  coalesce(cc.name,mp.name) as nommpago, " +
-					" a.sc_codigomoneda, a.sc_cotizacionventa, a.sc_importe, b.sc_fechaoperacion " +
+					" a.sc_codigomoneda, a.sc_cotizacionventa, " +
+					" case when b.sc_cuponcancelado ='N' then a.sc_importe else (a.sc_importe * -1) end as sc_importe, " +
+					" b.sc_fechaoperacion, b.sc_numeromov, b.sc_codigocaja, b.sc_tipocfe, b.sc_seriecfe, b.sc_numerooperacion, " +
+					" case when a.sc_codigomoneda = '858' then 142 else 100 end as c_currency_id, " +
+					" b.sc_cuponcancelado, a.sc_numerotarjeta, " +
+					" coalesce(cc.z_mediopago_id, mp.z_mediopago_id) as z_mediopago_id, cc.z_mediopagoident_id " +
 					" from z_stech_tk_movpago a " +
 					" inner join z_stech_tk_mov b on a.z_stech_tk_mov_id = b.z_stech_tk_mov_id " +
 					" left outer join z_stechmediopago mp on a.z_stechmediopago_id = mp.z_stechmediopago_id " +
@@ -884,7 +889,23 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 				vtaDetMPSC.setSC_CodigoMoneda(rs.getString("sc_codigomoneda"));
 				vtaDetMPSC.setSC_CotizacionVenta(rs.getBigDecimal("sc_cotizacionventa"));
 				vtaDetMPSC.setSC_Importe(rs.getBigDecimal("sc_importe"));
+				vtaDetMPSC.setSC_NumeroMov(rs.getString("sc_numeromov"));
+				vtaDetMPSC.setSC_CodigoCaja(rs.getInt("sc_codigocaja"));
+				vtaDetMPSC.setSC_TipoCfe(rs.getInt("sc_tipocfe"));
+				vtaDetMPSC.setSC_SerieCfe(rs.getString("sc_seriecfe"));
+				vtaDetMPSC.setSC_NumeroOperacion(rs.getString("sc_numerooperacion"));
+				vtaDetMPSC.setC_Currency_ID(rs.getInt("c_currency_id"));
+				vtaDetMPSC.setSC_CuponCancelado( (rs.getString("sc_cuponcancelado").equalsIgnoreCase("N")) ? false : true);
+				vtaDetMPSC.setSC_NumeroTarjeta(rs.getString("sc_numerotarjeta"));
 
+				if (rs.getInt("z_mediopago_id") > 0){
+					vtaDetMPSC.setZ_MedioPago_ID(rs.getInt("z_mediopago_id"));
+				}
+
+				if (rs.getInt("z_mediopagoident_id") > 0){
+					vtaDetMPSC.setZ_MedioPagoIdent_ID(rs.getInt("z_mediopagoident_id"));
+				}
+				
 				vtaDetMPSC.saveEx();
 			}
 
