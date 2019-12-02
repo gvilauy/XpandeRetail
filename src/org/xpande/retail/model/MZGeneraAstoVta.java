@@ -905,7 +905,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 				if (rs.getInt("z_mediopagoident_id") > 0){
 					vtaDetMPSC.setZ_MedioPagoIdent_ID(rs.getInt("z_mediopagoident_id"));
 				}
-				
+
 				vtaDetMPSC.saveEx();
 			}
 
