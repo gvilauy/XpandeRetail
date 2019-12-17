@@ -74,7 +74,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		else if (docStatus.equalsIgnoreCase(STATUS_Completed)){
 
 			options[newIndex++] = DocumentEngine.ACTION_ReActivate;
-			options[newIndex++] = DocumentEngine.ACTION_Void;
+			//options[newIndex++] = DocumentEngine.ACTION_Void;
 		}
 
 		return newIndex;
