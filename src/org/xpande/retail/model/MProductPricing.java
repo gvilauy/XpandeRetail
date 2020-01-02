@@ -159,9 +159,13 @@ public class MProductPricing
 			}
 		}
 
-		// Por organización-producto-socio
+		// Xpande. Gabriel Vila. 15/06/2017.
+		// Primero busco precio por organización-producto-socio
+
 		if (!calculated)
 			calculated = calculatePriceBasedOnOrg();
+
+		// Fin Xpande
 
 		//	Price List Version known
 		if (!calculated)
