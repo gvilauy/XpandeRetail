@@ -891,6 +891,24 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 				vtaDetMPSC.setSC_Importe(rs.getBigDecimal("sc_importe"));
 				vtaDetMPSC.setSC_NumeroMov(rs.getString("sc_numeromov"));
 				vtaDetMPSC.setSC_CodigoCaja(rs.getInt("sc_codigocaja"));
+
+				String descripcionCFE = "e-Factura";
+				int tipoCFE = rs.getInt("sc_tipocfe");
+				if (tipoCFE == 101){
+					descripcionCFE = "e-Ticket";
+				}
+				else if (tipoCFE == 102){
+					descripcionCFE = "Nota de Credito e-Ticket";
+				}
+				else if (tipoCFE == 111){
+					descripcionCFE = "e-Factura";
+				}
+				else if (tipoCFE == 112){
+					descripcionCFE = "Nota de Credito e-Factura";
+				}
+
+				vtaDetMPSC.set_ValueOfColumn("SC_DescripcionCFE", descripcionCFE);
+
 				vtaDetMPSC.setSC_TipoCfe(rs.getInt("sc_tipocfe"));
 				vtaDetMPSC.setSC_SerieCfe(rs.getString("sc_seriecfe"));
 				vtaDetMPSC.setSC_NumeroOperacion(rs.getString("sc_numerooperacion"));
