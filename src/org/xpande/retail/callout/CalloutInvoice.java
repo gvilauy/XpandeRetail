@@ -16,11 +16,13 @@
  *****************************************************************************/
 package org.xpande.retail.callout;
 
+import org.compiere.acct.Doc;
 import org.compiere.model.*;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.xpande.comercial.model.MZComercialConfig;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.core.model.MZSocioListaPrecio;
 import org.xpande.core.utils.PriceListUtils;
@@ -65,6 +67,20 @@ public class CalloutInvoice extends CalloutEngine
 		Integer C_DocType_ID = (Integer)value;
 		if (C_DocType_ID == null || C_DocType_ID.intValue() == 0)
 			return "";
+
+		// Xpande. Gabriel Vila. 20/02/2020.
+		// Si es una nota de credito por diferencia, seteo flag.
+		MDocType docType = new MDocType(ctx, C_DocType_ID, null);
+		if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APCredit)) {
+			MZComercialConfig comercialConfig = MZComercialConfig.getDefault(ctx, null);
+			if (comercialConfig.getDefaultDocAPCDif_ID() == docType.get_ID()) {
+				mTab.setValue("AplicaRemitoDif", true);
+			}
+			else{
+				mTab.setValue("AplicaRemitoDif", false);
+			}
+		}
+		// Fin Xpande
 
 		String sql = "SELECT d.HasCharges,'N',d.IsDocNoControlled," // 1..3
 			+ "s.CurrentNext, d.DocBaseType, " // 4..5
