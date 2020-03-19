@@ -643,7 +643,7 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 			}
 
 			if (!this.getEndDate().after(fechaHoy)){
-				return "Fecha Oferta Hasta no puede ser anterior o igual al día de hoy.";
+				//return "Fecha Oferta Hasta no puede ser anterior o igual al día de hoy.";
 			}
 
 			if (!this.getEndDate().after(this.getStartDate())){
