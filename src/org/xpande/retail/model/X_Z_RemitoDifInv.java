@@ -33,7 +33,7 @@ public class X_Z_RemitoDifInv extends PO implements I_Z_RemitoDifInv, I_Persiste
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180910L;
+	private static final long serialVersionUID = 20200330L;
 
     /** Standard Constructor */
     public X_Z_RemitoDifInv (Properties ctx, int Z_RemitoDifInv_ID, String trxName)
@@ -57,6 +57,8 @@ public class X_Z_RemitoDifInv extends PO implements I_Z_RemitoDifInv, I_Persiste
 // N
 			setProcessing (false);
 // N
+			setTipoRemitoDifInv (null);
+// FACTURACION
 			setTotalAmt (Env.ZERO);
 			setZ_RemitoDifInv_ID (0);
         } */
@@ -456,6 +458,23 @@ public class X_Z_RemitoDifInv extends PO implements I_Z_RemitoDifInv, I_Persiste
 		return false;
 	}
 
+	/** Set Reference No.
+		@param ReferenceNo 
+		Your customer or vendor number at the Business Partner's site
+	  */
+	public void setReferenceNo (String ReferenceNo)
+	{
+		set_Value (COLUMNNAME_ReferenceNo, ReferenceNo);
+	}
+
+	/** Get Reference No.
+		@return Your customer or vendor number at the Business Partner's site
+	  */
+	public String getReferenceNo () 
+	{
+		return (String)get_Value(COLUMNNAME_ReferenceNo);
+	}
+
 	/** Set RemDifCant_ID.
 		@param RemDifCant_ID 
 		ID del remito por diferencia de cantidad en módulo de Retail
@@ -477,6 +496,30 @@ public class X_Z_RemitoDifInv extends PO implements I_Z_RemitoDifInv, I_Persiste
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** TipoRemitoDifInv AD_Reference_ID=1000059 */
+	public static final int TIPOREMITODIFINV_AD_Reference_ID=1000059;
+	/** DIFERENCIA EN FACTURACION = FACTURACION */
+	public static final String TIPOREMITODIFINV_DIFERENCIAENFACTURACION = "FACTURACION";
+	/** DEVOLUCION A PROVEEDOR = DEVOLUCION */
+	public static final String TIPOREMITODIFINV_DEVOLUCIONAPROVEEDOR = "DEVOLUCION";
+	/** Set TipoRemitoDifInv.
+		@param TipoRemitoDifInv 
+		Tipo de remito por diferencia
+	  */
+	public void setTipoRemitoDifInv (String TipoRemitoDifInv)
+	{
+
+		set_Value (COLUMNNAME_TipoRemitoDifInv, TipoRemitoDifInv);
+	}
+
+	/** Get TipoRemitoDifInv.
+		@return Tipo de remito por diferencia
+	  */
+	public String getTipoRemitoDifInv () 
+	{
+		return (String)get_Value(COLUMNNAME_TipoRemitoDifInv);
 	}
 
 	/** Set Total Amount.

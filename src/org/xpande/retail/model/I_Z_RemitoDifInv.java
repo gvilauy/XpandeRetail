@@ -276,6 +276,19 @@ public interface I_Z_RemitoDifInv
 	/** Get Process Now	  */
 	public boolean isProcessing();
 
+    /** Column name ReferenceNo */
+    public static final String COLUMNNAME_ReferenceNo = "ReferenceNo";
+
+	/** Set Reference No.
+	  * Your customer or vendor number at the Business Partner's site
+	  */
+	public void setReferenceNo(String ReferenceNo);
+
+	/** Get Reference No.
+	  * Your customer or vendor number at the Business Partner's site
+	  */
+	public String getReferenceNo();
+
     /** Column name RemDifCant_ID */
     public static final String COLUMNNAME_RemDifCant_ID = "RemDifCant_ID";
 
@@ -288,6 +301,19 @@ public interface I_Z_RemitoDifInv
 	  * ID del remito por diferencia de cantidad en módulo de Retail
 	  */
 	public int getRemDifCant_ID();
+
+    /** Column name TipoRemitoDifInv */
+    public static final String COLUMNNAME_TipoRemitoDifInv = "TipoRemitoDifInv";
+
+	/** Set TipoRemitoDifInv.
+	  * Tipo de remito por diferencia
+	  */
+	public void setTipoRemitoDifInv(String TipoRemitoDifInv);
+
+	/** Get TipoRemitoDifInv.
+	  * Tipo de remito por diferencia
+	  */
+	public String getTipoRemitoDifInv();
 
     /** Column name TotalAmt */
     public static final String COLUMNNAME_TotalAmt = "TotalAmt";

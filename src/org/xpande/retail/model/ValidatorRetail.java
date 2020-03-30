@@ -1,6 +1,7 @@
 package org.xpande.retail.model;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.pdf.Document;
 import org.apache.commons.lang.math.NumberUtils;
 import org.compiere.acct.Doc;
 import org.compiere.model.*;
@@ -765,21 +766,21 @@ public class ValidatorRetail implements ModelValidator {
                 }
             }
         }
-        else if (timing == TIMING_BEFORE_REACTIVATE){
+        else if (timing == TIMING_BEFORE_REACTIVATE) {
 
             // En recepciones de productos
-            if (model.getMovementType().equalsIgnoreCase(X_M_InOut.MOVEMENTTYPE_VendorReceipts)){
+            if (model.getMovementType().equalsIgnoreCase(X_M_InOut.MOVEMENTTYPE_VendorReceipts)) {
 
                 // Para cada linea de esta inout, dejo seteada en null la cantidad diferencia entre recibida y facturada.
                 //action = " update m_inoutline set DifferenceQty = null where m_inout_id =" + model.get_ID();
                 action = " update m_inoutline set DifferenceQty = null where m_inout_id =" + model.get_ID() +
-                            " and m_inoutline_id in (select m_inoutline_id from c_invoiceline where c_invoice_id not in " +
-                            " (select a.c_invoice_id from z_recepcionprodfact a " +
-                            " inner join c_invoice b on a.c_invoice_id = b.c_invoice_id " +
-                            " where a.m_inout_id =" + model.get_ID() + " and b.docstatus='CO')) ";
+                        " and m_inoutline_id in (select m_inoutline_id from c_invoiceline where c_invoice_id not in " +
+                        " (select a.c_invoice_id from z_recepcionprodfact a " +
+                        " inner join c_invoice b on a.c_invoice_id = b.c_invoice_id " +
+                        " where a.m_inout_id =" + model.get_ID() + " and b.docstatus='CO')) ";
 
                 DB.executeUpdateEx(action, model.get_TrxName());
-                
+
                 // Cuando reactivo una recepción de proveedor, me aseguro de eliminar posibles documentos de Remitos por Cantidad que
                 // puedan estar asociados a dicha recepción.
                 action = " delete from z_remitodifinv where m_inout_id =" + model.get_ID() +
@@ -790,6 +791,88 @@ public class ValidatorRetail implements ModelValidator {
                         " where a.m_inout_id =" + model.get_ID() + " and b.docstatus='CO') ";
 
                 DB.executeUpdateEx(action, model.get_TrxName());
+            }
+
+            // Devoluciones de proveedores.
+            else if (model.getMovementType().equalsIgnoreCase(X_M_InOut.MOVEMENTTYPE_VendorReturns)) {
+
+                // Si tengo remito por diferencia asociado, lo reactivo y elimino
+                if (model.get_ValueAsInt("Z_RemitoDifInv_ID") > 0){
+                    MZRemitoDifInv remitoDifInv = new MZRemitoDifInv(model.getCtx(), model.get_ValueAsInt("Z_RemitoDifInv_ID"), model.get_TrxName());
+                    if ((remitoDifInv != null) && (remitoDifInv.get_ID() > 0)){
+                        if (!remitoDifInv.processIt(DocAction.ACTION_ReActivate)){
+                            message = "No se pudo reactivar el documento de Remito por Diferencia asociado. ";
+                            if (remitoDifInv.getProcessMsg() != null){
+                                message += remitoDifInv.getProcessMsg();
+                                return message;
+                            }
+                        }
+                        // Elimino remito por diferencia asociado
+                        remitoDifInv.deleteEx(true);
+                    }
+                }
+            }
+
+        }
+        else if (timing == TIMING_AFTER_COMPLETE) {
+
+            // Devoluciones de proveedores.
+            if (model.getMovementType().equalsIgnoreCase(X_M_InOut.MOVEMENTTYPE_VendorReturns)) {
+
+                // Genero documento de Remito por Diferencia con motivo : DEVOLUCION A PROVEEDOR
+                MZRemitoDifInv remitoDifInv = new MZRemitoDifInv(model.getCtx(), 0, model.get_TrxName());
+                remitoDifInv.setAD_Org_ID(model.getAD_Org_ID());
+                remitoDifInv.setC_BPartner_ID(model.getC_BPartner_ID());
+                remitoDifInv.setC_Currency_ID(model.getC_Currency_ID());
+                remitoDifInv.setC_DocType_ID(1);
+                remitoDifInv.setDateDoc(model.getMovementDate());
+                remitoDifInv.setDescription("Generado Automaticamente desde Devolucion: " + model.getDocumentNo());
+                remitoDifInv.setM_InOut_ID(model.get_ID());
+                remitoDifInv.setTotalAmt(Env.ZERO);
+                remitoDifInv.setTotalInvAmt(Env.ZERO);
+                remitoDifInv.setTipoRemitoDifInv(X_Z_RemitoDifInv.TIPOREMITODIFINV_DEVOLUCIONAPROVEEDOR);
+
+                remitoDifInv.saveEx();
+
+                // Obtengo y recorro lineas
+                MInOutLine[] mInOutLines = model.getLines();
+                for (int i = 0; i < mInOutLines.length; i++) {
+                    MInOutLine mInOutLine = mInOutLines[i];
+
+                    MZRemitoDifInvLin remitoDifInvLin = new MZRemitoDifInvLin(model.getCtx(), 0, model.get_TrxName());
+                    remitoDifInvLin.setZ_RemitoDifInv_ID(remitoDifInv.get_ID());
+                    remitoDifInvLin.setAD_Org_ID(model.getAD_Org_ID());
+                    remitoDifInvLin.setAmtOpen(Env.ZERO);
+                    remitoDifInvLin.setAmtSubtotal(Env.ZERO);
+                    remitoDifInvLin.setAmtSubtotalPO(Env.ZERO);
+                    remitoDifInvLin.setC_UOM_ID(mInOutLine.getC_UOM_ID());
+                    remitoDifInvLin.setDifferenceAmt(Env.ZERO);
+                    remitoDifInvLin.setDifferencePrice(Env.ZERO);
+                    remitoDifInvLin.setDifferenceQty(mInOutLine.getQtyEntered());
+                    remitoDifInvLin.setIsClosed(false);
+                    remitoDifInvLin.setIsDifferenceAmt(false);
+                    remitoDifInvLin.setIsDifferenceQty(true);
+                    remitoDifInvLin.setM_InOutLine_ID(mInOutLine.get_ID());
+                    remitoDifInvLin.setM_Product_ID(mInOutLine.getM_Product_ID());
+                    remitoDifInvLin.setPriceInvoiced(Env.ZERO);
+                    remitoDifInvLin.setPricePO(Env.ZERO);
+                    remitoDifInvLin.setQtyDelivered(Env.ZERO);
+                    remitoDifInvLin.setQtyInvoiced(mInOutLine.getQtyEntered());
+                    remitoDifInvLin.setQtyOpen(mInOutLine.getQtyEntered());
+                    remitoDifInvLin.setUPC(mInOutLine.get_ValueAsString("UPC"));
+                    remitoDifInvLin.setVendorProductNo(mInOutLine.get_ValueAsString("VendorProductNo"));
+
+                    remitoDifInvLin.saveEx();
+                }
+
+                // Completo remito por diferencia
+                if (!remitoDifInv.processIt(DocAction.ACTION_Complete)) {
+                    message = "No se pudo completar el Documento de Remito por Diferencia asociado. ";
+                    if (remitoDifInv.getProcessMsg() != null){
+                        message += remitoDifInv.getProcessMsg();
+                    }
+                    return message;
+                }
             }
         }
 
