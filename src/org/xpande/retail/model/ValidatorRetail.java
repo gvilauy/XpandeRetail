@@ -819,17 +819,22 @@ public class ValidatorRetail implements ModelValidator {
             // Devoluciones de proveedores.
             if (model.getMovementType().equalsIgnoreCase(X_M_InOut.MOVEMENTTYPE_VendorReturns)) {
 
+                MDocType[] docTypeRemitoList = MDocType.getOfDocBaseType(model.getCtx(), "RDI");
+                if (docTypeRemitoList.length <= 0){
+                    throw new AdempiereException("No esta definido el Documento para Remito por Diferencia");
+                }
+                MDocType docRemito = docTypeRemitoList[0];
+
                 // Genero documento de Remito por Diferencia con motivo : DEVOLUCION A PROVEEDOR
                 MZRemitoDifInv remitoDifInv = new MZRemitoDifInv(model.getCtx(), 0, model.get_TrxName());
                 remitoDifInv.setAD_Org_ID(model.getAD_Org_ID());
                 remitoDifInv.setC_BPartner_ID(model.getC_BPartner_ID());
                 remitoDifInv.setC_Currency_ID(model.getC_Currency_ID());
-                remitoDifInv.setC_DocType_ID(1);
+                remitoDifInv.setC_DocType_ID(docRemito.get_ID());
                 remitoDifInv.setDateDoc(model.getMovementDate());
                 remitoDifInv.setDescription("Generado Automaticamente desde Devolucion: " + model.getDocumentNo());
                 remitoDifInv.setM_InOut_ID(model.get_ID());
                 remitoDifInv.setTotalAmt(Env.ZERO);
-                remitoDifInv.setTotalInvAmt(Env.ZERO);
                 remitoDifInv.setTipoRemitoDifInv(X_Z_RemitoDifInv.TIPOREMITODIFINV_DEVOLUCIONAPROVEEDOR);
 
                 remitoDifInv.saveEx();
@@ -871,7 +876,6 @@ public class ValidatorRetail implements ModelValidator {
                 }
 
                 remitoDifInv.setTotalAmt(totalAmt);
-                remitoDifInv.setTotalInvAmt(totalAmt);
                 remitoDifInv.saveEx();
 
                 // Completo remito por diferencia
