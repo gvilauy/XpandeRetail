@@ -834,6 +834,8 @@ public class ValidatorRetail implements ModelValidator {
 
                 remitoDifInv.saveEx();
 
+                BigDecimal totalAmt = Env.ZERO;
+
                 // Obtengo y recorro lineas
                 MInOutLine[] mInOutLines = model.getLines();
                 for (int i = 0; i < mInOutLines.length; i++) {
@@ -843,8 +845,8 @@ public class ValidatorRetail implements ModelValidator {
                     remitoDifInvLin.setZ_RemitoDifInv_ID(remitoDifInv.get_ID());
                     remitoDifInvLin.setAD_Org_ID(model.getAD_Org_ID());
                     remitoDifInvLin.setAmtOpen(Env.ZERO);
-                    remitoDifInvLin.setAmtSubtotal(Env.ZERO);
-                    remitoDifInvLin.setAmtSubtotalPO(Env.ZERO);
+                    remitoDifInvLin.setAmtSubtotal((BigDecimal) mInOutLine.get_Value("LineTotalAmt"));
+                    remitoDifInvLin.setAmtSubtotalPO(remitoDifInvLin.getAmtSubtotal());
                     remitoDifInvLin.setC_UOM_ID(mInOutLine.getC_UOM_ID());
                     remitoDifInvLin.setDifferenceAmt(Env.ZERO);
                     remitoDifInvLin.setDifferencePrice(Env.ZERO);
@@ -854,8 +856,8 @@ public class ValidatorRetail implements ModelValidator {
                     remitoDifInvLin.setIsDifferenceQty(true);
                     remitoDifInvLin.setM_InOutLine_ID(mInOutLine.get_ID());
                     remitoDifInvLin.setM_Product_ID(mInOutLine.getM_Product_ID());
-                    remitoDifInvLin.setPriceInvoiced(Env.ZERO);
-                    remitoDifInvLin.setPricePO(Env.ZERO);
+                    remitoDifInvLin.setPriceInvoiced((BigDecimal) mInOutLine.get_Value("PriceInvoiced"));
+                    remitoDifInvLin.setPricePO(remitoDifInvLin.getPriceInvoiced());
                     remitoDifInvLin.setQtyDelivered(Env.ZERO);
                     remitoDifInvLin.setQtyInvoiced(mInOutLine.getQtyEntered());
                     remitoDifInvLin.setQtyOpen(mInOutLine.getQtyEntered());
@@ -863,7 +865,14 @@ public class ValidatorRetail implements ModelValidator {
                     remitoDifInvLin.setVendorProductNo(mInOutLine.get_ValueAsString("VendorProductNo"));
 
                     remitoDifInvLin.saveEx();
+
+                    totalAmt = totalAmt.add(remitoDifInvLin.getAmtSubtotal());
+
                 }
+
+                remitoDifInv.setTotalAmt(totalAmt);
+                remitoDifInv.setTotalInvAmt(totalAmt);
+                remitoDifInv.saveEx();
 
                 // Completo remito por diferencia
                 if (!remitoDifInv.processIt(DocAction.ACTION_Complete)) {
