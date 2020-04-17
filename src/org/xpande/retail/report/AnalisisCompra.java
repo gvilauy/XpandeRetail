@@ -4,12 +4,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
-import org.xpande.retail.utils.ComercialUtils;
-
+import org.xpande.core.utils.DateUtils;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * Reporte para poder analisar información de compra y venta de productos al momento de generar una
@@ -163,41 +163,266 @@ public class AnalisisCompra  extends SvrProcess {
 
             while(rs.next()){
 
-                /*
+                // Actualizo datos desde hitórico de compras
+                this.updateHistoricoCompra(rs.getInt("m_product_id"));
 
-                // Precio Promedio Venta
-                BigDecimal precioPromedioVta = ComercialUtils.getPrecioPromedioVta(getCtx(), this.getAD_Client_ID(), this.adOrgID,
-                        rs.getInt("m_product_id"), this.cCurrencyID, this.startDate, this.endDate, null);
+                // Actualizo datos desde hitórico de costos
+                this.updateHistoricoCostos(rs.getInt("m_product_id"));
 
-                // Cantidad comprada
-                BigDecimal cantComprada = ComercialUtils.getCantidadComprada(getCtx(), this.getAD_Client_ID(), this.adOrgID,
-                        rs.getInt("m_product_id"), this.startDate, this.endDate, null);
+                // Actualizo dato de precio de venta
+                this.updatePrecioVenta(rs.getInt("m_product_id"));
 
-                // Importe comprado
-                BigDecimal amtComprado = ComercialUtils.getImporteComprado(getCtx(), this.getAD_Client_ID(), this.adOrgID,
-                        rs.getInt("m_product_id"), cCurrencyID, this.startDate, this.endDate, null);
+                // Actualizo datos de ventas del año pasado
+                this.updateVentasAnioAnterior(rs.getInt("m_product_id"));
 
-                // Cantidad vendida
-                BigDecimal cantVendida = ComercialUtils.getCantidadVendida(getCtx(), this.getAD_Client_ID(), this.adOrgID,
-                        rs.getInt("m_product_id"), this.startDate, this.endDate, null);
+                // Actualizo datos de ventas del mes pasado
+                this.updateVentasMesPasado(rs.getInt("m_product_id"));
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
 
-                // Importe vendido
-                BigDecimal amtVendido = ComercialUtils.getImporteVendido(getCtx(), this.getAD_Client_ID(), this.adOrgID,
-                        rs.getInt("m_product_id"), cCurrencyID, this.startDate, this.endDate, null);
+    }
 
-                String action = " update " + TABLA_REPORTE +
-                        " set PriceSO =" + precioPromedioVta + ", " +
-                        " qtypurchased =" + cantComprada + ", " +
-                        " amtpurchased =" + amtComprado + ", " +
-                        " qtysold =" + cantVendida + ", " +
-                        " amtsold =" + amtVendido +
-                        " where ad_user_id =" + this.getAD_User_ID() +
-                        " and m_product_id =" + rs.getInt("m_product_id");
+    /***
+     * Actualizo datos desde histórico de compras para un determinado producto.
+     * Xpande. Created by Gabriel Vila on 4/17/20.
+     * @param productID
+     */
+    private void updateHistoricoCompra(int productID) {
+
+        String sql = "", action = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select a.dateinvoiced, round(a.priceentered,2) as priceentered, round(a.qtyentered,2) as qtyentered " +
+                    " from zv_historicocompras a " +
+                    " inner join c_doctype doc on a.c_doctypetarget_id = doc.c_doctype_id " +
+                    " where a.ad_org_id =" + this.adOrgID +
+                    " and a.dateinvoiced <='" + this.endDate + "'" +
+                    " and a.c_bpartner_id =" + this.cBPartnerID +
+                    " and a.m_product_id =" + productID +
+                    " and doc.docbasetype='API' " +
+                    " order by a.dateinvoiced desc ";
+
+        	pstmt = DB.prepareStatement(sql, get_TrxName());
+        	rs = pstmt.executeQuery();
+
+        	if (rs.next()){
+
+        	    Timestamp dateInvoiced = rs.getTimestamp("dateinvoiced");
+        	    if (dateInvoiced != null){
+        	        action = " update " + TABLA_REPORTE +
+                            " set dateinvoiced ='" + dateInvoiced + "', " +
+                            " priceentered =" + rs.getBigDecimal("priceentered") + ", " +
+                            " qtyentered =" + rs.getBigDecimal("qtyentered") +
+                            " where ad_user_id =" + this.getAD_User_ID() +
+                            " and m_product_id =" + productID;
+                }
+        	    else {
+                    action = " update " + TABLA_REPORTE +
+                            " set priceentered =" + rs.getBigDecimal("priceentered") + ", " +
+                            " qtyentered =" + rs.getBigDecimal("qtyentered") +
+                            " where ad_user_id =" + this.getAD_User_ID() +
+                            " and m_product_id =" + productID;
+                }
 
                 DB.executeUpdateEx(action, null);
-
-                 */
             }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
+        }
+    }
+
+    /***
+     * Actualizo datos desde histórico de costos para un determinado producto.
+     * Xpande. Created by Gabriel Vila on 4/17/20.
+     * @param productID
+     */
+    private void updateHistoricoCostos(int productID) {
+
+        String sql = "", action = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select round(pricefinal,2) as pricefinal, round(pricepo,2) as pricepo " +
+                    " from Z_HistCostoProd " +
+                    " where ad_orgtrx_id =" + this.adOrgID +
+                    " and datevalidpo <='" + this.endDate + "'" +
+                    " and c_bpartner_id =" + this.cBPartnerID +
+                    " and m_product_id =" + productID +
+                    " order by datevalidpo desc  ";
+
+            pstmt = DB.prepareStatement(sql, get_TrxName());
+            rs = pstmt.executeQuery();
+
+            if (rs.next()){
+
+                action = " update " + TABLA_REPORTE +
+                        " set pricefinal =" + rs.getBigDecimal("pricefinal") + ", " +
+                        " pricepo =" + rs.getBigDecimal("pricepo") +
+                        " where ad_user_id =" + this.getAD_User_ID() +
+                        " and m_product_id =" + productID;
+
+                DB.executeUpdateEx(action, null);
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+    }
+
+
+    /***
+     * Actualizo precio de venta.
+     * Xpande. Created by Gabriel Vila on 4/17/20.
+     * @param productID
+     */
+    private void updatePrecioVenta(int productID) {
+
+        String sql = "", action = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select c_currency_id, round(priceso,2) as priceso " +
+                    " from Z_EvolPrecioVtaProdOrg " +
+                    " where ad_orgtrx_id =" + this.adOrgID +
+                    " and datevalidso <='" + this.endDate + "'" +
+                    " and m_product_id =" + productID +
+                    " order by datevalidso desc ";
+
+            pstmt = DB.prepareStatement(sql, get_TrxName());
+            rs = pstmt.executeQuery();
+
+            if (rs.next()){
+
+                action = " update " + TABLA_REPORTE +
+                        " set c_currency_id =" + rs.getInt("c_currency_id") + ", " +
+                        " priceso =" + rs.getBigDecimal("priceso") +
+                        " where ad_user_id =" + this.getAD_User_ID() +
+                        " and m_product_id =" + productID;
+
+                DB.executeUpdateEx(action, null);
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+    }
+
+    /***
+     * Actualiza cantidad vendida en los 30 días anteriores a la fecha.
+     * Xpande. Created by Gabriel Vila on 4/17/20.
+     * @param productID
+     */
+    private void updateVentasAnioAnterior(int productID) {
+
+        String sql = "", action = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+
+            Date dateFechaDesdeAux = new Date(this.endDate.getTime());
+            Date dateFechaDesde = DateUtils.addDays(dateFechaDesdeAux, -365);
+            Timestamp tsFechaDesde = new Timestamp(dateFechaDesde.getTime());
+
+            Date dateFechaHasta = DateUtils.addDays(dateFechaDesde, 30);
+            Timestamp tsFechaHasta = new Timestamp(dateFechaHasta.getTime());
+
+            sql = " select sum(qtyinvoiced) as qtyinvoiced " +
+                    "from z_bi_vtaproddia " +
+                    "where ad_org_id =" + this.adOrgID +
+                    "and m_product_id =" + productID +
+                    "and dateinvoiced between '" + tsFechaDesde + "' and '" + tsFechaHasta + "' ";
+
+            pstmt = DB.prepareStatement(sql, get_TrxName());
+            rs = pstmt.executeQuery();
+
+            if (rs.next()){
+
+                action = " update " + TABLA_REPORTE +
+                        " set qty1 =" + rs.getBigDecimal("qtyinvoiced") +
+                        " where ad_user_id =" + this.getAD_User_ID() +
+                        " and m_product_id =" + productID;
+
+                DB.executeUpdateEx(action, null);
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+
+    }
+
+    /***
+     * Actualiza cantidad vendida en los 30 días siguientes a la fecha, en el año anterior.
+     * Xpande. Created by Gabriel Vila on 4/17/20.
+     * @param productID
+     */
+    private void updateVentasMesPasado(int productID) {
+
+        String sql = "", action = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+
+            Date dateFechaDesdeAux = new Date(this.endDate.getTime());
+            Date dateFechaDesde = DateUtils.addDays(dateFechaDesdeAux, -30);
+            Timestamp tsFechaDesde = new Timestamp(dateFechaDesde.getTime());
+
+            Date dateFechaHasta = DateUtils.addDays(dateFechaDesde, 29);
+            Timestamp tsFechaHasta = new Timestamp(dateFechaHasta.getTime());
+
+            sql = " select sum(qtyinvoiced) as qtyinvoiced " +
+                    "from z_bi_vtaproddia " +
+                    "where ad_org_id =" + this.adOrgID +
+                    "and m_product_id =" + productID +
+                    "and dateinvoiced between '" + tsFechaDesde + "' and '" + tsFechaHasta + "' ";
+
+            pstmt = DB.prepareStatement(sql, get_TrxName());
+            rs = pstmt.executeQuery();
+
+            if (rs.next()){
+
+                action = " update " + TABLA_REPORTE +
+                        " set qty2 =" + rs.getBigDecimal("qtyinvoiced") +
+                        " where ad_user_id =" + this.getAD_User_ID() +
+                        " and m_product_id =" + productID;
+
+                DB.executeUpdateEx(action, null);
+            }
+
         }
         catch (Exception e){
             throw new AdempiereException(e);
