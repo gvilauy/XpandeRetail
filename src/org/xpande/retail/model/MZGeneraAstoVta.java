@@ -861,7 +861,9 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		try{
 			sql = " select coalesce(a.sc_codigocredito, a.sc_codigotipopago) as codmpago,  coalesce(cc.name,mp.name) as nommpago, " +
 					" a.sc_codigomoneda, a.sc_cotizacionventa, " +
-					" case when b.sc_cuponcancelado ='N' then a.sc_importe else (a.sc_importe * -1) end as sc_importe, " +
+					" case when b.sc_cuponcancelado ='N' then " +
+					" (coalesce(a.sc_importe,0) + coalesce(a.sc_descuentoafam,0) + coalesce(a.sc_descuentoincfin,0)) else " +
+					" ((coalesce(a.sc_importe,0) + coalesce(a.sc_descuentoafam,0) + coalesce(a.sc_descuentoincfin,0)) * -1) end as sc_importe, " +
 					" b.sc_fechaoperacion, b.sc_numeromov, b.sc_codigocaja, b.sc_tipocfe, b.sc_seriecfe, b.sc_numerooperacion, " +
 					" case when a.sc_codigomoneda = '858' then 142 else 100 end as c_currency_id, " +
 					" b.sc_cuponcancelado, a.sc_numerotarjeta, " +
@@ -955,7 +957,8 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 		try{
 			sql = " select coalesce(a.sc_codigocredito, a.sc_codigotipopago) as codmpago,  coalesce(cc.name,mp.name) as nommpago, " +
-					" a.sc_codigomoneda, a.sc_cotizacionventa, sum(a.sc_importe) as sc_importe " +
+					" a.sc_codigomoneda, a.sc_cotizacionventa, " +
+					" sum(coalesce(a.sc_importe,0) + coalesce(a.sc_descuentoafam,0) + coalesce(a.sc_descuentoincfin,0)) as sc_importe " +
 					" from z_stech_tk_movpago a " +
 					" left outer join z_stechmediopago mp on a.z_stechmediopago_id = mp.z_stechmediopago_id " +
 					" left outer join z_stechcreditos cc on a.z_stechcreditos_id = cc.z_stechcreditos_id " +
