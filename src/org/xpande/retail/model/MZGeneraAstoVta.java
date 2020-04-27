@@ -36,6 +36,8 @@ import org.compiere.util.Env;
 import org.xpande.financial.model.MZMedioPagoItem;
 import org.xpande.financial.model.MZOrdenPago;
 import org.xpande.financial.model.MZPago;
+import org.xpande.stech.model.MZStechCreditos;
+import org.xpande.stech.model.MZStechMedioPago;
 
 /** Generated Model for Z_GeneraAstoVta
  *  @author Adempiere (generated) 
@@ -859,8 +861,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		ResultSet rs = null;
 
 		try{
-			sql = " select coalesce(a.sc_codigocredito, a.sc_codigotipopago) as codmpago,  coalesce(cc.name,mp.name) as nommpago, " +
-					" a.sc_codigomoneda, a.sc_cotizacionventa, " +
+			sql = " select a.sc_codigotipopago, a.sc_codigocredito, a.sc_codigovale, a.sc_codigomoneda, a.sc_cotizacionventa, " +
 					" case when b.sc_cuponcancelado ='N' then " +
 					" (coalesce(a.sc_importe,0) + coalesce(a.sc_descuentoafam,0) + coalesce(a.sc_descuentoincfin,0)) else " +
 					" ((coalesce(a.sc_importe,0) + coalesce(a.sc_descuentoafam,0) + coalesce(a.sc_descuentoincfin,0)) * -1) end as sc_importe, " +
@@ -871,7 +872,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 					" from z_stech_tk_movpago a " +
 					" inner join z_stech_tk_mov b on a.z_stech_tk_mov_id = b.z_stech_tk_mov_id " +
 					" left outer join z_stechmediopago mp on a.z_stechmediopago_id = mp.z_stechmediopago_id " +
-					" left outer join z_stechcreditos cc on a.z_stechcreditos_id = cc.z_stechcreditos_id " +
+					" left outer join z_stechcreditos cc on a.z_stechcreditos_id = cc.z_stechcreditos_id_id " +
 					" where a.ad_org_id =" + this.getAD_Org_ID() +
 					" and a.datetrx='" + this.getDateTo() + "' " +
 					" and mp.IsAsientoVtaPOS ='Y' " +
@@ -882,12 +883,57 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 			while(rs.next()){
 
+				String codigoMP = null;
+				String nombreMP = null;
+
+				String codTipoPago = rs.getString("sc_codigotipopago");
+				String codCredito = rs.getString("sc_codigocredito");
+				String codVale = rs.getString("sc_codigovale");
+
+				// Obtengo codigo de medio de pago y nombre segun sea vale, credito o medio de pago
+				if ((codVale != null) && (!codVale.trim().equalsIgnoreCase(""))){
+
+					MZStechCreditos stechCreditos = MZStechCreditos.getByValue(getCtx(), codVale, null);
+					if ((stechCreditos == null) || (stechCreditos.get_ID() <= 0)){
+						return "No se pudo obtener información en la configuración de Scanntech para el codigo de vale : " + codVale;
+					}
+
+					codigoMP = codVale;
+					nombreMP = stechCreditos.getName();
+				}
+				else {
+					if ((codCredito != null) && (!codCredito.trim().equalsIgnoreCase(""))){
+						MZStechCreditos stechCreditos = MZStechCreditos.getByValue(getCtx(), codCredito, null);
+						if ((stechCreditos == null) || (stechCreditos.get_ID() <= 0)){
+							return "No se pudo obtener información en la configuración de Scanntech para el codigo de crédito : " + codCredito;
+						}
+
+						codigoMP = codCredito;
+						nombreMP = stechCreditos.getName();
+					}
+					else{
+						if ((codTipoPago != null) && (!codTipoPago.trim().equalsIgnoreCase(""))){
+							MZStechMedioPago stechMedioPago = MZStechMedioPago.getByValue(getCtx(), codTipoPago, null);
+							if ((stechMedioPago == null) || (stechMedioPago.get_ID() <= 0)){
+								return "No se pudo obtener información en la configuración de Scanntech para el codigo de medio de pago : " + codTipoPago;
+							}
+
+							codigoMP = codTipoPago;
+							nombreMP = stechMedioPago.getName();
+						}
+						else {
+							return "No se pudo obtener información de medio de pago, ya que no se recibe código";
+						}
+					}
+				}
+
+
 				MZGeneraAstoVtaDetMPSC vtaDetMPSC = new MZGeneraAstoVtaDetMPSC(getCtx(), 0, get_TrxName());
 				vtaDetMPSC.setZ_GeneraAstoVta_ID(this.get_ID());
 				vtaDetMPSC.setAD_Org_ID(this.getAD_Org_ID());
 				vtaDetMPSC.setDateTrx(rs.getTimestamp("sc_fechaoperacion"));
-				vtaDetMPSC.setCodMedioPagoPOS(rs.getString("codmpago"));
-				vtaDetMPSC.setNomMedioPagoPOS(rs.getString("nommpago"));
+				vtaDetMPSC.setCodMedioPagoPOS(codigoMP);
+				vtaDetMPSC.setNomMedioPagoPOS(nombreMP);
 				vtaDetMPSC.setSC_CodigoMoneda(rs.getString("sc_codigomoneda"));
 				vtaDetMPSC.setSC_CotizacionVenta(rs.getBigDecimal("sc_cotizacionventa"));
 				vtaDetMPSC.setSC_Importe(rs.getBigDecimal("sc_importe"));
@@ -956,23 +1002,16 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		ResultSet rs = null;
 
 		try{
-			sql = " select coalesce(a.sc_codigocredito, a.sc_codigotipopago) as codmpago,  coalesce(cc.name,mp.name) as nommpago, " +
-					" a.sc_codigomoneda, a.sc_cotizacionventa, " +
+
+			sql = " select a.sc_codigotipopago,  a.sc_codigocredito, a.sc_codigovale, a.sc_codigomoneda, a.sc_cotizacionventa, " +
 					" sum(coalesce(a.sc_importe,0) + coalesce(a.sc_descuentoafam,0) + coalesce(a.sc_descuentoincfin,0)) as sc_importe " +
-					" from z_stech_tk_movpago a " +
-					" left outer join z_stechmediopago mp on a.z_stechmediopago_id = mp.z_stechmediopago_id " +
-					" left outer join z_stechcreditos cc on a.z_stechcreditos_id = cc.z_stechcreditos_id " +
+					" from z_stech_tk_movpago a \n" +
+					" left outer join z_stechmediopago mp on a.z_stechmediopago_id = mp.z_stechmediopago_id \n" +
 					" where a.ad_org_id =" + this.getAD_Org_ID() +
 					" and a.datetrx='" + this.getDateTo() + "' " +
 					" and mp.IsAsientoVtaPOS ='Y' " +
-					" group by 1,2,3,4 " +
+					" group by 1,2,3,4,5 " +
 					" order by 1,2,3,4 ";
-
-					/*
-					" group by a.sc_codigotipopago, mp.name, a.sc_codigocredito, cc.name, a.sc_codigomoneda, a.sc_cotizacionventa " +
-					" order by a.sc_codigotipopago, mp.name, a.sc_codigocredito, cc.name, a.sc_codigomoneda, a.sc_cotizacionventa ";
-
-					 */
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();
@@ -981,18 +1020,49 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 			while(rs.next()){
 
-				String codigoMP = rs.getString("codmpago");
-				String nombreMP = rs.getString("nommpago");
+				String codigoMP = null;
+				String nombreMP = null;
 
-				/*
-				if ((codigoMP == null) || (codigoMP.trim().equalsIgnoreCase(""))){
-					codigoMP = rs.getString("sc_codigotipopago");
-				}
-				if ((nombreMP == null) || (nombreMP.trim().equalsIgnoreCase(""))){
-					nombreMP = rs.getString("nomtipopago");
-				}
-				*/
+				String codTipoPago = rs.getString("sc_codigotipopago");
+				String codCredito = rs.getString("sc_codigocredito");
+				String codVale = rs.getString("sc_codigovale");
 
+				// Obtengo codigo de medio de pago y nombre segun sea vale, credito o medio de pago
+				if ((codVale != null) && (!codVale.trim().equalsIgnoreCase(""))){
+
+					MZStechCreditos stechCreditos = MZStechCreditos.getByValue(getCtx(), codVale, null);
+					if ((stechCreditos == null) || (stechCreditos.get_ID() <= 0)){
+						return "No se pudo obtener información en la configuración de Scanntech para el codigo de vale : " + codVale;
+					}
+
+					codigoMP = codVale;
+					nombreMP = stechCreditos.getName();
+				}
+				else {
+					if ((codCredito != null) && (!codCredito.trim().equalsIgnoreCase(""))){
+						MZStechCreditos stechCreditos = MZStechCreditos.getByValue(getCtx(), codCredito, null);
+						if ((stechCreditos == null) || (stechCreditos.get_ID() <= 0)){
+							return "No se pudo obtener información en la configuración de Scanntech para el codigo de crédito : " + codCredito;
+						}
+
+						codigoMP = codCredito;
+						nombreMP = stechCreditos.getName();
+					}
+					else{
+						if ((codTipoPago != null) && (!codTipoPago.trim().equalsIgnoreCase(""))){
+							MZStechMedioPago stechMedioPago = MZStechMedioPago.getByValue(getCtx(), codTipoPago, null);
+							if ((stechMedioPago == null) || (stechMedioPago.get_ID() <= 0)){
+								return "No se pudo obtener información en la configuración de Scanntech para el codigo de medio de pago : " + codTipoPago;
+							}
+
+							codigoMP = codTipoPago;
+							nombreMP = stechMedioPago.getName();
+						}
+						else {
+							return "No se pudo obtener información de medio de pago, ya que no se recibe código";
+						}
+					}
+				}
 
 				astoVtaSumMP = new MZGeneraAstoVtaSumMP(getCtx(), 0, get_TrxName());
 				astoVtaSumMP.setZ_GeneraAstoVta_ID(this.get_ID());
