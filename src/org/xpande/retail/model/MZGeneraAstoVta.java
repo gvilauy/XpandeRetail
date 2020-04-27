@@ -1213,9 +1213,10 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		try{
 
 			// Obtengo total de medios de pago
-			sql = " select sum(amttotal) as total " +
-					" from " + X_Z_GeneraAstoVtaSumMP.Table_Name +
-					" where " + X_Z_GeneraAstoVtaSumMP.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID();
+			sql = " select sum(a.amttotal) as total " +
+					" from z_generaastovtasummp a " +
+					" left outer join z_mediopagoident b on (a.z_mediopagoident_id = b.z_mediopagoident_id and b.contabilizar='Y') " +
+					" where a.z_generaastovta_id =" + this.get_ID();
 
 			BigDecimal amtMediosPago = DB.getSQLValueBDEx(get_TrxName(), sql);
 			if (amtMediosPago == null) amtMediosPago = Env.ZERO;
@@ -1307,7 +1308,6 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 		try{
 			sql = " select a.c_taxcategory_id, b.name, a.sc_porcentajeiva, sum(a.sc_montoiva) as taxamt, " +
-					//" sum(a.sc_importe) as taxbaseamt " +
 					" case when sc_porcentajeiva > 0 then " +
 					" sum(round((a.sc_importe*100)/(100 + sc_porcentajeiva),2)) else sum(a.sc_importe) end as taxbaseamt " +
 					" from zv_scanntech_detvtas a " +
