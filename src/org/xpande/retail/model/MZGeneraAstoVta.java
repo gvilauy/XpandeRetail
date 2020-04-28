@@ -872,7 +872,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 					" from z_stech_tk_movpago a " +
 					" inner join z_stech_tk_mov b on a.z_stech_tk_mov_id = b.z_stech_tk_mov_id " +
 					" left outer join z_stechmediopago mp on a.z_stechmediopago_id = mp.z_stechmediopago_id " +
-					" left outer join z_stechcreditos cc on a.z_stechcreditos_id = cc.z_stechcreditos_id_id " +
+					" left outer join z_stechcreditos cc on a.z_stechcreditos_id = cc.z_stechcreditos_id " +
 					" where a.ad_org_id =" + this.getAD_Org_ID() +
 					" and a.datetrx='" + this.getDateTo() + "' " +
 					" and mp.IsAsientoVtaPOS ='Y' " +
@@ -1022,6 +1022,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 				String codigoMP = null;
 				String nombreMP = null;
+				int zMedioPagoID = -1, zMedioPagoIdentID = -1;
 
 				String codTipoPago = rs.getString("sc_codigotipopago");
 				String codCredito = rs.getString("sc_codigocredito");
@@ -1037,6 +1038,12 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 					codigoMP = codVale;
 					nombreMP = stechCreditos.getName();
+					if (stechCreditos.getZ_MedioPago_ID() > 0){
+						zMedioPagoID = stechCreditos.getZ_MedioPago_ID();
+					}
+					if (stechCreditos.getZ_MedioPagoIdent_ID() > 0){
+						zMedioPagoIdentID = stechCreditos.getZ_MedioPagoIdent_ID();
+					}
 				}
 				else {
 					if ((codCredito != null) && (!codCredito.trim().equalsIgnoreCase(""))){
@@ -1047,6 +1054,12 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 						codigoMP = codCredito;
 						nombreMP = stechCreditos.getName();
+						if (stechCreditos.getZ_MedioPago_ID() > 0){
+							zMedioPagoID = stechCreditos.getZ_MedioPago_ID();
+						}
+						if (stechCreditos.getZ_MedioPagoIdent_ID() > 0){
+							zMedioPagoIdentID = stechCreditos.getZ_MedioPagoIdent_ID();
+						}
 					}
 					else{
 						if ((codTipoPago != null) && (!codTipoPago.trim().equalsIgnoreCase(""))){
@@ -1057,6 +1070,9 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 							codigoMP = codTipoPago;
 							nombreMP = stechMedioPago.getName();
+							if (stechMedioPago.getZ_MedioPago_ID() > 0){
+								zMedioPagoID = stechMedioPago.getZ_MedioPago_ID();
+							}
 						}
 						else {
 							return "No se pudo obtener información de medio de pago, ya que no se recibe código";
@@ -1071,6 +1087,13 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 				astoVtaSumMP.setNomMedioPagoPOS(nombreMP);
 				astoVtaSumMP.setC_Currency_ID(142);
 				astoVtaSumMP.setC_Currency_2_ID(100);
+
+				if (zMedioPagoID > 0){
+					astoVtaSumMP.setZ_MedioPago_ID(zMedioPagoID);
+				}
+				if (zMedioPagoIdentID > 0){
+					astoVtaSumMP.setZ_MedioPagoIdent_ID(zMedioPagoIdentID);
+				}
 
 				String codMoneda = rs.getString("sc_codigomoneda");
 				if ((codMoneda == null) || (codMoneda.trim().equalsIgnoreCase(""))){
@@ -1213,16 +1236,30 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		try{
 
 			// Obtengo total de medios de pago
-			sql = " select sum(a.amttotal) as total " +
-					" from z_generaastovtasummp a " +
-					" left outer join z_mediopagoident b on (a.z_mediopagoident_id = b.z_mediopagoident_id and b.contabilizar='Y') " +
-					" where a.z_generaastovta_id =" + this.get_ID();
 
-			BigDecimal amtMediosPago = DB.getSQLValueBDEx(get_TrxName(), sql);
-			if (amtMediosPago == null) amtMediosPago = Env.ZERO;
+			// Sin identificadores
+			sql = " select round(sum(amttotal),2) as total " +
+					" from z_generaastovtasummp " +
+					" where z_generaastovta_id =" + this.get_ID() +
+					" and z_mediopagoident_id is null ";
+
+			BigDecimal amtMediosPago1 = DB.getSQLValueBDEx(get_TrxName(), sql);
+			if (amtMediosPago1 == null) amtMediosPago1 = Env.ZERO;
+
+			// Con identificadores que se contabilizan
+			sql = " select round(sum(a.amttotal),2) as total " +
+					" from z_generaastovtasummp a " +
+					" inner join z_mediopagoident b on a.z_mediopagoident_id = b.z_mediopagoident_id " +
+					" where a.z_generaastovta_id =" + this.get_ID() +
+					" and b.contabilizar='Y' ";
+
+			BigDecimal amtMediosPago2 = DB.getSQLValueBDEx(get_TrxName(), sql);
+			if (amtMediosPago2 == null) amtMediosPago2 = Env.ZERO;
+
+			BigDecimal amtMediosPago = amtMediosPago1.add(amtMediosPago2);
 
 			// Obtengo total de impuestos
-			sql = " select sum(taxamt) as total " +
+			sql = " select round(sum(taxamt),2) as total " +
 					" from " + X_Z_GeneraAstoVtaSumTax.Table_Name +
 					" where " + X_Z_GeneraAstoVtaSumTax.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID();
 
@@ -1230,7 +1267,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 			if (amtImpuestos == null) amtImpuestos = Env.ZERO;
 
 			// Obtengo total base de impuestos
-			sql = " select sum(taxbaseamt) as total " +
+			sql = " select round(sum(taxbaseamt),2) as total " +
 					" from " + X_Z_GeneraAstoVtaSumTax.Table_Name +
 					" where " + X_Z_GeneraAstoVtaSumTax.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID();
 
@@ -1307,7 +1344,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		ResultSet rs = null;
 
 		try{
-			sql = " select a.c_taxcategory_id, b.name, a.sc_porcentajeiva, sum(a.sc_montoiva) as taxamt, " +
+			sql = " select a.c_taxcategory_id, b.name, a.sc_porcentajeiva, round(sum(a.sc_montoiva),2) as taxamt, " +
 					" case when sc_porcentajeiva > 0 then " +
 					" sum(round((a.sc_importe*100)/(100 + sc_porcentajeiva),2)) else sum(a.sc_importe) end as taxbaseamt " +
 					" from zv_scanntech_detvtas a " +
