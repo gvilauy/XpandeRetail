@@ -644,7 +644,8 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		    sql = " select a.st_codigomediopago, a.st_nombremediopago, a.st_tipolinea, b.name as nomtipolinea, a.st_tipotarjetacredito, " +
 					" a.st_nombretarjeta, sttar.z_mediopago_id as mptar, sttar.z_mediopagoident_id, stmp.z_mediopago_id as mpsis, a.st_codigomoneda, " +
 					" sum(a.st_totalentregado) as st_totalentregado, sum(a.st_totalmppagomoneda) as st_totalmppagomoneda, " +
-					" sum(a.st_totalentregadomonedaref) as st_totalentregadomonedaref, sum(a.st_totalmppagomonedaref) as st_totalmppagomonedaref, " +
+					" sum(a.st_totalentregadomonedaref + coalesce(a.ST_MontoDescuentoLeyIVA,0) + coalesce(a.ST_DescuentoAfam,0)) as st_totalentregadomonedaref, " +
+					" sum(a.st_totalmppagomonedaref) as st_totalmppagomonedaref, " +
 					" sum(coalesce(a.st_cambio,0)) as st_cambio, sum(a.totalamt) as totalamt " +
 					" from zv_sisteco_vtasmpagodet a " +
 					" left outer join z_sistecotipolineapazos b on a.st_tipolinea = b.value " +
@@ -1005,8 +1006,8 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 			sql = " select a.sc_codigotipopago,  a.sc_codigocredito, a.sc_codigovale, a.sc_codigomoneda, a.sc_cotizacionventa, " +
 					" sum(coalesce(a.sc_importe,0) + coalesce(a.sc_descuentoafam,0) + coalesce(a.sc_descuentoincfin,0)) as sc_importe " +
-					" from z_stech_tk_movpago a \n" +
-					" left outer join z_stechmediopago mp on a.z_stechmediopago_id = mp.z_stechmediopago_id \n" +
+					" from z_stech_tk_movpago a " +
+					" left outer join z_stechmediopago mp on a.z_stechmediopago_id = mp.z_stechmediopago_id " +
 					" where a.ad_org_id =" + this.getAD_Org_ID() +
 					" and a.datetrx='" + this.getDateTo() + "' " +
 					" and mp.IsAsientoVtaPOS ='Y' " +
