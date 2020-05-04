@@ -644,7 +644,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		    sql = " select a.st_codigomediopago, a.st_nombremediopago, a.st_tipolinea, b.name as nomtipolinea, a.st_tipotarjetacredito, " +
 					" a.st_nombretarjeta, sttar.z_mediopago_id as mptar, sttar.z_mediopagoident_id, stmp.z_mediopago_id as mpsis, a.st_codigomoneda, " +
 					" sum(a.st_totalentregado) as st_totalentregado, sum(a.st_totalmppagomoneda) as st_totalmppagomoneda, " +
-					" sum(a.st_totalentregadomonedaref + coalesce(a.ST_MontoDescuentoLeyIVA,0) + coalesce(a.ST_DescuentoAfam,0)) as st_totalentregadomonedaref, " +
+					" sum(a.st_totalentregadomonedaref) as st_totalentregadomonedaref, " +
 					" sum(a.st_totalmppagomonedaref) as st_totalmppagomonedaref, " +
 					" sum(coalesce(a.st_cambio,0)) as st_cambio, sum(a.totalamt) as totalamt " +
 					" from zv_sisteco_vtasmpagodet a " +
@@ -1239,10 +1239,12 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 			// Obtengo total de medios de pago
 
 			// Sin identificadores
-			sql = " select round(sum(amttotal),2) as total " +
-					" from z_generaastovtasummp " +
-					" where z_generaastovta_id =" + this.get_ID() +
-					" and z_mediopagoident_id is null ";
+			sql = " select round(sum(a.amttotal),2) as total " +
+					" from z_generaastovtasummp a " +
+					" inner join z_mediopago b on a.z_mediopago_id = b.z_mediopago_id " +
+					" where a.z_generaastovta_id =" + this.get_ID() +
+					" and a.z_mediopagoident_id is null " +
+					" and b.contabilizar='Y' ";
 
 			BigDecimal amtMediosPago1 = DB.getSQLValueBDEx(get_TrxName(), sql);
 			if (amtMediosPago1 == null) amtMediosPago1 = Env.ZERO;
