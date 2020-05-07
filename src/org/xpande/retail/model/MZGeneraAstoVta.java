@@ -862,10 +862,10 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		ResultSet rs = null;
 
 		try{
-			sql = " select a.sc_codigotipopago, a.sc_codigocredito, a.sc_codigovale, a.sc_codigomoneda, a.sc_cotizacionventa, " +
+			sql = " select a.sc_codigotipopago, a.sc_codigocredito, a.sc_codigovale, a.sc_codigomoneda, a.sc_cotizacioncompra, " +
 					" case when b.sc_cuponcancelado ='N' then " +
-					" (coalesce(a.sc_importe,0) + coalesce(a.sc_descuentoafam,0) + coalesce(a.sc_descuentoincfin,0)) else " +
-					" ((coalesce(a.sc_importe,0) + coalesce(a.sc_descuentoafam,0) + coalesce(a.sc_descuentoincfin,0)) * -1) end as sc_importe, " +
+					" (coalesce(a.sc_importepago,0) + coalesce(a.sc_descuentoafam,0) + coalesce(a.sc_descuentoincfin,0)) else " +
+					" ((coalesce(a.sc_importepago,0) + coalesce(a.sc_descuentoafam,0) + coalesce(a.sc_descuentoincfin,0)) * -1) end as sc_importe, " +
 					" b.sc_fechaoperacion, b.sc_numeromov, b.sc_codigocaja, b.sc_tipocfe, b.sc_seriecfe, b.sc_numerooperacion, " +
 					" case when a.sc_codigomoneda = '858' then 142 else 100 end as c_currency_id, " +
 					" b.sc_cuponcancelado, a.sc_numerotarjeta, " +
@@ -936,7 +936,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 				vtaDetMPSC.setCodMedioPagoPOS(codigoMP);
 				vtaDetMPSC.setNomMedioPagoPOS(nombreMP);
 				vtaDetMPSC.setSC_CodigoMoneda(rs.getString("sc_codigomoneda"));
-				vtaDetMPSC.setSC_CotizacionVenta(rs.getBigDecimal("sc_cotizacionventa"));
+				vtaDetMPSC.setSC_CotizacionVenta(rs.getBigDecimal("sc_cotizacioncompra"));
 				vtaDetMPSC.setSC_Importe(rs.getBigDecimal("sc_importe"));
 				vtaDetMPSC.setSC_NumeroMov(rs.getString("sc_numeromov"));
 				vtaDetMPSC.setSC_CodigoCaja(rs.getInt("sc_codigocaja"));
@@ -1004,8 +1004,8 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 		try{
 
-			sql = " select a.sc_codigotipopago,  a.sc_codigocredito, a.sc_codigovale, a.sc_codigomoneda, a.sc_cotizacionventa, " +
-					" sum(coalesce(a.sc_importe,0) + coalesce(a.sc_descuentoafam,0) + coalesce(a.sc_descuentoincfin,0)) as sc_importe " +
+			sql = " select a.sc_codigotipopago,  a.sc_codigocredito, a.sc_codigovale, a.sc_codigomoneda, a.sc_cotizacioncompra, " +
+					" sum(coalesce(a.sc_importepago,0) + coalesce(a.sc_descuentoafam,0) + coalesce(a.sc_descuentoincfin,0)) as sc_importe " +
 					" from z_stech_tk_movpago a " +
 					" left outer join z_stechmediopago mp on a.z_stechmediopago_id = mp.z_stechmediopago_id " +
 					" where a.ad_org_id =" + this.getAD_Org_ID() +
@@ -1115,7 +1115,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 					amt2 = rs.getBigDecimal("sc_importe");
 					if (amt2 == null) amt2 = Env.ZERO;
 
-					currencyRate = rs.getBigDecimal("sc_cotizacionventa");
+					currencyRate = rs.getBigDecimal("sc_cotizacioncompra");
 					if (currencyRate == null) currencyRate = Env.ONE;
 
 					amt1 = amt2.multiply(currencyRate).setScale(2, RoundingMode.HALF_UP);
