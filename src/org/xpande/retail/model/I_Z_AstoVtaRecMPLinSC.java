@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_GeneraAstoVtaDetMPSC
+/** Generated Interface for Z_AstoVtaRecMPLinSC
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_GeneraAstoVtaDetMPSC 
+public interface I_Z_AstoVtaRecMPLinSC 
 {
 
-    /** TableName=Z_GeneraAstoVtaDetMPSC */
-    public static final String Table_Name = "Z_GeneraAstoVtaDetMPSC";
+    /** TableName=Z_AstoVtaRecMPLinSC */
+    public static final String Table_Name = "Z_AstoVtaRecMPLinSC";
 
-    /** AD_Table_ID=1000328 */
+    /** AD_Table_ID=1000342 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -278,6 +278,26 @@ public interface I_Z_GeneraAstoVtaDetMPSC
 	  */
 	public String getUUID();
 
+    /** Column name Z_AstoVtaRecMP_ID */
+    public static final String COLUMNNAME_Z_AstoVtaRecMP_ID = "Z_AstoVtaRecMP_ID";
+
+	/** Set Z_AstoVtaRecMP ID	  */
+	public void setZ_AstoVtaRecMP_ID (int Z_AstoVtaRecMP_ID);
+
+	/** Get Z_AstoVtaRecMP ID	  */
+	public int getZ_AstoVtaRecMP_ID();
+
+	public I_Z_AstoVtaRecMP getZ_AstoVtaRecMP() throws RuntimeException;
+
+    /** Column name Z_AstoVtaRecMPLinSC_ID */
+    public static final String COLUMNNAME_Z_AstoVtaRecMPLinSC_ID = "Z_AstoVtaRecMPLinSC_ID";
+
+	/** Set Z_AstoVtaRecMPLinSC ID	  */
+	public void setZ_AstoVtaRecMPLinSC_ID (int Z_AstoVtaRecMPLinSC_ID);
+
+	/** Get Z_AstoVtaRecMPLinSC ID	  */
+	public int getZ_AstoVtaRecMPLinSC_ID();
+
     /** Column name Z_GeneraAstoVtaDetMPSC_ID */
     public static final String COLUMNNAME_Z_GeneraAstoVtaDetMPSC_ID = "Z_GeneraAstoVtaDetMPSC_ID";
 
@@ -287,34 +307,7 @@ public interface I_Z_GeneraAstoVtaDetMPSC
 	/** Get Z_GeneraAstoVtaDetMPSC ID	  */
 	public int getZ_GeneraAstoVtaDetMPSC_ID();
 
-    /** Column name Z_GeneraAstoVta_ID */
-    public static final String COLUMNNAME_Z_GeneraAstoVta_ID = "Z_GeneraAstoVta_ID";
-
-	/** Set Z_GeneraAstoVta ID	  */
-	public void setZ_GeneraAstoVta_ID (int Z_GeneraAstoVta_ID);
-
-	/** Get Z_GeneraAstoVta ID	  */
-	public int getZ_GeneraAstoVta_ID();
-
-	public I_Z_GeneraAstoVta getZ_GeneraAstoVta() throws RuntimeException;
-
-    /** Column name Z_MedioPago_ID */
-    public static final String COLUMNNAME_Z_MedioPago_ID = "Z_MedioPago_ID";
-
-	/** Set Z_MedioPago ID	  */
-	public void setZ_MedioPago_ID (int Z_MedioPago_ID);
-
-	/** Get Z_MedioPago ID	  */
-	public int getZ_MedioPago_ID();
-
-    /** Column name Z_MedioPagoIdent_ID */
-    public static final String COLUMNNAME_Z_MedioPagoIdent_ID = "Z_MedioPagoIdent_ID";
-
-	/** Set Z_MedioPagoIdent ID	  */
-	public void setZ_MedioPagoIdent_ID (int Z_MedioPagoIdent_ID);
-
-	/** Get Z_MedioPagoIdent ID	  */
-	public int getZ_MedioPagoIdent_ID();
+	public I_Z_GeneraAstoVtaDetMPSC getZ_GeneraAstoVtaDetMPSC() throws RuntimeException;
 
     /** Column name Z_StechCreditos_ID */
     public static final String COLUMNNAME_Z_StechCreditos_ID = "Z_StechCreditos_ID";

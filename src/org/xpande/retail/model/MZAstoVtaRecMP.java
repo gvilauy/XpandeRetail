@@ -421,4 +421,18 @@ public class MZAstoVtaRecMP extends X_Z_AstoVtaRecMP implements DocAction, DocOp
 
 		return lines;
 	}
+
+	/***
+	 * Obtiene y retorna lineas de este documento para POS Scanntech.
+	 * Xpande. Created by Gabriel Vila on 5/8/20.
+	 * @return
+	 */
+	public List<MZAstoVtaRecMPLinSC> getLinesScanntech() {
+
+		String whereClause = X_Z_AstoVtaRecMPLinSC.COLUMNNAME_Z_AstoVtaRecMP_ID + " =" + this.get_ID();
+
+		List<MZAstoVtaRecMPLinSC> lines = new Query(getCtx(), I_Z_AstoVtaRecMPLinSC.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
 }

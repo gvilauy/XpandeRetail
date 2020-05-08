@@ -320,6 +320,74 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 			}
 		}
 
+		else if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
+
+			// Obtengo reclasficacion de medios de pago segun proveedor de POS, si es que tengo alguna.
+			List<MZGeneraAstoVtaDetMPSC> vtaDetMPSCList = this.getMediosPagoModifScanntech();
+
+			// Si tengo medios de pago reclasificados
+			if (vtaDetMPSCList.size() > 0){
+
+				// Instancio y completo nuevo documento para asiento de reclasificación de medios de pago de sisteco
+				MDocType[] docTypeRecMPList = MDocType.getOfDocBaseType(getCtx(), "AVR");
+				if (docTypeRecMPList.length <= 0){
+					this.m_processMsg = "Falta definr Tipo de Documento para Asiento de Reclasificación de Medios de Pago.";
+					return DocAction.STATUS_Invalid;
+				}
+
+				MZAstoVtaRecMP astoVtaRecMP = new MZAstoVtaRecMP(getCtx(), 0, get_TrxName());
+				astoVtaRecMP.setAD_Org_ID(this.getAD_Org_ID());
+				astoVtaRecMP.setZ_GeneraAstoVta_ID(this.get_ID());
+				astoVtaRecMP.setC_DocType_ID(docTypeRecMPList[0].get_ID());
+				astoVtaRecMP.setDateDoc(this.getDateDoc());
+				astoVtaRecMP.setDateAcct(this.getDateAcct());
+				astoVtaRecMP.setZ_PosVendor_ID(this.getZ_PosVendor_ID());
+				astoVtaRecMP.setDescription("Generado Automáticamente desde Generador de Asientos de Venta Nro. : " + this.getDocumentNo());
+
+				astoVtaRecMP.saveEx();
+
+				for (MZGeneraAstoVtaDetMPSC vtaDetMPSC: vtaDetMPSCList){
+					MZAstoVtaRecMPLinSC astoVtaRecMPLinSC = new MZAstoVtaRecMPLinSC(getCtx(), 0, get_TrxName());
+					astoVtaRecMPLinSC.setAD_Org_ID(this.getAD_Org_ID());
+					astoVtaRecMPLinSC.setZ_AstoVtaRecMP_ID(astoVtaRecMP.get_ID());
+					astoVtaRecMPLinSC.setZ_GeneraAstoVtaDetMPSC_ID(vtaDetMPSC.get_ID());
+					astoVtaRecMPLinSC.setDateTrx(vtaDetMPSC.getDateTrx());
+					astoVtaRecMPLinSC.setC_Currency_ID(vtaDetMPSC.getC_Currency_ID());
+					astoVtaRecMPLinSC.setCodMedioPagoPOS(vtaDetMPSC.getCodMedioPagoPOS());
+					astoVtaRecMPLinSC.setNomMedioPagoPOS(vtaDetMPSC.getNomMedioPagoPOS());
+					astoVtaRecMPLinSC.setSC_CodigoCaja(vtaDetMPSC.getSC_CodigoCaja());
+					astoVtaRecMPLinSC.setSC_CodigoMoneda(vtaDetMPSC.getSC_CodigoMoneda());
+					astoVtaRecMPLinSC.setSC_CotizacionVenta(vtaDetMPSC.getSC_CotizacionVenta());
+					astoVtaRecMPLinSC.setSC_CuponCancelado(vtaDetMPSC.isSC_CuponCancelado());
+					astoVtaRecMPLinSC.setSC_Importe(vtaDetMPSC.getSC_Importe());
+					astoVtaRecMPLinSC.setSC_NumeroMov(vtaDetMPSC.getSC_NumeroMov());
+					astoVtaRecMPLinSC.setSC_NumeroOperacion(vtaDetMPSC.getSC_NumeroOperacion());
+					astoVtaRecMPLinSC.setSC_NumeroTarjeta(vtaDetMPSC.getSC_NumeroTarjeta());
+					astoVtaRecMPLinSC.setSC_DescripcionCFE(vtaDetMPSC.getSC_DescripcionCFE());
+					astoVtaRecMPLinSC.setSC_DescripcionCFE(vtaDetMPSC.getSC_SerieCfe());
+					astoVtaRecMPLinSC.setSC_SerieCfe(vtaDetMPSC.getSC_SerieCfe());
+					astoVtaRecMPLinSC.setSC_TipoCfe(vtaDetMPSC.getSC_TipoCfe());
+					astoVtaRecMPLinSC.setZ_StechMedioPago_ID(vtaDetMPSC.getZ_StechMedioPago_ID());
+					astoVtaRecMPLinSC.setZ_StechCreditos_ID(vtaDetMPSC.getZ_StechCreditos_ID());
+
+					astoVtaRecMPLinSC.saveEx();
+				}
+
+				if (!astoVtaRecMP.processIt(DocAction.ACTION_Complete)){
+					if (astoVtaRecMP.getProcessMsg() != null){
+						this.m_processMsg = astoVtaRecMP.getProcessMsg();
+					}
+					else {
+						this.m_processMsg = "No se pudo generar y completar el documento de Asiento de Reclasificación de Medios de Pago.";
+					}
+					return DocAction.STATUS_Invalid;
+				}
+				astoVtaRecMP.saveEx();
+
+				this.setZ_AstoVtaRecMP_ID(astoVtaRecMP.get_ID());
+			}
+		}
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -1440,6 +1508,22 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 				X_Z_GeneraAstoVtaDetMPST.COLUMNNAME_Z_SistecoTipoTarjeta_ID + " is not null) ";
 
 		List<MZGeneraAstoVtaDetMPST> lines = new Query(getCtx(), I_Z_GeneraAstoVtaDetMPST.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+	/***
+	 * Obtiene y retorna lineas de detalle de medios de pago de Scanntech, que tuvieron modificaciones en medio de pago o tarjeta.
+	 * Xpande. Created by Gabriel Vila on 5/8/20.
+	 * @return
+	 */
+	public List<MZGeneraAstoVtaDetMPSC> getMediosPagoModifScanntech(){
+
+		String whereClause = X_Z_GeneraAstoVtaDetMPSC.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID() +
+				" AND (" + X_Z_GeneraAstoVtaDetMPSC.COLUMNNAME_Z_StechMedioPago_ID + " is not null OR " +
+				X_Z_GeneraAstoVtaDetMPSC.COLUMNNAME_Z_StechCreditos_ID + " is not null) ";
+
+		List<MZGeneraAstoVtaDetMPSC> lines = new Query(getCtx(), I_Z_GeneraAstoVtaDetMPSC.Table_Name, whereClause, get_TrxName()).list();
 
 		return lines;
 	}

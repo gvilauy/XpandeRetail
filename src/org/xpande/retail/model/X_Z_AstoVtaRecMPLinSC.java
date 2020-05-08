@@ -24,10 +24,10 @@ import java.util.Properties;
 import org.compiere.model.*;
 import org.compiere.util.Env;
 
-/** Generated Model for Z_GeneraAstoVtaDetMPSC
+/** Generated Model for Z_AstoVtaRecMPLinSC
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0 - $Id$ */
-public class X_Z_GeneraAstoVtaDetMPSC extends PO implements I_Z_GeneraAstoVtaDetMPSC, I_Persistent 
+public class X_Z_AstoVtaRecMPLinSC extends PO implements I_Z_AstoVtaRecMPLinSC, I_Persistent 
 {
 
 	/**
@@ -36,23 +36,24 @@ public class X_Z_GeneraAstoVtaDetMPSC extends PO implements I_Z_GeneraAstoVtaDet
 	private static final long serialVersionUID = 20200508L;
 
     /** Standard Constructor */
-    public X_Z_GeneraAstoVtaDetMPSC (Properties ctx, int Z_GeneraAstoVtaDetMPSC_ID, String trxName)
+    public X_Z_AstoVtaRecMPLinSC (Properties ctx, int Z_AstoVtaRecMPLinSC_ID, String trxName)
     {
-      super (ctx, Z_GeneraAstoVtaDetMPSC_ID, trxName);
-      /** if (Z_GeneraAstoVtaDetMPSC_ID == 0)
+      super (ctx, Z_AstoVtaRecMPLinSC_ID, trxName);
+      /** if (Z_AstoVtaRecMPLinSC_ID == 0)
         {
 			setCodMedioPagoPOS (null);
 			setNomMedioPagoPOS (null);
 			setSC_CuponCancelado (false);
 // N
 			setSC_Importe (Env.ZERO);
+			setZ_AstoVtaRecMP_ID (0);
+			setZ_AstoVtaRecMPLinSC_ID (0);
 			setZ_GeneraAstoVtaDetMPSC_ID (0);
-			setZ_GeneraAstoVta_ID (0);
         } */
     }
 
     /** Load Constructor */
-    public X_Z_GeneraAstoVtaDetMPSC (Properties ctx, ResultSet rs, String trxName)
+    public X_Z_AstoVtaRecMPLinSC (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -74,7 +75,7 @@ public class X_Z_GeneraAstoVtaDetMPSC extends PO implements I_Z_GeneraAstoVtaDet
 
     public String toString()
     {
-      StringBuffer sb = new StringBuffer ("X_Z_GeneraAstoVtaDetMPSC[")
+      StringBuffer sb = new StringBuffer ("X_Z_AstoVtaRecMPLinSC[")
         .append(get_ID()).append("]");
       return sb.toString();
     }
@@ -351,14 +352,64 @@ public class X_Z_GeneraAstoVtaDetMPSC extends PO implements I_Z_GeneraAstoVtaDet
 		return (String)get_Value(COLUMNNAME_UUID);
 	}
 
+	public I_Z_AstoVtaRecMP getZ_AstoVtaRecMP() throws RuntimeException
+    {
+		return (I_Z_AstoVtaRecMP)MTable.get(getCtx(), I_Z_AstoVtaRecMP.Table_Name)
+			.getPO(getZ_AstoVtaRecMP_ID(), get_TrxName());	}
+
+	/** Set Z_AstoVtaRecMP ID.
+		@param Z_AstoVtaRecMP_ID Z_AstoVtaRecMP ID	  */
+	public void setZ_AstoVtaRecMP_ID (int Z_AstoVtaRecMP_ID)
+	{
+		if (Z_AstoVtaRecMP_ID < 1) 
+			set_Value (COLUMNNAME_Z_AstoVtaRecMP_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_AstoVtaRecMP_ID, Integer.valueOf(Z_AstoVtaRecMP_ID));
+	}
+
+	/** Get Z_AstoVtaRecMP ID.
+		@return Z_AstoVtaRecMP ID	  */
+	public int getZ_AstoVtaRecMP_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_AstoVtaRecMP_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_AstoVtaRecMPLinSC ID.
+		@param Z_AstoVtaRecMPLinSC_ID Z_AstoVtaRecMPLinSC ID	  */
+	public void setZ_AstoVtaRecMPLinSC_ID (int Z_AstoVtaRecMPLinSC_ID)
+	{
+		if (Z_AstoVtaRecMPLinSC_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Z_AstoVtaRecMPLinSC_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Z_AstoVtaRecMPLinSC_ID, Integer.valueOf(Z_AstoVtaRecMPLinSC_ID));
+	}
+
+	/** Get Z_AstoVtaRecMPLinSC ID.
+		@return Z_AstoVtaRecMPLinSC ID	  */
+	public int getZ_AstoVtaRecMPLinSC_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_AstoVtaRecMPLinSC_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_GeneraAstoVtaDetMPSC getZ_GeneraAstoVtaDetMPSC() throws RuntimeException
+    {
+		return (I_Z_GeneraAstoVtaDetMPSC)MTable.get(getCtx(), I_Z_GeneraAstoVtaDetMPSC.Table_Name)
+			.getPO(getZ_GeneraAstoVtaDetMPSC_ID(), get_TrxName());	}
+
 	/** Set Z_GeneraAstoVtaDetMPSC ID.
 		@param Z_GeneraAstoVtaDetMPSC_ID Z_GeneraAstoVtaDetMPSC ID	  */
 	public void setZ_GeneraAstoVtaDetMPSC_ID (int Z_GeneraAstoVtaDetMPSC_ID)
 	{
 		if (Z_GeneraAstoVtaDetMPSC_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Z_GeneraAstoVtaDetMPSC_ID, null);
+			set_Value (COLUMNNAME_Z_GeneraAstoVtaDetMPSC_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_Z_GeneraAstoVtaDetMPSC_ID, Integer.valueOf(Z_GeneraAstoVtaDetMPSC_ID));
+			set_Value (COLUMNNAME_Z_GeneraAstoVtaDetMPSC_ID, Integer.valueOf(Z_GeneraAstoVtaDetMPSC_ID));
 	}
 
 	/** Get Z_GeneraAstoVtaDetMPSC ID.
@@ -366,71 +417,6 @@ public class X_Z_GeneraAstoVtaDetMPSC extends PO implements I_Z_GeneraAstoVtaDet
 	public int getZ_GeneraAstoVtaDetMPSC_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_GeneraAstoVtaDetMPSC_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	public I_Z_GeneraAstoVta getZ_GeneraAstoVta() throws RuntimeException
-    {
-		return (I_Z_GeneraAstoVta)MTable.get(getCtx(), I_Z_GeneraAstoVta.Table_Name)
-			.getPO(getZ_GeneraAstoVta_ID(), get_TrxName());	}
-
-	/** Set Z_GeneraAstoVta ID.
-		@param Z_GeneraAstoVta_ID Z_GeneraAstoVta ID	  */
-	public void setZ_GeneraAstoVta_ID (int Z_GeneraAstoVta_ID)
-	{
-		if (Z_GeneraAstoVta_ID < 1) 
-			set_Value (COLUMNNAME_Z_GeneraAstoVta_ID, null);
-		else 
-			set_Value (COLUMNNAME_Z_GeneraAstoVta_ID, Integer.valueOf(Z_GeneraAstoVta_ID));
-	}
-
-	/** Get Z_GeneraAstoVta ID.
-		@return Z_GeneraAstoVta ID	  */
-	public int getZ_GeneraAstoVta_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_GeneraAstoVta_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Z_MedioPago ID.
-		@param Z_MedioPago_ID Z_MedioPago ID	  */
-	public void setZ_MedioPago_ID (int Z_MedioPago_ID)
-	{
-		if (Z_MedioPago_ID < 1) 
-			set_Value (COLUMNNAME_Z_MedioPago_ID, null);
-		else 
-			set_Value (COLUMNNAME_Z_MedioPago_ID, Integer.valueOf(Z_MedioPago_ID));
-	}
-
-	/** Get Z_MedioPago ID.
-		@return Z_MedioPago ID	  */
-	public int getZ_MedioPago_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPago_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Z_MedioPagoIdent ID.
-		@param Z_MedioPagoIdent_ID Z_MedioPagoIdent ID	  */
-	public void setZ_MedioPagoIdent_ID (int Z_MedioPagoIdent_ID)
-	{
-		if (Z_MedioPagoIdent_ID < 1) 
-			set_Value (COLUMNNAME_Z_MedioPagoIdent_ID, null);
-		else 
-			set_Value (COLUMNNAME_Z_MedioPagoIdent_ID, Integer.valueOf(Z_MedioPagoIdent_ID));
-	}
-
-	/** Get Z_MedioPagoIdent ID.
-		@return Z_MedioPagoIdent ID	  */
-	public int getZ_MedioPagoIdent_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPagoIdent_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
