@@ -1068,25 +1068,6 @@ public class ValidatorRetail implements ModelValidator {
 
             MInvoiceLine[] invoiceLines = model.getLines();
 
-            // Guardo documento en tabla para informes de actividad por documento
-            /*
-            MZActividadDocumento actividadDocumento = new MZActividadDocumento(model.getCtx(), 0, model.get_TrxName());
-            actividadDocumento.setAD_Table_ID(model.get_Table_ID());
-            actividadDocumento.setRecord_ID(model.get_ID());
-            actividadDocumento.setC_DocType_ID(model.getC_DocTypeTarget_ID());
-            String documentSerie = model.get_ValueAsString("DocumentSerie");
-            if (documentSerie == null) documentSerie = "";
-            actividadDocumento.setDocumentNoRef(documentSerie + model.getDocumentNo());
-            actividadDocumento.setDocCreatedBy(model.getCreatedBy());
-            actividadDocumento.setDocDateCreated(model.getCreated());
-            actividadDocumento.setCompletedBy(Env.getAD_User_ID(model.getCtx()));
-            actividadDocumento.setDateCompleted(new Timestamp(System.currentTimeMillis()));
-            actividadDocumento.setLineNo(invoiceLines.length);
-            actividadDocumento.setAD_Role_ID(Env.getAD_Role_ID(model.getCtx()));
-            actividadDocumento.setDiferenciaTiempo(new BigDecimal((actividadDocumento.getDateCompleted().getTime()-actividadDocumento.getDocDateCreated().getTime())/1000).divide(new BigDecimal(60),2,BigDecimal.ROUND_HALF_UP));
-            actividadDocumento.saveEx();
-            */
-
             // Precisión decimal de lista de precios de compra, si es que tengo.
             int precision = 2;
             if (model.getM_PriceList_ID() > 0){
@@ -1225,16 +1206,36 @@ public class ValidatorRetail implements ModelValidator {
                 }
             }
 
-            /*
+
             // Proceso comprobantes marcados con Asiento Manual Contable
             if (model.get_ValueAsBoolean("AsientoManualInvoice")){
-                // Elimino impuestos y genero los mismos según datos ingresados en la grilla de Asiento Manual.
-                message = this.setInvoiceTaxAsientoManual(model);
-                if (message != null){
-                    return message;
+
+                int contador = -1;
+
+                // Valido que no haya cuentas contables asociadas a impuestos que no tengan el valir deol impuesto en dicha linea.
+                sql = " select count(*) as contador " +
+                        " from z_invoiceastomanual am " +
+                        " inner join c_elementvalue ev on am.account_id = ev.c_elementvalue_id " +
+                        " where am.c_invoice_id =" + model.get_ID() +
+                        " and am.c_tax_id is null " +
+                        " and ev.istaxaccount='Y' ";
+                contador = DB.getSQLValueEx(model.get_TrxName(), sql);
+                if (contador > 0){
+                    return "No se puede Completar este Documento, ya que tiene lineas de Asiento Manual con cuentas contables que requieren un valor para IMPUESTO";
+                }
+
+                // Valido que no haya cuentas contables asociadas a Retenciones que no tengan el valor de la retencion en su linea
+                sql = " select count(*) as contador " +
+                        " from z_invoiceastomanual am " +
+                        " inner join c_elementvalue ev on am.account_id = ev.c_elementvalue_id " +
+                        " where am.c_invoice_id =" + model.get_ID() +
+                        " and am.z_retencionsocio_id is null " +
+                        " and ev.IsRetencionAcct='Y' ";
+                contador = DB.getSQLValueEx(model.get_TrxName(), sql);
+                if (contador > 0){
+                    return "No se puede Completar este Documento, ya que tiene lineas de Asiento Manual con cuentas contables que requieren un valor para RETENCION";
                 }
             }
-            */
 
         }
         else if (timing == TIMING_BEFORE_REACTIVATE){
