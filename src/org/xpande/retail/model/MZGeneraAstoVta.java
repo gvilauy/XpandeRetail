@@ -684,7 +684,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 			}
 
 			// Actualizo monto redondeo
-			this.setRedondeo();
+			//this.setRedondeo();
 
 		}
 		catch (Exception e){
@@ -1257,6 +1257,36 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 
 	/***
+	 * Obtiene información de medios de pago e impuestos.
+	 * Xpande. Created by Gabriel Vila on 5/22/20.
+	 * @return
+	 */
+	public String getInfo(){
+
+		String message = null;
+
+		try{
+
+			// Cargo información de medios de pago
+			message = this.getVentasMedioPago();
+
+			// Cargo información de impuestos
+			if (message == null){
+				message = this.getVentasImpuesto();
+			}
+
+			// Calcula diferencia como redondeo
+			this.setRedondeo();
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+		return message;
+	}
+
+
+	/***
 	 * Obtiene y carga información resumida de ventas por impuesto según proveedor de POS.
 	 * @return
 	 */
@@ -1284,7 +1314,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 			}
 
 			// Actualizo monto redondeo
-			this.setRedondeo();
+			//this.setRedondeo();
 
 		}
 		catch (Exception e){
@@ -1298,7 +1328,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 	 * Setea importe de Redondeo, producto de total medios de pago menos total impuestos.
 	 * Xpande. Created by Gabriel Vila on 5/16/19.
 	 */
-	private void setRedondeo() {
+	public void setRedondeo() {
 
 		String sql = "";
 
