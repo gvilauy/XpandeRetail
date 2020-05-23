@@ -22,7 +22,7 @@ public class ObtenerAstoVtaInfo extends SvrProcess {
         String message = "";
 
         // Cargo información de medios de pago e impuestos.
-        message = this.astoVta.getVentasMedioPago();
+        message = this.astoVta.getInfo();
         if (message != null){
             return "@Error@ " + message;
         }
