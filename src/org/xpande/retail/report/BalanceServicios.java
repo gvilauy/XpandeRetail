@@ -125,6 +125,7 @@ public class BalanceServicios extends SvrProcess {
 
             // Armo condicion where dinámica del reporte
             String whereClause = "";
+            boolean filtraUPC = false;
 
             if (this.cBPartnerID > 0){
                 whereClause += " and p.m_product_id in (select ps.m_product_id from z_productosocio ps where ps.c_bpartner_id =" + this.cBPartnerID +
@@ -149,19 +150,32 @@ public class BalanceServicios extends SvrProcess {
             }
             if ((this.upc != null) && (!this.upc.trim().equalsIgnoreCase(""))){
                 whereClause += " and pupc.upc ='" + this.upc + "' ";
+                filtraUPC = true;
             }
 
-
-            sql = " select p.ad_client_id, " + this.adOrgID + ", " + this.getAD_User_ID() + ", "
-                    + ((cBPartnerID > 0) ? String.valueOf(this.cBPartnerID) : "null") + "::numeric(10,0), " +
-                    " p.m_product_id, p.value, p.name, '" +  this.startDate + "', p.z_productoseccion_id, p.z_productorubro_id,  " +
-                    " p.z_productofamilia_id, p.z_productosubfamilia_id, " +
-                    " pupc.z_productoupc_id, pupc.upc " +
-                    " from m_product p " +
-                    " left outer join zv_ultimoproductoupc vupc on p.m_product_id = vupc.m_product_id " +
-                    " left outer join z_productoupc pupc on vupc.z_productoupc_id = pupc.z_productoupc_id " +
-                    " where p.issold ='Y' and p.ispurchased ='Y' and p.isactive ='Y' " + whereClause +
-                    " order by p.name ";
+            if (!filtraUPC){
+                sql = " select p.ad_client_id, " + this.adOrgID + ", " + this.getAD_User_ID() + ", "
+                        + ((cBPartnerID > 0) ? String.valueOf(this.cBPartnerID) : "null") + "::numeric(10,0), " +
+                        " p.m_product_id, p.value, p.name, '" +  this.startDate + "', p.z_productoseccion_id, p.z_productorubro_id,  " +
+                        " p.z_productofamilia_id, p.z_productosubfamilia_id, " +
+                        " pupc.z_productoupc_id, pupc.upc " +
+                        " from m_product p " +
+                        " left outer join zv_ultimoproductoupc vupc on p.m_product_id = vupc.m_product_id " +
+                        " left outer join z_productoupc pupc on vupc.z_productoupc_id = pupc.z_productoupc_id " +
+                        " where p.issold ='Y' and p.ispurchased ='Y' and p.isactive ='Y' " + whereClause +
+                        " order by p.name ";
+            }
+            else {
+                sql = " select distinct p.ad_client_id, " + this.adOrgID + ", " + this.getAD_User_ID() + ", "
+                        + ((cBPartnerID > 0) ? String.valueOf(this.cBPartnerID) : "null") + "::numeric(10,0), " +
+                        " p.m_product_id, p.value, p.name, '" +  this.startDate + "', p.z_productoseccion_id, p.z_productorubro_id,  " +
+                        " p.z_productofamilia_id, p.z_productosubfamilia_id, " +
+                        " pupc.z_productoupc_id, pupc.upc " +
+                        " from m_product p " +
+                        " left outer join z_productoupc pupc on p.m_product_id = pupc.m_product_id " +
+                        " where p.issold ='Y' and p.ispurchased ='Y' and p.isactive ='Y' " + whereClause +
+                        " order by p.name ";
+            }
 
             DB.executeUpdateEx(action + sql, null);
 
