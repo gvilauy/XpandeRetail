@@ -5,6 +5,7 @@ import org.compiere.model.MClient;
 import org.compiere.model.MDocType;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.xpande.core.utils.DateUtils;
@@ -124,9 +125,10 @@ public class GenerarAstoVtaPOS extends SvrProcess {
                 if ((interfacePazos != null) && (interfacePazos.get_ID() > 0)){
 
                     // Genero asiento de venta
+                    String sql = " select max(c_doctype_id) from c_doctype where docbasetype ='AVG'";
+                    int cDocTypeID = DB.getSQLValueEx(null, sql);
 
-                    MDocType[] docTypeVtaList = MDocType.getOfDocBaseType(getCtx(), "AVG");
-                    if (docTypeVtaList.length <= 0){
+                    if (cDocTypeID <= 0){
                         return "Falta definr Tipo de Documento para Generación de Asiento de Venta POS.";
                     }
 
@@ -138,7 +140,7 @@ public class GenerarAstoVtaPOS extends SvrProcess {
                     astoVta.setDateDoc(interfacePazos.getDateTrx());
                     astoVta.setDateAcct(interfacePazos.getDateTrx());
                     astoVta.setDateTo(interfacePazos.getDateTrx());
-                    astoVta.setC_DocType_ID(docTypeVtaList[0].get_ID());
+                    astoVta.setC_DocType_ID(cDocTypeID);
                     astoVta.setC_AcctSchema_ID(client.getAcctSchema().get_ID());
                     astoVta.setC_Currency_ID(client.getAcctSchema().getC_Currency_ID());
                     astoVta.setDescription("Generada Automáticamente");
@@ -188,9 +190,10 @@ public class GenerarAstoVtaPOS extends SvrProcess {
                 if ((interfaceVta != null) && (interfaceVta.get_ID() > 0)){
 
                     // Genero asiento de venta
+                    String sql = " select max(c_doctype_id) from c_doctype where docbasetype ='AVG'";
+                    int cDocTypeID = DB.getSQLValueEx(null, sql);
 
-                    MDocType[] docTypeVtaList = MDocType.getOfDocBaseType(getCtx(), "AVG");
-                    if (docTypeVtaList.length <= 0){
+                    if (cDocTypeID <= 0){
                         return "Falta definr Tipo de Documento para Generación de Asiento de Venta POS.";
                     }
 
@@ -202,7 +205,7 @@ public class GenerarAstoVtaPOS extends SvrProcess {
                     astoVta.setDateDoc(interfaceVta.getDateTrx());
                     astoVta.setDateAcct(interfaceVta.getDateTrx());
                     astoVta.setDateTo(interfaceVta.getDateTrx());
-                    astoVta.setC_DocType_ID(docTypeVtaList[0].get_ID());
+                    astoVta.setC_DocType_ID(cDocTypeID);
                     astoVta.setC_AcctSchema_ID(client.getAcctSchema().get_ID());
                     astoVta.setC_Currency_ID(client.getAcctSchema().getC_Currency_ID());
                     astoVta.setDescription("Generada Automáticamente");
