@@ -144,6 +144,7 @@ public class GenerarAstoVtaPOS extends SvrProcess {
                     astoVta.setC_AcctSchema_ID(client.getAcctSchema().get_ID());
                     astoVta.setC_Currency_ID(client.getAcctSchema().getC_Currency_ID());
                     astoVta.setDescription("Generada Automáticamente");
+                    astoVta.setZ_SistecoInterfacePazos_ID(interfacePazos.get_ID());
                     astoVta.saveEx();
                     astoVta.getInfo();
                     astoVta.saveEx();
@@ -209,6 +210,7 @@ public class GenerarAstoVtaPOS extends SvrProcess {
                     astoVta.setC_AcctSchema_ID(client.getAcctSchema().get_ID());
                     astoVta.setC_Currency_ID(client.getAcctSchema().getC_Currency_ID());
                     astoVta.setDescription("Generada Automáticamente");
+                    astoVta.setZ_StechInterfaceVta_ID(interfaceVta.get_ID());
                     astoVta.saveEx();
                     astoVta.getInfo();
                     astoVta.saveEx();

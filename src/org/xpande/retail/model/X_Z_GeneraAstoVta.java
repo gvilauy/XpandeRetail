@@ -33,7 +33,7 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20191001L;
+	private static final long serialVersionUID = 20200602L;
 
     /** Standard Constructor */
     public X_Z_GeneraAstoVta (Properties ctx, int Z_GeneraAstoVta_ID, String trxName)
@@ -625,6 +625,46 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
 	public int getZ_PosVendorOrg_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_PosVendorOrg_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_SistecoInterfacePazos ID.
+		@param Z_SistecoInterfacePazos_ID Z_SistecoInterfacePazos ID	  */
+	public void setZ_SistecoInterfacePazos_ID (int Z_SistecoInterfacePazos_ID)
+	{
+		if (Z_SistecoInterfacePazos_ID < 1) 
+			set_Value (COLUMNNAME_Z_SistecoInterfacePazos_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_SistecoInterfacePazos_ID, Integer.valueOf(Z_SistecoInterfacePazos_ID));
+	}
+
+	/** Get Z_SistecoInterfacePazos ID.
+		@return Z_SistecoInterfacePazos ID	  */
+	public int getZ_SistecoInterfacePazos_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_SistecoInterfacePazos_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_StechInterfaceVta ID.
+		@param Z_StechInterfaceVta_ID Z_StechInterfaceVta ID	  */
+	public void setZ_StechInterfaceVta_ID (int Z_StechInterfaceVta_ID)
+	{
+		if (Z_StechInterfaceVta_ID < 1) 
+			set_Value (COLUMNNAME_Z_StechInterfaceVta_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_StechInterfaceVta_ID, Integer.valueOf(Z_StechInterfaceVta_ID));
+	}
+
+	/** Get Z_StechInterfaceVta ID.
+		@return Z_StechInterfaceVta ID	  */
+	public int getZ_StechInterfaceVta_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_StechInterfaceVta_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

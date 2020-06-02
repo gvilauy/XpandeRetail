@@ -56,7 +56,7 @@ public interface I_Z_GeneraAstoVta
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_GeneraAstoVta
 	/** Set AmtRounding.
 	  * Monto de redondeo
 	  */
-	public void setAmtRounding(BigDecimal AmtRounding);
+	public void setAmtRounding (BigDecimal AmtRounding);
 
 	/** Get AmtRounding.
 	  * Monto de redondeo
@@ -82,7 +82,7 @@ public interface I_Z_GeneraAstoVta
 	/** Set Accounting Schema.
 	  * Rules for accounting
 	  */
-	public void setC_AcctSchema_ID(int C_AcctSchema_ID);
+	public void setC_AcctSchema_ID (int C_AcctSchema_ID);
 
 	/** Get Accounting Schema.
 	  * Rules for accounting
@@ -97,7 +97,7 @@ public interface I_Z_GeneraAstoVta
 	/** Set Currency.
 	  * The Currency for this record
 	  */
-	public void setC_Currency_ID(int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/** Get Currency.
 	  * The Currency for this record
@@ -112,7 +112,7 @@ public interface I_Z_GeneraAstoVta
 	/** Set Document Type.
 	  * Document type or rules
 	  */
-	public void setC_DocType_ID(int C_DocType_ID);
+	public void setC_DocType_ID (int C_DocType_ID);
 
 	/** Get Document Type.
 	  * Document type or rules
@@ -143,7 +143,7 @@ public interface I_Z_GeneraAstoVta
 	/** Set Account Date.
 	  * Accounting Date
 	  */
-	public void setDateAcct(Timestamp DateAcct);
+	public void setDateAcct (Timestamp DateAcct);
 
 	/** Get Account Date.
 	  * Accounting Date
@@ -156,7 +156,7 @@ public interface I_Z_GeneraAstoVta
 	/** Set Document Date.
 	  * Date of the Document
 	  */
-	public void setDateDoc(Timestamp DateDoc);
+	public void setDateDoc (Timestamp DateDoc);
 
 	/** Get Document Date.
 	  * Date of the Document
@@ -169,7 +169,7 @@ public interface I_Z_GeneraAstoVta
 	/** Set Date To.
 	  * End date of a date range
 	  */
-	public void setDateTo(Timestamp DateTo);
+	public void setDateTo (Timestamp DateTo);
 
 	/** Get Date To.
 	  * End date of a date range
@@ -182,7 +182,7 @@ public interface I_Z_GeneraAstoVta
 	/** Set Description.
 	  * Optional short description of the record
 	  */
-	public void setDescription(String Description);
+	public void setDescription (String Description);
 
 	/** Get Description.
 	  * Optional short description of the record
@@ -195,7 +195,7 @@ public interface I_Z_GeneraAstoVta
 	/** Set Document Action.
 	  * The targeted status of the document
 	  */
-	public void setDocAction(String DocAction);
+	public void setDocAction (String DocAction);
 
 	/** Get Document Action.
 	  * The targeted status of the document
@@ -208,7 +208,7 @@ public interface I_Z_GeneraAstoVta
 	/** Set Document Status.
 	  * The current status of the document
 	  */
-	public void setDocStatus(String DocStatus);
+	public void setDocStatus (String DocStatus);
 
 	/** Get Document Status.
 	  * The current status of the document
@@ -221,7 +221,7 @@ public interface I_Z_GeneraAstoVta
 	/** Set Document No.
 	  * Document sequence number of the document
 	  */
-	public void setDocumentNo(String DocumentNo);
+	public void setDocumentNo (String DocumentNo);
 
 	/** Get Document No.
 	  * Document sequence number of the document
@@ -234,7 +234,7 @@ public interface I_Z_GeneraAstoVta
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -247,7 +247,7 @@ public interface I_Z_GeneraAstoVta
 	/** Set Approved.
 	  * Indicates if this document requires approval
 	  */
-	public void setIsApproved(boolean IsApproved);
+	public void setIsApproved (boolean IsApproved);
 
 	/** Get Approved.
 	  * Indicates if this document requires approval
@@ -260,7 +260,7 @@ public interface I_Z_GeneraAstoVta
 	/** Set Posted.
 	  * Posting status
 	  */
-	public void setPosted(boolean Posted);
+	public void setPosted (boolean Posted);
 
 	/** Get Posted.
 	  * Posting status
@@ -271,7 +271,7 @@ public interface I_Z_GeneraAstoVta
     public static final String COLUMNNAME_ProcessButton = "ProcessButton";
 
 	/** Set ProcessButton	  */
-	public void setProcessButton(String ProcessButton);
+	public void setProcessButton (String ProcessButton);
 
 	/** Get ProcessButton	  */
 	public String getProcessButton();
@@ -282,7 +282,7 @@ public interface I_Z_GeneraAstoVta
 	/** Set ProcessButton2.
 	  * Botón de Proceso
 	  */
-	public void setProcessButton2(String ProcessButton2);
+	public void setProcessButton2 (String ProcessButton2);
 
 	/** Get ProcessButton2.
 	  * Botón de Proceso
@@ -295,7 +295,7 @@ public interface I_Z_GeneraAstoVta
 	/** Set Processed.
 	  * The document has been processed
 	  */
-	public void setProcessed(boolean Processed);
+	public void setProcessed (boolean Processed);
 
 	/** Get Processed.
 	  * The document has been processed
@@ -308,7 +308,7 @@ public interface I_Z_GeneraAstoVta
 	/** Set Processed On.
 	  * The date+time (expressed in decimal format) when the document has been processed
 	  */
-	public void setProcessedOn(BigDecimal ProcessedOn);
+	public void setProcessedOn (BigDecimal ProcessedOn);
 
 	/** Get Processed On.
 	  * The date+time (expressed in decimal format) when the document has been processed
@@ -319,7 +319,7 @@ public interface I_Z_GeneraAstoVta
     public static final String COLUMNNAME_Processing = "Processing";
 
 	/** Set Process Now	  */
-	public void setProcessing(boolean Processing);
+	public void setProcessing (boolean Processing);
 
 	/** Get Process Now	  */
 	public boolean isProcessing();
@@ -346,7 +346,7 @@ public interface I_Z_GeneraAstoVta
 	/** Set Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
 	  */
-	public void setUUID(String UUID);
+	public void setUUID (String UUID);
 
 	/** Get Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
@@ -357,7 +357,7 @@ public interface I_Z_GeneraAstoVta
     public static final String COLUMNNAME_Z_AstoVtaRecMP_ID = "Z_AstoVtaRecMP_ID";
 
 	/** Set Z_AstoVtaRecMP ID	  */
-	public void setZ_AstoVtaRecMP_ID(int Z_AstoVtaRecMP_ID);
+	public void setZ_AstoVtaRecMP_ID (int Z_AstoVtaRecMP_ID);
 
 	/** Get Z_AstoVtaRecMP ID	  */
 	public int getZ_AstoVtaRecMP_ID();
@@ -368,7 +368,7 @@ public interface I_Z_GeneraAstoVta
     public static final String COLUMNNAME_Z_GeneraAstoVta_ID = "Z_GeneraAstoVta_ID";
 
 	/** Set Z_GeneraAstoVta ID	  */
-	public void setZ_GeneraAstoVta_ID(int Z_GeneraAstoVta_ID);
+	public void setZ_GeneraAstoVta_ID (int Z_GeneraAstoVta_ID);
 
 	/** Get Z_GeneraAstoVta ID	  */
 	public int getZ_GeneraAstoVta_ID();
@@ -377,7 +377,7 @@ public interface I_Z_GeneraAstoVta
     public static final String COLUMNNAME_Z_PosVendor_ID = "Z_PosVendor_ID";
 
 	/** Set Z_PosVendor ID	  */
-	public void setZ_PosVendor_ID(int Z_PosVendor_ID);
+	public void setZ_PosVendor_ID (int Z_PosVendor_ID);
 
 	/** Get Z_PosVendor ID	  */
 	public int getZ_PosVendor_ID();
@@ -388,10 +388,28 @@ public interface I_Z_GeneraAstoVta
     public static final String COLUMNNAME_Z_PosVendorOrg_ID = "Z_PosVendorOrg_ID";
 
 	/** Set Z_PosVendorOrg ID	  */
-	public void setZ_PosVendorOrg_ID(int Z_PosVendorOrg_ID);
+	public void setZ_PosVendorOrg_ID (int Z_PosVendorOrg_ID);
 
 	/** Get Z_PosVendorOrg ID	  */
 	public int getZ_PosVendorOrg_ID();
 
 	public I_Z_PosVendorOrg getZ_PosVendorOrg() throws RuntimeException;
+
+    /** Column name Z_SistecoInterfacePazos_ID */
+    public static final String COLUMNNAME_Z_SistecoInterfacePazos_ID = "Z_SistecoInterfacePazos_ID";
+
+	/** Set Z_SistecoInterfacePazos ID	  */
+	public void setZ_SistecoInterfacePazos_ID (int Z_SistecoInterfacePazos_ID);
+
+	/** Get Z_SistecoInterfacePazos ID	  */
+	public int getZ_SistecoInterfacePazos_ID();
+
+    /** Column name Z_StechInterfaceVta_ID */
+    public static final String COLUMNNAME_Z_StechInterfaceVta_ID = "Z_StechInterfaceVta_ID";
+
+	/** Set Z_StechInterfaceVta ID	  */
+	public void setZ_StechInterfaceVta_ID (int Z_StechInterfaceVta_ID);
+
+	/** Get Z_StechInterfaceVta ID	  */
+	public int getZ_StechInterfaceVta_ID();
 }

@@ -709,7 +709,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		ResultSet rs = null;
 
 		try{
-		    sql = " select a.st_codigomediopago, a.st_nombremediopago, a.st_tipolinea, b.name as nomtipolinea, a.st_tipotarjetacredito, " +
+		    sql = " select a.Z_SistecoInterfacePazos_ID, a.st_codigomediopago, a.st_nombremediopago, a.st_tipolinea, b.name as nomtipolinea, a.st_tipotarjetacredito, " +
 					" a.st_nombretarjeta, sttar.z_mediopago_id as mptar, sttar.z_mediopagoident_id, stmp.z_mediopago_id as mpsis, a.st_codigomoneda, " +
 					" sum(a.st_totalentregado) as st_totalentregado, sum(a.st_totalmppagomoneda) as st_totalmppagomoneda, " +
 					" sum(a.st_totalentregadomonedaref) as st_totalentregadomonedaref, " +
@@ -722,16 +722,22 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 					" where a.ad_org_id =" + this.getAD_Org_ID() +
 					" and a.datetrx ='" + this.getDateTo() + "' " +
 					" and b.IsAsientoVtaPOS ='Y' " +
-					" group by a.st_codigomediopago, a.st_nombremediopago, a.st_tipolinea, b.name, a.st_tipotarjetacredito, a.st_nombretarjeta, " +
+					" group by a.Z_SistecoInterfacePazos_ID, a.st_codigomediopago, a.st_nombremediopago, a.st_tipolinea, b.name, a.st_tipotarjetacredito, a.st_nombretarjeta, " +
 					" sttar.z_mediopago_id, sttar.z_mediopagoident_id, stmp.z_mediopago_id, a.st_codigomoneda " +
-					" order by a.st_codigomediopago, a.st_nombremediopago, a.st_tipolinea, b.name, a.st_tipotarjetacredito, a.st_nombretarjeta, a.st_codigomoneda ";
+					" order by a.Z_SistecoInterfacePazos_ID, a.st_codigomediopago, a.st_nombremediopago, a.st_tipolinea, b.name, a.st_tipotarjetacredito, a.st_nombretarjeta, a.st_codigomoneda ";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();
 
 			MZGeneraAstoVtaSumMP astoVtaSumMP = null;
+			boolean firstRow = true;
 
 			while(rs.next()){
+
+				if (firstRow){
+					this.setZ_SistecoInterfacePazos_ID(rs.getInt("Z_SistecoInterfacePazos_ID"));
+					firstRow = false;
+				}
 
 				String codigoMP = rs.getString("st_tipotarjetacredito");
 				String nombreMP = rs.getString("st_nombretarjeta");
@@ -744,6 +750,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 				}
 
 				astoVtaSumMP = new MZGeneraAstoVtaSumMP(getCtx(), 0, get_TrxName());
+				astoVtaSumMP.set_ValueOfColumn("AD_Client_ID", this.getAD_Client_ID());
 				astoVtaSumMP.setZ_GeneraAstoVta_ID(this.get_ID());
 				astoVtaSumMP.setAD_Org_ID(this.getAD_Org_ID());
 				astoVtaSumMP.setCodMedioPagoPOS(codigoMP);
@@ -863,6 +870,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 				MZGeneraAstoVtaDetMPST vtaDetMPST = new MZGeneraAstoVtaDetMPST(getCtx(), 0, get_TrxName());
 				vtaDetMPST.setZ_GeneraAstoVta_ID(this.get_ID());
+				vtaDetMPST.set_ValueOfColumn("AD_Client_ID", this.getAD_Client_ID());
 				vtaDetMPST.setAD_Org_ID(this.getAD_Org_ID());
 				vtaDetMPST.setDateTrx(this.getDateTo());
 				vtaDetMPST.setST_NumeroTicket(rs.getString("st_numeroticket"));
@@ -999,6 +1007,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 				MZGeneraAstoVtaDetMPSC vtaDetMPSC = new MZGeneraAstoVtaDetMPSC(getCtx(), 0, get_TrxName());
 				vtaDetMPSC.setZ_GeneraAstoVta_ID(this.get_ID());
+				vtaDetMPSC.set_ValueOfColumn("AD_Client_ID", this.getAD_Client_ID());
 				vtaDetMPSC.setAD_Org_ID(this.getAD_Org_ID());
 				vtaDetMPSC.setDateTrx(rs.getTimestamp("sc_fechaoperacion"));
 				vtaDetMPSC.setCodMedioPagoPOS(codigoMP);
@@ -1072,22 +1081,28 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 		try{
 
-			sql = " select a.sc_codigotipopago,  a.sc_codigocredito, a.sc_codigovale, a.sc_codigomoneda, a.sc_cotizacioncompra, " +
+			sql = " select a.Z_StechInterfaceVta_ID, a.sc_codigotipopago,  a.sc_codigocredito, a.sc_codigovale, a.sc_codigomoneda, a.sc_cotizacioncompra, " +
 					" sum(coalesce(a.sc_importepago,0) + coalesce(a.sc_descuentoafam,0) + coalesce(a.sc_descuentoincfin,0)) as sc_importe " +
 					" from z_stech_tk_movpago a " +
 					" left outer join z_stechmediopago mp on a.z_stechmediopago_id = mp.z_stechmediopago_id " +
 					" where a.ad_org_id =" + this.getAD_Org_ID() +
 					" and a.datetrx='" + this.getDateTo() + "' " +
 					" and mp.IsAsientoVtaPOS ='Y' " +
-					" group by 1,2,3,4,5 " +
-					" order by 1,2,3,4 ";
+					" group by 1,2,3,4,5,6 " +
+					" order by 1,2,3,4,5 ";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();
 
 			MZGeneraAstoVtaSumMP astoVtaSumMP = null;
+			boolean firstRow = true;
 
 			while(rs.next()){
+
+				if (firstRow){
+					this.setZ_StechInterfaceVta_ID(rs.getInt("Z_StechInterfaceVta_ID"));
+					firstRow = false;
+				}
 
 				String codigoMP = null;
 				String nombreMP = null;
@@ -1151,6 +1166,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 				astoVtaSumMP = new MZGeneraAstoVtaSumMP(getCtx(), 0, get_TrxName());
 				astoVtaSumMP.setZ_GeneraAstoVta_ID(this.get_ID());
+				astoVtaSumMP.set_ValueOfColumn("AD_Client_ID", this.getAD_Client_ID());
 				astoVtaSumMP.setAD_Org_ID(this.getAD_Org_ID());
 				astoVtaSumMP.setCodMedioPagoPOS(codigoMP);
 				astoVtaSumMP.setNomMedioPagoPOS(nombreMP);
@@ -1411,6 +1427,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 				MZGeneraAstoVtaSumTax astoVtaSumTax = new MZGeneraAstoVtaSumTax(getCtx(), 0, get_TrxName());
 				astoVtaSumTax.setZ_GeneraAstoVta_ID(this.get_ID());
+				astoVtaSumTax.set_ValueOfColumn("AD_Client_ID", this.getAD_Client_ID());
 				astoVtaSumTax.setAD_Org_ID(this.getAD_Org_ID());
 				astoVtaSumTax.setC_TaxCategory_ID(rs.getInt("c_taxcategory_id"));
 				astoVtaSumTax.setC_Currency_ID(142);
@@ -1461,6 +1478,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 				MZGeneraAstoVtaSumTax astoVtaSumTax = new MZGeneraAstoVtaSumTax(getCtx(), 0, get_TrxName());
 				astoVtaSumTax.setZ_GeneraAstoVta_ID(this.get_ID());
+				astoVtaSumTax.set_ValueOfColumn("AD_Client_ID", this.getAD_Client_ID());
 				astoVtaSumTax.setAD_Org_ID(this.getAD_Org_ID());
 				astoVtaSumTax.setC_TaxCategory_ID(rs.getInt("c_taxcategory_id"));
 				astoVtaSumTax.setC_Currency_ID(142);
