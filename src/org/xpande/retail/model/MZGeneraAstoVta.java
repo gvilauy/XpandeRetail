@@ -1466,7 +1466,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 					" case when sc_porcentajeiva > 0 then " +
 					" sum(round((a.sc_importe*100)/(100 + sc_porcentajeiva),2)) else sum(a.sc_importe) end as taxbaseamt " +
 					" from zv_scanntech_detvtas a " +
-					" inner join c_taxcategory b on a.c_taxcategory_id = b.c_taxcategory_id  " +
+					" left outer join c_taxcategory b on a.c_taxcategory_id = b.c_taxcategory_id  " +
 					" where a.ad_org_id =" + this.getAD_Org_ID() +
 					" and a.datetrx ='" + this.getDateTo() + "' " +
 					" group by a.c_taxcategory_id, b.name, a.sc_porcentajeiva ";
