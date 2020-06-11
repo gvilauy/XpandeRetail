@@ -156,7 +156,8 @@ public class BalanceServicios extends SvrProcess {
             if (!filtraUPC){
                 sql = " select p.ad_client_id, " + this.adOrgID + ", " + this.getAD_User_ID() + ", "
                         + ((cBPartnerID > 0) ? String.valueOf(this.cBPartnerID) : "null") + "::numeric(10,0), " +
-                        " p.m_product_id, p.value, p.name, '" +  this.startDate + "', p.z_productoseccion_id, p.z_productorubro_id,  " +
+                        " p.m_product_id, p.value, p.name, '" +  this.startDate + "'::timestamp without time zone, " +
+                        " p.z_productoseccion_id, p.z_productorubro_id,  " +
                         " p.z_productofamilia_id, p.z_productosubfamilia_id, " +
                         " pupc.z_productoupc_id, pupc.upc " +
                         " from m_product p " +
@@ -168,7 +169,8 @@ public class BalanceServicios extends SvrProcess {
             else {
                 sql = " select distinct p.ad_client_id, " + this.adOrgID + ", " + this.getAD_User_ID() + ", "
                         + ((cBPartnerID > 0) ? String.valueOf(this.cBPartnerID) : "null") + "::numeric(10,0), " +
-                        " p.m_product_id, p.value, p.name, '" +  this.startDate + "', p.z_productoseccion_id, p.z_productorubro_id,  " +
+                        " p.m_product_id, p.value, p.name, '" +  this.startDate + "'::timestamp without time zone, " +
+                        " p.z_productoseccion_id, p.z_productorubro_id,  " +
                         " p.z_productofamilia_id, p.z_productosubfamilia_id, " +
                         " pupc.z_productoupc_id, pupc.upc " +
                         " from m_product p " +
