@@ -63,6 +63,32 @@ public interface I_Z_GeneraAstoVta
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name AmtAcctCr */
+    public static final String COLUMNNAME_AmtAcctCr = "AmtAcctCr";
+
+	/** Set Accounted Credit.
+	  * Accounted Credit Amount
+	  */
+	public void setAmtAcctCr (BigDecimal AmtAcctCr);
+
+	/** Get Accounted Credit.
+	  * Accounted Credit Amount
+	  */
+	public BigDecimal getAmtAcctCr();
+
+    /** Column name AmtAcctDr */
+    public static final String COLUMNNAME_AmtAcctDr = "AmtAcctDr";
+
+	/** Set Accounted Debit.
+	  * Accounted Debit Amount
+	  */
+	public void setAmtAcctDr (BigDecimal AmtAcctDr);
+
+	/** Get Accounted Debit.
+	  * Accounted Debit Amount
+	  */
+	public BigDecimal getAmtAcctDr();
+
     /** Column name AmtRounding */
     public static final String COLUMNNAME_AmtRounding = "AmtRounding";
 

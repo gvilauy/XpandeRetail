@@ -33,7 +33,7 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200602L;
+	private static final long serialVersionUID = 20200628L;
 
     /** Standard Constructor */
     public X_Z_GeneraAstoVta (Properties ctx, int Z_GeneraAstoVta_ID, String trxName)
@@ -92,6 +92,46 @@ public class X_Z_GeneraAstoVta extends PO implements I_Z_GeneraAstoVta, I_Persis
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set Accounted Credit.
+		@param AmtAcctCr 
+		Accounted Credit Amount
+	  */
+	public void setAmtAcctCr (BigDecimal AmtAcctCr)
+	{
+		set_Value (COLUMNNAME_AmtAcctCr, AmtAcctCr);
+	}
+
+	/** Get Accounted Credit.
+		@return Accounted Credit Amount
+	  */
+	public BigDecimal getAmtAcctCr () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctCr);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Accounted Debit.
+		@param AmtAcctDr 
+		Accounted Debit Amount
+	  */
+	public void setAmtAcctDr (BigDecimal AmtAcctDr)
+	{
+		set_Value (COLUMNNAME_AmtAcctDr, AmtAcctDr);
+	}
+
+	/** Get Accounted Debit.
+		@return Accounted Debit Amount
+	  */
+	public BigDecimal getAmtAcctDr () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctDr);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
 
 	/** Set AmtRounding.
 		@param AmtRounding 

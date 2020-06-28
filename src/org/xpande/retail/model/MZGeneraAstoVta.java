@@ -1292,7 +1292,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 			}
 
 			// Calcula diferencia como redondeo
-			this.setRedondeo();
+			this.setTotalesYRedondeo();
 
 		}
 		catch (Exception e){
@@ -1344,7 +1344,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 	 * Setea importe de Redondeo, producto de total medios de pago menos total impuestos.
 	 * Xpande. Created by Gabriel Vila on 5/16/19.
 	 */
-	public void setRedondeo() {
+	public void setTotalesYRedondeo() {
 
 		String sql = "";
 
@@ -1391,6 +1391,8 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 			BigDecimal amtBaseImp = DB.getSQLValueBDEx(get_TrxName(), sql);
 			if (amtBaseImp == null) amtBaseImp = Env.ZERO;
 
+			this.setAmtAcctDr(amtMediosPago);
+			this.setAmtAcctDr(amtBaseImp.subtract(amtImpuestos));
 			this.setAmtRounding(amtMediosPago.subtract(amtBaseImp).subtract(amtImpuestos));
 			this.saveEx();
 
