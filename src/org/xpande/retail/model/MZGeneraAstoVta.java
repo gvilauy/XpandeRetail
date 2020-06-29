@@ -1392,7 +1392,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 			if (amtBaseImp == null) amtBaseImp = Env.ZERO;
 
 			this.setAmtAcctDr(amtMediosPago);
-			this.setAmtAcctCr(amtBaseImp.subtract(amtImpuestos));
+			this.setAmtAcctCr(amtBaseImp.add(amtImpuestos));
 			this.setAmtRounding(amtMediosPago.subtract(amtBaseImp).subtract(amtImpuestos));
 			this.saveEx();
 
