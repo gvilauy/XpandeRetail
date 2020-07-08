@@ -6,9 +6,8 @@ import org.apache.axis.client.Service;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
-import org.xpande.retail.model.MZRetailConfig;
-import org.xpande.retail.model.MZRetailConfigDGC;
-import org.xpande.retail.model.X_Z_LineaProductoGral;
+import org.compiere.util.TimeUtil;
+import org.xpande.retail.model.*;
 import uy.com.bullseye.sipc.ws.interfaces.Datos;
 import uy.com.bullseye.sipc.ws.interfaces.Productos;
 
@@ -17,6 +16,7 @@ import javax.xml.soap.*;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,6 +32,7 @@ public class InterfacePreciosDGC extends SvrProcess {
 
     private int adOrgID = -1;
     private MZRetailConfigDGC configDGC = null;
+    private MZAuditSipc auditSipc = null;
 
     @Override
     protected void prepare() {
@@ -71,6 +72,12 @@ public class InterfacePreciosDGC extends SvrProcess {
                 return "@Error@ " + "No se obtuvieron datos de configuración para interface DGC y organización seleccionada.";
             }
 
+            // Insntancio modelo de cabezal de autitoria para este proceso.
+            this.auditSipc = new MZAuditSipc(getCtx(), 0, get_TrxName());
+            this.auditSipc.setAD_Org_ID(this.adOrgID);
+            this.auditSipc.setDateDoc(TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY));
+            this.auditSipc.saveEx();
+
             ArrayList<Datos> precios = new ArrayList<Datos>();
 
             String whereClause = this.getSPICProductsWhere();
@@ -93,8 +100,10 @@ public class InterfacePreciosDGC extends SvrProcess {
         String resAux1 = "";
         String resAux2 = "";
 
-        String select1 = "SELECT pUPC.UPC as UPC, pp.priceList, 'N' as isMailing, p.isactive FROM M_ProductPrice pp JOIN M_Product p";
-        String select2 = " UNION SELECT p.codigodgc as UPC, pp.priceList, 'N' as isMailing, p.isactive FROM M_ProductPrice pp JOIN M_Product p";
+        String select1 = "SELECT pUPC.UPC as UPC, pp.priceList, 'N' as isMailing, p.isactive, p.m_product_id " +
+                        " FROM M_ProductPrice pp JOIN M_Product p";
+        String select2 = " UNION SELECT p.codigodgc as UPC, pp.priceList, 'N' as isMailing, p.isactive, p.m_product_id " +
+                        " FROM M_ProductPrice pp JOIN M_Product p";
 
         String joinWhere = " ON pp.M_Product_ID = p.M_Product_ID"
                 +" JOIN z_productoupc pUPC"
@@ -124,11 +133,24 @@ public class InterfacePreciosDGC extends SvrProcess {
             ArrayList<Productos> prodResults = (ArrayList<Productos>) call.invoke(new Object[] {});
 
             for(Productos prodRes : prodResults){
+
+                System.out.println("DGC : " + prodRes.getCodigo_barra());
+
+                // Guardo linea de auditoria
+                MZAuditSipcLin auditSipcLin = new MZAuditSipcLin(getCtx(), 0, get_TrxName());
+                auditSipcLin.setZ_AuditSipc_ID(this.auditSipc.get_ID());
+                auditSipcLin.setAD_Org_ID(this.auditSipc.getAD_Org_ID());
+                auditSipcLin.setName(prodRes.getNombre());
+
                 if(!prodRes.getInterno()){
+                    auditSipcLin.setUPC(prodRes.getCodigo_barra());
                     resAux1 += "'" + prodRes.getCodigo_barra() + "',";
                 }else{
+                    auditSipcLin.setCodigoProducto(prodRes.getCodigo_barra());
                     resAux2 += "'" + prodRes.getCodigo_barra() + "',";
                 }
+
+                auditSipcLin.saveEx();
             }
 
             if(resAux1 != null && resAux1.length() > 0) {
@@ -160,6 +182,9 @@ public class InterfacePreciosDGC extends SvrProcess {
             pstmt = DB.prepareStatement(qry, get_TrxName());
             rs = pstmt.executeQuery();
             while (rs.next()) {
+
+                System.out.println(rs.getInt("m_product_id"));
+
                 Datos precio = new Datos();
                 precio.setCodigo_establecimiento(this.configDGC.getDGC_Cod_Establecimiento());
                 precio.setId_establecimiento(Long.parseLong(this.configDGC.getDGC_ID_Establecimiento()));
@@ -174,6 +199,19 @@ public class InterfacePreciosDGC extends SvrProcess {
                     precio.setOferta(true);
                 }else{
                     precio.setOferta(false);
+                }
+
+                // Obtengo y seteo linea de adutitoria, primero por UPC, sino hay nada, busco por codigo DGC
+                String valorBusqueda = rs.getString("upc");
+                MZAuditSipcLin auditSipcLin = this.auditSipc.getByUPC(valorBusqueda);
+                if ((auditSipcLin == null) || (auditSipcLin.get_ID() <= 0)){
+                    auditSipcLin = this.auditSipc.getByCodDGC(valorBusqueda);
+                }
+                if ((auditSipcLin != null) && (auditSipc.get_ID() > 0)){
+                    auditSipcLin.setM_Product_ID(rs.getInt("m_product_id"));
+                    auditSipcLin.setPriceSO(new BigDecimal(precio.getPrecio()));
+                    auditSipcLin.setWithOfferSO(precio.getOferta());
+                    auditSipcLin.saveEx();
                 }
                 precios.add(precio);
             }
