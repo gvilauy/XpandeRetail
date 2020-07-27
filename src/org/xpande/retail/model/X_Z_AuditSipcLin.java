@@ -19,6 +19,7 @@ package org.xpande.retail.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.Properties;
 import org.compiere.model.*;
 import org.compiere.util.Env;
@@ -32,7 +33,7 @@ public class X_Z_AuditSipcLin extends PO implements I_Z_AuditSipcLin, I_Persiste
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200707L;
+	private static final long serialVersionUID = 20200727L;
 
     /** Standard Constructor */
     public X_Z_AuditSipcLin (Properties ctx, int Z_AuditSipcLin_ID, String trxName)
@@ -75,6 +76,62 @@ public class X_Z_AuditSipcLin extends PO implements I_Z_AuditSipcLin, I_Persiste
       return sb.toString();
     }
 
+	public I_AD_User getAD_User() throws RuntimeException
+    {
+		return (I_AD_User)MTable.get(getCtx(), I_AD_User.Table_Name)
+			.getPO(getAD_User_ID(), get_TrxName());	}
+
+	/** Set User/Contact.
+		@param AD_User_ID 
+		User within the system - Internal or Business Partner Contact
+	  */
+	public void setAD_User_ID (int AD_User_ID)
+	{
+		if (AD_User_ID < 1) 
+			set_Value (COLUMNNAME_AD_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
+	}
+
+	/** Get User/Contact.
+		@return User within the system - Internal or Business Partner Contact
+	  */
+	public int getAD_User_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_DocType getC_DocType() throws RuntimeException
+    {
+		return (I_C_DocType)MTable.get(getCtx(), I_C_DocType.Table_Name)
+			.getPO(getC_DocType_ID(), get_TrxName());	}
+
+	/** Set Document Type.
+		@param C_DocType_ID 
+		Document type or rules
+	  */
+	public void setC_DocType_ID (int C_DocType_ID)
+	{
+		if (C_DocType_ID < 0) 
+			set_Value (COLUMNNAME_C_DocType_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+	}
+
+	/** Get Document Type.
+		@return Document type or rules
+	  */
+	public int getC_DocType_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set CodigoProducto.
 		@param CodigoProducto 
 		Código de Producto
@@ -90,6 +147,40 @@ public class X_Z_AuditSipcLin extends PO implements I_Z_AuditSipcLin, I_Persiste
 	public String getCodigoProducto () 
 	{
 		return (String)get_Value(COLUMNNAME_CodigoProducto);
+	}
+
+	/** Set DocumentNoRef.
+		@param DocumentNoRef 
+		Numero de documento referenciado
+	  */
+	public void setDocumentNoRef (String DocumentNoRef)
+	{
+		set_Value (COLUMNNAME_DocumentNoRef, DocumentNoRef);
+	}
+
+	/** Get DocumentNoRef.
+		@return Numero de documento referenciado
+	  */
+	public String getDocumentNoRef () 
+	{
+		return (String)get_Value(COLUMNNAME_DocumentNoRef);
+	}
+
+	/** Set FechaAuditoria.
+		@param FechaAuditoria 
+		Fecha auditoría genérica
+	  */
+	public void setFechaAuditoria (Timestamp FechaAuditoria)
+	{
+		set_Value (COLUMNNAME_FechaAuditoria, FechaAuditoria);
+	}
+
+	/** Get FechaAuditoria.
+		@return Fecha auditoría genérica
+	  */
+	public Timestamp getFechaAuditoria () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_FechaAuditoria);
 	}
 
 	public I_M_Product getM_Product() throws RuntimeException

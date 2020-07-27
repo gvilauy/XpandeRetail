@@ -100,9 +100,11 @@ public class InterfacePreciosDGC extends SvrProcess {
         String resAux1 = "";
         String resAux2 = "";
 
-        String select1 = "SELECT pUPC.UPC as UPC, pp.priceList, 'N' as isMailing, p.isactive, p.m_product_id " +
+        String select1 = "SELECT pUPC.UPC as UPC, pp.priceList, 'N' as isMailing, p.isactive, p.m_product_id, " +
+                        " pp.c_doctype_id, pp.documentnoref, pp.updated, pp.updatedby " +
                         " FROM M_ProductPrice pp JOIN M_Product p";
-        String select2 = " UNION SELECT p.codigodgc as UPC, pp.priceList, 'N' as isMailing, p.isactive, p.m_product_id " +
+        String select2 = " UNION SELECT p.codigodgc as UPC, pp.priceList, 'N' as isMailing, p.isactive, p.m_product_id, " +
+                        " pp.c_doctype_id, pp.documentnoref, pp.updated, pp.updatedby " +
                         " FROM M_ProductPrice pp JOIN M_Product p";
 
         String joinWhere = " ON pp.M_Product_ID = p.M_Product_ID"
@@ -211,6 +213,17 @@ public class InterfacePreciosDGC extends SvrProcess {
                     auditSipcLin.setM_Product_ID(rs.getInt("m_product_id"));
                     auditSipcLin.setPriceSO(new BigDecimal(precio.getPrecio()));
                     auditSipcLin.setWithOfferSO(precio.getOferta());
+
+                    if (rs.getInt("c_doctype_id") > 0){
+                        auditSipcLin.setC_DocType_ID(rs.getInt("c_doctype_id"));
+                    }
+                    String documentNoRef = rs.getString("DocumentNoRef");
+                    if ((documentNoRef != null) && (!documentNoRef.trim().equalsIgnoreCase(""))){
+                        auditSipcLin.setDocumentNoRef(documentNoRef);
+                    }
+                    auditSipcLin.setAD_User_ID(rs.getInt("UpdatedBy"));
+                    auditSipcLin.setFechaAuditoria(rs.getTimestamp("Updated"));
+
                     auditSipcLin.saveEx();
                 }
                 precios.add(precio);

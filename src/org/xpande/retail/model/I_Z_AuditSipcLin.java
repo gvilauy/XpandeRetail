@@ -63,6 +63,36 @@ public interface I_Z_AuditSipcLin
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name AD_User_ID */
+    public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+	/** Set User/Contact.
+	  * User within the system - Internal or Business Partner Contact
+	  */
+	public void setAD_User_ID (int AD_User_ID);
+
+	/** Get User/Contact.
+	  * User within the system - Internal or Business Partner Contact
+	  */
+	public int getAD_User_ID();
+
+	public I_AD_User getAD_User() throws RuntimeException;
+
+    /** Column name C_DocType_ID */
+    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/** Set Document Type.
+	  * Document type or rules
+	  */
+	public void setC_DocType_ID (int C_DocType_ID);
+
+	/** Get Document Type.
+	  * Document type or rules
+	  */
+	public int getC_DocType_ID();
+
+	public I_C_DocType getC_DocType() throws RuntimeException;
+
     /** Column name CodigoProducto */
     public static final String COLUMNNAME_CodigoProducto = "CodigoProducto";
 
@@ -91,6 +121,32 @@ public interface I_Z_AuditSipcLin
 	  * User who created this records
 	  */
 	public int getCreatedBy();
+
+    /** Column name DocumentNoRef */
+    public static final String COLUMNNAME_DocumentNoRef = "DocumentNoRef";
+
+	/** Set DocumentNoRef.
+	  * Numero de documento referenciado
+	  */
+	public void setDocumentNoRef (String DocumentNoRef);
+
+	/** Get DocumentNoRef.
+	  * Numero de documento referenciado
+	  */
+	public String getDocumentNoRef();
+
+    /** Column name FechaAuditoria */
+    public static final String COLUMNNAME_FechaAuditoria = "FechaAuditoria";
+
+	/** Set FechaAuditoria.
+	  * Fecha auditoría genérica
+	  */
+	public void setFechaAuditoria (Timestamp FechaAuditoria);
+
+	/** Get FechaAuditoria.
+	  * Fecha auditoría genérica
+	  */
+	public Timestamp getFechaAuditoria();
 
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";

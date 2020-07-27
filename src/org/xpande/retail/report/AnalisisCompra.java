@@ -108,7 +108,7 @@ public class AnalisisCompra  extends SvrProcess {
 
             // Cadenas de insert en tablas del reporte
             action = " insert into " + TABLA_REPORTE + " (ad_client_id, ad_org_id, ad_user_id, enddate, c_bpartner_id, " +
-                     " m_product_id, c_uom_id, z_productoseccion_id, z_productorubro_id, z_lineaproductosocio_id) ";
+                     " m_product_id, c_uom_id, z_productoseccion_id, z_productorubro_id, z_lineaproductosocio_id, value, name) ";
 
             // Armo condicion where dinámica del reporte
             String whereClause = "";
@@ -128,7 +128,8 @@ public class AnalisisCompra  extends SvrProcess {
 
             sql = " select p.ad_client_id, " + this.adOrgID + ", " + this.getAD_User_ID() + ", '" + this.endDate + "', " +
                     this.cBPartnerID + ", p.m_product_id, p.c_uom_id, p.z_productoseccion_id, p.z_productorubro_id,  " +
-                    ((this.zLineaProductoSocioID > 0) ? String.valueOf(this.zLineaProductoSocioID) : "null") + "::numeric(10,0) " +
+                    ((this.zLineaProductoSocioID > 0) ? String.valueOf(this.zLineaProductoSocioID) : "null") + "::numeric(10,0), " +
+                    " p.value, p.name " +
                     " from m_product p " +
                     " inner join z_productosocio bpp on (bpp.m_product_id = p.m_product_id and bpp.c_bpartner_id =" + this.cBPartnerID + ") " +
                     " where p.ispurchased ='Y' and p.isactive ='Y' " + whereClause +
