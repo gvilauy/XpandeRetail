@@ -116,7 +116,14 @@ public class InterfacePreciosDGC extends SvrProcess {
                 +" AND pl.ad_org_id = " + this.adOrgID
                 +" AND pl.C_Currency_ID = 142"
                 +" AND plV.isActive = 'Y')";
-        String joinWhere2 = joinWhere;
+
+        String joinWhere2 = " ON pp.M_Product_ID = p.M_Product_ID"
+                +" WHERE M_PriceList_Version_ID = (SELECT MAX(plV.M_PriceList_Version_ID) FROM M_PriceList pl JOIN M_PriceList_Version plV"
+                +" ON pl.M_PriceList_ID = plV.M_PriceList_ID"
+                +" WHERE pl.isSOPriceList = 'Y'"
+                +" AND pl.ad_org_id = " + this.adOrgID
+                +" AND pl.C_Currency_ID = 142"
+                +" AND plV.isActive = 'Y')";
 
         try {
 
