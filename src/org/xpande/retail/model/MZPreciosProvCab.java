@@ -1339,6 +1339,10 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				plinea.setDistinctPriceSO(productoSocio.isDistinctPriceSO());
 				plinea.setIsNew(false);
 
+				if (productoSocio.getPriceInvoiced() != null){
+					plinea.setPriceInvoiced(productoSocio.getPriceInvoiced());
+				}
+
 				// Ultimo código de barras asociado al producto (en caso de tenerlo)
 				MZProductoUPC pupc = MZProductoUPC.getByProduct(getCtx(), prod.get_ID(), get_TrxName());
 				if ((pupc != null) && (pupc.get_ID() > 0)){
@@ -1717,6 +1721,14 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 					// en este documento, van a tener los mismos precios de compra para este producto.
 					plinea.setOrgDifferentPricePO(false);
 
+					// Seteo ultimo precio de compra en caso de tenerlo
+					MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(getCtx(), this.getC_BPartner_ID(), prod.get_ID(), get_TrxName());
+					if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+						if (productoSocio.getPriceInvoiced() != null){
+							plinea.setPriceInvoiced(productoSocio.getPriceInvoiced());
+						}
+					}
+
 					// Precios de compra en producto existente
 					plinea.calculatePricesPO(lineaArchivo.getPriceList(), this.getPrecisionPO(), (MZPautaComercial) this.getZ_PautaComercial(), false);
 
@@ -1742,7 +1754,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 								if (productPrice.getPriceList() != null){
 									// Mismo precio de lista
 									if (productPrice.getPriceList().compareTo(plinea.getPriceList()) == 0){
-										MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(getCtx(), this.getC_BPartner_ID(), prod.get_ID(), get_TrxName());
+										//MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(getCtx(), this.getC_BPartner_ID(), prod.get_ID(), get_TrxName());
 										if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
 											if (plinea.getC_Currency_ID() == productoSocio.getC_Currency_ID()){
 												// Mismo precio OC

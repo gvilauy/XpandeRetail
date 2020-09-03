@@ -677,8 +677,6 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 	 */
 	public String getDataFromFile(String fileName) {
 
-    	String message = null;
-
 		FileReader fReader = null;
 		BufferedReader bReader = null;
 
@@ -810,7 +808,7 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 		}
 
 
-    	return message;
+    	return null;
 	}
 
 
