@@ -459,8 +459,16 @@ public class MZFormEfectivo extends X_Z_FormEfectivo implements DocAction, DocOp
 			String action = " delete from z_formefectivolin where z_formefectivo_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 
-			// Obtengo configuracion de conceptos para formulario de movimientos de efectivo
-			List<MZRetailConfigForEfe> configForEfeList = retailConfig.getConceptosFormEfe();
+			// Obtengo configuracion de conceptos para formulario de movimientos de efectivo segun documento
+			boolean esFormulario01 = true;
+			MDocType docType = (MDocType) this.getC_DocType();
+			if (docType.getDocSubTypeSO() != null){
+				if (docType.getDocSubTypeSO().equalsIgnoreCase("F2")){
+					esFormulario01 = false;
+				}
+			}
+
+			List<MZRetailConfigForEfe> configForEfeList = retailConfig.getConceptosFormEfe(esFormulario01);
 			for (MZRetailConfigForEfe configForEfe: configForEfeList){
 				MZFormEfectivoLin efectivoLin = new MZFormEfectivoLin(getCtx(), 0, get_TrxName());
 				efectivoLin.setZ_FormEfectivo_ID(this.get_ID());
@@ -472,23 +480,6 @@ public class MZFormEfectivo extends X_Z_FormEfectivo implements DocAction, DocOp
 				efectivoLin.setC_Currency_2_ID(100);
 				efectivoLin.setTieneCaja(configForEfe.isTieneCaja());
 				efectivoLin.saveEx();
-
-				/*
-				// Si para este concepto debo tener apertura por caja
-				if (efectivoLin.isTieneCaja()){
-					// Cargo cajas según POS asociado a esta organización
-					MZPosVendorOrg posVendorOrg = MZPosVendor.getByOrg(getCtx(), this.getAD_Org_ID(), null);
-					if (posVendorOrg != null) {
-						MZPosVendor posVendor = (MZPosVendor) posVendorOrg.getZ_PosVendor();
-						if (posVendor.getValue().equalsIgnoreCase("SISTECO")) {
-
-						}
-						else if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")) {
-
-						}
-					}
-				}
-				*/
 			}
 
 		}

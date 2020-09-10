@@ -56,7 +56,7 @@ public interface I_Z_RetailConfigForEfe
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,12 +69,38 @@ public interface I_Z_RetailConfigForEfe
 	/** Set AfectaSaldo.
 	  * Si afecta o no saldo
 	  */
-	public void setAfectaSaldo(boolean AfectaSaldo);
+	public void setAfectaSaldo (boolean AfectaSaldo);
 
 	/** Get AfectaSaldo.
 	  * Si afecta o no saldo
 	  */
 	public boolean isAfectaSaldo();
+
+    /** Column name AplicaF01 */
+    public static final String COLUMNNAME_AplicaF01 = "AplicaF01";
+
+	/** Set AplicaF01.
+	  * Si aplica o no al Formulario F01 en Retail
+	  */
+	public void setAplicaF01 (boolean AplicaF01);
+
+	/** Get AplicaF01.
+	  * Si aplica o no al Formulario F01 en Retail
+	  */
+	public boolean isAplicaF01();
+
+    /** Column name AplicaF02 */
+    public static final String COLUMNNAME_AplicaF02 = "AplicaF02";
+
+	/** Set AplicaF02.
+	  * Si aplica o no al Formulario F02 en Retail
+	  */
+	public void setAplicaF02 (boolean AplicaF02);
+
+	/** Get AplicaF02.
+	  * Si aplica o no al Formulario F02 en Retail
+	  */
+	public boolean isAplicaF02();
 
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
@@ -98,7 +124,7 @@ public interface I_Z_RetailConfigForEfe
 	/** Set Description.
 	  * Optional short description of the record
 	  */
-	public void setDescription(String Description);
+	public void setDescription (String Description);
 
 	/** Get Description.
 	  * Optional short description of the record
@@ -111,7 +137,7 @@ public interface I_Z_RetailConfigForEfe
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -124,7 +150,7 @@ public interface I_Z_RetailConfigForEfe
 	/** Set Name.
 	  * Alphanumeric identifier of the entity
 	  */
-	public void setName(String Name);
+	public void setName (String Name);
 
 	/** Get Name.
 	  * Alphanumeric identifier of the entity
@@ -138,7 +164,7 @@ public interface I_Z_RetailConfigForEfe
 	  * Method of ordering records;
  lowest number comes first
 	  */
-	public void setSeqNo(int SeqNo);
+	public void setSeqNo (int SeqNo);
 
 	/** Get Sequence.
 	  * Method of ordering records;
@@ -152,7 +178,7 @@ public interface I_Z_RetailConfigForEfe
 	/** Set TieneCaja.
 	  * Si requiere o no una caja asociada
 	  */
-	public void setTieneCaja(boolean TieneCaja);
+	public void setTieneCaja (boolean TieneCaja);
 
 	/** Get TieneCaja.
 	  * Si requiere o no una caja asociada
@@ -165,7 +191,7 @@ public interface I_Z_RetailConfigForEfe
 	/** Set TipoConceptoForEfe.
 	  * Tipo de concepto de formulario de movimientos de efectivo en Retail
 	  */
-	public void setTipoConceptoForEfe(String TipoConceptoForEfe);
+	public void setTipoConceptoForEfe (String TipoConceptoForEfe);
 
 	/** Get TipoConceptoForEfe.
 	  * Tipo de concepto de formulario de movimientos de efectivo en Retail
@@ -194,7 +220,7 @@ public interface I_Z_RetailConfigForEfe
 	/** Set Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
 	  */
-	public void setUUID(String UUID);
+	public void setUUID (String UUID);
 
 	/** Get Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
@@ -205,7 +231,7 @@ public interface I_Z_RetailConfigForEfe
     public static final String COLUMNNAME_Z_RetailConfigForEfe_ID = "Z_RetailConfigForEfe_ID";
 
 	/** Set Z_RetailConfigForEfe ID	  */
-	public void setZ_RetailConfigForEfe_ID(int Z_RetailConfigForEfe_ID);
+	public void setZ_RetailConfigForEfe_ID (int Z_RetailConfigForEfe_ID);
 
 	/** Get Z_RetailConfigForEfe ID	  */
 	public int getZ_RetailConfigForEfe_ID();
@@ -214,7 +240,7 @@ public interface I_Z_RetailConfigForEfe
     public static final String COLUMNNAME_Z_RetailConfig_ID = "Z_RetailConfig_ID";
 
 	/** Set Z_RetailConfig ID	  */
-	public void setZ_RetailConfig_ID(int Z_RetailConfig_ID);
+	public void setZ_RetailConfig_ID (int Z_RetailConfig_ID);
 
 	/** Get Z_RetailConfig ID	  */
 	public int getZ_RetailConfig_ID();

@@ -30,7 +30,7 @@ public class X_Z_RetailConfigForEfe extends PO implements I_Z_RetailConfigForEfe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20191126L;
+	private static final long serialVersionUID = 20200910L;
 
     /** Standard Constructor */
     public X_Z_RetailConfigForEfe (Properties ctx, int Z_RetailConfigForEfe_ID, String trxName)
@@ -40,6 +40,10 @@ public class X_Z_RetailConfigForEfe extends PO implements I_Z_RetailConfigForEfe
         {
 			setAfectaSaldo (true);
 // Y
+			setAplicaF01 (false);
+// N
+			setAplicaF02 (false);
+// N
 			setName (null);
 			setTieneCaja (false);
 // N
@@ -92,6 +96,54 @@ public class X_Z_RetailConfigForEfe extends PO implements I_Z_RetailConfigForEfe
 	public boolean isAfectaSaldo () 
 	{
 		Object oo = get_Value(COLUMNNAME_AfectaSaldo);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set AplicaF01.
+		@param AplicaF01 
+		Si aplica o no al Formulario F01 en Retail
+	  */
+	public void setAplicaF01 (boolean AplicaF01)
+	{
+		set_Value (COLUMNNAME_AplicaF01, Boolean.valueOf(AplicaF01));
+	}
+
+	/** Get AplicaF01.
+		@return Si aplica o no al Formulario F01 en Retail
+	  */
+	public boolean isAplicaF01 () 
+	{
+		Object oo = get_Value(COLUMNNAME_AplicaF01);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set AplicaF02.
+		@param AplicaF02 
+		Si aplica o no al Formulario F02 en Retail
+	  */
+	public void setAplicaF02 (boolean AplicaF02)
+	{
+		set_Value (COLUMNNAME_AplicaF02, Boolean.valueOf(AplicaF02));
+	}
+
+	/** Get AplicaF02.
+		@return Si aplica o no al Formulario F02 en Retail
+	  */
+	public boolean isAplicaF02 () 
+	{
+		Object oo = get_Value(COLUMNNAME_AplicaF02);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

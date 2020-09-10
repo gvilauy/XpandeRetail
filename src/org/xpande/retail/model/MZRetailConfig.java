@@ -60,9 +60,16 @@ public class MZRetailConfig extends X_Z_RetailConfig {
      * Xpande. Created by Gabriel Vila on 8/29/19.
      * @return
      */
-    public List<MZRetailConfigForEfe> getConceptosFormEfe(){
+    public List<MZRetailConfigForEfe> getConceptosFormEfe(boolean esFormularioF01){
 
         String whereClause = X_Z_RetailConfigForEfe.COLUMNNAME_Z_RetailConfig_ID + " =" + this.get_ID();
+
+        if (esFormularioF01){
+            whereClause += " AND " + X_Z_RetailConfigForEfe.COLUMNNAME_AplicaF01 + " ='Y' ";
+        }
+        else{
+            whereClause += " AND " + X_Z_RetailConfigForEfe.COLUMNNAME_AplicaF02 + " ='Y' ";
+        }
 
         List<MZRetailConfigForEfe> lines = new Query(getCtx(), I_Z_RetailConfigForEfe.Table_Name, whereClause, get_TrxName())
                 .setOnlyActiveRecords(true).setOrderBy(" SeqNo ").list();
@@ -78,7 +85,7 @@ public class MZRetailConfig extends X_Z_RetailConfig {
      * @param cCurrencyID
      * @return
      */
-    public X_Z_RetailForEfe_Acct getFormEfectivoAcct(int cAcctSchemaID, int cCurrencyID) {
+    public X_Z_RetailForEfe_Acct getFormEfectivoAcct(int cAcctSchemaID, int cCurrencyID, boolean esFormulario01) {
 
         X_Z_RetailForEfe_Acct forEfeAcct = null;
 
@@ -87,11 +94,20 @@ public class MZRetailConfig extends X_Z_RetailConfig {
         ResultSet rs = null;
 
         try{
+
+            String whereClause = "";
+            if (esFormulario01){
+                whereClause = " and aplicaf01 ='Y' ";
+            }
+            else{
+                whereClause = " and aplicaf02 ='Y' ";
+            }
+
             sql = " select z_retailforefe_acct_id " +
                     " from z_retailforefe_acct " +
                     " where z_retailconfig_id =" + this.get_ID() +
                     " and c_acctschema_id =" + cAcctSchemaID +
-                    " and c_currency_id =" + cCurrencyID;
+                    " and c_currency_id =" + cCurrencyID + whereClause;
 
             pstmt = DB.prepareStatement(sql, get_TrxName());
             rs = pstmt.executeQuery();
