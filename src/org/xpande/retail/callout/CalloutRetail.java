@@ -255,76 +255,90 @@ public class CalloutRetail extends CalloutEngine {
 
         String codInternoAux = value.toString().trim();
         int adOrgID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
+        int mProductID = -1;
+        String sql = "";
 
-        // Primero busco producto por organización y codigo interno. Esto por si hay un diferencial para el codigo interno del producto
-        // y en esta organización.
-        String sql = " select m_product_id from z_difprodorg " +
-                        " where ad_orgtrx_id = " + adOrgID +
-                        " and codigoproducto ='" + codInternoAux + "' ";
-        int mProductID = DB.getSQLValueEx(null, sql);
+        String column = mField.getColumnName();
 
-        // Si no obtuve producto
-        if (mProductID <= 0){
-            // Busco producto normal por codigo interno
-            sql = " select m_product_id from m_product " +
-                    " where value ='" + codInternoAux + "' " +
-                    " and isactive ='Y'";
+        if (column.equalsIgnoreCase("CodigoProducto")){
+            // Primero busco producto por organización y codigo interno. Esto por si hay un diferencial para el codigo interno del producto
+            // y en esta organización.
+            sql = " select m_product_id from z_difprodorg " +
+                    " where ad_orgtrx_id = " + adOrgID +
+                    " and codigoproducto ='" + codInternoAux + "' ";
             mProductID = DB.getSQLValueEx(null, sql);
 
-            // Si no obtuve producto por codigo interno
+            // Si no obtuve producto
             if (mProductID <= 0){
-
-                // Busco por codigo de barras
-                sql = " select m_product_id from z_productoupc " +
-                        " where upc ='" + codInternoAux + "' ";
+                // Busco producto normal por codigo interno
+                sql = " select m_product_id from m_product " +
+                        " where value ='" + codInternoAux + "' " +
+                        " and isactive ='Y'";
                 mProductID = DB.getSQLValueEx(null, sql);
 
-                // Si no lo encuentro por codigo de barras
+                // Si no obtuve producto por codigo interno
                 if (mProductID <= 0){
 
-                    // Busco por codigo interno en etiqueta
-                    // Si el largo del texto recibido tiene 13 digitos de largo
-                    if (codInternoAux.length() == 13){
-                        // Si comienza con 22 o 26
-                        if ((codInternoAux.startsWith("22")) || (codInternoAux.startsWith("26"))){
-                            // Tomo el codigo interno de 4 digitos luego del prefijo
-                            String codInternoEtiq = codInternoAux.substring(3,6);
+                    // Busco por codigo de barras
+                    sql = " select m_product_id from z_productoupc " +
+                            " where upc ='" + codInternoAux + "' ";
+                    mProductID = DB.getSQLValueEx(null, sql);
 
-                            // Busco por diferencial de codigo por organizacion
-                            sql = " select m_product_id from z_difprodorg " +
-                                    " where ad_orgtrx_id = " + adOrgID +
-                                    " and codigoproducto ='" + codInternoEtiq + "' ";
-                            mProductID = DB.getSQLValueEx(null, sql);
+                    // Si no lo encuentro por codigo de barras
+                    if (mProductID <= 0){
 
-                            // Si no lo encuentro
-                            if (mProductID <= 0){
+                        // Busco por codigo interno en etiqueta
+                        // Si el largo del texto recibido tiene 13 digitos de largo
+                        if (codInternoAux.length() == 13){
+                            // Si comienza con 22 o 26
+                            if ((codInternoAux.startsWith("22")) || (codInternoAux.startsWith("26"))){
+                                // Tomo el codigo interno de 4 digitos luego del prefijo
+                                String codInternoEtiq = codInternoAux.substring(3,6);
 
-                                // Busco producto normal por codigo interno
-                                sql = " select m_product_id from m_product " +
-                                        " where value ='" + codInternoAux + "' " +
-                                        " and isactive ='Y'";
+                                // Busco por diferencial de codigo por organizacion
+                                sql = " select m_product_id from z_difprodorg " +
+                                        " where ad_orgtrx_id = " + adOrgID +
+                                        " and codigoproducto ='" + codInternoEtiq + "' ";
                                 mProductID = DB.getSQLValueEx(null, sql);
 
+                                // Si no lo encuentro
                                 if (mProductID <= 0){
 
-                                }
-                            }
+                                    // Busco producto normal por codigo interno
+                                    sql = " select m_product_id from m_product " +
+                                            " where value ='" + codInternoAux + "' " +
+                                            " and isactive ='Y'";
+                                    mProductID = DB.getSQLValueEx(null, sql);
 
+                                    if (mProductID <= 0){
+
+                                    }
+                                }
+
+                            }
                         }
                     }
+
                 }
-
             }
+
+            if (mProductID <= 0){
+                mTab.setValue("UPC", null);
+                mTab.setValue("M_Product_ID", null);
+                mTab.setValue("C_UOM_ID", null);
+                return "";
+            }
+
+            mTab.setValue("M_Product_ID", mProductID);
+
+        }
+        else if (column.equalsIgnoreCase("M_Product_ID")){
+            mProductID = ((Integer) value).intValue();
+
+            MProduct product = new MProduct(ctx, mProductID, null);
+            mTab.setValue("CodigoProducto", product.getValue());
         }
 
-        if (mProductID <= 0){
-            mTab.setValue("UPC", null);
-            mTab.setValue("M_Product_ID", null);
-            mTab.setValue("C_UOM_ID", null);
-            return "";
-        }
-
-        mTab.setValue("M_Product_ID", mProductID);
 
         // Busco unidad de medida del producto
         sql = " select c_uom_id from m_product where m_product_id =" + mProductID;
