@@ -10,6 +10,8 @@ import org.xpande.core.model.MZProductoUPC;
 import org.xpande.retail.model.MZLineaProductoSocio;
 import org.xpande.retail.model.MZProductoSocio;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Properties;
 
 /**
@@ -250,6 +252,7 @@ public class CalloutRetail extends CalloutEngine {
             mTab.setValue("UPC", null);
             mTab.setValue("M_Product_ID", null);
             mTab.setValue("C_UOM_ID", null);
+            mTab.setValue("PriceEntered", null);
             return "";
         }
 
@@ -259,6 +262,8 @@ public class CalloutRetail extends CalloutEngine {
         String sql = "";
 
         String column = mField.getColumnName();
+
+        mTab.setValue("PriceEntered", null);
 
         if (column.equalsIgnoreCase("CodigoProducto")){
             // Primero busco producto por organización y codigo interno. Esto por si hay un diferencial para el codigo interno del producto
@@ -293,7 +298,31 @@ public class CalloutRetail extends CalloutEngine {
                             // Si comienza con 22 o 26
                             if ((codInternoAux.startsWith("22")) || (codInternoAux.startsWith("26"))){
                                 // Tomo el codigo interno de 4 digitos luego del prefijo
-                                String codInternoEtiq = codInternoAux.substring(3,6);
+                                String codInternoEtiq = codInternoAux.substring(2,6);
+
+                                if (codInternoEtiq.startsWith("000")){
+                                    codInternoEtiq = codInternoEtiq.substring(3,4);
+                                }
+                                else if (codInternoEtiq.startsWith("00")){
+                                    codInternoEtiq = codInternoEtiq.substring(2,4);
+                                }
+                                else if (codInternoEtiq.startsWith("0")){
+                                    codInternoEtiq = codInternoEtiq.substring(1,4);
+                                }
+
+                                String precio = codInternoAux.substring(6,12);
+                                if (precio.startsWith("000")){
+                                    precio = precio.substring(3,6);
+                                }
+                                else if (precio.startsWith("00")){
+                                    precio = precio.substring(2,6);
+                                }
+                                else if (precio.startsWith("0")){
+                                    precio = precio.substring(1,6);
+                                }
+                                BigDecimal priceEntered = new BigDecimal(Integer.valueOf(precio)).divide(Env.ONEHUNDRED, 2, RoundingMode.HALF_UP);
+
+                                mTab.setValue("PriceEntered", priceEntered);
 
                                 // Busco por diferencial de codigo por organizacion
                                 sql = " select m_product_id from z_difprodorg " +
@@ -306,19 +335,13 @@ public class CalloutRetail extends CalloutEngine {
 
                                     // Busco producto normal por codigo interno
                                     sql = " select m_product_id from m_product " +
-                                            " where value ='" + codInternoAux + "' " +
+                                            " where value ='" + codInternoEtiq + "' " +
                                             " and isactive ='Y'";
                                     mProductID = DB.getSQLValueEx(null, sql);
-
-                                    if (mProductID <= 0){
-
-                                    }
                                 }
-
                             }
                         }
                     }
-
                 }
             }
 
@@ -326,6 +349,7 @@ public class CalloutRetail extends CalloutEngine {
                 mTab.setValue("UPC", null);
                 mTab.setValue("M_Product_ID", null);
                 mTab.setValue("C_UOM_ID", null);
+                mTab.setValue("PriceEntered", null);
                 return "";
             }
 
