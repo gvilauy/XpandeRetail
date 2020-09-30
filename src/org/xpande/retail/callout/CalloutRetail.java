@@ -1,12 +1,10 @@
 package org.xpande.retail.callout;
 
-import org.compiere.model.CalloutEngine;
-import org.compiere.model.GridField;
-import org.compiere.model.GridTab;
-import org.compiere.model.MProduct;
+import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.core.model.MZProductoUPC;
+import org.xpande.financial.model.MZTransferAfectacion;
 import org.xpande.retail.model.MZLineaProductoSocio;
 import org.xpande.retail.model.MZProductoSocio;
 
@@ -257,13 +255,26 @@ public class CalloutRetail extends CalloutEngine {
         }
 
         String codInternoAux = value.toString().trim();
-        int adOrgID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
+
         int mProductID = -1;
         String sql = "";
 
         String column = mField.getColumnName();
 
         mTab.setValue("PriceEntered", null);
+
+        int zStkTransferID = Env.getContextAsInt(ctx, WindowNo, "Z_StkTransfer_ID");
+
+        if (zStkTransferID <= 0){
+            mTab.setValue("UPC", null);
+            mTab.setValue("M_Product_ID", null);
+            mTab.setValue("C_UOM_ID", null);
+            mTab.setValue("PriceEntered", null);
+            return "";
+        }
+
+        sql = " select ad_org_id from z_stktransfer where z_stktransfer_id =" + zStkTransferID;
+        int adOrgID = DB.getSQLValueEx(null, sql);
 
         if (column.equalsIgnoreCase("CodigoProducto")){
             // Primero busco producto por organización y codigo interno. Esto por si hay un diferencial para el codigo interno del producto
@@ -297,28 +308,45 @@ public class CalloutRetail extends CalloutEngine {
                         if (codInternoAux.length() == 13){
                             // Si comienza con 22 o 26
                             if ((codInternoAux.startsWith("22")) || (codInternoAux.startsWith("26"))){
-                                // Tomo el codigo interno de 4 digitos luego del prefijo
-                                String codInternoEtiq = codInternoAux.substring(2,6);
 
-                                if (codInternoEtiq.startsWith("000")){
-                                    codInternoEtiq = codInternoEtiq.substring(3,4);
+                                int largoCodigo = 4;
+                                if (codInternoAux.startsWith("26")){
+                                    largoCodigo = 5;
+                                }
+
+                                // Tomo el codigo interno de 4 o 5 digitos luego del prefijo
+                                String codInternoEtiq = codInternoAux.substring(2, (largoCodigo + 2));
+
+                                if (codInternoEtiq.startsWith("0000")){
+                                    codInternoEtiq = codInternoEtiq.substring(4, largoCodigo);
+                                }
+                                else if (codInternoEtiq.startsWith("000")){
+                                    codInternoEtiq = codInternoEtiq.substring(3, largoCodigo);
                                 }
                                 else if (codInternoEtiq.startsWith("00")){
-                                    codInternoEtiq = codInternoEtiq.substring(2,4);
+                                    codInternoEtiq = codInternoEtiq.substring(2, largoCodigo);
                                 }
                                 else if (codInternoEtiq.startsWith("0")){
-                                    codInternoEtiq = codInternoEtiq.substring(1,4);
+                                    codInternoEtiq = codInternoEtiq.substring(1, largoCodigo);
                                 }
 
-                                String precio = codInternoAux.substring(6,12);
-                                if (precio.startsWith("000")){
-                                    precio = precio.substring(3,6);
+                                String precio = codInternoAux.substring((largoCodigo + 2), 12);
+                                int largoPrecio = 6;
+                                if (largoCodigo == 5){
+                                    largoPrecio = 5;
+                                }
+
+                                if (precio.startsWith("0000")){
+                                    precio = precio.substring(4,largoPrecio);
+                                }
+                                else if (precio.startsWith("000")){
+                                    precio = precio.substring(3,largoPrecio);
                                 }
                                 else if (precio.startsWith("00")){
-                                    precio = precio.substring(2,6);
+                                    precio = precio.substring(2,largoPrecio);
                                 }
                                 else if (precio.startsWith("0")){
-                                    precio = precio.substring(1,6);
+                                    precio = precio.substring(1,largoPrecio);
                                 }
                                 BigDecimal priceEntered = new BigDecimal(Integer.valueOf(precio)).divide(Env.ONEHUNDRED, 2, RoundingMode.HALF_UP);
 
@@ -376,6 +404,41 @@ public class CalloutRetail extends CalloutEngine {
         String upc = DB.getSQLValueStringEx(null, sql);
         if (upc != null){
             mTab.setValue("UPC", upc);
+        }
+
+        return "";
+    }
+
+
+    /***
+     * En transferencias de stock al seleccionar documento para mermas, debo dejar quemado la ubicación destino de MERMA.
+     * Xpande. Created by Gabriel Vila on 9/30/20.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String setMermaStkTransfer(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (value == null) return "";
+
+        int cDocTypeID = ((Integer) value).intValue();
+
+        if (cDocTypeID > 0) {
+
+            int warehouseSourceID = Env.getContextAsInt(ctx, WindowNo, "M_WarehouseSource_ID");
+
+            MDocType docType = new MDocType(ctx, cDocTypeID, null);
+            if (docType.getName().toUpperCase().contains("MERMA")) {
+                String sql = " select min(m_locator_id) from m_locator where m_warehouse_id =" + warehouseSourceID +
+                        " and lower(value) like '%merma%'";
+                int mLocatorID = DB.getSQLValueEx(null, sql);
+                if (mLocatorID > 0) {
+                    mTab.setValue("M_LocatorTo_ID", mLocatorID);
+                }
+            }
         }
 
         return "";
