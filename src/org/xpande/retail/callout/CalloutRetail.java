@@ -439,6 +439,9 @@ public class CalloutRetail extends CalloutEngine {
                     mTab.setValue("M_LocatorTo_ID", mLocatorID);
                 }
             }
+            else{
+                mTab.setValue("M_LocatorTo_ID", null);
+            }
         }
 
         return "";
