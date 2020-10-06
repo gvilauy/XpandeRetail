@@ -1,10 +1,15 @@
 package org.xpande.retail.report;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.MPriceList;
+import org.compiere.model.MPriceListVersion;
+import org.compiere.model.MProductPrice;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.core.utils.PriceListUtils;
+import org.xpande.retail.utils.ComercialUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -124,26 +129,26 @@ public class MovimientosInventario extends SvrProcess {
                     " c_doctype_id, codigoproducto, createdby, " +
                     " c_uom_id, datetrx, description, documentno, " +
                     " m_locator_id, m_product_id, m_warehouse_id, priceentered, " +
-                    " qtyentered, upc, value, z_productofamilia_id, " +
+                    " qtyentered, upc, value, name, value2, z_productofamilia_id, " +
                     " z_productorubro_id, z_productoseccion_id, z_productosubfamilia_id) ";
 
             // Armo condicion where dinámica del reporte
             String whereClause = "";
 
             if (this.adOrgID > 0){
-                whereClause += " and hdr.ad_org_id =" + this.adOrgID;
+                whereClause += " and a.ad_org_id =" + this.adOrgID;
             }
             if (this.cDocTypeID > 0){
-                whereClause += " and hdr.c_doctype_id =" + this.cDocTypeID;
+                whereClause += " and a.c_doctype_id =" + this.cDocTypeID;
             }
             if (this.mWarehouseID > 0){
-                whereClause += " and hdr.m_warehousesource_id =" + this.mWarehouseID;
+                whereClause += " and a.m_warehousesource_id =" + this.mWarehouseID;
             }
             if (this.mLocatorID > 0){
-                whereClause += " and hdr.m_locatorto_id =" + this.mLocatorID;
+                whereClause += " and a.m_locatorto_id =" + this.mLocatorID;
             }
             if (this.userAuditID > 0){
-                whereClause += " and hdr.createdby =" + this.userAuditID;
+                whereClause += " and a.createdby =" + this.userAuditID;
             }
             if (this.mProductID > 0){
                 whereClause += " and lin.m_product_id =" + this.mProductID;
@@ -162,7 +167,7 @@ public class MovimientosInventario extends SvrProcess {
             sql = " select a.ad_client_id, a.ad_org_id, " + this.getAD_User_ID() + ", a.c_doctype_id, l.codigoproducto, a.createdby, " +
                     "l.c_uom_id, a.datedoc, a.description, a.documentno, a.m_locatorto_id, l.m_product_id, " +
                     "a.m_warehousesource_id, l.priceentered, l.qtyentered, l.upc, " +
-                    "p.value, p.z_productofamilia_id, p.z_productorubro_id, p.z_productoseccion_id, p.z_productosubfamilia_id " +
+                    "p.value, p.name, l.value2, p.z_productofamilia_id, p.z_productorubro_id, p.z_productoseccion_id, p.z_productosubfamilia_id " +
                     "from z_stktransfer a " +
                     "inner join z_stktransferlin l on a.z_stktransfer_id = l.z_stktransfer_id " +
                     "inner join m_product p on l.m_product_id = p.m_product_id " +
@@ -197,9 +202,28 @@ public class MovimientosInventario extends SvrProcess {
 
             while(rs.next()){
 
+                // Actualizo informacion de venta
+                MPriceList priceList = PriceListUtils.getPriceListByOrg(getCtx(), rs.getInt("ad_client_id"), rs.getInt("ad_org_id"),
+                        142, true, null, null);
+                if ((priceList != null) && (priceList.get_ID() > 0)) {
+                    MPriceListVersion plv = priceList.getPriceListVersion(null);
+                    MProductPrice productPrice = MProductPrice.get(getCtx(), plv.get_ID(), rs.getInt("m_product_id"), null);
+                    if (productPrice != null) {
+                        String action = " update " + TABLA_REPORTE +
+                                " set priceso =" + productPrice.getPriceStd() +
+                                " where ad_user_id =" + this.getAD_User_ID() +
+                                " and ad_org_id =" + rs.getInt("ad_org_id") +
+                                " and c_doctype_id =" + rs.getInt("c_doctype_id") +
+                                " and documentno ='" + rs.getString("documentno") + "' " +
+                                " and m_product_id =" + rs.getInt("m_product_id");
+                        DB.executeUpdateEx(action, get_TrxName());
+                    }
+                }
+
                 // Actualizo información de compra
                 this.updateInfoCompras(rs.getInt("ad_org_id"), rs.getInt("m_product_id"),
-                        rs.getBigDecimal("qtyentered"));
+                        rs.getBigDecimal("qtyentered"), rs.getInt("c_doctype_id"),
+                        rs.getString("documentno"));
             }
         }
         catch (Exception e){
@@ -218,8 +242,10 @@ public class MovimientosInventario extends SvrProcess {
      * @param adOrgID
      * @param mProductID
      * @param qtyEntered
+     * @param cDocTypeID
+     * @param documentNo
      */
-    private void updateInfoCompras(int adOrgID, int mProductID, BigDecimal qtyEntered){
+    private void updateInfoCompras(int adOrgID, int mProductID, BigDecimal qtyEntered, int cDocTypeID, String documentNo){
 
         String sql = "";
         PreparedStatement pstmt = null;
@@ -262,6 +288,8 @@ public class MovimientosInventario extends SvrProcess {
                         " vendorproductno ='" + rs.getString("vendorproductno") + "' " +
                         " where ad_user_id =" + this.getAD_User_ID() +
                         " and ad_org_id =" + adOrgID +
+                        " and c_doctype_id =" + cDocTypeID +
+                        " and documentno ='" + documentNo + "' " +
                         " and m_product_id =" + mProductID;
                 DB.executeUpdateEx(action, get_TrxName());
             }

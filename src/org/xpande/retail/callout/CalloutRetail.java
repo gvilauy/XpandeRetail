@@ -262,6 +262,7 @@ public class CalloutRetail extends CalloutEngine {
         String column = mField.getColumnName();
 
         mTab.setValue("PriceEntered", null);
+        mTab.setValue("Value2", null);
 
         int zStkTransferID = Env.getContextAsInt(ctx, WindowNo, "Z_StkTransfer_ID");
 
@@ -361,11 +362,16 @@ public class CalloutRetail extends CalloutEngine {
                                 // Si no lo encuentro
                                 if (mProductID <= 0){
 
+                                    mTab.setValue("Value2", null);
+
                                     // Busco producto normal por codigo interno
                                     sql = " select m_product_id from m_product " +
                                             " where value ='" + codInternoEtiq + "' " +
                                             " and isactive ='Y'";
                                     mProductID = DB.getSQLValueEx(null, sql);
+                                }
+                                else{
+                                    mTab.setValue("Value2", codInternoEtiq);
                                 }
                             }
                         }
