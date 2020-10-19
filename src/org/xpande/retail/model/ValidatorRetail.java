@@ -511,62 +511,67 @@ public class ValidatorRetail implements ModelValidator {
                             if (model.getM_Product_ID() > 0){
                                 MBPartner partner = (MBPartner) invoice.getC_BPartner();
                                 if (partner.getAD_OrgBP_ID_Int() > 0){
-                                    MOrg orgLinked = new MOrg(model.getCtx(), partner.getAD_OrgBP_ID_Int(), null);
-                                    if ((orgLinked != null) && (orgLinked.get_ID() > 0)){
 
-                                        // Obtengo precio de ultima factura de compra (API), para producto y organización de este comprobante de venta.
-                                        // Si tengo entrega asociada, tomo fecha de este remito para obtener precio de ultima factura.
-                                        Timestamp dateInvoiced = invoice.getDateInvoiced();
-                                        if (model.getM_InOutLine_ID() > 0){
-                                            MInOut inOut =(MInOut)((MInOutLine) model.getM_InOutLine()).getM_InOut();
-                                            dateInvoiced = inOut.getMovementDate();
-                                        }
-                                        BigDecimal priceActual = ComercialUtils.getProdOrgLastAPInvoicePrice(model.getCtx(), model.getM_Product_ID(), invoice.getAD_Org_ID(), invoice.getC_Currency_ID(),dateInvoiced,null);
+                                    // Si el comprobante de venta tiene secuencia definitiva
+                                    // (si viene por POS no debe tocar importes a pesar que sea entre locales)
+                                    if (docType.getDefiniteSequence_ID() > 0){
+                                        MOrg orgLinked = new MOrg(model.getCtx(), partner.getAD_OrgBP_ID_Int(), null);
+                                        if ((orgLinked != null) && (orgLinked.get_ID() > 0)){
 
-                                        // Si no tengo facturas de proveedor para este articulo, busco precio OC del ultimo proveedor para esta organización
-                                        if ((priceActual == null) || (priceActual.compareTo(Env.ZERO) <= 0)){
+                                            // Obtengo precio de ultima factura de compra (API), para producto y organización de este comprobante de venta.
+                                            // Si tengo entrega asociada, tomo fecha de este remito para obtener precio de ultima factura.
+                                            Timestamp dateInvoiced = invoice.getDateInvoiced();
+                                            if (model.getM_InOutLine_ID() > 0){
+                                                MInOut inOut =(MInOut)((MInOutLine) model.getM_InOutLine()).getM_InOut();
+                                                dateInvoiced = inOut.getMovementDate();
+                                            }
+                                            BigDecimal priceActual = ComercialUtils.getProdOrgLastAPInvoicePrice(model.getCtx(), model.getM_Product_ID(), invoice.getAD_Org_ID(), invoice.getC_Currency_ID(),dateInvoiced,null);
 
-                                            // Instancio modelo de producto-socio con ultima vigencia de precio OC
-                                            MZProductoSocio productoSocio = MZProductoSocio.getByLastPriceOC(model.getCtx(), model.getM_Product_ID(), null);
+                                            // Si no tengo facturas de proveedor para este articulo, busco precio OC del ultimo proveedor para esta organización
+                                            if ((priceActual == null) || (priceActual.compareTo(Env.ZERO) <= 0)){
 
-                                            // Si tengo producto soccio, obtengo precio OC para esta organizacion
-                                            if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+                                                // Instancio modelo de producto-socio con ultima vigencia de precio OC
+                                                MZProductoSocio productoSocio = MZProductoSocio.getByLastPriceOC(model.getCtx(), model.getM_Product_ID(), null);
 
-                                                int cCurrencyIDFrom = productoSocio.getC_Currency_ID();
+                                                // Si tengo producto soccio, obtengo precio OC para esta organizacion
+                                                if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
 
-                                                MZProductoSocioOrg socioOrg = productoSocio.getOrg(invoice.getAD_Org_ID());
-                                                if ((socioOrg != null) && (socioOrg.get_ID() > 0)){
+                                                    int cCurrencyIDFrom = productoSocio.getC_Currency_ID();
 
-                                                    cCurrencyIDFrom = socioOrg.getC_Currency_ID();
+                                                    MZProductoSocioOrg socioOrg = productoSocio.getOrg(invoice.getAD_Org_ID());
+                                                    if ((socioOrg != null) && (socioOrg.get_ID() > 0)){
 
-                                                    priceActual = socioOrg.getPricePO();
-                                                }
-                                                else{
-                                                    priceActual = productoSocio.getPricePO();
-                                                }
+                                                        cCurrencyIDFrom = socioOrg.getC_Currency_ID();
 
-                                                // Si la moneda del precio obtenido no es igual a la moneda de la invoice,
-                                                // debo convertir precio a moneda de invoice según tasa de cambio de la fecha del comprobante.
-                                                if (cCurrencyIDFrom != invoice.getC_Currency_ID()){
-
-                                                    // Aplico conversión a tasa de cambio del día del comprobante
-                                                    BigDecimal currencyRate = CurrencyUtils.getCurrencyRate(model.getCtx(), invoice.getAD_Client_ID(), 0, cCurrencyIDFrom, invoice.getC_Currency_ID(), 114, invoice.getDateInvoiced(), null);
-                                                    if ((currencyRate == null) || (currencyRate.compareTo(Env.ZERO) == 0)){
-                                                        currencyRate = Env.ONE;
+                                                        priceActual = socioOrg.getPricePO();
+                                                    }
+                                                    else{
+                                                        priceActual = productoSocio.getPricePO();
                                                     }
 
-                                                    priceActual = priceActual.multiply(currencyRate).setScale(2, RoundingMode.HALF_UP);
+                                                    // Si la moneda del precio obtenido no es igual a la moneda de la invoice,
+                                                    // debo convertir precio a moneda de invoice según tasa de cambio de la fecha del comprobante.
+                                                    if (cCurrencyIDFrom != invoice.getC_Currency_ID()){
+
+                                                        // Aplico conversión a tasa de cambio del día del comprobante
+                                                        BigDecimal currencyRate = CurrencyUtils.getCurrencyRate(model.getCtx(), invoice.getAD_Client_ID(), 0, cCurrencyIDFrom, invoice.getC_Currency_ID(), 114, invoice.getDateInvoiced(), null);
+                                                        if ((currencyRate == null) || (currencyRate.compareTo(Env.ZERO) == 0)){
+                                                            currencyRate = Env.ONE;
+                                                        }
+
+                                                        priceActual = priceActual.multiply(currencyRate).setScale(2, RoundingMode.HALF_UP);
+                                                    }
                                                 }
                                             }
-                                        }
 
-                                        if (priceActual == null) priceActual = Env.ZERO;
-                                        BigDecimal priceEntered = MUOMConversion.convertProductFrom(model.getCtx(), model.getM_Product_ID(), model.getC_UOM_ID(), priceActual);
-                                        if (priceEntered == null) priceEntered = priceActual;
-                                        model.setPriceActual(priceActual);
-                                        model.setPriceEntered(priceEntered);
-                                        model.setLineNetAmt();
-                                        model.setTaxAmt();
+                                            if (priceActual == null) priceActual = Env.ZERO;
+                                            BigDecimal priceEntered = MUOMConversion.convertProductFrom(model.getCtx(), model.getM_Product_ID(), model.getC_UOM_ID(), priceActual);
+                                            if (priceEntered == null) priceEntered = priceActual;
+                                            model.setPriceActual(priceActual);
+                                            model.setPriceEntered(priceEntered);
+                                            model.setLineNetAmt();
+                                            model.setTaxAmt();
+                                        }
                                     }
                                 }
                             }
