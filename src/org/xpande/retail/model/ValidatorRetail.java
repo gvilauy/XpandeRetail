@@ -907,8 +907,6 @@ public class ValidatorRetail implements ModelValidator {
      */
     public String modelChange(MProduct model, int type) throws Exception {
 
-        String mensaje = null;
-
         if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
 
             // Me aseguro nombre corto del producto (campo: Description) con un máximo de 30 caracteres
@@ -965,7 +963,7 @@ public class ValidatorRetail implements ModelValidator {
             }
         }
 
-        return mensaje;
+        return null;
     }
 
 

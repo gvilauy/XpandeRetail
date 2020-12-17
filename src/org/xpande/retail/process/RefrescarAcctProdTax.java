@@ -58,7 +58,8 @@ public class RefrescarAcctProdTax extends SvrProcess {
                     " from m_product " +
                     " where ispurchased ='Y' " +
                     " and producttype ='I' " +
-                    " and (c_taxcategory_id =" + this.cTaxCategoryID + " or c_taxcategory_id_2 =" + this.cTaxCategoryID + ")";
+                    " and ((c_taxcategory_id =" + this.cTaxCategoryID + " and c_taxcategory_id_2 is null) " +
+                    " or c_taxcategory_id_2 =" + this.cTaxCategoryID + ")";
 
         	pstmt = DB.prepareStatement(sql, get_TrxName());
         	rs = pstmt.executeQuery();

@@ -84,19 +84,6 @@ public final class ComercialUtils {
                         "and pp.m_product_id =" + mProductID;
 
                 value = DB.getSQLValueBDEx(null, sql);
-
-                /*
-                MPriceList priceList = PriceListUtils.getPriceListByOrg(ctx, adClientID, adOrgID, cCurrencyID, true, null, trxName);
-                if ((priceList != null) && (priceList.get_ID() > 0)){
-                    MPriceListVersion priceListVersion = priceList.getPriceListVersion(null);
-                    if ((priceListVersion != null) && (priceListVersion.get_ID() > 0)){
-                        MProductPrice productPrice = MProductPrice.get(ctx, priceListVersion.get_ID(), mProductID, trxName);
-                        if (productPrice != null){
-                            value = productPrice.getPriceList();
-                        }
-                    }
-                }
-                */
             }
         }
         catch (Exception e){

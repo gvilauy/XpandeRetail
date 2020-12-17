@@ -1,13 +1,13 @@
 package org.xpande.retail.report;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.MPriceList;
-import org.compiere.model.MPriceListVersion;
-import org.compiere.model.MProductPrice;
+import org.apache.http.impl.execchain.MainClientExec;
+import org.compiere.model.*;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.core.utils.CurrencyUtils;
 import org.xpande.core.utils.PriceListUtils;
 import org.xpande.retail.utils.ComercialUtils;
 
@@ -37,6 +37,7 @@ public class MovimientosInventario extends SvrProcess {
     private Timestamp startDate = null;
     private Timestamp endDate = null;
 
+    private int cuurencyIDMN = 142;
 
     @Override
     protected void prepare() {
@@ -84,6 +85,10 @@ public class MovimientosInventario extends SvrProcess {
             }
         }
 
+        MAcctSchema acctSchema = MClient.get(getCtx(), getAD_Client_ID()).getAcctSchema();
+        if (acctSchema != null){
+            this.cuurencyIDMN = acctSchema.getC_Currency_ID();
+        }
     }
 
     @Override
@@ -166,7 +171,7 @@ public class MovimientosInventario extends SvrProcess {
 
             sql = " select a.ad_client_id, a.ad_org_id, " + this.getAD_User_ID() + ", a.c_doctype_id, l.codigoproducto, a.createdby, " +
                     "l.c_uom_id, a.datedoc, a.description, a.documentno, a.m_locatorto_id, l.m_product_id, " +
-                    "a.m_warehousesource_id, l.priceentered, l.qtyentered, l.upc, " +
+                    "a.m_warehousesource_id, l.priceentered, coalesce(l.qtyentered, 0) as qtyentered, l.upc, " +
                     "p.value, p.name, l.value2, p.z_productofamilia_id, p.z_productorubro_id, p.z_productoseccion_id, p.z_productosubfamilia_id " +
                     "from z_stktransfer a " +
                     "inner join z_stktransferlin l on a.z_stktransfer_id = l.z_stktransfer_id " +
@@ -174,7 +179,7 @@ public class MovimientosInventario extends SvrProcess {
                     "where a.docstatus='CO' " +
                     "and a.datedoc between '"  + this.startDate + "' and '" + this.endDate + "' " + whereClause;
 
-            DB.executeUpdateEx(action + sql, null);
+            DB.executeUpdateEx(action + sql, get_TrxName());
 
         }
         catch (Exception e){
@@ -197,7 +202,7 @@ public class MovimientosInventario extends SvrProcess {
         try{
             sql = " select * from " + TABLA_REPORTE + " where ad_user_id =" + this.getAD_User_ID();
 
-            pstmt = DB.prepareStatement(sql, null);
+            pstmt = DB.prepareStatement(sql, get_TrxName());
             rs = pstmt.executeQuery();
 
             while(rs.next()){
@@ -210,7 +215,8 @@ public class MovimientosInventario extends SvrProcess {
                     MProductPrice productPrice = MProductPrice.get(getCtx(), plv.get_ID(), rs.getInt("m_product_id"), null);
                     if (productPrice != null) {
                         String action = " update " + TABLA_REPORTE +
-                                " set priceso =" + productPrice.getPriceStd() +
+                                " set priceso =" + productPrice.getPriceStd() + ", " +
+                                " pricefinal =" + rs.getBigDecimal("qtyentered").multiply(productPrice.getPriceStd()).setScale(2, RoundingMode.HALF_UP) +
                                 " where ad_user_id =" + this.getAD_User_ID() +
                                 " and ad_org_id =" + rs.getInt("ad_org_id") +
                                 " and c_doctype_id =" + rs.getInt("c_doctype_id") +
@@ -277,6 +283,32 @@ public class MovimientosInventario extends SvrProcess {
         	        amtTotal = pricePO.multiply(qtyEntered).setScale(2, RoundingMode.HALF_UP);
                 }
 
+        	    // Obtengo precio OC en moneda nacional
+        	    BigDecimal pricePOMN = pricePO;
+        	    int currencyIDPO = rs.getInt("c_currency_id");
+        	    if (currencyIDPO != this.cuurencyIDMN){
+        	        // Obtengo tasa de cambio para fecha de compra y moneda de compra
+                    BigDecimal rate = CurrencyUtils.getCurrencyRate(getCtx(), getAD_Client_ID(), 0,
+                            currencyIDPO, this.cuurencyIDMN, 114, rs.getTimestamp("dateinvoiced"), null);
+                    if (rate != null) {
+                        pricePOMN = pricePO.multiply(rate).setScale(2, RoundingMode.HALF_UP);
+                    }
+                    else{
+                        pricePOMN = null;
+                    }
+                }
+
+        	    // Obtengo costo unitario en moneda nacional
+                BigDecimal amtTotalMN = amtTotal;
+                if (currencyIDPO != this.cuurencyIDMN){
+                    if (pricePOMN != null){
+                        amtTotalMN = pricePOMN.multiply(qtyEntered).setScale(2, RoundingMode.HALF_UP);
+                    }
+                    else{
+                        amtTotalMN = null;
+                    }
+                }
+
                 action = " update " + TABLA_REPORTE +
                         " set c_bpartner_id =" + rs.getInt("c_bpartner_id") + ", " +
                         " c_currency_id =" + rs.getInt("c_currency_id") + ", " +
@@ -284,7 +316,9 @@ public class MovimientosInventario extends SvrProcess {
                         " dateinvoiced ='" + rs.getTimestamp("dateinvoiced") + "', " +
                         " documentnoref ='" + rs.getString("documentnoref") + "', " +
                         " pricepo =" + rs.getBigDecimal("priceentered") + ", " +
+                        " pricepomn =" + pricePOMN + ", " +
                         " totalamt =" + amtTotal + ", " +
+                        " totalamtmn =" + amtTotalMN + ", " +
                         " vendorproductno ='" + rs.getString("vendorproductno") + "' " +
                         " where ad_user_id =" + this.getAD_User_ID() +
                         " and ad_org_id =" + adOrgID +
