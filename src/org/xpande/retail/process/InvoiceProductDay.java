@@ -126,7 +126,7 @@ public class InvoiceProductDay extends SvrProcess {
                             " where ad_org_id =" + rs.getInt("ad_org_id") +
                             " and m_product_id =" + rs.getInt("m_product_id") +
                             " and c_currency_id =" + rs.getInt("c_currency_id") +
-                            " and dateinvoiced ='" + rs.getTimestamp("datetrx") + "' ";
+                            " and dateinvoiced ='" + rs.getTimestamp("dateinvoiced") + "' ";
                     int contador = DB.getSQLValueEx(null, sql);
 
                     // Si no existe aún un registro para esta clave
@@ -139,6 +139,7 @@ public class InvoiceProductDay extends SvrProcess {
                                 rs.getBigDecimal("cantidad") + ", 0, 0, 0, " + rs.getBigDecimal("subtotal") + ", " +
                                 rs.getBigDecimal("total") + ", " + rs.getInt("z_bi_dia_id") + ") ";
 
+                        DB.executeUpdateEx(insert + action, null);
                     }
                     else {
                         // Actualizo
@@ -149,9 +150,11 @@ public class InvoiceProductDay extends SvrProcess {
                                 " where ad_org_id =" + rs.getInt("ad_org_id") +
                                 " and m_product_id =" + rs.getInt("m_product_id") +
                                 " and c_currency_id =" + rs.getInt("c_currency_id") +
-                                " and dateinvoiced ='" + rs.getTimestamp("datetrx") + "' ";
+                                " and dateinvoiced ='" + rs.getTimestamp("dateinvoiced") + "' ";
+
+                        DB.executeUpdateEx(action, null);
                     }
-                    DB.executeUpdateEx(insert + action, null);
+
                 }
 
                 DB.close(rs, pstmt);
@@ -192,7 +195,7 @@ public class InvoiceProductDay extends SvrProcess {
                             " where ad_org_id =" + rs.getInt("ad_org_id") +
                             " and m_product_id =" + rs.getInt("m_product_id") +
                             " and c_currency_id =" + rs.getInt("c_currency_id") +
-                            " and dateinvoiced ='" + rs.getTimestamp("datetrx") + "' ";
+                            " and dateinvoiced ='" + rs.getTimestamp("dateinvoiced") + "' ";
                     int contador = DB.getSQLValueEx(null, sql);
 
                     // Si no existe aún un registro para esta clave
@@ -205,6 +208,7 @@ public class InvoiceProductDay extends SvrProcess {
                                 rs.getBigDecimal("cantidad") + ", 0, 0, 0, " + rs.getBigDecimal("subtotal") + ", " +
                                 rs.getBigDecimal("total") + ", " + rs.getInt("z_bi_dia_id") + ") ";
 
+                        DB.executeUpdateEx(insert + action, null);
                     }
                     else {
                         // Actualizo
@@ -215,9 +219,11 @@ public class InvoiceProductDay extends SvrProcess {
                                 " where ad_org_id =" + rs.getInt("ad_org_id") +
                                 " and m_product_id =" + rs.getInt("m_product_id") +
                                 " and c_currency_id =" + rs.getInt("c_currency_id") +
-                                " and dateinvoiced ='" + rs.getTimestamp("datetrx") + "' ";
+                                " and dateinvoiced ='" + rs.getTimestamp("dateinvoiced") + "' ";
+
+                        DB.executeUpdateEx(action, null);
                     }
-                    DB.executeUpdateEx(insert + action, null);
+
                 }
 
                 DB.close(rs, pstmt);
@@ -319,6 +325,8 @@ public class InvoiceProductDay extends SvrProcess {
                                 rs.getBigDecimal("cantidad") + ", " + rs.getBigDecimal("subtotal") + ", " +
                                 rs.getBigDecimal("total") + ", 0, 0, 0, " + rs.getInt("z_bi_dia_id") + ") ";
 
+                        DB.executeUpdateEx(insert + action, null);
+
                     }
                     else {
                         // Actualizo
@@ -330,8 +338,10 @@ public class InvoiceProductDay extends SvrProcess {
                                 " and m_product_id =" + rs.getInt("m_product_id") +
                                 " and c_currency_id =" + currencyID +
                                 " and dateinvoiced ='" + rs.getTimestamp("datetrx") + "' ";
+
+                        DB.executeUpdateEx(action, null);
                     }
-                    DB.executeUpdateEx(insert + action, null);
+
 
                 }
                 DB.close(rs, pstmt);
@@ -384,6 +394,7 @@ public class InvoiceProductDay extends SvrProcess {
                                 rs.getBigDecimal("cantidad") + ", " + rs.getBigDecimal("subtotal") + ", " +
                                 rs.getBigDecimal("total") + ", 0, 0, 0, " + rs.getInt("z_bi_dia_id") + ") ";
 
+                        DB.executeUpdateEx(insert + action, null);
                     }
                     else {
                         // Actualizo
@@ -395,8 +406,10 @@ public class InvoiceProductDay extends SvrProcess {
                                 " and m_product_id =" + rs.getInt("m_product_id") +
                                 " and c_currency_id =" + currencyID +
                                 " and dateinvoiced ='" + rs.getTimestamp("datetrx") + "' ";
+
+                        DB.executeUpdateEx(action, null);
                     }
-                    DB.executeUpdateEx(insert + action, null);
+
 
                 }
                 DB.close(rs, pstmt);
@@ -479,6 +492,7 @@ public class InvoiceProductDay extends SvrProcess {
                                 rs.getBigDecimal("cantidad") + ", " + rs.getBigDecimal("subtotal") + ", " +
                                 rs.getBigDecimal("total") + ", 0, 0, 0, " + rs.getInt("z_bi_dia_id") + ") ";
 
+                        DB.executeUpdateEx(insert + action, null);
                     }
                     else {
                         // Actualizo
@@ -490,8 +504,10 @@ public class InvoiceProductDay extends SvrProcess {
                                 " and m_product_id =" + rs.getInt("m_product_id") +
                                 " and c_currency_id =" + rs.getInt("c_currency_id") +
                                 " and dateinvoiced ='" + rs.getTimestamp("datetrx") + "' ";
+
+                        DB.executeUpdateEx(action, null);
                     }
-                    DB.executeUpdateEx(insert + action, null);
+
 
                 }
                 DB.close(rs, pstmt);
@@ -535,6 +551,7 @@ public class InvoiceProductDay extends SvrProcess {
                                 rs.getBigDecimal("cantidad") + ", " + rs.getBigDecimal("subtotal") + ", " +
                                 rs.getBigDecimal("total") + ", 0, 0, 0, " + rs.getInt("z_bi_dia_id") + ") ";
 
+                        DB.executeUpdateEx(insert + action, null);
                     }
                     else {
                         // Actualizo
@@ -546,9 +563,9 @@ public class InvoiceProductDay extends SvrProcess {
                                 " and m_product_id =" + rs.getInt("m_product_id") +
                                 " and c_currency_id =" + rs.getInt("c_currency_id") +
                                 " and dateinvoiced ='" + rs.getTimestamp("datetrx") + "' ";
-                    }
-                    DB.executeUpdateEx(insert + action, null);
 
+                        DB.executeUpdateEx(action, null);
+                    }
                 }
                 DB.close(rs, pstmt);
                 rs = null; pstmt = null;
