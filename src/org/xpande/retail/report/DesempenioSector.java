@@ -167,7 +167,7 @@ public class DesempenioSector extends SvrProcess {
                         " left outer join zv_ultimoproductoupc vupc on p.m_product_id = vupc.m_product_id  " +
                         " left outer join z_productoupc pupc on vupc.z_productoupc_id = pupc.z_productoupc_id " +
                         " where a.ad_org_id =" + this.adOrgID +
-                        " and a.datetrx between '" + this.startDate + "' and '" + this.endDate + "' " + whereClause +
+                        " and a.dateinvoiced between '" + this.startDate + "' and '" + this.endDate + "' " + whereClause +
                         " group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14 ";
             }
             else {
@@ -185,7 +185,7 @@ public class DesempenioSector extends SvrProcess {
                         " inner join m_product p on a.m_product_id = p.m_product_id " +
                         " left outer join z_productoupc pupc on p.m_product_id = pupc.m_product_id " +
                         " where a.ad_org_id =" + this.adOrgID +
-                        " and a.datetrx between '" + this.startDate + "' and '" + this.endDate + "' " + whereClause +
+                        " and a.dateinvoiced between '" + this.startDate + "' and '" + this.endDate + "' " + whereClause +
                         " group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14 ";
             }
 
@@ -223,7 +223,7 @@ public class DesempenioSector extends SvrProcess {
                         rs.getInt("m_product_id"), this.cCurrencyID, this.startDate, this.endDate, null);
 
                 String action = " update " + TABLA_REPORTE +
-                        " set PriceSO =" + precioPromedioVta + ", " +
+                        " set PriceSO =" + precioPromedioVta +
                         " where ad_user_id =" + this.getAD_User_ID() +
                         " and m_product_id =" + rs.getInt("m_product_id");
 
