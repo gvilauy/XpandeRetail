@@ -387,34 +387,6 @@ public class ValidatorRetail implements ModelValidator {
             MInvoice invoice = (MInvoice)model.getC_Invoice();
             MDocType docType = (MDocType) invoice.getC_DocTypeTarget();
 
-            /*
-            // Cuando modifico linea de comprobante, me aseguro que se calcule bien el campo del cabezal
-            // para subtotal en retail. Esto es porque Adempiere de fábrica, cuando maneja lista de precios con
-            // impuestos incluídos, me muestra el total de lineas = grand total en el cabezal del comprobante.
-            // En retail, se tiene mostrar subtotal = total - impuestos.
-            // Para ello no se modifico el comportamiento original de ADempiere y se mantuvo el campo: TotalLines.
-            // Pero se agrego campo nuevo para desplegarse con el calculo requerido.
-
-            BigDecimal grandTotal = invoice.getGrandTotal();
-            if ((grandTotal == null) || (grandTotal.compareTo(Env.ZERO) <= 0)){
-                invoice.set_ValueOfColumn("AmtSubtotal", Env.ZERO);
-                invoice.saveEx();
-            }
-            else{
-                // Obtengo suma de impuestos para esta invoice
-                String sql = " select sum(coalesce(taxamt,0)) as taxamt from c_invoicetax where c_invoice_id =" + invoice.get_ID();
-                BigDecimal sumImpuestos = DB.getSQLValueBDEx(model.get_TrxName(), sql);
-                if (sumImpuestos == null){
-                    sumImpuestos = Env.ZERO;
-                }
-                else{
-                    sumImpuestos = sumImpuestos.setScale(2, BigDecimal.ROUND_HALF_UP);
-                }
-                invoice.set_ValueOfColumn("AmtSubtotal", grandTotal.subtract(sumImpuestos));
-                invoice.saveEx();
-            }
-            */
-
             if ((type == ModelValidator.TYPE_AFTER_NEW) || ((type == ModelValidator.TYPE_AFTER_CHANGE) && model.is_ValueChanged(X_C_InvoiceLine.COLUMNNAME_QtyInvoiced))){
 
                 // Para comprobantes de compra del tipo factura (API), verifico si se tienen pautadas bonificaciones para socio-producto-pauta comercial.

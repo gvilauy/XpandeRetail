@@ -156,7 +156,7 @@ public class MovimientosInventario extends SvrProcess {
                 whereClause += " and a.createdby =" + this.userAuditID;
             }
             if (this.mProductID > 0){
-                whereClause += " and lin.m_product_id =" + this.mProductID;
+                whereClause += " and l.m_product_id =" + this.mProductID;
             }
             if (this.zProductoSeccionID > 0){
                 whereClause += " and p.z_productoseccion_id =" + this.zProductoSeccionID;
@@ -229,7 +229,7 @@ public class MovimientosInventario extends SvrProcess {
                 // Actualizo información de compra
                 this.updateInfoCompras(rs.getInt("ad_org_id"), rs.getInt("m_product_id"),
                         rs.getBigDecimal("qtyentered"), rs.getInt("c_doctype_id"),
-                        rs.getString("documentno"));
+                        rs.getString("documentno"), rs.getTimestamp("datetrx"));
             }
         }
         catch (Exception e){
@@ -250,8 +250,10 @@ public class MovimientosInventario extends SvrProcess {
      * @param qtyEntered
      * @param cDocTypeID
      * @param documentNo
+     * @param dateInvoiced
      */
-    private void updateInfoCompras(int adOrgID, int mProductID, BigDecimal qtyEntered, int cDocTypeID, String documentNo){
+    private void updateInfoCompras(int adOrgID, int mProductID, BigDecimal qtyEntered, int cDocTypeID,
+                                   String documentNo, Timestamp dateInvoiced){
 
         String sql = "";
         PreparedStatement pstmt = null;
@@ -261,14 +263,15 @@ public class MovimientosInventario extends SvrProcess {
 
         try{
             sql = " select a.c_bpartner_id, a.c_currency_id, a.c_doctypetarget_id, a.dateinvoiced, " +
-                    "a.documentnoref, a.priceentered, bpp.vendorproductno " +
-                    "from ZV_HistoricoCompras a " +
-                    "inner join c_doctype doc on a.c_doctypetarget_id = doc.c_doctype_id " +
-                    "left outer join z_productosocio bpp on (a.c_bpartner_id = bpp.c_bpartner_id and a.m_product_id = bpp.m_product_id) " +
-                    "where a.ad_org_id =" + adOrgID +
-                    "and a.m_product_id =" + mProductID +
-                    "and doc.docbasetype='API' " +
-                    "order by a.dateinvoiced desc";
+                    " a.documentnoref, a.priceentered, bpp.vendorproductno " +
+                    " from ZV_HistoricoCompras a " +
+                    " inner join c_doctype doc on a.c_doctypetarget_id = doc.c_doctype_id " +
+                    " left outer join z_productosocio bpp on (a.c_bpartner_id = bpp.c_bpartner_id and a.m_product_id = bpp.m_product_id) " +
+                    " where a.ad_org_id =" + adOrgID +
+                    " and a.dateinvoiced <='" + dateInvoiced + "' " +
+                    " and a.m_product_id =" + mProductID +
+                    " and doc.docbasetype='API' " +
+                    " order by a.dateinvoiced desc";
 
         	pstmt = DB.prepareStatement(sql, get_TrxName());
         	rs = pstmt.executeQuery();

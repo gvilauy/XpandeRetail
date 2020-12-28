@@ -293,6 +293,7 @@ public class InvoiceProductDay extends SvrProcess {
                         " where a.ad_org_id =" + configOrg.getAD_OrgTrx_ID() +
                         " and a.datetrx between '" + this.startDate + "' and '" + this.endDate + "' " +
                         " and mov.sc_cuponcancelado ='N' " +
+                        " and mov.sc_cuponanulada ='N'" +
                         " group by 1,2,3,4,5,6";
 
                 pstmt = DB.prepareStatement(sql, get_TrxName());
