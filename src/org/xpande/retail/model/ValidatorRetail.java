@@ -53,6 +53,7 @@ public class ValidatorRetail implements ModelValidator {
         engine.addModelChange(I_C_InvoiceLine.Table_Name, this);
         engine.addModelChange(I_M_ProductPrice.Table_Name, this);
         engine.addModelChange(I_M_Product.Table_Name, this);
+        engine.addModelChange(I_M_InventoryLine.Table_Name, this);
     }
 
     @Override
@@ -85,6 +86,9 @@ public class ValidatorRetail implements ModelValidator {
         }
         else if (po.get_TableName().equalsIgnoreCase(I_M_ProductPrice.Table_Name)){
             return modelChange((MProductPrice) po, type);
+        }
+        else if (po.get_TableName().equalsIgnoreCase(I_M_InventoryLine.Table_Name)){
+            return modelChange((MInventoryLine) po, type);
         }
 
         return null;
@@ -949,8 +953,6 @@ public class ValidatorRetail implements ModelValidator {
      */
     public String modelChange(MProductPrice model, int type) throws Exception {
 
-        String mensaje = null;
-
         if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
 
             // Obtengo lista de precios asociada a este precio de producto
@@ -959,18 +961,18 @@ public class ValidatorRetail implements ModelValidator {
 
             // Si lista de precio no es de venta, no hago nada
             if (!priceList.isSOPriceList()){
-                return mensaje;
+                return null;
             }
 
             // Si lista de precio no tiene organización asociada, no hago nada.
             if (priceList.getAD_Org_ID() <= 0){
-                return mensaje;
+                return null;
             }
 
             // Si es modificacion pero no se modifica el precio o la vigencia, no hago nada
             if (type == ModelValidator.TYPE_BEFORE_CHANGE){
                 if (!model.is_ValueChanged(X_M_ProductPrice.COLUMNNAME_PriceList) && (!model.is_ValueChanged("ValidFrom"))){
-                    return mensaje;
+                    return null;
                 }
             }
 
@@ -994,7 +996,33 @@ public class ValidatorRetail implements ModelValidator {
             evolPrecioVtaProdOrg.saveEx();
         }
 
-        return mensaje;
+        return null;
+    }
+
+    /***
+     * Validaciones para el modelo de Lineas de Inventario en Retail
+     * Xpande. Created by Gabriel Vila on 8/8/17.
+     * @param model
+     * @param type
+     * @return
+     * @throws Exception
+     */
+    public String modelChange(MInventoryLine model, int type) throws Exception {
+
+        if ((type == ModelValidator.TYPE_BEFORE_NEW) ||
+                ((type == ModelValidator.TYPE_BEFORE_CHANGE) && (model.is_ValueChanged(X_M_InventoryLine.COLUMNNAME_M_Product_ID)))){
+
+            String upc = DB.getSQLValueStringEx(null, "select z_producto_ult_upc(" + model.getM_Product_ID() + ")");
+
+            MProduct product = (MProduct) model.getM_Product();
+            model.set_ValueOfColumn("CodigoProducto", product.getValue());
+            model.set_ValueOfColumn("UPC", upc);
+            model.set_ValueOfColumn("Z_ProductoSeccion_ID", product.get_Value("Z_ProductoSeccion_ID"));
+            model.set_ValueOfColumn("Z_ProductoRubro_ID", product.get_Value("Z_ProductoRubro_ID"));
+            model.set_ValueOfColumn("Z_ProductoFamilia_ID", product.get_Value("Z_ProductoFamilia_ID"));
+        }
+
+        return null;
     }
 
     /***

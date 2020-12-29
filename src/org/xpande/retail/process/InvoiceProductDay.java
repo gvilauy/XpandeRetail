@@ -4,6 +4,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.xpande.sisteco.model.MZSistecoConfig;
 import org.xpande.sisteco.model.MZSistecoConfigOrg;
 import org.xpande.stech.model.MZScanntechConfig;
@@ -377,6 +378,19 @@ public class InvoiceProductDay extends SvrProcess {
                         }
                     }
 
+                    // Me aseguro signo negativo en las cantidades y totales
+                    BigDecimal cantidad = rs.getBigDecimal("cantidad");
+                    BigDecimal subtotal = rs.getBigDecimal("subtotal");
+                    BigDecimal total = rs.getBigDecimal("total");
+
+                    if (cantidad == null) cantidad = Env.ZERO;
+                    if (subtotal == null) subtotal = Env.ZERO;
+                    if (total == null) total = Env.ZERO;
+
+                    if (cantidad.compareTo(Env.ZERO) > 0) cantidad = cantidad.negate();
+                    if (subtotal.compareTo(Env.ZERO) > 0) subtotal = subtotal.negate();
+                    if (total.compareTo(Env.ZERO) > 0) total = total.negate();
+
                     // Verifico si no existe un registro para esta clave en la tabla de analisis
                     sql = " select count(*) from z_bi_invprodday " +
                             " where ad_org_id =" + rs.getInt("ad_org_id") +
@@ -392,17 +406,16 @@ public class InvoiceProductDay extends SvrProcess {
                         action = " values (" + this.adClientID + ", " + rs.getInt("ad_org_id") + ", '" +
                                 rs.getTimestamp("datetrx") + "', " + currencyID + ", " +
                                 rs.getInt("m_product_id") + ", " + rs.getInt("c_uom_id") + ", " +
-                                rs.getBigDecimal("cantidad") + ", " + rs.getBigDecimal("subtotal") + ", " +
-                                rs.getBigDecimal("total") + ", 0, 0, 0, " + rs.getInt("z_bi_dia_id") + ") ";
+                                cantidad + ", " + subtotal + ", " + total + ", 0, 0, 0, " + rs.getInt("z_bi_dia_id") + ") ";
 
                         DB.executeUpdateEx(insert + action, null);
                     }
                     else {
                         // Actualizo
                         action = " update z_bi_invprodday set " +
-                                " qtysold = qtysold + " + rs.getBigDecimal("cantidad") + ", " +
-                                " amtsubtotal = amtsubtotal + " + rs.getBigDecimal("subtotal") + ", " +
-                                " totalamt = totalamt + " + rs.getBigDecimal("total") +
+                                " qtysold = qtysold + " + cantidad + ", " +
+                                " amtsubtotal = amtsubtotal + " + subtotal + ", " +
+                                " totalamt = totalamt + " + total +
                                 " where ad_org_id =" + rs.getInt("ad_org_id") +
                                 " and m_product_id =" + rs.getInt("m_product_id") +
                                 " and c_currency_id =" + currencyID +
