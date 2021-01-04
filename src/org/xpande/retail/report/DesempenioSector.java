@@ -154,14 +154,14 @@ public class DesempenioSector extends SvrProcess {
             if (!filtraUPC){
 
                 sql = " select a.ad_client_id, a.ad_org_id, " + this.getAD_User_ID() + ", " +
-                        ((cBPartnerID > 0) ? String.valueOf(this.cBPartnerID) : "null") + "::numeric(10,0), " +
+                        " z_prodorg_ult_bp_po(a.ad_org_id, a.m_product_id)::numeric(10,0), " +
+                        //((cBPartnerID > 0) ? String.valueOf(this.cBPartnerID) : "null") + "::numeric(10,0), " +
                         " a.m_product_id, p.value, p.name, '" +  this.startDate + "'::timestamp without time zone, " +
                         " p.z_productoseccion_id, p.z_productorubro_id, " +
                         " p.z_productofamilia_id, p.z_productosubfamilia_id, " +
                         " pupc.z_productoupc_id, pupc.upc, " +
                         " sum(qtypurchased) as qtypurchased, sum(qtysold) as qtysold, " +
                         " sum(amtsubtotalpo) as amtsubtotalpo, sum(amtsubtotal) as amtsubtotal " +
-                        //" sum(totalamtpo) as totalamtpo, sum(totalamt) as totalamt " +
                         " from z_bi_invprodday a " +
                         " inner join m_product p on a.m_product_id = p.m_product_id " +
                         " left outer join zv_ultimoproductoupc vupc on p.m_product_id = vupc.m_product_id  " +
@@ -173,7 +173,8 @@ public class DesempenioSector extends SvrProcess {
             else {
 
                 sql = " select a.ad_client_id, a.ad_org_id, " + this.getAD_User_ID() + ", " +
-                        ((cBPartnerID > 0) ? String.valueOf(this.cBPartnerID) : "null") + "::numeric(10,0), " +
+                        " z_prodorg_ult_bp_po(a.ad_org_id, a.m_product_id)::numeric(10,0), " +
+                        //((cBPartnerID > 0) ? String.valueOf(this.cBPartnerID) : "null") + "::numeric(10,0), " +
                         " a.m_product_id, p.value, p.name, '" +  this.startDate + "'::timestamp without time zone, " +
                         " p.z_productoseccion_id, p.z_productorubro_id, " +
                         " p.z_productofamilia_id, p.z_productosubfamilia_id, " +
