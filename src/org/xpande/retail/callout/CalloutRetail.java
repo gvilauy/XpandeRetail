@@ -308,10 +308,11 @@ public class CalloutRetail extends CalloutEngine {
                         // Si el largo del texto recibido tiene 13 digitos de largo
                         if (codInternoAux.length() == 13){
                             // Si comienza con 22 o 26
-                            if ((codInternoAux.startsWith("22")) || (codInternoAux.startsWith("26"))){
+                            if ((codInternoAux.startsWith("22")) || (codInternoAux.startsWith("26"))
+                             || (codInternoAux.startsWith("20"))){
 
                                 int largoCodigo = 4;
-                                if (codInternoAux.startsWith("26")){
+                                if ((codInternoAux.startsWith("26")) || (codInternoAux.startsWith("20"))){
                                     largoCodigo = 5;
                                 }
 
