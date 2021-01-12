@@ -312,7 +312,7 @@ public class CalloutRetail extends CalloutEngine {
                              || (codInternoAux.startsWith("20"))){
 
                                 int largoCodigo = 4;
-                                if ((codInternoAux.startsWith("26")) || (codInternoAux.startsWith("20"))){
+                                if (codInternoAux.startsWith("26")) {
                                     largoCodigo = 5;
                                 }
 
