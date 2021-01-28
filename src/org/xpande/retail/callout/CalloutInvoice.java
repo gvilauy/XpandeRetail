@@ -23,6 +23,7 @@ import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.eevolution.model.X_C_TaxGroup;
 import org.xpande.comercial.model.MZComercialConfig;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.core.model.MZSocioListaPrecio;
@@ -563,9 +564,10 @@ public class CalloutInvoice extends CalloutEngine
 		// Si el socio de negocio es literal E, entonces todos sus productos deben ir con la tasa de impuesto para Literal E
 		boolean IsSOTrx = Env.getContext(ctx, WindowNo, "IsSOTrx").equals("Y");
 		boolean esLiteralE = false;
+		MBPartner partner = null;
 		int cBPartnerID = Env.getContextAsInt(ctx, WindowNo, "C_BPartner_ID");
 		if (cBPartnerID > 0){
-			MBPartner partner = new MBPartner(ctx, cBPartnerID, null);
+			partner = new MBPartner(ctx, cBPartnerID, null);
 			if (partner.get_ValueAsBoolean("LiteralE")){
 				esLiteralE = true;
 				// Obtengo ID de tasa de impuesto para Literal E desde coniguración comercial
@@ -592,10 +594,24 @@ public class CalloutInvoice extends CalloutEngine
 		// Si no es Literal E, para invoices compra/venta en Retail, puede suceder que el producto tenga un impuesto especial de compra/venta.
 		// Por lo tanto aca considero esta posibilidad.
 		if (!esLiteralE){
-			if (!IsSOTrx){
+
+			boolean clienteRut = false;
+
+			// Si es comprobante de venta y el socio de negocio tiene RUT, debo verificar que no haya impuesto especial de compra para
+			// el articulo. En caso de tenerlo, debo tomar ese umpuesto para la venta. Esto aplica solo en Retail.
+			if (IsSOTrx){
+				if ((partner != null) && (partner.get_ID() > 0)){
+					// Otengo Tipo de identificacion del socio de negocio
+					X_C_TaxGroup taxGroup = (X_C_TaxGroup) partner.getC_TaxGroup();
+					if (taxGroup.getValue().equalsIgnoreCase("RUT")){
+						clienteRut = true;
+					}
+				}
+			}
+
+			if ((!IsSOTrx) || (clienteRut)){
 				MProduct product = new MProduct(ctx, M_Product_ID, null);
 				if (product.get_ValueAsInt("C_TaxCategory_ID_2") > 0){
-					//MTax taxAux = TaxUtils.getLastTaxByCategory(ctx, product.get_ValueAsInt("C_TaxCategory_ID_2"), null);
 					MTax taxAux = TaxUtils.getDefaultTaxByCategory(ctx, product.get_ValueAsInt("C_TaxCategory_ID_2"), null);
 					if ((taxAux != null) && (taxAux.get_ID() > 0)){
 						C_Tax_ID = taxAux.get_ID();
