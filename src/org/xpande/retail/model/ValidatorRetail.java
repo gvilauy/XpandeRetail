@@ -490,7 +490,7 @@ public class ValidatorRetail implements ModelValidator {
 
                                     // Si el comprobante de venta tiene secuencia definitiva
                                     // (si viene por POS no debe tocar importes a pesar que sea entre locales)
-                                    if (docType.getDefiniteSequence_ID() > 0){
+                                    //if (docType.getDefiniteSequence_ID() > 0){
                                         MOrg orgLinked = new MOrg(model.getCtx(), partner.getAD_OrgBP_ID_Int(), null);
                                         if ((orgLinked != null) && (orgLinked.get_ID() > 0)){
 
@@ -548,7 +548,7 @@ public class ValidatorRetail implements ModelValidator {
                                             model.setLineNetAmt();
                                             model.setTaxAmt();
                                         }
-                                    }
+                                    //}
                                 }
                             }
                         }
