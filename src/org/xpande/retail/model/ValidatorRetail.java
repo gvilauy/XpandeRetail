@@ -1012,11 +1012,17 @@ public class ValidatorRetail implements ModelValidator {
         if ((type == ModelValidator.TYPE_BEFORE_NEW) ||
                 ((type == ModelValidator.TYPE_BEFORE_CHANGE) && (model.is_ValueChanged(X_M_InventoryLine.COLUMNNAME_M_Product_ID)))){
 
-            String upc = DB.getSQLValueStringEx(null, "select z_producto_ult_upc(" + model.getM_Product_ID() + ")");
-
             MProduct product = (MProduct) model.getM_Product();
+
+            String upc = DB.getSQLValueStringEx(model.get_TrxName(), "select z_producto_ult_upc(" + product.get_ID() + ")");
+
+            String sql = " select codigoproducto from z_difprodorg " +
+                    " where ad_orgtrx_id = " + model.getAD_Org_ID() + " and m_product_id =" + product.get_ID();
+            String codProdAlter = DB.getSQLValueStringEx(model.get_TrxName(), sql);
+
             model.set_ValueOfColumn("CodigoProducto", product.getValue());
             model.set_ValueOfColumn("UPC", upc);
+            model.set_ValueOfColumn("CodProdAlter", codProdAlter);
             model.set_ValueOfColumn("Z_ProductoSeccion_ID", product.get_Value("Z_ProductoSeccion_ID"));
             model.set_ValueOfColumn("Z_ProductoRubro_ID", product.get_Value("Z_ProductoRubro_ID"));
             model.set_ValueOfColumn("Z_ProductoFamilia_ID", product.get_Value("Z_ProductoFamilia_ID"));
