@@ -21,7 +21,7 @@ public class MZFormEfectivoCaja extends X_Z_FormEfectivoCaja {
     @Override
     protected boolean afterSave(boolean newRecord, boolean success) {
 
-        if (!success) return success;
+        if (!success) return false;
 
         if ((newRecord) || (is_ValueChanged(X_Z_FormEfectivoLin.COLUMNNAME_AmtSubtotal1)) || (is_ValueChanged(X_Z_FormEfectivoLin.COLUMNNAME_AmtSubtotal2))){
 
@@ -39,6 +39,12 @@ public class MZFormEfectivoCaja extends X_Z_FormEfectivoCaja {
 
     @Override
     protected boolean afterDelete(boolean success) {
+
+        if (!success) return false;
+
+        // Actualizo linea del concepto asociado a esta caja
+        MZFormEfectivoLin efectivoLin = (MZFormEfectivoLin) this.getZ_FormEfectivoLin();
+        efectivoLin.updateTotals();
 
         return true;
     }

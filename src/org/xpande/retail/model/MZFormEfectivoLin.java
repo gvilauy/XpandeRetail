@@ -28,7 +28,7 @@ public class MZFormEfectivoLin extends X_Z_FormEfectivoLin {
     @Override
     protected boolean afterSave(boolean newRecord, boolean success) {
 
-        if (!success) return success;
+        if (!success) return false;
 
         MZFormEfectivo formEfectivo = (MZFormEfectivo) this.getZ_FormEfectivo();
 
@@ -44,6 +44,17 @@ public class MZFormEfectivoLin extends X_Z_FormEfectivoLin {
 
         return true;
 
+    }
+
+    @Override
+    protected boolean afterDelete(boolean success) {
+
+        if (!success) return false;
+
+        MZFormEfectivo formEfectivo = (MZFormEfectivo) this.getZ_FormEfectivo();
+        formEfectivo.updateTotals();
+
+        return true;
     }
 
     /***
