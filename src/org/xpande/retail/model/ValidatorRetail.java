@@ -51,6 +51,7 @@ public class ValidatorRetail implements ModelValidator {
         engine.addModelChange(I_C_OrderLine.Table_Name, this);
         engine.addModelChange(I_C_Invoice.Table_Name, this);
         engine.addModelChange(I_C_InvoiceLine.Table_Name, this);
+        engine.addModelChange(I_M_InOutLine.Table_Name, this);
         engine.addModelChange(I_M_ProductPrice.Table_Name, this);
         engine.addModelChange(I_M_Product.Table_Name, this);
         engine.addModelChange(I_M_InventoryLine.Table_Name, this);
@@ -80,6 +81,9 @@ public class ValidatorRetail implements ModelValidator {
         }
         else if (po.get_TableName().equalsIgnoreCase(I_C_InvoiceLine.Table_Name)){
             return modelChange((MInvoiceLine) po, type);
+        }
+        else if (po.get_TableName().equalsIgnoreCase(I_M_InOutLine.Table_Name)){
+            return modelChange((MInOutLine) po, type);
         }
         else if (po.get_TableName().equalsIgnoreCase(I_M_Product.Table_Name)){
             return modelChange((MProduct) po, type);
@@ -373,7 +377,6 @@ public class ValidatorRetail implements ModelValidator {
         return mensaje;
     }
 
-
     /***
      * Validaciones para el modelo de Lineas de Invoices.
      * Xpande. Created by Gabriel Vila on 6/30/17.
@@ -383,8 +386,6 @@ public class ValidatorRetail implements ModelValidator {
      * @throws Exception
      */
     public String modelChange(MInvoiceLine model, int type) throws Exception {
-
-        String mensaje = null;
 
         if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)){
 
@@ -423,11 +424,27 @@ public class ValidatorRetail implements ModelValidator {
                             MZProductoSocioOrg productoSocioOrg = productoSocio.getOrg(invoice.getAD_Org_ID());
                             if ((productoSocioOrg != null) && (productoSocioOrg.get_ID() > 0)){
                                 model.set_ValueOfColumn("PricePO", productoSocioOrg.getPricePO());
-                                model.set_ValueOfColumn("PricePONoDto", productoSocioOrg.getPricePO());
                             }
                             else{
                                 model.set_ValueOfColumn("PricePO", productoSocio.getPricePO());
-                                model.set_ValueOfColumn("PricePONoDto", productoSocioOrg.getPricePO());
+                            }
+                            model.set_ValueOfColumn("PricePONoDto", productoSocioOrg.getPricePO());
+                        }
+                    }
+
+                    // Si esstoy creado linea de invoice desde linea de inout
+                    if (model.getM_InOutLine_ID() > 0){
+                        // Si tengo precio de ultima factura en esta linea de inout, tomo este precio como precio de esta linea
+                        MInOutLine inOutLine = (MInOutLine) model.getM_InOutLine();
+                        BigDecimal precioUltFact = (BigDecimal) inOutLine.get_Value("PriceInvoiced");
+                        if (precioUltFact != null){
+                            if (precioUltFact.compareTo(Env.ZERO) > 0){
+                                model.setPriceEntered(precioUltFact);
+                                model.setPriceActual(precioUltFact);
+                                model.setPriceLimit(precioUltFact);
+                                model.setPriceList(precioUltFact);
+                                model.setLineNetAmt();
+                                model.setTaxAmt();
                             }
                         }
                     }
@@ -451,27 +468,43 @@ public class ValidatorRetail implements ModelValidator {
                         if (discount2 == null) discount2 = Env.ZERO;
                         if (discount3 == null) discount3 = Env.ZERO;
 
-                        // Cuando el registro es nuevo y se digita precio, la base del calculo es ese precio.
-                        if (model.get_ID() <= 0){
-                            pricePONoDto = model.getPriceEntered();
+                        boolean hayDtos = false;
+                        boolean calculoDtos = true;
+
+                        if (discount1.compareTo(Env.ZERO) > 0) hayDtos = true;
+                        if (discount2.compareTo(Env.ZERO) > 0) hayDtos = true;
+                        if (discount3.compareTo(Env.ZERO) > 0) hayDtos = true;
+
+                        // No calculo descuentos cuando es nuevo registro y ademas tengo todos los campos de descuentos en cero.
+                        if (type == ModelValidator.TYPE_BEFORE_NEW ){
+                            if (!hayDtos) {
+                                calculoDtos = false;
+                            }
                         }
 
-                        if (pricePONoDto != null) {
-                            if (pricePONoDto.compareTo(Env.ZERO) != 0) {
-                                pricePO = new BigDecimal((100.0 - discount1.doubleValue()) / 100.0 * pricePONoDto.doubleValue());
-                                pricePO = new BigDecimal((100.0 - discount2.doubleValue()) / 100.0 * pricePO.doubleValue());
-                                pricePO = new BigDecimal((100.0 - discount3.doubleValue()) / 100.0 * pricePO.doubleValue());
-                                if (pricePO.scale() > StdPrecision){
-                                    pricePO = pricePO.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
+                        if (calculoDtos){
+                            // Cuando el registro es nuevo y se digita precio, la base del calculo es ese precio.
+                            if (model.get_ID() <= 0){
+                                pricePONoDto = model.getPriceEntered();
+                            }
+
+                            if (pricePONoDto != null) {
+                                if (pricePONoDto.compareTo(Env.ZERO) != 0) {
+                                    pricePO = new BigDecimal((100.0 - discount1.doubleValue()) / 100.0 * pricePONoDto.doubleValue());
+                                    pricePO = new BigDecimal((100.0 - discount2.doubleValue()) / 100.0 * pricePO.doubleValue());
+                                    pricePO = new BigDecimal((100.0 - discount3.doubleValue()) / 100.0 * pricePO.doubleValue());
+                                    if (pricePO.scale() > StdPrecision){
+                                        pricePO = pricePO.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
+                                    }
+                                    priceActual = pricePO;
+                                    priceEntered = MUOMConversion.convertProductFrom(model.getCtx(), model.getM_Product_ID(), model.getC_UOM_ID(), priceActual);
+                                    if (priceEntered == null) priceEntered = priceActual;
+                                    model.set_ValueOfColumn("PricePO", pricePO);
+                                    model.setPriceActual(priceActual);
+                                    model.setPriceEntered(priceEntered);
+                                    model.setLineNetAmt();
+                                    model.setTaxAmt();
                                 }
-                                priceActual = pricePO;
-                                priceEntered = MUOMConversion.convertProductFrom(model.getCtx(), model.getM_Product_ID(), model.getC_UOM_ID(), priceActual);
-                                if (priceEntered == null) priceEntered = priceActual;
-                                model.set_ValueOfColumn("PricePO", pricePO);
-                                model.setPriceActual(priceActual);
-                                model.setPriceEntered(priceEntered);
-                                model.setLineNetAmt();
-                                model.setTaxAmt();
                             }
                         }
                     }
@@ -571,8 +604,109 @@ public class ValidatorRetail implements ModelValidator {
             }
 
         }
+        return null;
+    }
 
-        return mensaje;
+    /***
+     * Validaciones para el modelo de Lineas de InOut.
+     * Xpande. Created by Gabriel Vila on 2/22/21.
+     * @param model
+     * @param type
+     * @return
+     * @throws Exception
+     */
+    public String modelChange(MInOutLine model, int type) throws Exception {
+
+        if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
+
+            MInOut inOut = (MInOut) model.getM_InOut();
+            MDocType docType = (MDocType) inOut.getC_DocType();
+
+            // Cuando estoy devoluciones de compra
+            if ((type == ModelValidator.TYPE_BEFORE_NEW) ||
+                    (type == ModelValidator.TYPE_BEFORE_CHANGE && model.is_ValueChanged(X_M_InOutLine.COLUMNNAME_M_Product_ID))){
+
+                if (inOut.getMovementType().equalsIgnoreCase(X_M_InOut.MOVEMENTTYPE_VendorReturns)){
+
+                    BigDecimal priceInvoiced = (BigDecimal) model.get_Value("PriceInvoiced");
+                    if (priceInvoiced == null) priceInvoiced = Env.ZERO;
+
+                    if (priceInvoiced.compareTo(Env.ZERO) == 0){
+
+                        Timestamp dateInvoiced = null;
+                        int cCurrencyID = 0;
+                        String vendorProductCode = null, documentNoRef = null;
+
+                        // Instancio modelo de producto-socio para obtener datos de ultima factura
+                        MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(model.getCtx(), inOut.getC_BPartner_ID(), model.getM_Product_ID(), null);
+
+                        // Si no tengo modelo para este socio de negocio de la ultima factura
+                        if ((productoSocio == null) || (productoSocio.get_ID() <= 0)){
+                            productoSocio = MZProductoSocio.getByLastInvoice(model.getCtx(), model.getM_Product_ID(), null);
+                        }
+                        else{
+                            vendorProductCode = productoSocio.getVendorProductNo();
+
+                            // Si no tengo precio de ultima factura
+                            if ((productoSocio.getPriceInvoiced() == null) || (productoSocio.getPriceInvoiced().compareTo(Env.ZERO) <= 0)){
+                                // Si tampoco tengo precio OC
+                                if ((productoSocio.getPricePO() == null) || (productoSocio.getPricePO().compareTo(Env.ZERO) <= 0)){
+                                    productoSocio = MZProductoSocio.getByLastInvoice(model.getCtx(), model.getM_Product_ID(), null);
+                                }
+                            }
+                        }
+
+                        // Si no hay facturas, obtengo socio de ultima gestión de precios de proveedor.
+                        if ((productoSocio == null) || (productoSocio.get_ID() <= 0)){
+                            productoSocio = MZProductoSocio.getByLastPriceOC(model.getCtx(), model.getM_Product_ID(), null);
+                        }
+
+                        if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+                            priceInvoiced = productoSocio.getPriceInvoiced();
+                            if ((priceInvoiced == null) || (priceInvoiced.compareTo(Env.ZERO) == 0)){
+                                priceInvoiced = productoSocio.getPricePO();
+                            }
+                            dateInvoiced = productoSocio.getDateInvoiced();
+                            cCurrencyID = productoSocio.getC_Currency_ID();
+                            if (productoSocio.getC_Invoice_ID() > 0){
+                                MInvoice invoiceRef = (MInvoice) productoSocio.getC_Invoice();
+                                if (invoiceRef != null){
+                                    documentNoRef = invoiceRef.getDocumentNo();
+                                }
+                                else{
+                                    documentNoRef = "";
+                                }
+                            }
+                        }
+                        model.set_ValueOfColumn("DocumentNoRef", documentNoRef);
+                        model.set_ValueOfColumn("PriceInvoiced", priceInvoiced);
+                        model.set_ValueOfColumn("DateInvoiced", dateInvoiced);
+                        model.set_ValueOfColumn("LineTotalAmt", model.getMovementQty().multiply(priceInvoiced).setScale(2, RoundingMode.HALF_UP));
+                        model.set_ValueOfColumn("C_Currency_ID", inOut.getC_Currency_ID());
+                        model.setM_Locator_ID(MLocator.getDefault((MWarehouse) inOut.getM_Warehouse()).get_ID());
+                        model.set_ValueOfColumn("DestinoDevol", "NOTACREDITO");
+                    }
+                }
+            }
+        }
+        else if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)
+                || (type == ModelValidator.TYPE_AFTER_DELETE)){
+
+            MInOut inOut = (MInOut) model.getM_InOut();
+
+            if (inOut.getMovementType().equalsIgnoreCase(X_M_InOut.MOVEMENTTYPE_VendorReturns)){
+
+                String sql = " select sum(linetotalamt) from m_inoutline where m_inout_id =" + inOut.get_ID();
+                BigDecimal amtTotal = DB.getSQLValueBDEx(model.get_TrxName(), sql);
+                if (amtTotal == null) amtTotal = Env.ZERO;
+
+                String action = " update m_inout set amttotal =" + amtTotal +
+                        " where m_inout_id =" + inOut.get_ID();
+                DB.executeUpdateEx(action, model.get_TrxName());
+            }
+        }
+
+        return null;
     }
 
     /***
