@@ -65,7 +65,7 @@ public class MZInvoiceBonifica extends X_Z_InvoiceBonifica {
     @Override
     protected boolean afterSave(boolean newRecord, boolean success) {
 
-        if (!success) return success;
+        if (!success) return false;
 
         // Marco la linea de factura asociada con esta bonificacion, como bonificada
         if (this.getC_InvoiceLine_ID() > 0){
@@ -92,7 +92,7 @@ public class MZInvoiceBonifica extends X_Z_InvoiceBonifica {
     @Override
     protected boolean afterDelete(boolean success) {
 
-        if (!success) return success;
+        if (!success) return false;
 
         // En caso de no tener mas lineas de bonificación para la linea de facttura asociada a esta bonificacion,
         // marco la linea de factura como no bonificada
