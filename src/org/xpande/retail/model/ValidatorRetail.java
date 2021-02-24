@@ -1,25 +1,22 @@
 package org.xpande.retail.model;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.pdf.Document;
 import org.apache.commons.lang.math.NumberUtils;
 import org.compiere.acct.Doc;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.cfe.model.MZCFEConfig;
 import org.xpande.comercial.model.MZComercialConfig;
 import org.xpande.comercial.utils.ComercialUtils;
-import org.xpande.core.model.MZActividadDocumento;
-import org.xpande.core.model.MZProductoUPC;
 import org.xpande.core.utils.CurrencyUtils;
 import org.xpande.retail.utils.AcctUtils;
 import org.xpande.retail.utils.ProductPricesInfo;
+import org.zkoss.zhtml.Big;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
@@ -387,10 +384,10 @@ public class ValidatorRetail implements ModelValidator {
      */
     public String modelChange(MInvoiceLine model, int type) throws Exception {
 
-        if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)){
+        MInvoice invoice = (MInvoice)model.getC_Invoice();
+        MDocType docType = (MDocType) invoice.getC_DocTypeTarget();
 
-            MInvoice invoice = (MInvoice)model.getC_Invoice();
-            MDocType docType = (MDocType) invoice.getC_DocTypeTarget();
+        if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)){
 
             if ((type == ModelValidator.TYPE_AFTER_NEW) || ((type == ModelValidator.TYPE_AFTER_CHANGE) && model.is_ValueChanged(X_C_InvoiceLine.COLUMNNAME_QtyInvoiced))){
 
@@ -406,14 +403,9 @@ public class ValidatorRetail implements ModelValidator {
                     }
                 }
             }
-
         }
-
         else if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)
                 || (type == ModelValidator.TYPE_BEFORE_DELETE)){
-
-            MInvoice invoice = (MInvoice)model.getC_Invoice();
-            MDocType docType = (MDocType) invoice.getC_DocTypeTarget();
 
             // Cuando estoy en comprobantes de compra
             if (type == ModelValidator.TYPE_BEFORE_NEW){
@@ -604,6 +596,40 @@ public class ValidatorRetail implements ModelValidator {
             }
 
         }
+
+        if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)
+                || (type == ModelValidator.TYPE_AFTER_DELETE)){
+
+            // Para comprobantes de compra actualizo tasas de impuesto en el cabezal
+            if (!invoice.isSOTrx()){
+
+                String action, sql;
+
+                // Actualizo campos con importes de impuestos en el cabezal de este comprobante de compra
+                MZCFEConfig cfeConfig = MZCFEConfig.getDefault(model.getCtx(), null);
+
+                // Tasa Basica
+                sql = " select sum(taxamt) as monto " +
+                        " from c_invoicetax " +
+                        " where c_invoice_id =" + invoice.get_ID() +
+                        " and c_tax_id =" + cfeConfig.getTaxBasico_ID();
+                BigDecimal taxAmt = DB.getSQLValueBDEx(model.get_TrxName(), sql);
+                if (taxAmt == null) taxAmt = Env.ZERO;
+                action = " update c_invoice set taxamtbasico =" + taxAmt + " where c_invoice_id =" + invoice.get_ID();
+                DB.executeUpdateEx(action, model.get_TrxName());
+
+                // Tasa Mínima
+                sql = " select sum(taxamt) as monto " +
+                        " from c_invoicetax " +
+                        " where c_invoice_id =" + invoice.get_ID() +
+                        " and c_tax_id =" + cfeConfig.getTaxMinimo_ID();
+                taxAmt = DB.getSQLValueBDEx(model.get_TrxName(), sql);
+                if (taxAmt == null) taxAmt = Env.ZERO;
+                action = " update c_invoice set taxamtmin =" + taxAmt + " where c_invoice_id =" + invoice.get_ID();
+                DB.executeUpdateEx(action, model.get_TrxName());
+            }
+        }
+
         return null;
     }
 
@@ -1219,6 +1245,11 @@ public class ValidatorRetail implements ModelValidator {
 
             // Si el documento es del tipo factura
             if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
+
+                // Contador de bonificaciones asociadas a este comprobante
+                sql = " select count(*) from z_invoicebonifica where c_invoice_id =" + model.get_ID();
+                int contBonifLines = DB.getSQLValueEx(model.get_TrxName(), sql);
+
                 // Recorro lineas del comprobante y actualizo datos de ultima factura en ficha producto-socio
                 for (int i = 0; i < invoiceLines.length; i++){
 
@@ -1234,6 +1265,18 @@ public class ValidatorRetail implements ModelValidator {
                             productoSocio.setDateInvoiced(model.getDateInvoiced());
                             productoSocio.setPriceInvoiced(invoiceLine.getPriceEntered());
                             productoSocio.setC_Invoice_ID(model.get_ID());
+
+                            // Si este comprobante tiene bonificaciones asociadas
+                            if (contBonifLines > 0){
+                                productoSocio.setIsBonificable(true);
+                            }
+
+                            /*
+                            if (invoiceLine.get_ValueAsBoolean("IsBonificada")){
+                                productoSocio.setIsBonificable(true);
+                            }
+                            */
+
                             productoSocio.saveEx();
                         }
                     }
@@ -1351,7 +1394,6 @@ public class ValidatorRetail implements ModelValidator {
                 }
             }
 
-
             // Proceso comprobantes marcados con Asiento Manual Contable
             if (model.get_ValueAsBoolean("AsientoManualInvoice")){
 
@@ -1381,6 +1423,31 @@ public class ValidatorRetail implements ModelValidator {
                     return "No se puede Completar este Documento, ya que tiene lineas de Asiento Manual con cuentas contables que requieren un valor para RETENCION";
                 }
             }
+
+            /*
+            // Actualizo campos con importes de impuestos en el cabezal de este comprobante de compra
+            MZCFEConfig cfeConfig = MZCFEConfig.getDefault(model.getCtx(), null);
+
+            // Tasa Basica
+            sql = " select sum(taxamt) as monto " +
+                    " from c_invoicetax " +
+                    " where c_invoice_id =" + model.get_ID() +
+                    " and c_tax_id =" + cfeConfig.getTaxBasico_ID();
+            BigDecimal taxAmt = DB.getSQLValueBDEx(model.get_TrxName(), sql);
+            if (taxAmt == null) taxAmt = Env.ZERO;
+            action = " update c_invoice set taxamtbasico =" + taxAmt + " where c_invoice_id =" + model.get_ID();
+            DB.executeUpdateEx(action, model.get_TrxName());
+
+            // Tasa Mínima
+            sql = " select sum(taxamt) as monto " +
+                    " from c_invoicetax " +
+                    " where c_invoice_id =" + model.get_ID() +
+                    " and c_tax_id =" + cfeConfig.getTaxMinimo_ID();
+            taxAmt = DB.getSQLValueBDEx(model.get_TrxName(), sql);
+            if (taxAmt == null) taxAmt = Env.ZERO;
+            action = " update c_invoice set taxamtmin =" + taxAmt + " where c_invoice_id =" + model.get_ID();
+            DB.executeUpdateEx(action, model.get_TrxName());
+            */
 
         }
         else if (timing == TIMING_BEFORE_REACTIVATE){

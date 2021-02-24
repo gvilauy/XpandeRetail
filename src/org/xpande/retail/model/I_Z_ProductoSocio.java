@@ -23,7 +23,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for Z_ProductoSocio
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0
+ *  @version Release 3.9.1
  */
 public interface I_Z_ProductoSocio 
 {
@@ -56,7 +56,7 @@ public interface I_Z_ProductoSocio
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_ProductoSocio
 	/** Set Business Partner .
 	  * Identifies a Business Partner
 	  */
-	public void setC_BPartner_ID(int C_BPartner_ID);
+	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/** Get Business Partner .
 	  * Identifies a Business Partner
@@ -84,7 +84,7 @@ public interface I_Z_ProductoSocio
 	/** Set Currency.
 	  * The Currency for this record
 	  */
-	public void setC_Currency_ID(int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/** Get Currency.
 	  * The Currency for this record
@@ -99,7 +99,7 @@ public interface I_Z_ProductoSocio
 	/** Set C_Currency_ID_SO.
 	  * Moneda de Venta
 	  */
-	public void setC_Currency_ID_SO(int C_Currency_ID_SO);
+	public void setC_Currency_ID_SO (int C_Currency_ID_SO);
 
 	/** Get C_Currency_ID_SO.
 	  * Moneda de Venta
@@ -112,7 +112,7 @@ public interface I_Z_ProductoSocio
 	/** Set Invoice.
 	  * Invoice Identifier
 	  */
-	public void setC_Invoice_ID(int C_Invoice_ID);
+	public void setC_Invoice_ID (int C_Invoice_ID);
 
 	/** Get Invoice.
 	  * Invoice Identifier
@@ -143,7 +143,7 @@ public interface I_Z_ProductoSocio
 	/** Set Date Invoiced.
 	  * Date printed on Invoice
 	  */
-	public void setDateInvoiced(Timestamp DateInvoiced);
+	public void setDateInvoiced (Timestamp DateInvoiced);
 
 	/** Get Date Invoiced.
 	  * Date printed on Invoice
@@ -156,7 +156,7 @@ public interface I_Z_ProductoSocio
 	/** Set DateValidPO.
 	  * Fecha Vigencia Compra
 	  */
-	public void setDateValidPO(Timestamp DateValidPO);
+	public void setDateValidPO (Timestamp DateValidPO);
 
 	/** Get DateValidPO.
 	  * Fecha Vigencia Compra
@@ -169,7 +169,7 @@ public interface I_Z_ProductoSocio
 	/** Set DateValidSO.
 	  * Fecha Vigencia Venta
 	  */
-	public void setDateValidSO(Timestamp DateValidSO);
+	public void setDateValidSO (Timestamp DateValidSO);
 
 	/** Get DateValidSO.
 	  * Fecha Vigencia Venta
@@ -180,7 +180,7 @@ public interface I_Z_ProductoSocio
     public static final String COLUMNNAME_DistinctPricePO = "DistinctPricePO";
 
 	/** Set DistinctPricePO	  */
-	public void setDistinctPricePO(boolean DistinctPricePO);
+	public void setDistinctPricePO (boolean DistinctPricePO);
 
 	/** Get DistinctPricePO	  */
 	public boolean isDistinctPricePO();
@@ -189,7 +189,7 @@ public interface I_Z_ProductoSocio
     public static final String COLUMNNAME_DistinctPriceSO = "DistinctPriceSO";
 
 	/** Set DistinctPriceSO	  */
-	public void setDistinctPriceSO(boolean DistinctPriceSO);
+	public void setDistinctPriceSO (boolean DistinctPriceSO);
 
 	/** Get DistinctPriceSO	  */
 	public boolean isDistinctPriceSO();
@@ -200,7 +200,7 @@ public interface I_Z_ProductoSocio
 	/** Set DtoFinFactura.
 	  * Descuento Financiero en Factura
 	  */
-	public void setDtoFinFactura(BigDecimal DtoFinFactura);
+	public void setDtoFinFactura (BigDecimal DtoFinFactura);
 
 	/** Get DtoFinFactura.
 	  * Descuento Financiero en Factura
@@ -213,7 +213,7 @@ public interface I_Z_ProductoSocio
 	/** Set DtoFinPago.
 	  * Descuento financiero al Pago
 	  */
-	public void setDtoFinPago(BigDecimal DtoFinPago);
+	public void setDtoFinPago (BigDecimal DtoFinPago);
 
 	/** Get DtoFinPago.
 	  * Descuento financiero al Pago
@@ -226,7 +226,7 @@ public interface I_Z_ProductoSocio
 	/** Set DtoNCPago.
 	  * Descuento nota de crédito al pago
 	  */
-	public void setDtoNCPago(BigDecimal DtoNCPago);
+	public void setDtoNCPago (BigDecimal DtoNCPago);
 
 	/** Get DtoNCPago.
 	  * Descuento nota de crédito al pago
@@ -239,7 +239,7 @@ public interface I_Z_ProductoSocio
 	/** Set DtoOpeFactura.
 	  * Descuentos operativos en factura
 	  */
-	public void setDtoOpeFactura(BigDecimal DtoOpeFactura);
+	public void setDtoOpeFactura (BigDecimal DtoOpeFactura);
 
 	/** Get DtoOpeFactura.
 	  * Descuentos operativos en factura
@@ -250,7 +250,7 @@ public interface I_Z_ProductoSocio
     public static final String COLUMNNAME_DtoRetorno = "DtoRetorno";
 
 	/** Set DtoRetorno	  */
-	public void setDtoRetorno(BigDecimal DtoRetorno);
+	public void setDtoRetorno (BigDecimal DtoRetorno);
 
 	/** Get DtoRetorno	  */
 	public BigDecimal getDtoRetorno();
@@ -259,7 +259,7 @@ public interface I_Z_ProductoSocio
     public static final String COLUMNNAME_InvoiceNo = "InvoiceNo";
 
 	/** Set InvoiceNo	  */
-	public void setInvoiceNo(String InvoiceNo);
+	public void setInvoiceNo (String InvoiceNo);
 
 	/** Get InvoiceNo	  */
 	public String getInvoiceNo();
@@ -270,12 +270,25 @@ public interface I_Z_ProductoSocio
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
 	  */
 	public boolean isActive();
+
+    /** Column name IsBonificable */
+    public static final String COLUMNNAME_IsBonificable = "IsBonificable";
+
+	/** Set IsBonificable.
+	  * Es bonificable o no
+	  */
+	public void setIsBonificable (boolean IsBonificable);
+
+	/** Get IsBonificable.
+	  * Es bonificable o no
+	  */
+	public boolean isBonificable();
 
     /** Column name M_PriceList_ID */
     public static final String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
@@ -283,7 +296,7 @@ public interface I_Z_ProductoSocio
 	/** Set Price List.
 	  * Unique identifier of a Price List
 	  */
-	public void setM_PriceList_ID(int M_PriceList_ID);
+	public void setM_PriceList_ID (int M_PriceList_ID);
 
 	/** Get Price List.
 	  * Unique identifier of a Price List
@@ -298,7 +311,7 @@ public interface I_Z_ProductoSocio
 	/** Set M_PriceList_ID_SO.
 	  * Lista de Precios de Venta
 	  */
-	public void setM_PriceList_ID_SO(int M_PriceList_ID_SO);
+	public void setM_PriceList_ID_SO (int M_PriceList_ID_SO);
 
 	/** Get M_PriceList_ID_SO.
 	  * Lista de Precios de Venta
@@ -311,7 +324,7 @@ public interface I_Z_ProductoSocio
 	/** Set Price List Version.
 	  * Identifies a unique instance of a Price List
 	  */
-	public void setM_PriceList_Version_ID(int M_PriceList_Version_ID);
+	public void setM_PriceList_Version_ID (int M_PriceList_Version_ID);
 
 	/** Get Price List Version.
 	  * Identifies a unique instance of a Price List
@@ -326,7 +339,7 @@ public interface I_Z_ProductoSocio
 	/** Set M_PriceList_Version_ID_SO.
 	  * Version de Lista de Precios de Venta
 	  */
-	public void setM_PriceList_Version_ID_SO(int M_PriceList_Version_ID_SO);
+	public void setM_PriceList_Version_ID_SO (int M_PriceList_Version_ID_SO);
 
 	/** Get M_PriceList_Version_ID_SO.
 	  * Version de Lista de Precios de Venta
@@ -339,7 +352,7 @@ public interface I_Z_ProductoSocio
 	/** Set Product.
 	  * Product, Service, Item
 	  */
-	public void setM_Product_ID(int M_Product_ID);
+	public void setM_Product_ID (int M_Product_ID);
 
 	/** Get Product.
 	  * Product, Service, Item
@@ -352,7 +365,7 @@ public interface I_Z_ProductoSocio
     public static final String COLUMNNAME_PriceFinal = "PriceFinal";
 
 	/** Set PriceFinal	  */
-	public void setPriceFinal(BigDecimal PriceFinal);
+	public void setPriceFinal (BigDecimal PriceFinal);
 
 	/** Get PriceFinal	  */
 	public BigDecimal getPriceFinal();
@@ -361,7 +374,7 @@ public interface I_Z_ProductoSocio
     public static final String COLUMNNAME_PriceFinalMargin = "PriceFinalMargin";
 
 	/** Set PriceFinalMargin	  */
-	public void setPriceFinalMargin(BigDecimal PriceFinalMargin);
+	public void setPriceFinalMargin (BigDecimal PriceFinalMargin);
 
 	/** Get PriceFinalMargin	  */
 	public BigDecimal getPriceFinalMargin();
@@ -372,7 +385,7 @@ public interface I_Z_ProductoSocio
 	/** Set Price Invoiced.
 	  * The priced invoiced to the customer (in the currency of the customer's AR price list) - 0 for default price
 	  */
-	public void setPriceInvoiced(BigDecimal PriceInvoiced);
+	public void setPriceInvoiced (BigDecimal PriceInvoiced);
 
 	/** Get Price Invoiced.
 	  * The priced invoiced to the customer (in the currency of the customer's AR price list) - 0 for default price
@@ -383,7 +396,7 @@ public interface I_Z_ProductoSocio
     public static final String COLUMNNAME_PriceInvoicedMargin = "PriceInvoicedMargin";
 
 	/** Set PriceInvoicedMargin	  */
-	public void setPriceInvoicedMargin(BigDecimal PriceInvoicedMargin);
+	public void setPriceInvoicedMargin (BigDecimal PriceInvoicedMargin);
 
 	/** Get PriceInvoicedMargin	  */
 	public BigDecimal getPriceInvoicedMargin();
@@ -394,7 +407,7 @@ public interface I_Z_ProductoSocio
 	/** Set List Price.
 	  * List Price
 	  */
-	public void setPriceList(BigDecimal PriceList);
+	public void setPriceList (BigDecimal PriceList);
 
 	/** Get List Price.
 	  * List Price
@@ -407,7 +420,7 @@ public interface I_Z_ProductoSocio
 	/** Set PO Price.
 	  * Price based on a purchase order
 	  */
-	public void setPricePO(BigDecimal PricePO);
+	public void setPricePO (BigDecimal PricePO);
 
 	/** Get PO Price.
 	  * Price based on a purchase order
@@ -418,7 +431,7 @@ public interface I_Z_ProductoSocio
     public static final String COLUMNNAME_PricePOMargin = "PricePOMargin";
 
 	/** Set PricePOMargin	  */
-	public void setPricePOMargin(BigDecimal PricePOMargin);
+	public void setPricePOMargin (BigDecimal PricePOMargin);
 
 	/** Get PricePOMargin	  */
 	public BigDecimal getPricePOMargin();
@@ -429,7 +442,7 @@ public interface I_Z_ProductoSocio
 	/** Set PriceSO.
 	  * PriceSO
 	  */
-	public void setPriceSO(BigDecimal PriceSO);
+	public void setPriceSO (BigDecimal PriceSO);
 
 	/** Get PriceSO.
 	  * PriceSO
@@ -442,7 +455,7 @@ public interface I_Z_ProductoSocio
 	/** Set TotalDiscountsFinal.
 	  * Suma total de los porcentajes de descuentos de productos para pagos
 	  */
-	public void setTotalDiscountsFinal(BigDecimal TotalDiscountsFinal);
+	public void setTotalDiscountsFinal (BigDecimal TotalDiscountsFinal);
 
 	/** Get TotalDiscountsFinal.
 	  * Suma total de los porcentajes de descuentos de productos para pagos
@@ -455,7 +468,7 @@ public interface I_Z_ProductoSocio
 	/** Set TotalDiscountsPO.
 	  * Suma total de los porcentajes de descuentos para ordenes de compra
 	  */
-	public void setTotalDiscountsPO(BigDecimal TotalDiscountsPO);
+	public void setTotalDiscountsPO (BigDecimal TotalDiscountsPO);
 
 	/** Get TotalDiscountsPO.
 	  * Suma total de los porcentajes de descuentos para ordenes de compra
@@ -484,7 +497,7 @@ public interface I_Z_ProductoSocio
 	/** Set Partner Product Key.
 	  * Product Key of the Business Partner
 	  */
-	public void setVendorProductNo(String VendorProductNo);
+	public void setVendorProductNo (String VendorProductNo);
 
 	/** Get Partner Product Key.
 	  * Product Key of the Business Partner
@@ -495,7 +508,7 @@ public interface I_Z_ProductoSocio
     public static final String COLUMNNAME_Z_LineaProductoSocio_ID = "Z_LineaProductoSocio_ID";
 
 	/** Set Z_LineaProductoSocio ID	  */
-	public void setZ_LineaProductoSocio_ID(int Z_LineaProductoSocio_ID);
+	public void setZ_LineaProductoSocio_ID (int Z_LineaProductoSocio_ID);
 
 	/** Get Z_LineaProductoSocio ID	  */
 	public int getZ_LineaProductoSocio_ID();
@@ -506,7 +519,7 @@ public interface I_Z_ProductoSocio
     public static final String COLUMNNAME_Z_PautaComercial_ID = "Z_PautaComercial_ID";
 
 	/** Set Z_PautaComercial ID	  */
-	public void setZ_PautaComercial_ID(int Z_PautaComercial_ID);
+	public void setZ_PautaComercial_ID (int Z_PautaComercial_ID);
 
 	/** Get Z_PautaComercial ID	  */
 	public int getZ_PautaComercial_ID();
@@ -517,7 +530,7 @@ public interface I_Z_ProductoSocio
     public static final String COLUMNNAME_Z_PautaComercialSet_ID_1 = "Z_PautaComercialSet_ID_1";
 
 	/** Set Z_PautaComercialSet_ID_1	  */
-	public void setZ_PautaComercialSet_ID_1(int Z_PautaComercialSet_ID_1);
+	public void setZ_PautaComercialSet_ID_1 (int Z_PautaComercialSet_ID_1);
 
 	/** Get Z_PautaComercialSet_ID_1	  */
 	public int getZ_PautaComercialSet_ID_1();
@@ -526,7 +539,7 @@ public interface I_Z_ProductoSocio
     public static final String COLUMNNAME_Z_PautaComercialSet_ID_2 = "Z_PautaComercialSet_ID_2";
 
 	/** Set Z_PautaComercialSet_ID_2	  */
-	public void setZ_PautaComercialSet_ID_2(int Z_PautaComercialSet_ID_2);
+	public void setZ_PautaComercialSet_ID_2 (int Z_PautaComercialSet_ID_2);
 
 	/** Get Z_PautaComercialSet_ID_2	  */
 	public int getZ_PautaComercialSet_ID_2();
@@ -537,7 +550,7 @@ public interface I_Z_ProductoSocio
 	/** Set Z_PautaComercialSet_ID_Gen.
 	  * Set General de Pauta Comercial 
 	  */
-	public void setZ_PautaComercialSet_ID_Gen(int Z_PautaComercialSet_ID_Gen);
+	public void setZ_PautaComercialSet_ID_Gen (int Z_PautaComercialSet_ID_Gen);
 
 	/** Get Z_PautaComercialSet_ID_Gen.
 	  * Set General de Pauta Comercial 
@@ -548,7 +561,7 @@ public interface I_Z_ProductoSocio
     public static final String COLUMNNAME_Z_ProductoSocio_ID = "Z_ProductoSocio_ID";
 
 	/** Set Z_ProductoSocio ID	  */
-	public void setZ_ProductoSocio_ID(int Z_ProductoSocio_ID);
+	public void setZ_ProductoSocio_ID (int Z_ProductoSocio_ID);
 
 	/** Get Z_ProductoSocio ID	  */
 	public int getZ_ProductoSocio_ID();

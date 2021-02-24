@@ -52,8 +52,8 @@ public class MZInvoiceBonifica extends X_Z_InvoiceBonifica {
 
         // Para bonificaciones manuales, al crearse le seteo cantidades en cero
         if ((newRecord) && (this.isManual())){
-            this.setQtyBase(Env.ZERO);
-            this.setQtyCalculated(Env.ZERO);
+            //this.setQtyBase(Env.ZERO);
+            //this.setQtyCalculated(Env.ZERO);
             if (this.getQtyReward() == null){
                 this.setQtyReward(Env.ZERO);
             }
@@ -70,6 +70,17 @@ public class MZInvoiceBonifica extends X_Z_InvoiceBonifica {
         // Marco la linea de factura asociada con esta bonificacion, como bonificada
         if (this.getC_InvoiceLine_ID() > 0){
             String action = " update c_invoiceline set IsBonificada ='Y' where c_invoiceline_id =" + this.getC_InvoiceLine_ID();
+            DB.executeUpdateEx(action, get_TrxName());
+        }
+
+        // Marco flgas de producto bonificador y bonificado
+        String action;
+        if (this.getM_Product_ID() > 0){
+           action = " update m_product set isbonificador ='Y' where m_product_id =" + this.getM_Product_ID();
+           DB.executeUpdateEx(action, get_TrxName());
+        }
+        if (this.getM_Product_To_ID() > 0){
+            action = " update m_product set isbonificado ='Y' where m_product_id =" + this.getM_Product_To_ID();
             DB.executeUpdateEx(action, get_TrxName());
         }
 

@@ -26,14 +26,14 @@ import org.compiere.util.Env;
 
 /** Generated Model for Z_ProductoSocio
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0 - $Id$ */
+ *  @version Release 3.9.1 - $Id$ */
 public class X_Z_ProductoSocio extends PO implements I_Z_ProductoSocio, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180604L;
+	private static final long serialVersionUID = 20210224L;
 
     /** Standard Constructor */
     public X_Z_ProductoSocio (Properties ctx, int Z_ProductoSocio_ID, String trxName)
@@ -46,6 +46,8 @@ public class X_Z_ProductoSocio extends PO implements I_Z_ProductoSocio, I_Persis
 			setDistinctPricePO (false);
 // N
 			setDistinctPriceSO (false);
+// N
+			setIsBonificable (false);
 // N
 			setM_PriceList_ID (0);
 			setM_Product_ID (0);
@@ -390,6 +392,30 @@ public class X_Z_ProductoSocio extends PO implements I_Z_ProductoSocio, I_Persis
 	public String getInvoiceNo () 
 	{
 		return (String)get_Value(COLUMNNAME_InvoiceNo);
+	}
+
+	/** Set IsBonificable.
+		@param IsBonificable 
+		Es bonificable o no
+	  */
+	public void setIsBonificable (boolean IsBonificable)
+	{
+		set_Value (COLUMNNAME_IsBonificable, Boolean.valueOf(IsBonificable));
+	}
+
+	/** Get IsBonificable.
+		@return Es bonificable o no
+	  */
+	public boolean isBonificable () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsBonificable);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	public I_M_PriceList getM_PriceList() throws RuntimeException
