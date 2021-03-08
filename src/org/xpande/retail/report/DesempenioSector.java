@@ -160,8 +160,8 @@ public class DesempenioSector extends SvrProcess {
                         " p.z_productoseccion_id, p.z_productorubro_id, " +
                         " p.z_productofamilia_id, p.z_productosubfamilia_id, " +
                         " pupc.z_productoupc_id, pupc.upc, " +
-                        " sum(qtypurchased) as qtypurchased, sum(qtysold) as qtysold, " +
-                        " sum(amtsubtotalpo) as amtsubtotalpo, sum(amtsubtotal) as amtsubtotal " +
+                        " round(sum(qtypurchased),2) as qtypurchased, round(sum(qtysold),2) as qtysold, " +
+                        " round(sum(amtsubtotalpo),2) as amtsubtotalpo, round(sum(amtsubtotal),2) as amtsubtotal " +
                         " from z_bi_invprodday a " +
                         " inner join m_product p on a.m_product_id = p.m_product_id " +
                         " left outer join zv_ultimoproductoupc vupc on p.m_product_id = vupc.m_product_id  " +
@@ -179,8 +179,8 @@ public class DesempenioSector extends SvrProcess {
                         " p.z_productoseccion_id, p.z_productorubro_id, " +
                         " p.z_productofamilia_id, p.z_productosubfamilia_id, " +
                         " pupc.z_productoupc_id, pupc.upc, " +
-                        " sum(qtypurchased) as qtypurchased, sum(qtysold) as qtysold, " +
-                        " sum(amtsubtotalpo) as amtsubtotalpo, sum(amtsubtotal) as amtsubtotal " +
+                        " round(sum(qtypurchased),2) as qtypurchased, round(sum(qtysold),2) as qtysold, " +
+                        " round(sum(amtsubtotalpo),2) as amtsubtotalpo, round(sum(amtsubtotal),2) as amtsubtotal " +
                         //" sum(totalamtpo) as totalamtpo, sum(totalamt) as totalamt " +
                         " from z_bi_invprodday a " +
                         " inner join m_product p on a.m_product_id = p.m_product_id " +
