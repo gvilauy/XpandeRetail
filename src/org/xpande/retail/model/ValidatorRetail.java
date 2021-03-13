@@ -1270,13 +1270,6 @@ public class ValidatorRetail implements ModelValidator {
                             if (contBonifLines > 0){
                                 productoSocio.setIsBonificable(true);
                             }
-
-                            /*
-                            if (invoiceLine.get_ValueAsBoolean("IsBonificada")){
-                                productoSocio.setIsBonificable(true);
-                            }
-                            */
-
                             productoSocio.saveEx();
                         }
                     }
@@ -1316,6 +1309,11 @@ public class ValidatorRetail implements ModelValidator {
                     BigDecimal amtRemitoLin = remitoDif.setRemitoDiferencia(model, invoiceLine, precision, retailConfig.getToleraRemDifLin(), false);
                     if (amtRemitoLin != null){
                         totalAmtRemito = totalAmtRemito.add(amtRemitoLin);
+                    }
+
+                    // Guardo información de compra de este producto en estructuras de reportes
+                    if (invoiceLine.getM_Product_ID() > 0){
+                        this.setPOInvoiceProductDay(true, model, invoiceLine, model.get_TrxName());
                     }
                 }
 
@@ -1392,6 +1390,16 @@ public class ValidatorRetail implements ModelValidator {
                         }
                     }
                 }
+
+                // Guardo información de compra de este producto en estructuras de reportes
+                for (int i = 0; i < invoiceLines.length; i++){
+
+                    MInvoiceLine invoiceLine = invoiceLines[i];
+
+                    if (invoiceLine.getM_Product_ID() > 0){
+                        this.setPOInvoiceProductDay(false, model, invoiceLine, model.get_TrxName());
+                    }
+                }
             }
 
             // Proceso comprobantes marcados con Asiento Manual Contable
@@ -1423,32 +1431,6 @@ public class ValidatorRetail implements ModelValidator {
                     return "No se puede Completar este Documento, ya que tiene lineas de Asiento Manual con cuentas contables que requieren un valor para RETENCION";
                 }
             }
-
-            /*
-            // Actualizo campos con importes de impuestos en el cabezal de este comprobante de compra
-            MZCFEConfig cfeConfig = MZCFEConfig.getDefault(model.getCtx(), null);
-
-            // Tasa Basica
-            sql = " select sum(taxamt) as monto " +
-                    " from c_invoicetax " +
-                    " where c_invoice_id =" + model.get_ID() +
-                    " and c_tax_id =" + cfeConfig.getTaxBasico_ID();
-            BigDecimal taxAmt = DB.getSQLValueBDEx(model.get_TrxName(), sql);
-            if (taxAmt == null) taxAmt = Env.ZERO;
-            action = " update c_invoice set taxamtbasico =" + taxAmt + " where c_invoice_id =" + model.get_ID();
-            DB.executeUpdateEx(action, model.get_TrxName());
-
-            // Tasa Mínima
-            sql = " select sum(taxamt) as monto " +
-                    " from c_invoicetax " +
-                    " where c_invoice_id =" + model.get_ID() +
-                    " and c_tax_id =" + cfeConfig.getTaxMinimo_ID();
-            taxAmt = DB.getSQLValueBDEx(model.get_TrxName(), sql);
-            if (taxAmt == null) taxAmt = Env.ZERO;
-            action = " update c_invoice set taxamtmin =" + taxAmt + " where c_invoice_id =" + model.get_ID();
-            DB.executeUpdateEx(action, model.get_TrxName());
-            */
-
         }
         else if (timing == TIMING_BEFORE_REACTIVATE){
 
@@ -1456,14 +1438,6 @@ public class ValidatorRetail implements ModelValidator {
             if (model.isSOTrx()){
                 return null;
             }
-
-            /*
-            // Elimino este documento de la tabla para informes de actividades de documentos.
-            MZActividadDocumento actividadDocumento = MZActividadDocumento.getByTableRecord(model.getCtx(), model.get_Table_ID(), model.get_ID(), model.get_TrxName());
-            if ((actividadDocumento != null) && (actividadDocumento.get_ID() > 0)){
-                actividadDocumento.deleteEx(true);
-            }
-             */
 
             // Para comprobantes de compra del tipo API (facturas de proveedores)
             if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
@@ -1491,12 +1465,24 @@ public class ValidatorRetail implements ModelValidator {
                 DB.executeUpdateEx(action, model.get_TrxName());
             }
 
+            // Guardo información de compra de este producto en estructuras de reportes
+            MInvoiceLine[] invoiceLines = model.getLines();
+            boolean sumar = false;
+            if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APCredit)){
+                sumar = true;
+            }
+            for (int i = 0; i < invoiceLines.length; i++){
+
+                MInvoiceLine invoiceLine = invoiceLines[i];
+
+                if (invoiceLine.getM_Product_ID() > 0){
+                    this.setPOInvoiceProductDay(sumar, model, invoiceLine, model.get_TrxName());
+                }
+            }
         }
 
         return null;
     }
-
-
 
     /***
      * Validaciones para documentos de la tabla C_Invoice en gestión de retail.
@@ -1512,49 +1498,17 @@ public class ValidatorRetail implements ModelValidator {
 
         if (timing == TIMING_AFTER_COMPLETE){
 
-            // Calculo de descuentos por Notas de Credito al Pago.
-
             // No aplica en comprobantes de venta
             if (model.isSOTrx()){
                 return null;
             }
-
-            MOrderLine[] orderLines = model.getLines();
-
-            /*
-            // Guardo documento en tabla para informes de actividad por documento
-            MZActividadDocumento actividadDocumento = new MZActividadDocumento(model.getCtx(), 0, model.get_TrxName());
-            actividadDocumento.setAD_Table_ID(model.get_Table_ID());
-            actividadDocumento.setRecord_ID(model.get_ID());
-            actividadDocumento.setC_DocType_ID(model.getC_DocTypeTarget_ID());
-            actividadDocumento.setDocumentNoRef(model.getDocumentNo());
-            actividadDocumento.setDocCreatedBy(model.getCreatedBy());
-            actividadDocumento.setDocDateCreated(model.getCreated());
-            actividadDocumento.setCompletedBy(Env.getAD_User_ID(model.getCtx()));
-            actividadDocumento.setDateCompleted(new Timestamp(System.currentTimeMillis()));
-            actividadDocumento.setLineNo(orderLines.length);
-            actividadDocumento.setAD_Role_ID(Env.getAD_Role_ID(model.getCtx()));
-            actividadDocumento.setDiferenciaTiempo(new BigDecimal((actividadDocumento.getDateCompleted().getTime()-actividadDocumento.getDocDateCreated().getTime())/1000).divide(new BigDecimal(60),2,BigDecimal.ROUND_HALF_UP));
-            actividadDocumento.saveEx();
-             */
-
         }
         else if (timing == TIMING_BEFORE_REACTIVATE){
 
-            // Cuando reactivo un documento, me aseguro de no dejar factura marcada con datos de descuentos por notas de credito al pago.
-
             // No aplica en comprobantes de venta
             if (model.isSOTrx()){
                 return null;
             }
-
-            /*
-            // Elimino este documento de la tabla para informes de actividades de documentos.
-            MZActividadDocumento actividadDocumento = MZActividadDocumento.getByTableRecord(model.getCtx(), model.get_Table_ID(), model.get_ID(), model.get_TrxName());
-            if ((actividadDocumento != null) && (actividadDocumento.get_ID() > 0)){
-                actividadDocumento.deleteEx(true);
-            }
-             */
         }
 
         return null;
@@ -1664,6 +1618,75 @@ public class ValidatorRetail implements ModelValidator {
         return hayDescuntoNC;
     }
 
+    /***
+     * Seteo información de compra de un producto, en las estructuras de informes.
+     * Xpande. Created by Gabriel Vila on 3/13/21.
+     * @param sumar
+     * @param invoice
+     * @param invoiceLine
+     * @param trxName
+     */
+    private void setPOInvoiceProductDay(boolean sumar, MInvoice invoice, MInvoiceLine invoiceLine, String trxName){
 
+        String insert, sql, action;
+
+        try{
+
+            BigDecimal amtSubtotalLine = (BigDecimal) invoiceLine.get_Value("AmtSubtotal");
+            if (amtSubtotalLine == null) amtSubtotalLine = Env.ZERO;
+
+            BigDecimal qtyEntered = invoiceLine.getQtyEntered();
+
+            if (!sumar){
+                amtSubtotalLine = amtSubtotalLine.negate();
+                qtyEntered = qtyEntered.negate();
+            }
+
+            sql = " select z_bi_dia_id from z_bi_dia where datetrx ='" + invoice.getDateInvoiced() + "' ";
+            int zBiaDayID = DB.getSQLValueEx(trxName, sql);
+
+            insert = " insert into z_bi_invprodday (ad_client_id, ad_org_id, dateinvoiced, c_currency_id, m_product_id, " +
+                    " c_uom_id, qtypurchased, qtysold, amtsubtotal, totalamt, amtsubtotalpo, totalamtpo, z_bi_dia_id) ";
+
+            // Verifico si no existe un registro para esta clave en la tabla de analisis
+            sql = " select count(*) from z_bi_invprodday " +
+                    " where ad_org_id =" + invoice.getAD_Org_ID() +
+                    " and m_product_id =" + invoiceLine.getM_Product_ID() +
+                    " and c_currency_id =" + invoice.getC_Currency_ID() +
+                    " and dateinvoiced ='" + invoice.getDateInvoiced() + "' ";
+            int contador = DB.getSQLValueEx(trxName, sql);
+
+            // Si no existe aún un registro para esta clave
+            if (contador <= 0){
+
+                // Insert
+                action = " values (" + invoice.getAD_Client_ID() + ", " + invoice.getAD_Org_ID() + ", '" +
+                        invoice.getDateInvoiced() + "', " + invoice.getC_Currency_ID() + ", " +
+                        invoiceLine.getM_Product_ID() + ", " + invoiceLine.getC_UOM_ID() + ", " +
+                        qtyEntered + ", 0, 0, 0, " + amtSubtotalLine + ", " +
+                        invoiceLine.getLineTotalAmt() + ", " + zBiaDayID + ") ";
+
+                DB.executeUpdateEx(insert + action, trxName);
+            }
+            else {
+                // Actualizo
+                action = " update z_bi_invprodday set " +
+                        " qtypurchased = qtypurchased + " + qtyEntered + ", " +
+                        " amtsubtotalpo = amtsubtotalpo + " + amtSubtotalLine + ", " +
+                        " totalamtpo = totalamtpo + " + invoiceLine.getLineTotalAmt() +
+                        " where ad_org_id =" + invoice.getAD_Org_ID() +
+                        " and m_product_id =" + invoiceLine.getM_Product_ID() +
+                        " and c_currency_id =" + invoice.getC_Currency_ID() +
+                        " and dateinvoiced ='" + invoice.getDateInvoiced() + "' ";
+
+                DB.executeUpdateEx(action, trxName);
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+    }
 
 }
