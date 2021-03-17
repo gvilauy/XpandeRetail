@@ -17,6 +17,8 @@ import org.zkoss.zhtml.Big;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
@@ -648,6 +650,21 @@ public class ValidatorRetail implements ModelValidator {
             MInOut inOut = (MInOut) model.getM_InOut();
             MDocType docType = (MDocType) inOut.getC_DocType();
 
+            // Si estoy en recepciones de producto
+            if (inOut.getMovementType().equalsIgnoreCase(X_M_InOut.MOVEMENTTYPE_VendorReceipts)){
+                // Si no tengo valor en el campo de factura asociada
+                if (model.get_ValueAsInt("Z_RecepcionProdFact_ID") <= 0){
+                    // Veo si tengo un valor de una linea anterior
+                    int zRecepProdFactID = this.getLastRecepcionProdFactID(model, model.get_TrxName());
+                    if (zRecepProdFactID > 0){
+                        model.set_ValueOfColumn("Z_RecepcionProdFact_ID", zRecepProdFactID);
+                    }
+                    else{
+                        return "Debe indicar número de Factura Asociada a esta línea de Recepción.";
+                    }
+                }
+            }
+
             // Cuando estoy devoluciones de compra
             if ((type == ModelValidator.TYPE_BEFORE_NEW) ||
                     (type == ModelValidator.TYPE_BEFORE_CHANGE && model.is_ValueChanged(X_M_InOutLine.COLUMNNAME_M_Product_ID))){
@@ -733,6 +750,43 @@ public class ValidatorRetail implements ModelValidator {
         }
 
         return null;
+    }
+
+    /***
+     * Obtiene y retorna ultima factura asociada ingresada en un documento de inout.
+     * Xpande. Created by Gabriel Vila on 3/16/21.
+     * @param inOutLine
+     * @param trxName
+     * @return
+     */
+    private int getLastRecepcionProdFactID(MInOutLine inOutLine, String trxName) {
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        int value = -1;
+
+        try{
+            sql = " select Z_RecepcionProdFact_ID from m_inoutline where m_inout_id =" + inOutLine.getM_InOut_ID() +
+                    " order by created desc";
+
+        	pstmt = DB.prepareStatement(sql, trxName);
+        	rs = pstmt.executeQuery();
+
+        	if (rs.next()){
+                value = rs.getInt("Z_RecepcionProdFact_ID");
+        	}
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
+        }
+
+        return value;
     }
 
     /***
@@ -1636,10 +1690,12 @@ public class ValidatorRetail implements ModelValidator {
             if (amtSubtotalLine == null) amtSubtotalLine = Env.ZERO;
 
             BigDecimal qtyEntered = invoiceLine.getQtyEntered();
+            BigDecimal lineTotalAmt = invoiceLine.getLineTotalAmt();
 
             if (!sumar){
                 amtSubtotalLine = amtSubtotalLine.negate();
                 qtyEntered = qtyEntered.negate();
+                lineTotalAmt = lineTotalAmt.negate();
             }
 
             sql = " select z_bi_dia_id from z_bi_dia where datetrx ='" + invoice.getDateInvoiced() + "' ";
@@ -1664,7 +1720,7 @@ public class ValidatorRetail implements ModelValidator {
                         invoice.getDateInvoiced() + "', " + invoice.getC_Currency_ID() + ", " +
                         invoiceLine.getM_Product_ID() + ", " + invoiceLine.getC_UOM_ID() + ", " +
                         qtyEntered + ", 0, 0, 0, " + amtSubtotalLine + ", " +
-                        invoiceLine.getLineTotalAmt() + ", " + zBiaDayID + ") ";
+                        lineTotalAmt + ", " + zBiaDayID + ") ";
 
                 DB.executeUpdateEx(insert + action, trxName);
             }
@@ -1673,7 +1729,7 @@ public class ValidatorRetail implements ModelValidator {
                 action = " update z_bi_invprodday set " +
                         " qtypurchased = qtypurchased + " + qtyEntered + ", " +
                         " amtsubtotalpo = amtsubtotalpo + " + amtSubtotalLine + ", " +
-                        " totalamtpo = totalamtpo + " + invoiceLine.getLineTotalAmt() +
+                        " totalamtpo = totalamtpo + " + lineTotalAmt +
                         " where ad_org_id =" + invoice.getAD_Org_ID() +
                         " and m_product_id =" + invoiceLine.getM_Product_ID() +
                         " and c_currency_id =" + invoice.getC_Currency_ID() +

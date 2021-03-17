@@ -68,7 +68,12 @@ public class GenerarFacturasRecibidas extends SvrProcess {
                         docType.get_ID(), recepcionProdFact.getDocumentSerie(), recepcionProdFact.getManualDocumentNo(),
                         this.mInOut.getC_BPartner_ID(), get_TrxName());
                 if ((invoiceAux != null) && (invoiceAux.get_ID() > 0)){
-                    continue;
+                    if (invoiceAux.getDateInvoiced().compareTo(recepcionProdFact.getDateDoc()) != 0){
+                        return "@Error@ " + "Ya existe una factura ANTERIOR con el mismo número para ese Socio de Negocio.";
+                    }
+                    else{
+                        continue;
+                    }
                 }
 
                 if (recepcionProdFact.getC_Currency_ID() <= 0){

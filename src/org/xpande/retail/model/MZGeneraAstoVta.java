@@ -1358,7 +1358,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 					" inner join z_mediopago b on a.z_mediopago_id = b.z_mediopago_id " +
 					" where a.z_generaastovta_id =" + this.get_ID() +
 					" and a.z_mediopagoident_id is null " +
-					" and b.contabilizar='Y' ";
+					" and b.ContabVtaPos='Y' ";
 
 			BigDecimal amtMediosPago1 = DB.getSQLValueBDEx(get_TrxName(), sql);
 			if (amtMediosPago1 == null) amtMediosPago1 = Env.ZERO;
@@ -1368,7 +1368,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 					" from z_generaastovtasummp a " +
 					" inner join z_mediopagoident b on a.z_mediopagoident_id = b.z_mediopagoident_id " +
 					" where a.z_generaastovta_id =" + this.get_ID() +
-					" and b.contabilizar='Y' ";
+					" and b.Contabilizar='Y' ";
 
 			BigDecimal amtMediosPago2 = DB.getSQLValueBDEx(get_TrxName(), sql);
 			if (amtMediosPago2 == null) amtMediosPago2 = Env.ZERO;

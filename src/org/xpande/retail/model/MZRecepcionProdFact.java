@@ -48,12 +48,14 @@ public class MZRecepcionProdFact extends X_Z_RecepcionProdFact {
         }
 
         // Valido que no se repita serie y numero de factura
-        String sql = "select count(*) from z_recepcionprodfact where m_inout_id =" + this.getM_InOut_ID() +
+        String sql = "select count(*) from z_recepcionprodfact " +
+                " where m_inout_id =" + this.getM_InOut_ID() +
+                " and z_recepcionprodfact_id !=" + this.get_ID() +
                 " and documentserie ='" + this.getDocumentSerie() + "' " +
                 " and manualdocumentno ='" + numeroFactura + "'";
         int contador = DB.getSQLValueEx(null, sql);
         if (contador > 0){
-            log.saveError("ATENCIÓN", "Factura ya fue ingresada con ese Serie-Numero");
+            log.saveError("ATENCIÓN", "Factura ya fue ingresada con esa Serie-Numero");
             return false;
         }
 

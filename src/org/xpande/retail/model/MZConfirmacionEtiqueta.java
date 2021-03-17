@@ -918,6 +918,19 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 		return lines;
 	}
 
+	/***
+	 * Obtiene y retorna lineas de documentos para este modelo.
+	 * Xpande. Created by Gabriel Vila on 3/15/21.
+	 * @return
+	 */
+	public List<MZConfirmacionEtiquetaDoc> getEtiquetaDocs(){
+
+		String whereClause = X_Z_ConfirmacionEtiquetaDoc.COLUMNNAME_Z_ConfirmacionEtiqueta_ID + " =" + this.get_ID();
+
+		List<MZConfirmacionEtiquetaDoc> lines = new Query(getCtx(), I_Z_ConfirmacionEtiquetaDoc.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
 
 	@Override
 	protected boolean beforeSave(boolean newRecord) {
