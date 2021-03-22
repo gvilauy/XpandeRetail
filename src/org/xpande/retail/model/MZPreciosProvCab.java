@@ -39,6 +39,7 @@ import org.compiere.util.TimeUtil;
 import org.xpande.core.model.MZActividadDocumento;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.core.model.MZSocioListaPrecio;
+import org.xpande.core.utils.CurrencyUtils;
 import org.xpande.core.utils.PriceListUtils;
 import sun.misc.MessageUtils;
 
@@ -1341,6 +1342,12 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 				if (productoSocio.getPriceInvoiced() != null){
 					plinea.setPriceInvoiced(productoSocio.getPriceInvoiced());
+					if (productoSocio.getC_Invoice_ID() > 0){
+						plinea.set_ValueOfColumn("C_Invoice_ID", productoSocio.getC_Invoice_ID());
+					}
+					if (productoSocio.get_ValueAsInt("C_Currency_1_ID") > 0){
+						plinea.set_ValueOfColumn("C_Currency_1_ID", productoSocio.get_ValueAsInt("C_Currency_1_ID"));
+					}
 				}
 
 				// Ultimo código de barras asociado al producto (en caso de tenerlo)
@@ -1377,7 +1384,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				plinea.calculatePricesSO(priceListSO, this.getPrecisionSO());
 
 				// Calculo y seteo márgenes de linea
-				plinea.calculateMargins(this.getRate());
+				plinea.calculateMargins(this.getRate(), this.getC_Currency_ID_SO());
 
 				plinea.saveEx();
 
@@ -1726,6 +1733,15 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 					if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
 						if (productoSocio.getPriceInvoiced() != null){
 							plinea.setPriceInvoiced(productoSocio.getPriceInvoiced());
+
+							if (productoSocio.getC_Invoice_ID() > 0){
+								plinea.set_ValueOfColumn("C_Invoice_ID", productoSocio.getC_Invoice_ID());
+							}
+
+							if (productoSocio.get_ValueAsInt("C_Currency_1_ID") > 0){
+								plinea.set_ValueOfColumn("C_Currency_1_ID", productoSocio.get_ValueAsInt("C_Currency_1_ID"));
+							}
+
 						}
 					}
 
@@ -1798,7 +1814,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				}
 
 				// Calculo y seteo márgenes de linea
-				plinea.calculateMargins(this.getRate());
+				plinea.calculateMargins(this.getRate(), this.getC_Currency_ID_SO());
 
 				plinea.saveEx();
 
@@ -1866,14 +1882,6 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 			// Seteo precisión decimal para precios de compra y venta
 			this.setPrecisionDecimal();
-
-
-			// Obtengo tasa de cambio de hoy para compra-venta multimoneda
-			if (this.getC_Currency_ID() != this.getC_Currency_ID_SO()){
-				Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
-				BigDecimal rate = MConversionRate.getRate(this.getC_Currency_ID(), this.getC_Currency_ID_SO(), fechaHoy, 0, this.getAD_Client_ID(), 0);
-				this.setRate(rate.setScale(3, BigDecimal.ROUND_HALF_UP));
-			}
 
 			if (this.getM_PriceList_Version_ID_SO() <= 0){
 				MPriceList priceList = new MPriceList(getCtx(), this.getM_PriceList_ID_SO(), get_TrxName());
@@ -2039,7 +2047,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				preciosProvLin.calculatePricesPO(preciosProvLin.getPriceList(), this.getPrecisionPO(), pautaComercial, false);
 
 				// Calculo y seteo márgenes de linea
-				preciosProvLin.calculateMargins(this.getRate());
+				preciosProvLin.calculateMargins(this.getRate(), this.getC_Currency_ID_SO());
 
 				preciosProvLin.saveEx();
 
@@ -2114,8 +2122,21 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 					}
 				}
 			}
-		}
 
+			// Obtengo tasa de cambio de hoy para compra-venta multimoneda
+			BigDecimal rate = Env.ONE;
+			// Si tengo moneda de compra distinta a moneda de venta
+			if (this.getC_Currency_ID() != this.getC_Currency_ID_SO()){
+				Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+				rate = CurrencyUtils.getCurrencyRate(getCtx(), this.getAD_Client_ID(), 0, this.getC_Currency_ID(), this.getC_Currency_ID_SO(),
+						114, fechaHoy, get_TrxName());
+				if (rate == null){
+					log.saveError("ATENCIÓN", "No hay Tasa de Cambio cargada en el sistema para moneda y fecha indicada.");
+					return false;
+				}
+			}
+			this.setRate(rate.setScale(3, BigDecimal.ROUND_HALF_UP));
+		}
 
 		// Me aseguro que tengo la pauta correcta para la linea
 		if (this.getZ_LineaProductoSocio_ID() > 0){

@@ -1319,6 +1319,7 @@ public class ValidatorRetail implements ModelValidator {
                             productoSocio.setDateInvoiced(model.getDateInvoiced());
                             productoSocio.setPriceInvoiced(invoiceLine.getPriceEntered());
                             productoSocio.setC_Invoice_ID(model.get_ID());
+                            productoSocio.set_ValueOfColumn("C_Currency_1_ID", model.getC_Currency_ID());
 
                             // Si este comprobante tiene bonificaciones asociadas
                             if (contBonifLines > 0){

@@ -60,7 +60,7 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
                 if ((this.getPriceList() != null) && (this.getPriceList().compareTo(Env.ZERO) > 0)){
                     this.calculatePricesPO(this.getPriceList(), cab.getPrecisionPO(), (MZPautaComercial) cab.getZ_PautaComercial(), true);
                     // Recalculo márgenes
-                    this.calculateMargins(cab.getRate());
+                    this.calculateMargins(cab.getRate(), cab.getC_Currency_ID_SO());
 
                     // Refresco precio de venta y margenes en organizaciones asociadas a esta linea (si no es *PC)
                     if (!this.isDistinctPricePO()){
@@ -87,7 +87,7 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
             this.calculatePricesPO(this.getPriceList(), cab.getPrecisionPO(), (MZPautaComercial) cab.getZ_PautaComercial(), true);
 
             // Recalculo márgenes
-            this.calculateMargins(cab.getRate());
+            this.calculateMargins(cab.getRate(), cab.getC_Currency_ID_SO());
 
             // Refresco precio de venta y margenes en organizaciones asociadas a esta linea (si no es *PC)
             if (!this.isDistinctPricePO()){
@@ -103,7 +103,7 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
             this.calculatePricesPO(this.getPriceList(), cab.getPrecisionPO(), (MZPautaComercial) cab.getZ_PautaComercial(), true);
 
             // Recalculo márgenes
-            this.calculateMargins(cab.getRate());
+            this.calculateMargins(cab.getRate(), cab.getC_Currency_ID_SO());
 
             // Refresco precio de venta y margenes en organizaciones asociadas a esta linea (si no es *PC)
             if (!this.isDistinctPricePO()){
@@ -338,7 +338,7 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
             // Seto precio de compra
             this.setOrgDifferentPricePO(false);
             this.calculatePricesPO(this.getPriceList(), cab.getPrecisionPO(), (MZPautaComercial) cab.getZ_PautaComercial(), false);
-            this.calculateMargins(cab.getRate());
+            this.calculateMargins(cab.getRate(), cab.getC_Currency_ID_SO());
 
         }
         catch (Exception e){
@@ -641,7 +641,7 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
      * Metodo que calcula y setea margenes de esta linea.
      * Xpande. Created by Gabriel Vila on 6/23/17.
      */
-    public void calculateMargins(BigDecimal multiplyRate) {
+    public void calculateMargins(BigDecimal multiplyRate, int cCurrencySO_ID) {
 
         try{
 
@@ -694,7 +694,12 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
             else{
                 BigDecimal priceInv = this.getPriceInvoiced();
                 if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) > 0)){
-                    priceInv = priceInv.multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    // Si tengo ID de ultima factura y moneda de factura es distinta a la moneda de venta
+                    if (this.get_ValueAsInt("C_Invoice_ID") > 0){
+                        if (this.get_ValueAsInt("C_Currency_1_ID") != cCurrencySO_ID){
+                            priceInv = priceInv.multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+                        }
+                    }
                 }
                 this.setPriceInvoicedMargin(((this.getNewPriceSO().multiply(Env.ONEHUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP))
                         .divide(priceInv, 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));

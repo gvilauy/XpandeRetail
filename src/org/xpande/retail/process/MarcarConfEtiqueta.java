@@ -55,6 +55,7 @@ public class MarcarConfEtiqueta extends SvrProcess {
                 else if (this.tipoAccion.equalsIgnoreCase("DESMARCAR")){
                     etiquetaDoc.setIsSelected(false);
                 }
+                etiquetaDoc.saveEx();
             }
 
         }

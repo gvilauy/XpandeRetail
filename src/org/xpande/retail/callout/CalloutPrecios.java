@@ -514,11 +514,20 @@ public class CalloutPrecios extends CalloutEngine {
                 mTab.setValue("PriceFinal", productoSocio.getPriceFinal());
                 mTab.setValue("PriceInvoiced", productoSocio.getPriceInvoiced());
                 mTab.setValue("PricePO", productoSocio.getPricePO());
+
+                if (productoSocio.getC_Invoice_ID() > 0){
+                    mTab.setValue("C_Invoice_ID", productoSocio.getC_Invoice_ID());
+                }
+                if (productoSocio.get_ValueAsInt("C_Currency_1_ID") > 0){
+                    mTab.setValue("C_Currency_1_ID", productoSocio.get_ValueAsInt("C_Currency_1_ID"));
+                }
             }
             else{
                 mTab.setValue("PriceFinal", Env.ZERO);
                 mTab.setValue("PriceInvoiced", Env.ZERO);
                 mTab.setValue("PricePO", Env.ZERO);
+                mTab.setValue("C_Invoice_ID", null);
+                mTab.setValue("C_Currency_1_ID", null);
             }
 
             BigDecimal priceSO = Env.ZERO;

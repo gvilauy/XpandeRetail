@@ -72,6 +72,14 @@ public class MZActualizacionPVPLin extends X_Z_ActualizacionPVPLin {
                     this.setPriceFinal(productoSocio.getPriceFinal());
                     this.setPriceInvoiced(productoSocio.getPriceInvoiced());
                     this.setPricePO(productoSocio.getPricePO());
+
+                    if (productoSocio.getC_Invoice_ID() > 0){
+                        this.set_ValueOfColumn("C_Invoice_ID", productoSocio.getC_Invoice_ID());
+                    }
+
+                    if (productoSocio.get_ValueAsInt("C_Currency_1_ID") > 0){
+                        this.set_ValueOfColumn("C_Currency_1_ID", productoSocio.get_ValueAsInt("C_Currency_1_ID"));
+                    }
                 }
 
                 BigDecimal priceSO = Env.ZERO;
@@ -122,7 +130,7 @@ public class MZActualizacionPVPLin extends X_Z_ActualizacionPVPLin {
     @Override
     protected boolean afterSave(boolean newRecord, boolean success) {
 
-        if (!success) return success;
+        if (!success) return false;
 
         if (newRecord){
             this.orgsCreate();
