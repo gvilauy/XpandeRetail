@@ -251,6 +251,9 @@ public class MZProductoSocio extends X_Z_ProductoSocio {
                 this.setPriceInvoicedMargin(((this.getPriceSO().multiply(Env.ONEHUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP))
                         .divide(priceInvoiced, 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
             }
+
+            this.set_ValueOfColumn("Rate", ratePO);
+            this.saveEx();
         }
         catch (Exception e){
             throw new AdempiereException(e);

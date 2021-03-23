@@ -19,7 +19,8 @@ public class RefrescarMargenesProdBP  extends SvrProcess {
     @Override
     protected String doIt() throws Exception {
 
-        this.productoSocio.calculateMargins();;
+        this.productoSocio.calculateMargins();
+        this.productoSocio.saveEx();
 
         return "OK";
     }
