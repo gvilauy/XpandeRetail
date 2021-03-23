@@ -7,6 +7,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.core.model.MZSocioListaPrecio;
+import org.xpande.core.utils.CurrencyUtils;
 import org.xpande.core.utils.PriceListUtils;
 import org.xpande.retail.model.*;
 
@@ -410,6 +411,165 @@ public class CalloutPrecios extends CalloutEngine {
     }
 
     /***
+     * En actualización PVP Al cambiar nuevo precio de venta, o margen final, o margen factura,
+     * se recalculan los margenes y nuevo precio de venta.
+     * Xpande. Created by Gabriel Vila on 3/23/21.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String calculateMarginsPVP(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (value == null) return "";
+
+        String column = mField.getColumnName();
+
+        BigDecimal priceFinal = (BigDecimal) mTab.getValue("PriceFinal");
+        BigDecimal pricePO = (BigDecimal) mTab.getValue("PricePO");
+        BigDecimal priceInvoiced = (BigDecimal) mTab.getValue("PriceInvoiced");
+
+        int cCurrencySO_ID = Env.getContextAsInt(ctx, WindowNo, "C_Currency_ID");
+        int cCurrencyPO_ID = Env.getContextAsInt(ctx, WindowNo, "C_Currency_1_ID");
+        int cCurrencyFact_ID = Env.getContextAsInt(ctx, WindowNo, "C_Currency_2_ID");
+        int zActualizacionPVPID = Env.getContextAsInt(ctx, WindowNo, "Z_ActualizacionPVP_ID");
+
+        int precisionCompra = 2;
+        int precisionVenta = 2;
+
+        if (cCurrencyPO_ID > 0){
+            MCurrency currency = new MCurrency(ctx, cCurrencyPO_ID, null);
+            precisionCompra = currency.getStdPrecision();
+        }
+
+        int mPriceListVentaID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_ID");
+        if (mPriceListVentaID > 0){
+            MPriceList plVenta = new MPriceList(ctx, mPriceListVentaID, null);
+            precisionVenta = plVenta.getPricePrecision();
+        }
+
+        MZActualizacionPVP actualizacionPVP = new MZActualizacionPVP(ctx, zActualizacionPVPID, null);
+        Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
+        // Tasa de cambio para compra vs venta
+        BigDecimal ratePO = Env.ONE;
+        if (cCurrencyPO_ID != cCurrencySO_ID){
+            ratePO = CurrencyUtils.getCurrencyRate(ctx, actualizacionPVP.getAD_Client_ID(), 0,
+                    cCurrencyPO_ID, cCurrencySO_ID, 114, fechaHoy, null);
+            if (ratePO == null){
+                mTab.setValue("Rate", null);
+                return "No hay Tasa de Cambio cargada en el sistema para moneda de compra y fecha de hoy.";
+            }
+        }
+
+        // Tasa de cambio para ultima factura vs venta
+        BigDecimal rateFact = Env.ONE;
+        if (cCurrencyFact_ID != cCurrencySO_ID){
+            rateFact = CurrencyUtils.getCurrencyRate(ctx, actualizacionPVP.getAD_Client_ID(), 0,
+                    cCurrencyFact_ID, cCurrencySO_ID, 114, fechaHoy, null);
+            if (rateFact == null){
+                mTab.setValue("Rate", null);
+                return "No hay Tasa de Cambio cargada en el sistema para moneda de última factura y fecha de hoy.";
+            }
+        }
+
+        mTab.setValue("Rate", ratePO);
+
+        // Si es moneda de compra la recibida, busco lista de compra del proveedor en esa moneda
+        if (column.equalsIgnoreCase("NewPriceSO")){
+
+            BigDecimal newPriceSO = (BigDecimal)value;
+            if ((newPriceSO == null) || (newPriceSO.compareTo(Env.ZERO) <= 0)){
+                mTab.setValue("PriceFinalMargin", null);
+                mTab.setValue("PricePOMargin", null);
+                mTab.setValue("PriceInvoicedMargin", null);
+            }
+            else{
+                // Margen final
+                if ((priceFinal == null) || (priceFinal.compareTo(Env.ZERO) <= 0)){
+                    mTab.setValue("PriceFinalMargin", null);
+                }
+                else{
+                    if ((ratePO != null) && (ratePO.compareTo(Env.ONE) > 0)){
+                        priceFinal = priceFinal.multiply(ratePO).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP);
+                    }
+                    mTab.setValue("PriceFinalMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(4, BigDecimal.ROUND_HALF_UP))
+                            .divide(priceFinal, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
+                }
+
+                // Margen OC
+                if ((pricePO == null) || (pricePO.compareTo(Env.ZERO) <= 0)){
+                    mTab.setValue("PricePOMargin", null);
+                }
+                else{
+                    if ((ratePO != null) && (ratePO.compareTo(Env.ONE) > 0)){
+                        pricePO = pricePO.multiply(ratePO).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP);
+                    }
+                    mTab.setValue("PricePOMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(4, BigDecimal.ROUND_HALF_UP))
+                            .divide(pricePO, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
+                }
+
+                // Margen Factura
+                if ((priceInvoiced == null) || (priceInvoiced.compareTo(Env.ZERO) <= 0)){
+                    mTab.setValue("PriceInvoicedMargin", null);
+                }
+                else{
+                    if ((rateFact != null) && (rateFact.compareTo(Env.ONE) > 0)){
+                        priceInvoiced = priceInvoiced.multiply(ratePO).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP);
+                    }
+                    mTab.setValue("PriceInvoicedMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(4, BigDecimal.ROUND_HALF_UP))
+                            .divide(priceInvoiced, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
+                }
+            }
+        }
+        else if (column.equalsIgnoreCase("PriceFinalMargin")){
+
+            BigDecimal newFinalMargin = (BigDecimal)value;
+            BigDecimal newPriceSO = null;
+
+            // Nuevo Precio segun sea multimoneda o no
+            if ((ratePO != null) && (ratePO.compareTo(Env.ONE) > 0)){
+                newPriceSO = ((newFinalMargin.add(Env.ONEHUNDRED)).multiply(priceFinal).setScale(4, BigDecimal.ROUND_HALF_UP)
+                        .divide(Env.ONEHUNDRED, precisionVenta, BigDecimal.ROUND_HALF_UP));
+                newPriceSO = newPriceSO.multiply(ratePO).setScale(precisionVenta, BigDecimal.ROUND_HALF_UP);
+            }
+            else{
+                newPriceSO = ((newFinalMargin.add(Env.ONEHUNDRED)).multiply(priceFinal).setScale(precisionVenta, BigDecimal.ROUND_HALF_UP)
+                        .divide(Env.ONEHUNDRED, precisionVenta, BigDecimal.ROUND_HALF_UP));
+            }
+            mTab.setValue("NewPriceSO", newPriceSO);
+
+            // Margen OC
+            if ((pricePO == null) || (pricePO.compareTo(Env.ZERO) <= 0)){
+                mTab.setValue("PricePOMargin", null);
+            }
+            else{
+                if ((ratePO != null) && (ratePO.compareTo(Env.ONE) > 0)){
+                    pricePO = pricePO.multiply(ratePO).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP);
+                }
+                mTab.setValue("PricePOMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP))
+                        .divide(pricePO, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
+            }
+
+            // Margen Factura
+            if ((priceInvoiced == null) || (priceInvoiced.compareTo(Env.ZERO) <= 0)){
+                mTab.setValue("PriceInvoicedMargin", null);
+            }
+            else{
+                if ((rateFact != null) && (rateFact.compareTo(Env.ZERO) > 0)){
+                    priceInvoiced = priceInvoiced.multiply(rateFact).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP);
+                }
+                mTab.setValue("PriceInvoicedMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP))
+                        .divide(priceInvoiced, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
+            }
+        }
+
+        return "";
+    }
+
+    /***
      * Setea pauta comercial para linea de producto seleccionada.
      * Xpande. Created by Gabriel Vila on 7/15/17.
      * @param ctx
@@ -518,6 +678,7 @@ public class CalloutPrecios extends CalloutEngine {
                 if (productoSocio.getC_Invoice_ID() > 0){
                     mTab.setValue("C_Invoice_ID", productoSocio.getC_Invoice_ID());
                 }
+                // Moneda de Factura
                 if (productoSocio.get_ValueAsInt("C_Currency_1_ID") > 0){
                     mTab.setValue("C_Currency_1_ID", productoSocio.get_ValueAsInt("C_Currency_1_ID"));
                 }
@@ -584,6 +745,165 @@ public class CalloutPrecios extends CalloutEngine {
         return "";
     }
 
+    /***
+     * Al ingresar código de barras, o el producto directamente, se deben setear demás campos asociados.
+     * Xpande. Created by Gabriel Vila on 6/25/17.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String upcProductPVP(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (isCalloutActive()) return "";
+
+        if ((value == null) || (value.toString().trim().equalsIgnoreCase(""))){
+            mTab.setValue("UPC", null);
+            mTab.setValue("M_Product_ID", null);
+            return "";
+        }
+
+        MProduct prod = null;
+
+        String column = mField.getColumnName();
+
+        if (column.equalsIgnoreCase("UPC")){
+            MZProductoUPC pupc = MZProductoUPC.getByUPC(ctx, value.toString().trim(), null);
+            if ((pupc != null) && (pupc.get_ID() > 0)){
+                prod = (MProduct) pupc.getM_Product();
+                mTab.setValue("M_Product_ID", prod.get_ID());
+            }
+            else{
+                mTab.setValue("M_Product_ID", null);
+            }
+        }
+        else if (column.equalsIgnoreCase("M_Product_ID")){
+
+            int mProductID = ((Integer) value).intValue();
+            prod = new MProduct(ctx, mProductID, null);
+
+            MZProductoUPC pupc = MZProductoUPC.getByProduct(ctx, mProductID, null);
+            if ((pupc != null) && (pupc.get_ID() > 0)){
+                mTab.setValue("UPC", pupc.getUPC());
+            }
+            else{
+                mTab.setValue("UPC", null);
+            }
+        }
+
+        Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
+        // Seteo atrbutos asociados al producto
+        if ((prod != null) && (prod.get_ID() > 0)){
+
+            // Atributos del producto
+            mTab.setValue("Z_ProductoSeccion_ID", prod.get_ValueAsInt(X_Z_ProductoSeccion.COLUMNNAME_Z_ProductoSeccion_ID));
+            mTab.setValue("Z_ProductoRubro_ID", prod.get_ValueAsInt(X_Z_ProductoRubro.COLUMNNAME_Z_ProductoRubro_ID));
+            mTab.setValue("C_UOM_ID", prod.getC_UOM_ID());
+            mTab.setValue("C_TaxCategory_ID", prod.getC_TaxCategory_ID());
+
+            if (prod.get_ValueAsInt(X_Z_ProductoFamilia.COLUMNNAME_Z_ProductoFamilia_ID) > 0){
+                mTab.setValue("Z_ProductoFamilia_ID", prod.get_ValueAsInt(X_Z_ProductoFamilia.COLUMNNAME_Z_ProductoFamilia_ID));
+            }
+
+            if (prod.get_ValueAsInt(X_Z_ProductoSubfamilia.COLUMNNAME_Z_ProductoSubfamilia_ID) > 0){
+                mTab.setValue("Z_ProductoSubfamilia_ID", prod.get_ValueAsInt(X_Z_ProductoSubfamilia.COLUMNNAME_Z_ProductoSubfamilia_ID));
+            }
+
+            // Precios de compra
+            // Obtengo socio de negocio de la ultima factura, sino hay facturas, obtengo socio de ultima gestión de precios de proveedor.
+            MZProductoSocio productoSocio = MZProductoSocio.getByLastInvoice(ctx, prod.get_ID(), null);
+            if ((productoSocio == null) || (productoSocio.get_ID() <= 0)){
+                productoSocio = MZProductoSocio.getByLastPriceOC(ctx, prod.get_ID(), null);
+            }
+
+            if ((productoSocio != null) && (productoSocio.get_ID() > 0)){
+                mTab.setValue("PriceFinal", productoSocio.getPriceFinal());
+                mTab.setValue("PriceInvoiced", productoSocio.getPriceInvoiced());
+                mTab.setValue("PricePO", productoSocio.getPricePO());
+
+                if (productoSocio.getC_Invoice_ID() > 0){
+                    mTab.setValue("C_Invoice_ID", productoSocio.getC_Invoice_ID());
+                }
+                // Moneda de Factura
+                if (productoSocio.get_ValueAsInt("C_Currency_1_ID") > 0){
+                    mTab.setValue("C_Currency_2_ID", productoSocio.get_ValueAsInt("C_Currency_1_ID"));
+                }
+
+                // Moneda de compra
+                mTab.setValue("C_Currency_1_ID", productoSocio.getC_Currency_ID());
+            }
+            else{
+                mTab.setValue("PriceFinal", Env.ZERO);
+                mTab.setValue("PriceInvoiced", Env.ZERO);
+                mTab.setValue("PricePO", Env.ZERO);
+                mTab.setValue("C_Invoice_ID", null);
+                mTab.setValue("C_Currency_1_ID", null);
+                mTab.setValue("C_Currency_2_ID", null);
+            }
+
+            BigDecimal priceSO = Env.ZERO;
+            Timestamp validFrom = null;
+
+            // Obtengo y seteo precio de venta actual desde lista de precios de venta del cabezal
+            int mPriceListID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_ID");
+            MPriceList priceListSO = new MPriceList(ctx, mPriceListID, null);
+            MPriceListVersion plvSO = priceListSO.getPriceListVersion(null);
+
+            MProductPrice productPrice = null;
+            if (plvSO != null){
+                productPrice = MProductPrice.get(ctx, plvSO.get_ID(), prod.get_ID(), null);
+                if (productPrice != null){
+                    priceSO = productPrice.getPriceList();
+                    validFrom = (Timestamp)productPrice.get_Value("ValidFrom");
+                }
+            }
+
+            // Verifico si este producto tiene una oferta vigente para la fecha actual.
+            // Si es asi, el precio que tiene que considerarse es el precio oferta y no el precio de lista.
+            MZProductoOferta productoOferta = MZProductoOferta.getByProductDate(ctx, prod.get_ID(), fechaHoy, fechaHoy, null);
+            if ((productoOferta != null) && (productoOferta.get_ID() > 0)){
+                MZOfertaVenta ofertaVenta = (MZOfertaVenta) productoOferta.getZ_OfertaVenta();
+                MZOfertaVentaLin ventaLin = ofertaVenta.getLineByProduct(prod.get_ID());
+                if ((ventaLin != null) && (ventaLin.get_ID() > 0)){
+                    if ((ventaLin.getNewPriceSO() != null) && (ventaLin.getNewPriceSO().compareTo(Env.ZERO) > 0)){
+                        priceSO = ventaLin.getNewPriceSO();
+                    }
+                }
+                validFrom = ofertaVenta.getStartDate();
+            }
+            if (productPrice != null){
+                mTab.setValue("PriceSO", priceSO);
+                mTab.setValue("NewPriceSO", priceSO);
+                mTab.setValue("DateValidSO", validFrom);
+            }
+            else{
+                mTab.setValue("PriceSO", Env.ZERO);
+                mTab.setValue("NewPriceSO", Env.ZERO);
+                mTab.setValue("DateValidSO",null);
+            }
+        }
+        else{
+            mTab.setValue("Z_ProductoSeccion_ID", null);
+            mTab.setValue("Z_ProductoRubro_ID", null);
+            mTab.setValue("Z_ProductoFamilia_ID", null);
+            mTab.setValue("Z_ProductoSubfamilia_ID", null);
+            mTab.setValue("C_UOM_ID", null);
+            mTab.setValue("C_TaxCategory_ID", null);
+            mTab.setValue("PriceFinal", Env.ZERO);
+            mTab.setValue("PriceInvoiced", Env.ZERO);
+            mTab.setValue("PricePO", Env.ZERO);
+            mTab.setValue("PriceSO", Env.ZERO);
+            mTab.setValue("NewPriceSO", Env.ZERO);
+            mTab.setValue("C_Invoice_ID", null);
+            mTab.setValue("C_Currency_1_ID", null);
+            mTab.setValue("C_Currency_2_ID", null);;
+        }
+
+        return "";
+    }
 
     /***
      * Setea moneda segun lista de precios recibida.

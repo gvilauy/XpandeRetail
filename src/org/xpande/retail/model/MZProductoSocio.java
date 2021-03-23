@@ -5,11 +5,15 @@ import org.compiere.Adempiere;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.xpande.core.utils.CurrencyUtils;
 import org.xpande.retail.utils.ProductPricesInfo;
+import org.zkoss.zhtml.Big;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
@@ -185,33 +189,68 @@ public class MZProductoSocio extends X_Z_ProductoSocio {
                 return;
             }
 
+            Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
+            // Tasa de cambio para compra vs venta
+            BigDecimal ratePO = Env.ONE;
+            if (this.getC_Currency_ID() != this.getC_Currency_ID_SO()){
+                ratePO = CurrencyUtils.getCurrencyRate(getCtx(), this.getAD_Client_ID(), 0,
+                        this.getC_Currency_ID(), this.getC_Currency_ID_SO(), 114, fechaHoy, null);
+                if (ratePO == null){
+                    throw new AdempiereException("No hay Tasa de Cambio cargada en el sistema para moneda de compra y fecha de hoy.");
+                }
+            }
+
+            // Tasa de cambio para ultima factura vs venta
+            BigDecimal rateFact = Env.ONE;
+            if (this.get_ValueAsInt("C_Currency_1_ID") > 0){
+                if (this.get_ValueAsInt("C_Currency_1_ID") != this.getC_Currency_ID_SO()){
+                    rateFact = CurrencyUtils.getCurrencyRate(getCtx(), this.getAD_Client_ID(), 0,
+                            this.get_ValueAsInt("C_Currency_1_ID"), this.getC_Currency_ID_SO(), 114, fechaHoy, null);
+                    if (rateFact == null){
+                        throw new AdempiereException("No hay Tasa de Cambio cargada en el sistema para moneda de última factura y fecha de hoy.");
+                    }
+                }
+            }
+
             // Margen final
-            if ((this.getPriceFinal() == null) || (this.getPriceFinal().compareTo(Env.ZERO) <= 0)){
+            BigDecimal priceFinal = this.getPriceFinal();
+            if ((priceFinal == null) || (priceFinal.compareTo(Env.ZERO) <= 0)){
                 this.setPriceFinalMargin(null);
             }
             else{
+                if ((ratePO != null) && (ratePO.compareTo(Env.ONE) > 0)){
+                    priceFinal = priceFinal.multiply(ratePO).setScale(4, BigDecimal.ROUND_HALF_UP);
+                }
                 this.setPriceFinalMargin(((this.getPriceSO().multiply(Env.ONEHUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP))
-                        .divide(this.getPriceFinal(), 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
+                        .divide(priceFinal, 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
             }
 
             // Margen OC
-            if ((this.getPricePO() == null) || (this.getPricePO().compareTo(Env.ZERO) <= 0)){
+            BigDecimal pricePO = this.getPricePO();
+            if ((pricePO == null) || (pricePO.compareTo(Env.ZERO) <= 0)){
                 this.setPricePOMargin(null);
             }
             else{
+                if ((ratePO != null) && (ratePO.compareTo(Env.ONE) > 0)){
+                    pricePO = pricePO.multiply(ratePO).setScale(4, BigDecimal.ROUND_HALF_UP);
+                }
                 this.setPricePOMargin(((this.getPriceSO().multiply(Env.ONEHUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP))
-                        .divide(this.getPricePO(), 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
+                        .divide(pricePO, 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
             }
 
             // Margen Factura
-            if ((this.getPriceInvoiced() == null) || (this.getPriceInvoiced().compareTo(Env.ZERO) <= 0)){
+            BigDecimal priceInvoiced = this.getPriceInvoiced();
+            if ((priceInvoiced == null) || (priceInvoiced.compareTo(Env.ZERO) <= 0)){
                 this.setPriceInvoicedMargin(null);
             }
             else{
+                if ((rateFact != null) && (rateFact.compareTo(Env.ONE) > 0)){
+                    priceInvoiced = priceInvoiced.multiply(rateFact).setScale(4, BigDecimal.ROUND_HALF_UP);
+                }
                 this.setPriceInvoicedMargin(((this.getPriceSO().multiply(Env.ONEHUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP))
-                        .divide(this.getPriceInvoiced(), 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
+                        .divide(priceInvoiced, 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
             }
-
         }
         catch (Exception e){
             throw new AdempiereException(e);
