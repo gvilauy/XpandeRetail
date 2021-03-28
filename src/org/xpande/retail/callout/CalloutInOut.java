@@ -4,10 +4,13 @@ import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.MProduct;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.retail.model.MZProductoSocio;
+import org.zkoss.zhtml.Big;
 
+import java.math.BigDecimal;
 import java.util.Properties;
 
 /**
@@ -119,5 +122,32 @@ public class CalloutInOut extends CalloutEngine {
 
         return "";
     }
+
+    /***
+     * En linea de inout, setea cantidad recibida según cantidad facturada.
+     * Xpande. Created by Gabriel Vila on 3/26/21.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String setQtyByQtyInvoiced(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if ((value == null) || (((Integer) value).intValue() <= 0)){
+            return "";
+        }
+
+        BigDecimal qtyInvoiced = (BigDecimal) value;
+        BigDecimal qtyEntered = (BigDecimal) mTab.getValue("QtyEntered");
+
+        if ((qtyEntered == null) || (qtyEntered.compareTo(Env.ZERO) == 0)){
+            mTab.setValue("QtyEntered", qtyInvoiced);
+        }
+
+        return "";
+    }
+
 
 }

@@ -565,6 +565,47 @@ public class CalloutPrecios extends CalloutEngine {
                         .divide(priceInvoiced, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
             }
         }
+        else if (column.equalsIgnoreCase("PriceInvoicedMargin")){
+
+            BigDecimal newInvoiceMargin = (BigDecimal)value;
+            BigDecimal newPriceSO = null;
+
+            // Nuevo Precio segun sea multimoneda o no
+            if ((rateFact != null) && (rateFact.compareTo(Env.ONE) > 0)){
+                newPriceSO = ((newInvoiceMargin.add(Env.ONEHUNDRED)).multiply(priceInvoiced).setScale(4, BigDecimal.ROUND_HALF_UP)
+                        .divide(Env.ONEHUNDRED, precisionVenta, BigDecimal.ROUND_HALF_UP));
+                newPriceSO = newPriceSO.multiply(rateFact).setScale(precisionVenta, BigDecimal.ROUND_HALF_UP);
+            }
+            else{
+                newPriceSO = ((newInvoiceMargin.add(Env.ONEHUNDRED)).multiply(priceInvoiced).setScale(precisionVenta, BigDecimal.ROUND_HALF_UP)
+                        .divide(Env.ONEHUNDRED, precisionVenta, BigDecimal.ROUND_HALF_UP));
+            }
+            mTab.setValue("NewPriceSO", newPriceSO);
+
+            // Margen OC
+            if ((pricePO == null) || (pricePO.compareTo(Env.ZERO) <= 0)){
+                mTab.setValue("PricePOMargin", null);
+            }
+            else{
+                if ((ratePO != null) && (ratePO.compareTo(Env.ONE) > 0)){
+                    pricePO = pricePO.multiply(ratePO).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP);
+                }
+                mTab.setValue("PricePOMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP))
+                        .divide(pricePO, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
+            }
+
+            // Margen Final
+            if ((priceFinal == null) || (priceFinal.compareTo(Env.ZERO) <= 0)){
+                mTab.setValue("PriceFinalMargin", null);
+            }
+            else{
+                if ((ratePO != null) && (ratePO.compareTo(Env.ZERO) > 0)){
+                    priceFinal = priceFinal.multiply(ratePO).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP);
+                }
+                mTab.setValue("PriceFinalMargin", (((newPriceSO.multiply(Env.ONEHUNDRED).setScale(precisionCompra, BigDecimal.ROUND_HALF_UP))
+                        .divide(priceFinal, precisionCompra, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED)));
+            }
+        }
 
         return "";
     }

@@ -663,6 +663,20 @@ public class ValidatorRetail implements ModelValidator {
                         return "Debe indicar número de Factura Asociada a esta línea de Recepción.";
                     }
                 }
+
+                // Seteo cantidad diferencia entre recepcionaso y facturado, y total de la linea
+                BigDecimal qtyInvoiced = (BigDecimal) model.get_Value("QtyEnteredInvoice");
+                BigDecimal qtyEntered = model.getQtyEntered();
+                BigDecimal priceInvoiced = (BigDecimal) model.get_Value("PriceInvoiced");
+                if (qtyInvoiced == null) qtyInvoiced = Env.ZERO;
+                if (qtyEntered == null) qtyEntered = Env.ZERO;
+                if (priceInvoiced == null) priceInvoiced = Env.ZERO;
+
+                BigDecimal qtyDiff = qtyEntered.subtract(qtyInvoiced);
+                model.set_ValueOfColumn("DifferenceQty", qtyDiff);
+
+                BigDecimal amtTotal = qtyEntered.multiply(priceInvoiced).setScale(2, RoundingMode.HALF_UP);
+                model.set_ValueOfColumn("LineTotalAmt", amtTotal);
             }
 
             // Cuando estoy devoluciones de compra
