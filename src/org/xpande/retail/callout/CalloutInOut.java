@@ -5,13 +5,18 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.MProduct;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.retail.model.MZProductoSocio;
 import org.zkoss.zhtml.Big;
 
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Properties;
+import java.util.logging.Level;
 
 /**
  * Callouts para entregas/rececpiones/devoluciones en el módulo de retail.
@@ -43,7 +48,6 @@ public class CalloutInOut extends CalloutEngine {
         }
 
         int cBPartnerID = Env.getContextAsInt(ctx, WindowNo, "C_BPartner_ID");
-
         String column = mField.getColumnName();
 
         if (column.equalsIgnoreCase("UPC")){
@@ -149,5 +153,88 @@ public class CalloutInOut extends CalloutEngine {
         return "";
     }
 
+    /**
+     *	M_InOut - Defaults for BPartner.
+     *			- Location
+     *			- Contact
+     *	@param ctx
+     *	@param WindowNo
+     *	@param mTab
+     *	@param mField
+     *	@param value
+     *	@return error message or ""
+     */
+    public String bpartner (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+    {
+        Integer C_BPartner_ID = (Integer)value;
+        if (C_BPartner_ID == null || C_BPartner_ID.intValue() == 0)
+            return "";
+
+        String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
+                + "p.M_PriceList_ID,p.PaymentRule,p.POReference,"
+                + "p.SO_Description,p.IsDiscountPrinted, p.TaxID, "
+                + "p.SO_CreditLimit-p.SO_CreditUsed AS CreditAvailable,"
+                + "l.C_BPartner_Location_ID,c.AD_User_ID "
+                + "FROM C_BPartner p, C_BPartner_Location l, AD_User c "
+                + "WHERE l.IsActive='Y' AND p.C_BPartner_ID=l.C_BPartner_ID(+)"
+                + " AND p.C_BPartner_ID=c.C_BPartner_ID(+)"
+                + " AND p.C_BPartner_ID=?";		//	1
+
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try
+        {
+            pstmt = DB.prepareStatement(sql, null);
+            pstmt.setInt(1, C_BPartner_ID.intValue());
+            rs = pstmt.executeQuery();
+            if (rs.next())
+            {
+                //[ 1867464 ]
+                boolean IsSOTrx = "Y".equals(Env.getContext(ctx, WindowNo, "IsSOTrx"));
+                if (!IsSOTrx)
+                {
+                    //	Location
+                    Integer ii = new Integer(rs.getInt("C_BPartner_Location_ID"));
+                    if (rs.wasNull())
+                        mTab.setValue("C_BPartner_Location_ID", null);
+                    else
+                        mTab.setValue("C_BPartner_Location_ID", ii);
+                    //	Contact
+                    ii = new Integer(rs.getInt("AD_User_ID"));
+                    if (rs.wasNull())
+                        mTab.setValue("AD_User_ID", null);
+                    else
+                        mTab.setValue("AD_User_ID", ii);
+
+                    // Xpande. Gabriel Vila. 29/03/2021.
+                    // Cargo TaxID del socio para comprobantes de compra
+                    mTab.setValue("TaxID", rs.getString("TaxID"));
+                    // Fin Xpande
+                }
+
+                //Bugs item #1679818: checking for SOTrx only
+                if (IsSOTrx)
+                {
+                    //	CreditAvailable
+                    double CreditAvailable = rs.getDouble("CreditAvailable");
+                    if (!rs.wasNull() && CreditAvailable < 0)
+                        mTab.fireDataStatusEEvent("CreditLimitOver",
+                                DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable),
+                                false);
+                }//
+            }
+        }
+        catch (SQLException e)
+        {
+            log.log(Level.SEVERE, sql, e);
+            return e.getLocalizedMessage();
+        }
+        finally
+        {
+            DB.close(rs, pstmt);
+        }
+
+        return "";
+    }	//	bpartner
 
 }
