@@ -511,6 +511,8 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 	 */
 	private void updateProductPriceListPO(MPriceList plCompra, MPriceListVersion plVersionCompra, MZPreciosProvLin line) {
 
+		String sql;
+
 		try{
 			// Intento obtener precio de lista actual para el producto de esta linea, en la versión de lista
 			// de precios de compra recibida.
