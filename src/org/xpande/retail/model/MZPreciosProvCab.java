@@ -284,7 +284,6 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 	public void executeComplete() {
 
 		try{
-			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 			Timestamp fechaVigencia = TimeUtil.trunc(this.getDateValidPO(), TimeUtil.TRUNC_DAY);
 
 			m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
@@ -434,25 +433,6 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 				line.saveEx();
 			}
-
-			/*
-			// Guardo documento en tabla para informes de actividad por documento
-			MZActividadDocumento actividadDocumento = new MZActividadDocumento(getCtx(), 0, get_TrxName());
-			actividadDocumento.setAD_Table_ID(this.get_Table_ID());
-			actividadDocumento.setRecord_ID(this.get_ID());
-			actividadDocumento.setC_DocType_ID(this.getC_DocType_ID());
-			actividadDocumento.setDocumentNoRef(this.getDocumentNo());
-			actividadDocumento.setDocCreatedBy(this.getCreatedBy());
-			actividadDocumento.setDocDateCreated(this.getCreated());
-			actividadDocumento.setCompletedBy(Env.getAD_User_ID(getCtx()));
-			actividadDocumento.setDateCompleted(new Timestamp(System.currentTimeMillis()));
-			actividadDocumento.setAD_Role_ID(Env.getAD_Role_ID(getCtx()));
-			if (lines != null){
-				actividadDocumento.setLineNo(lines.size());
-			}
-			actividadDocumento.setDiferenciaTiempo(new BigDecimal((actividadDocumento.getDateCompleted().getTime()-actividadDocumento.getDocDateCreated().getTime())/1000).divide(new BigDecimal(60),2,BigDecimal.ROUND_HALF_UP));
-			actividadDocumento.saveEx();
-			 */
 
 			//	User Validation
 			String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
