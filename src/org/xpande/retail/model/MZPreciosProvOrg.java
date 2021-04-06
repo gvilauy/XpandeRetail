@@ -5,6 +5,8 @@ import org.compiere.Adempiere;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProductPrice;
+import org.compiere.model.MSequence;
+import org.compiere.util.DB;
 import org.xpande.core.utils.PriceListUtils;
 
 import java.math.BigDecimal;
@@ -39,7 +41,10 @@ public class MZPreciosProvOrg extends X_Z_PreciosProvOrg {
      */
     public void updateProductPriceListSO(int mProductID, int cCurrencyID, BigDecimal newPriceSO, Timestamp validFrom, boolean vigenciaPasada) {
 
+        String sql, action;
+
         try{
+            boolean updateEvolucionPrecio = false;
 
             // Obtengo lista de venta para organización seleccionada en este documento y moneda.
             // Si ya tengo seteada esta lista en este modelo, la utilizo, sino la seteo ahora.
@@ -66,41 +71,89 @@ public class MZPreciosProvOrg extends X_Z_PreciosProvOrg {
                 plVersionVenta = new MPriceListVersion(getCtx(), this.getM_PriceList_Version_ID_SO(), get_TrxName());
             }
 
-            // Intento obtener precio de lista actual para el producto de esta linea, en la versión de lista
-            // de precios de venta recibida.
-            MProductPrice pprice = MProductPrice.get(getCtx(), plVersionVenta.get_ID(), mProductID, get_TrxName());
+            int stdPrecision = plVersionVenta.getM_PriceList().getPricePrecision();
+            BigDecimal priceLimit = newPriceSO.setScale(stdPrecision, BigDecimal.ROUND_HALF_UP);
+            BigDecimal priceList = newPriceSO.setScale(stdPrecision, BigDecimal.ROUND_HALF_UP);
+            BigDecimal priceStd = newPriceSO.setScale(stdPrecision, BigDecimal.ROUND_HALF_UP);
 
-            // Si no tengo precio para este producto, lo creo.
-            if ((pprice == null) || (pprice.getM_Product_ID() <= 0)){
-                pprice = new MProductPrice(plVersionVenta, mProductID, newPriceSO, newPriceSO, newPriceSO);
+            // Verifico si tengo precio de lista actual para el producto de esta linea.
+            sql = " select pricelist " +
+                    " from m_prductprice " +
+                    " where m_pricelist_version_id =" + plVersionVenta.get_ID() +
+                    " and m_product_id =" + mProductID;
+            BigDecimal priceListActual = DB.getSQLValueBDEx(get_TrxName(), sql);
+
+            if (priceListActual == null){
+                // Inserto nuevo producto con precio en esta lista
+                action = " insert into m_productprice (m_pricelist_version_id, m_product_id, ad_client_id, ad_org_id, " +
+                        " isactive, created, createdby, updated, updatedby, pricelist,  pricestd, pricelimit, " +
+                        " validfrom, c_doctype_id, documentnoref) " +
+                        " values (" + plVersionVenta.get_ID() + ", " + mProductID + ", " +
+                        this.getAD_Client_ID() + ", " + plVersionVenta.getAD_Org_ID() + ", 'Y', now(), " +
+                        this.getCreatedBy() + ", now(), " + this.getUpdatedBy() + ", " + priceList + ", " +
+                        priceStd + ", " + priceLimit + ", '" + validFrom + "', " + preciosProvCab.getC_DocType_ID() + ", '" +
+                        preciosProvCab.getDocumentNo() + "')";
             }
             else{
-                // Ya existe precio para este producto en la lista
-
                 // Si este documento tiene marcada fecha de vigencia pasada
                 if (vigenciaPasada){
                     // Si el precio que esta en la lista tiene vigencia
-                    Timestamp vigenciaPrecioProd = (Timestamp) pprice.get_Value("ValidFrom");
+                    sql = " select validfrom " +
+                            " from m_prductprice " +
+                            " where m_pricelist_version_id =" + plVersionVenta.get_ID() +
+                            " and m_product_id =" + mProductID;
+                    Timestamp vigenciaPrecioProd = DB.getSQLValueTSEx(get_TrxName(), sql);
                     if (vigenciaPrecioProd != null){
                         // Si la vigencia actual del precio de este producto es mayor a la fecha de vigencia para este documento, no hago nada.
                         if (vigenciaPrecioProd.after(validFrom)){
                             return;
                         }
+                        if (!vigenciaPrecioProd.equals(validFrom)){
+                            updateEvolucionPrecio = true;
+                        }
                     }
                 }
 
-                // Actualizo precios si hay cambios
-                if (pprice.getPriceList().compareTo(newPriceSO) != 0){
-                    pprice.setPriceList(newPriceSO);
-                    pprice.setPriceStd(newPriceSO);
-                    pprice.setPriceLimit(newPriceSO);
+                // Actualizo datos de precio para este producto segun haya cambios o no en el precio de lista
+                if (priceListActual.compareTo(priceList) != 0){
+                    updateEvolucionPrecio = true;
+                    action = " update m_productprice set pricelist =" + priceList + ", " +
+                            " pricelimit =" + priceLimit + ", " +
+                            " pricestd =" + priceStd + ", " +
+                            " c_doctype_id =" + preciosProvCab.getC_DocType_ID() + ", " +
+                            " validfrom ='" + validFrom + "', " +
+                            " documentnoref ='" + preciosProvCab.getDocumentNo() + "' " +
+                            " where m_pricelist_version_id =" + plVersionVenta.get_ID() +
+                            " and m_product_id =" + mProductID;
+                }
+                else{
+                    // No cambió el precio, solo actualizo vigencia y datos de este documento
+                    action = " update m_productprice set c_doctype_id =" + preciosProvCab.getC_DocType_ID() + ", " +
+                            " validfrom ='" + validFrom + "', " +
+                            " documentnoref ='" + preciosProvCab.getDocumentNo() + "' " +
+                            " where m_pricelist_version_id =" + plVersionVenta.get_ID() +
+                            " and m_product_id =" + mProductID;
                 }
             }
-            pprice.set_ValueOfColumn("C_DocType_ID", preciosProvCab.getC_DocType_ID());
-            pprice.set_ValueOfColumn("DocumentNoRef", preciosProvCab.getDocumentNo());
-            pprice.set_ValueOfColumn("ValidFrom", validFrom);
-            pprice.saveEx();
 
+            DB.executeUpdateEx(action, get_TrxName());
+
+            // Si tengo que actualizar la evolucion del precio de venta
+            if (updateEvolucionPrecio){
+                MSequence sequence = MSequence.get(getCtx(), I_Z_EvolPrecioVtaProdOrg.Table_Name);
+                action = " insert into z_evolpreciovtaprodorg (ad_client_id, ad_org_id, ad_orgtrx_id, c_currency_id, " +
+                        " created, createdby, updated, updatedby, isactive, datevalidso, m_pricelist_id, priceso, " +
+                        " z_evolpreciovtaprodorg_id, m_product_id, ad_user_id, " +
+                        " c_doctype_id, documentnoref) " +
+                        " values (" + plVersionVenta.getAD_Client_ID() + ", " + plVersionVenta.getAD_Org_ID() + ", " +
+                        plVersionVenta.getAD_Org_ID() + ", " + plVersionVenta.getPriceList().getC_Currency_ID() + ", now(), " +
+                        preciosProvCab.getCreatedBy() + ", now(), " + preciosProvCab.getUpdatedBy() + ", 'Y', '" +
+                        validFrom + "', " +
+                        plVersionVenta.getM_PriceList_ID() + ", " + priceList + ", nextid(" + sequence.get_ID() + ", 'N'), " +
+                        mProductID + ", " + preciosProvCab.getUpdatedBy() + ", " + preciosProvCab.getC_DocType_ID() + ", '" +
+                        preciosProvCab.getDocumentNo() + "') ";
+                DB.executeUpdateEx(action, get_TrxName());
+            }
         }
         catch (Exception e){
             throw new AdempiereException(e);

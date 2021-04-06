@@ -2,6 +2,7 @@ package org.xpande.retail.model;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
+import org.compiere.util.DB;
 import org.xpande.core.model.MZSocioListaPrecio;
 
 import java.math.BigDecimal;
@@ -39,7 +40,9 @@ public class MZLineaProductoDistri extends X_Z_LineaProductoDistri {
      * @param validFrom
      * @param vigenciaPasada
      */
-    public void updateProductPriceListPO (int cCurrencyID, int mProductID, BigDecimal priceList, Timestamp validFrom, boolean vigenciaPasada) {
+    public void updateProductPriceListPO (int cCurrencyID, int mProductID, BigDecimal priceListPO, Timestamp validFrom, boolean vigenciaPasada) {
+
+        String sql, action;
 
         try{
 
@@ -48,20 +51,37 @@ public class MZLineaProductoDistri extends X_Z_LineaProductoDistri {
                 this.getPlCompra(cCurrencyID);
             }
 
-            // Intento obtener precio de lista actual para el producto recibido en la lista de precios del socio
-            MProductPrice pprice = MProductPrice.get(getCtx(), plVersionCompra.get_ID(), mProductID, get_TrxName());
+            int stdPrecision = plVersionCompra.getM_PriceList().getPricePrecision();
+            BigDecimal priceLimit = priceListPO.setScale(stdPrecision, BigDecimal.ROUND_HALF_UP);
+            BigDecimal priceList = priceListPO.setScale(stdPrecision, BigDecimal.ROUND_HALF_UP);
+            BigDecimal priceStd = priceListPO.setScale(stdPrecision, BigDecimal.ROUND_HALF_UP);
 
-            // Si no tengo precio para este producto, lo creo.
-            if ((pprice == null) || (pprice.getM_Product_ID() <= 0)){
-                pprice = new MProductPrice(plVersionCompra, mProductID, priceList, priceList, priceList);
+            // Verifico si tengo precio de lista de compra actial para el producto de esta linea.
+            sql = " select count(*) " +
+                    " from m_prductprice " +
+                    " where m_pricelist_version_id =" + plVersionCompra.get_ID() +
+                    " and m_product_id =" + mProductID;
+            int contador = DB.getSQLValueEx(get_TrxName(), sql);
+
+            if (contador <= 0){
+                // Inserto nuevo producto con precio en esta lista de compra
+                action = " insert into m_productprice (m_pricelist_version_id, m_product_id, ad_client_id, ad_org_id, " +
+                        " isactive, created, createdby, updated, updatedby, pricelist,  pricestd, pricelimit, validfrom) " +
+                        " values (" + plVersionCompra.get_ID() + ", " + mProductID + ", " +
+                        plVersionCompra.getAD_Client_ID() + ", " + plVersionCompra.getAD_Org_ID() + ", 'Y', now(), " +
+                        this.getCreatedBy() + ", now(), " + this.getUpdatedBy() + ", " + priceList + ", " +
+                        priceStd + ", " + priceLimit + ", '" + validFrom + "')";
             }
             else{
-                // Ya existe precio para este producto en la lista
 
                 // Si este documento tiene marcada fecha de vigencia pasada
                 if (vigenciaPasada){
                     // Si el precio que esta en la lista tiene vigencia
-                    Timestamp vigenciaPrecioProd = (Timestamp) pprice.get_Value("ValidFrom");
+                    sql = " select validfrom " +
+                            " from m_prductprice " +
+                            " where m_pricelist_version_id =" + plVersionCompra.get_ID() +
+                            " and m_product_id =" + mProductID;
+                    Timestamp vigenciaPrecioProd = DB.getSQLValueTSEx(get_TrxName(), sql);
                     if (vigenciaPrecioProd != null){
                         // Si la vigencia actual del precio de este producto es mayor a la fecha de vigencia para este documento, no hago nada.
                         if (vigenciaPrecioProd.after(validFrom)){
@@ -70,14 +90,16 @@ public class MZLineaProductoDistri extends X_Z_LineaProductoDistri {
                     }
                 }
 
-                // Actualizo precios
-                pprice.setPriceList(priceList);
-                pprice.setPriceStd(priceList);
-                pprice.setPriceLimit(priceList);
+                // Actualizo datos de precio para este producto
+                action = " update m_productprice set pricelist =" + priceList + ", " +
+                        " pricelimit =" + priceLimit + ", " +
+                        " pricestd =" + priceStd + ", " +
+                        " validfrom ='" + validFrom + "', " +
+                        " where m_pricelist_version_id =" + plVersionCompra.get_ID() +
+                        " and m_product_id =" + mProductID;
             }
-            pprice.set_ValueOfColumn("ValidFrom", validFrom);
-            pprice.saveEx();
 
+            DB.executeUpdateEx(action, get_TrxName());
         }
         catch (Exception e){
             throw new AdempiereException(e);
