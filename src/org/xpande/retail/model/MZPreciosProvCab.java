@@ -511,9 +511,24 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 	 */
 	private void updateProductPriceListPO(MPriceList plCompra, MPriceListVersion plVersionCompra, MZPreciosProvLin line) {
 
-		String sql;
+		String sql, action;
 
 		try{
+
+			// Verifico si tengo precio de lista de compra actial para el producto de esta linea.
+			sql = " select count(*) " +
+					" from m_prductprice " +
+					" where m_pricelist_version_id =" + plVersionCompra.get_ID() +
+					" and m_product_id =" + line.getM_Product_ID();
+			int contador = DB.getSQLValueEx(get_TrxName(), sql);
+			if (contador <= 0){
+				// Inserto nuevo producto con precio en esta lista de compra
+			}
+			else{
+				// Actualizo datos de precio para este producto
+			}
+
+			/*
 			// Intento obtener precio de lista actual para el producto de esta linea, en la versión de lista
 			// de precios de compra recibida.
 			MProductPrice pprice = MProductPrice.get(getCtx(), plVersionCompra.get_ID(), line.getM_Product_ID(), get_TrxName());
@@ -544,6 +559,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			}
 			pprice.set_ValueOfColumn("ValidFrom", this.getDateValidPO());
 			pprice.saveEx();
+			*/
 
 		}
 		catch (Exception e){

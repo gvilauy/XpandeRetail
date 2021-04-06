@@ -460,7 +460,9 @@ public class CalloutPrecios extends CalloutEngine {
                     cCurrencyPO_ID, cCurrencySO_ID, 114, fechaHoy, null);
             if (ratePO == null){
                 mTab.setValue("Rate", null);
-                return "No hay Tasa de Cambio cargada en el sistema para moneda de compra y fecha de hoy.";
+                // No tiro mensaje de error para que no salte al momento de cargar actualizacion masiva desde archivo.
+                //return "No hay Tasa de Cambio cargada en el sistema para moneda de compra y fecha de hoy.";
+                return "";
             }
         }
 
@@ -471,7 +473,8 @@ public class CalloutPrecios extends CalloutEngine {
                     cCurrencyFact_ID, cCurrencySO_ID, 114, fechaHoy, null);
             if (rateFact == null){
                 mTab.setValue("Rate", null);
-                return "No hay Tasa de Cambio cargada en el sistema para moneda de última factura y fecha de hoy.";
+                //return "No hay Tasa de Cambio cargada en el sistema para moneda de última factura y fecha de hoy.";
+                return "";
             }
         }
 
