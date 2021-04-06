@@ -520,7 +520,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 			// Verifico si tengo precio de lista de compra actial para el producto de esta linea.
 			sql = " select count(*) " +
-					" from m_prductprice " +
+					" from m_productprice " +
 					" where m_pricelist_version_id =" + plVersionCompra.get_ID() +
 					" and m_product_id =" + line.getM_Product_ID();
 			int contador = DB.getSQLValueEx(get_TrxName(), sql);
@@ -542,7 +542,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				if (this.vigenciaPasada){
 					// Si el precio que esta en la lista tiene vigencia
 					sql = " select validfrom " +
-							" from m_prductprice " +
+							" from m_productprice " +
 							" where m_pricelist_version_id =" + plVersionCompra.get_ID() +
 							" and m_product_id =" + line.getM_Product_ID();
 					Timestamp vigenciaPrecioProd = DB.getSQLValueTSEx(get_TrxName(), sql);
@@ -593,7 +593,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 			// Verifico si tengo precio de lista actual para el producto de esta linea.
 			sql = " select pricelist " +
-					" from m_prductprice " +
+					" from m_productprice " +
 					" where m_pricelist_version_id =" + plVersionVenta.get_ID() +
 					" and m_product_id =" + line.getM_Product_ID();
 			BigDecimal priceListActual = DB.getSQLValueBDEx(get_TrxName(), sql);
@@ -614,7 +614,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 				if (this.vigenciaPasada){
 					// Si el precio que esta en la lista tiene vigencia
 					sql = " select validfrom " +
-							" from m_prductprice " +
+							" from m_productprice " +
 							" where m_pricelist_version_id =" + plVersionVenta.get_ID() +
 							" and m_product_id =" + line.getM_Product_ID();
 					Timestamp vigenciaPrecioProd = DB.getSQLValueTSEx(get_TrxName(), sql);

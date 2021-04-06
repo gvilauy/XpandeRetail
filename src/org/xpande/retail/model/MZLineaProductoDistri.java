@@ -58,7 +58,7 @@ public class MZLineaProductoDistri extends X_Z_LineaProductoDistri {
 
             // Verifico si tengo precio de lista de compra actial para el producto de esta linea.
             sql = " select count(*) " +
-                    " from m_prductprice " +
+                    " from m_productprice " +
                     " where m_pricelist_version_id =" + plVersionCompra.get_ID() +
                     " and m_product_id =" + mProductID;
             int contador = DB.getSQLValueEx(get_TrxName(), sql);
@@ -78,7 +78,7 @@ public class MZLineaProductoDistri extends X_Z_LineaProductoDistri {
                 if (vigenciaPasada){
                     // Si el precio que esta en la lista tiene vigencia
                     sql = " select validfrom " +
-                            " from m_prductprice " +
+                            " from m_productprice " +
                             " where m_pricelist_version_id =" + plVersionCompra.get_ID() +
                             " and m_product_id =" + mProductID;
                     Timestamp vigenciaPrecioProd = DB.getSQLValueTSEx(get_TrxName(), sql);

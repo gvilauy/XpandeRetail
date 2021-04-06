@@ -78,7 +78,7 @@ public class MZPreciosProvOrg extends X_Z_PreciosProvOrg {
 
             // Verifico si tengo precio de lista actual para el producto de esta linea.
             sql = " select pricelist " +
-                    " from m_prductprice " +
+                    " from m_productprice " +
                     " where m_pricelist_version_id =" + plVersionVenta.get_ID() +
                     " and m_product_id =" + mProductID;
             BigDecimal priceListActual = DB.getSQLValueBDEx(get_TrxName(), sql);
@@ -99,7 +99,7 @@ public class MZPreciosProvOrg extends X_Z_PreciosProvOrg {
                 if (vigenciaPasada){
                     // Si el precio que esta en la lista tiene vigencia
                     sql = " select validfrom " +
-                            " from m_prductprice " +
+                            " from m_productprice " +
                             " where m_pricelist_version_id =" + plVersionVenta.get_ID() +
                             " and m_product_id =" + mProductID;
                     Timestamp vigenciaPrecioProd = DB.getSQLValueTSEx(get_TrxName(), sql);
