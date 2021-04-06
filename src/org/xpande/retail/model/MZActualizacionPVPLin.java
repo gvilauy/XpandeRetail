@@ -7,6 +7,7 @@ import org.compiere.model.Query;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.xpande.core.model.MZProductoUPC;
+import org.xpande.core.utils.CurrencyUtils;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -77,8 +78,12 @@ public class MZActualizacionPVPLin extends X_Z_ActualizacionPVPLin {
                         this.set_ValueOfColumn("C_Invoice_ID", productoSocio.getC_Invoice_ID());
                     }
 
+                    if (productoSocio.getC_Currency_ID() > 0){
+                        this.set_ValueOfColumn("C_Currency_1_ID", productoSocio.getC_Currency_ID());
+                    }
+
                     if (productoSocio.get_ValueAsInt("C_Currency_1_ID") > 0){
-                        this.set_ValueOfColumn("C_Currency_1_ID", productoSocio.get_ValueAsInt("C_Currency_1_ID"));
+                        this.set_ValueOfColumn("C_Currency_2_ID", productoSocio.get_ValueAsInt("C_Currency_1_ID"));
                     }
                 }
 
@@ -216,6 +221,99 @@ public class MZActualizacionPVPLin extends X_Z_ActualizacionPVPLin {
         MZActualizacionPVPLinOrg model = new Query(getCtx(), I_Z_ActualizacionPVPLinOrg.Table_Name, whereClause, get_TrxName()).first();
 
         return model;
+    }
+
+    /***
+     * Metodo que calcula y setea margenes de esta linea.
+     * Xpande. Created by Gabriel Vila on 4/6/21.
+     */
+    public void calculateMargins() {
+
+        try{
+            // Si no tengo nuevo precio de venta, seteo margenes nulos y salgo
+            if ((this.getNewPriceSO() == null) || (this.getNewPriceSO().compareTo(Env.ZERO) <= 0)){
+                this.setPriceFinalMargin(null);
+                this.setPricePOMargin(null);
+                this.setPriceInvoicedMargin(null);
+                return;
+            }
+
+            Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+            BigDecimal priceFinal = this.getPriceFinal();
+            BigDecimal pricePO = this.getPricePO();
+            BigDecimal priceInvoiced = this.getPriceInvoiced();
+
+            int cCurrencySO_ID = this.getC_Currency_ID();
+            int cCurrencyPO_ID = this.get_ValueAsInt("C_Currency_1_ID");
+            int cCurrencyFact_ID = this.get_ValueAsInt("C_Currency_2_ID");
+
+            // Tasa de cambio para compra vs venta
+            BigDecimal ratePO = Env.ONE;
+            if (cCurrencyPO_ID != cCurrencySO_ID){
+                ratePO = CurrencyUtils.getCurrencyRate(getCtx(), this.getAD_Client_ID(), 0,
+                        cCurrencyPO_ID, cCurrencySO_ID, 114, fechaHoy, null);
+                if (ratePO == null){
+                    //throw new AdempiereException("No hay Tasa de Cambio cargada en el sistema para moneda de compra y fecha de hoy.");
+                    ratePO = Env.ONE;
+                }
+            }
+
+            // Tasa de cambio para ultima factura vs venta
+            BigDecimal rateFact = Env.ONE;
+            if (cCurrencyFact_ID > 0){
+                if (cCurrencyFact_ID != cCurrencySO_ID){
+                    rateFact = CurrencyUtils.getCurrencyRate(getCtx(), this.getAD_Client_ID(), 0,
+                            cCurrencyFact_ID, cCurrencySO_ID, 114, fechaHoy, null);
+                    if (rateFact == null){
+                        //throw new AdempiereException("No hay Tasa de Cambio cargada en el sistema para moneda de última factura y fecha de hoy.");
+                        rateFact = Env.ONE;
+                    }
+                }
+            }
+
+            // Margen final
+            if ((priceFinal == null) || (priceFinal.compareTo(Env.ZERO) <= 0)){
+                this.setPriceFinalMargin(null);
+            }
+            else{
+                if ((ratePO != null) && (ratePO.compareTo(Env.ONE) > 0)){
+                    priceFinal = priceFinal.multiply(ratePO).setScale(4, BigDecimal.ROUND_HALF_UP);
+                }
+                this.setPriceFinalMargin(((this.getPriceSO().multiply(Env.ONEHUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP))
+                        .divide(priceFinal, 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
+            }
+
+            // Margen OC
+            if ((pricePO == null) || (pricePO.compareTo(Env.ZERO) <= 0)){
+                this.setPricePOMargin(null);
+            }
+            else{
+                if ((ratePO != null) && (ratePO.compareTo(Env.ONE) > 0)){
+                    pricePO = pricePO.multiply(ratePO).setScale(4, BigDecimal.ROUND_HALF_UP);
+                }
+                this.setPricePOMargin(((this.getPriceSO().multiply(Env.ONEHUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP))
+                        .divide(pricePO, 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
+            }
+
+            // Margen Factura
+            if ((priceInvoiced == null) || (priceInvoiced.compareTo(Env.ZERO) <= 0)){
+                this.setPriceInvoicedMargin(null);
+            }
+            else{
+                if ((rateFact != null) && (rateFact.compareTo(Env.ONE) > 0)){
+                    priceInvoiced = priceInvoiced.multiply(rateFact).setScale(4, BigDecimal.ROUND_HALF_UP);
+                }
+                this.setPriceInvoicedMargin(((this.getPriceSO().multiply(Env.ONEHUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP))
+                        .divide(priceInvoiced, 2, BigDecimal.ROUND_HALF_UP)).subtract(Env.ONEHUNDRED));
+            }
+
+            this.set_ValueOfColumn("Rate", ratePO);
+            this.saveEx();
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
     }
 
 }

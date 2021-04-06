@@ -164,7 +164,6 @@ public class MZProductoSocio extends X_Z_ProductoSocio {
         return lines;
     }
 
-
     /***
      * Metodo que calcula y setea margenes de esta linea.
      * Xpande. Created by Gabriel Vila on 6/23/17.
@@ -260,7 +259,6 @@ public class MZProductoSocio extends X_Z_ProductoSocio {
         }
 
     }
-
 
     /***
      * Refresco datos de compras de las organizaciones asociadas a este produto-socio.

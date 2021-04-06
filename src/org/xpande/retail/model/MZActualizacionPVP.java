@@ -787,6 +787,9 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 					pvpLin.setC_Currency_ID(this.getC_Currency_ID());
 					pvpLin.setNewPriceSO(pvpArch.getPriceSO());
 					pvpLin.saveEx();
+
+					// Actualizo margenes
+					pvpLin.calculateMargins();
 				}
 			}
 		}
