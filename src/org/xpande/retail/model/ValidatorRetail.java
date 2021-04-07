@@ -129,7 +129,7 @@ public class ValidatorRetail implements ModelValidator {
 
         MOrder order = (MOrder)model.getC_Order();
         // No hago nada para ordenes de venta.
-        if (order.isSOTrx()) return mensaje;
+        if (order.isSOTrx()) return null;
 
 
         if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
@@ -288,7 +288,7 @@ public class ValidatorRetail implements ModelValidator {
 
         }
 
-        return mensaje;
+        return null;
     }
 
 
@@ -359,7 +359,7 @@ public class ValidatorRetail implements ModelValidator {
                 || ((type == ModelValidator.TYPE_BEFORE_CHANGE) && (model.is_ValueChanged("C_Currency_ID")))){
 
             // Si es una orden de venta no hago nada
-            if (model.isSOTrx()) return mensaje;
+            if (model.isSOTrx()) return null;
 
             // Para ordenes de compra, si la moneda de lista es distinta a la moneda de orden de compra
             if (model.get_ValueAsInt("C_Currency_PriceList_ID") != model.getC_Currency_ID()){
@@ -373,7 +373,7 @@ public class ValidatorRetail implements ModelValidator {
             }
         }
 
-        return mensaje;
+        return null;
     }
 
     /***
