@@ -94,11 +94,10 @@ public class MZLineaProductoDistri extends X_Z_LineaProductoDistri {
                 action = " update m_productprice set pricelist =" + priceList + ", " +
                         " pricelimit =" + priceLimit + ", " +
                         " pricestd =" + priceStd + ", " +
-                        " validfrom ='" + validFrom + "', " +
+                        " validfrom ='" + validFrom + "' " +
                         " where m_pricelist_version_id =" + plVersionCompra.get_ID() +
                         " and m_product_id =" + mProductID;
             }
-
             DB.executeUpdateEx(action, get_TrxName());
         }
         catch (Exception e){
