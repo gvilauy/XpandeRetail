@@ -510,6 +510,47 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 	 */
 	private void updateProductPriceListPO(MPriceListVersion plVersionCompra, MZPreciosProvLin line) {
 
+		String sql;
+
+		try{
+			// Intento obtener precio de lista actual para el producto de esta linea, en la versión de lista
+			// de precios de compra recibida.
+			MProductPrice pprice = MProductPrice.get(getCtx(), plVersionCompra.get_ID(), line.getM_Product_ID(), get_TrxName());
+
+			// Si no tengo precio para este producto, lo creo.
+			if ((pprice == null) || (pprice.getM_Product_ID() <= 0)){
+				pprice = new MProductPrice(plVersionCompra, line.getM_Product_ID(), line.getPriceList(), line.getPriceList(), line.getPriceList());
+			}
+			else{
+				// Ya existe precio para este producto en la lista
+
+				// Si este documento tiene marcada fecha de vigencia pasada
+				if (this.vigenciaPasada){
+					// Si el precio que esta en la lista tiene vigencia
+					Timestamp vigenciaPrecioProd = (Timestamp) pprice.get_Value("ValidFrom");
+					if (vigenciaPrecioProd != null){
+						// Si la vigencia actual del precio de este producto es mayor a la fecha de vigencia para este documento, no hago nada.
+						if (vigenciaPrecioProd.after(this.getDateValidPO())){
+							return;
+						}
+					}
+				}
+
+				// Actualizo precios
+				pprice.setPriceList(line.getPriceList());
+				pprice.setPriceStd(line.getPriceList());
+				pprice.setPriceLimit(line.getPriceList());
+			}
+			pprice.set_ValueOfColumn("ValidFrom", this.getDateValidPO());
+			pprice.saveEx();
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+
+		/*
 		String sql, action;
 
 		try{
@@ -571,6 +612,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		catch (Exception e){
 		    throw new AdempiereException(e);
 		}
+		*/
 	}
 
 	/***
@@ -581,6 +623,49 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 	 */
 	private void updateProductPriceListSO(MPriceListVersion plVersionVenta, MZPreciosProvLin line) {
 
+		try{
+			// Intento obtener precio de lista actual para el producto de esta linea, en la versión de lista
+			// de precios de venta recibida.
+			MProductPrice pprice = MProductPrice.get(getCtx(), plVersionVenta.get_ID(), line.getM_Product_ID(), get_TrxName());
+
+			// Si no tengo precio para este producto, lo creo.
+			if ((pprice == null) || (pprice.getM_Product_ID() <= 0)){
+				pprice = new MProductPrice(plVersionVenta, line.getM_Product_ID(), line.getNewPriceSO(), line.getNewPriceSO(), line.getNewPriceSO());
+			}
+			else{
+				// Ya existe precio para este producto en la lista
+
+				// Si este documento tiene marcada fecha de vigencia pasada
+				if (this.vigenciaPasada){
+					// Si el precio que esta en la lista tiene vigencia
+					Timestamp vigenciaPrecioProd = (Timestamp) pprice.get_Value("ValidFrom");
+					if (vigenciaPrecioProd != null){
+						// Si la vigencia actual del precio de este producto es mayor a la fecha de vigencia para este documento, no hago nada.
+						if (vigenciaPrecioProd.after(this.getDateValidPO())){
+							return;
+						}
+					}
+				}
+
+				// Actualizo precios si hay cambios
+				if (pprice.getPriceList().compareTo(line.getNewPriceSO()) != 0){
+					pprice.setPriceList(line.getNewPriceSO());
+					pprice.setPriceStd(line.getNewPriceSO());
+					pprice.setPriceLimit(line.getNewPriceSO());
+				}
+			}
+			pprice.set_ValueOfColumn("C_DocType_ID", this.getC_DocType_ID());
+			pprice.set_ValueOfColumn("DocumentNoRef", this.getDocumentNo());
+			pprice.set_ValueOfColumn("ValidFrom", this.getDateValidPO());
+			pprice.saveEx();
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+
+		/*
 		String sql, action;
 
 		try{
@@ -672,6 +757,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 		catch (Exception e){
 			throw new AdempiereException(e);
 		}
+		*/
 	}
 
 	/***

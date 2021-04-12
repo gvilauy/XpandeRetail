@@ -40,8 +40,52 @@ public class MZLineaProductoDistri extends X_Z_LineaProductoDistri {
      * @param validFrom
      * @param vigenciaPasada
      */
-    public void updateProductPriceListPO (int cCurrencyID, int mProductID, BigDecimal priceListPO, Timestamp validFrom, boolean vigenciaPasada) {
+    public void updateProductPriceListPO (int cCurrencyID, int mProductID, BigDecimal priceList, Timestamp validFrom, boolean vigenciaPasada) {
 
+        try{
+
+            // Si no tengo lista, la creo en este momento
+            if (this.plCompra == null){
+                this.getPlCompra(cCurrencyID);
+            }
+
+            // Intento obtener precio de lista actual para el producto recibido en la lista de precios del socio
+            MProductPrice pprice = MProductPrice.get(getCtx(), plVersionCompra.get_ID(), mProductID, get_TrxName());
+
+            // Si no tengo precio para este producto, lo creo.
+            if ((pprice == null) || (pprice.getM_Product_ID() <= 0)){
+                pprice = new MProductPrice(plVersionCompra, mProductID, priceList, priceList, priceList);
+            }
+            else{
+                // Ya existe precio para este producto en la lista
+
+                // Si este documento tiene marcada fecha de vigencia pasada
+                if (vigenciaPasada){
+                    // Si el precio que esta en la lista tiene vigencia
+                    Timestamp vigenciaPrecioProd = (Timestamp) pprice.get_Value("ValidFrom");
+                    if (vigenciaPrecioProd != null){
+                        // Si la vigencia actual del precio de este producto es mayor a la fecha de vigencia para este documento, no hago nada.
+                        if (vigenciaPrecioProd.after(validFrom)){
+                            return;
+                        }
+                    }
+                }
+
+                // Actualizo precios
+                pprice.setPriceList(priceList);
+                pprice.setPriceStd(priceList);
+                pprice.setPriceLimit(priceList);
+            }
+            pprice.set_ValueOfColumn("ValidFrom", validFrom);
+            pprice.saveEx();
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+
+        /*
         String sql, action;
 
         try{
@@ -103,6 +147,7 @@ public class MZLineaProductoDistri extends X_Z_LineaProductoDistri {
         catch (Exception e){
             throw new AdempiereException(e);
         }
+        */
     }
 
     /***

@@ -41,6 +41,75 @@ public class MZPreciosProvOrg extends X_Z_PreciosProvOrg {
      */
     public void updateProductPriceListSO(int mProductID, int cCurrencyID, BigDecimal newPriceSO, Timestamp validFrom, boolean vigenciaPasada) {
 
+        try{
+
+            // Obtengo lista de venta para organización seleccionada en este documento y moneda.
+            // Si ya tengo seteada esta lista en este modelo, la utilizo, sino la seteo ahora.
+            MPriceList plVenta = null;
+            MPriceListVersion plVersionVenta = null;
+
+            MZPreciosProvCab preciosProvCab = (MZPreciosProvCab) this.getZ_PreciosProvCab();
+
+            if (this.getM_PriceList_ID_SO() <= 0){
+                plVenta = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), this.getAD_OrgTrx_ID(), cCurrencyID, true, null, get_TrxName());
+                if ((plVenta == null) || (plVenta.get_ID() <= 0)){
+                    throw new AdempiereException("No se pudo obtener Lista de Precios de Venta para organización : " + this.getAD_OrgTrx_ID() + ", moneda : " + cCurrencyID);
+                }
+                plVersionVenta = plVenta.getPriceListVersion(null);
+                if ((plVersionVenta == null) || (plVersionVenta.get_ID() <= 0)){
+                    throw new AdempiereException("No se pudo obtener Versión de Lista de Precios de Venta para organización : " + this.getAD_OrgTrx_ID() + ", moneda : " + cCurrencyID);
+                }
+                this.setM_PriceList_ID_SO(plVenta.get_ID());
+                this.setM_PriceList_Version_ID_SO(plVersionVenta.get_ID());
+                this.saveEx();
+            }
+            else{
+                plVenta = new MPriceList(getCtx(), this.getM_PriceList_ID_SO(), get_TrxName());
+                plVersionVenta = new MPriceListVersion(getCtx(), this.getM_PriceList_Version_ID_SO(), get_TrxName());
+            }
+
+            // Intento obtener precio de lista actual para el producto de esta linea, en la versión de lista
+            // de precios de venta recibida.
+            MProductPrice pprice = MProductPrice.get(getCtx(), plVersionVenta.get_ID(), mProductID, get_TrxName());
+
+            // Si no tengo precio para este producto, lo creo.
+            if ((pprice == null) || (pprice.getM_Product_ID() <= 0)){
+                pprice = new MProductPrice(plVersionVenta, mProductID, newPriceSO, newPriceSO, newPriceSO);
+            }
+            else{
+                // Ya existe precio para este producto en la lista
+
+                // Si este documento tiene marcada fecha de vigencia pasada
+                if (vigenciaPasada){
+                    // Si el precio que esta en la lista tiene vigencia
+                    Timestamp vigenciaPrecioProd = (Timestamp) pprice.get_Value("ValidFrom");
+                    if (vigenciaPrecioProd != null){
+                        // Si la vigencia actual del precio de este producto es mayor a la fecha de vigencia para este documento, no hago nada.
+                        if (vigenciaPrecioProd.after(validFrom)){
+                            return;
+                        }
+                    }
+                }
+
+                // Actualizo precios si hay cambios
+                if (pprice.getPriceList().compareTo(newPriceSO) != 0){
+                    pprice.setPriceList(newPriceSO);
+                    pprice.setPriceStd(newPriceSO);
+                    pprice.setPriceLimit(newPriceSO);
+                }
+            }
+            pprice.set_ValueOfColumn("C_DocType_ID", preciosProvCab.getC_DocType_ID());
+            pprice.set_ValueOfColumn("DocumentNoRef", preciosProvCab.getDocumentNo());
+            pprice.set_ValueOfColumn("ValidFrom", validFrom);
+            pprice.saveEx();
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+
+        /*
         String sql, action;
 
         try{
@@ -158,6 +227,7 @@ public class MZPreciosProvOrg extends X_Z_PreciosProvOrg {
         catch (Exception e){
             throw new AdempiereException(e);
         }
+        */
 
     }
 

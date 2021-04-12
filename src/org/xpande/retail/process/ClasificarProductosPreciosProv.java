@@ -22,6 +22,9 @@ public class ClasificarProductosPreciosProv extends SvrProcess {
     private int cTaxCategoryID = 0;
     private int cTaxCategoryEspecialID = 0;
     private int cUomID = 0;
+    private int zPautaComSetGenID = 0;
+    private int zPautaComSet1ID = 0;
+    private int zPautaComSet2ID = 0;
     private boolean clasificarTodosExistentes = false;
     private boolean clasificarTodosNuevos = false;
 
@@ -61,6 +64,15 @@ public class ClasificarProductosPreciosProv extends SvrProcess {
                     else if (name.trim().equalsIgnoreCase(X_Z_PreciosProvLin.COLUMNNAME_C_UOM_ID)){
                         this.cUomID = ((BigDecimal)para[i].getParameter()).intValueExact();
                     }
+                    else if (name.trim().equalsIgnoreCase(X_Z_PreciosProvLin.COLUMNNAME_Z_PautaComercialSet_ID_Gen)){
+                        this.zPautaComSetGenID = ((BigDecimal)para[i].getParameter()).intValueExact();
+                    }
+                    else if (name.trim().equalsIgnoreCase(X_Z_PreciosProvLin.COLUMNNAME_Z_PautaComercialSet_ID_1)){
+                        this.zPautaComSet1ID = ((BigDecimal)para[i].getParameter()).intValueExact();
+                    }
+                    else if (name.trim().equalsIgnoreCase(X_Z_PreciosProvLin.COLUMNNAME_Z_PautaComercialSet_ID_2)){
+                        this.zPautaComSet2ID = ((BigDecimal)para[i].getParameter()).intValueExact();
+                    }
                     else if (name.trim().equalsIgnoreCase("IsClassified")){
                         this.clasificarTodosExistentes = ((String)para[i].getParameter()).equalsIgnoreCase("Y") ? true : false;
                     }
@@ -90,6 +102,9 @@ public class ClasificarProductosPreciosProv extends SvrProcess {
             if (this.cTaxCategoryID > 0) preciosProvLin.setC_TaxCategory_ID(this.cTaxCategoryID);
             if (this.cTaxCategoryEspecialID > 0) preciosProvLin.setC_TaxCategory_ID_2(this.cTaxCategoryEspecialID);
             if (this.cUomID > 0) preciosProvLin.setC_UOM_ID(this.cUomID);
+            if (this.zPautaComSetGenID > 0) preciosProvLin.setZ_PautaComercialSet_ID_Gen(this.zPautaComSetGenID);
+            if (this.zPautaComSet1ID > 0) preciosProvLin.setZ_PautaComercialSet_ID_Gen(this.zPautaComSet1ID);
+            if (this.zPautaComSet2ID > 0) preciosProvLin.setZ_PautaComercialSet_ID_Gen(this.zPautaComSet2ID);
 
             if (preciosProvLin.is_Changed()){
                 preciosProvLin.saveEx();
