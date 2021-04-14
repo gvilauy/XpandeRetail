@@ -258,6 +258,8 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			this.setVigenciaProcesada(false);
 		}
 		else{
+			this.setVigenciaFutura(false);
+			this.setVigenciaProcesada(true);
 			this.executeComplete();  // Logica del completar en otro metodo para poder ser invocado desde proceso batch.
 		}
 
@@ -444,7 +446,6 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 			this.setVigenciaProcesada(true);
 			this.saveEx();
-
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);
@@ -840,15 +841,6 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			return "Debe indicar Linea de Productos. Seleccione una Linea o cree una nueva.";
 		}
 
-		/*
-		Timestamp today = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
-		Timestamp validFrom = TimeUtil.trunc(this.getDateValidPO(), TimeUtil.TRUNC_DAY);
-
-		if (validFrom.compareTo(today) != 0){
-			return "La fecha de Vigencia tiene que ser igual a hoy";
-		}
-		*/
-
 		// Si tengo modalidad de de proceso por medio de archivo de interface
 		if (this.getModalidadPreciosProv().equalsIgnoreCase(X_Z_PreciosProvCab.MODALIDADPRECIOSPROV_ARCHIVODECARGA)){
 			// Valido que no haya lineas de inconsistencias en el archivo que NO fueron marcadas como omitidas
@@ -883,7 +875,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 			return "Hay inconsistencias en algunos de los productos.\nDebe solucionarlas antes de poder completar el documento.";
 		}
 
-		return message;
+		return null;
 	}
 
 

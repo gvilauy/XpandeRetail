@@ -23,7 +23,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for Z_ActualizacionPVP
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0
+ *  @version Release 3.9.1
  */
 public interface I_Z_ActualizacionPVP 
 {
@@ -56,7 +56,7 @@ public interface I_Z_ActualizacionPVP
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_ActualizacionPVP
 	/** Set Currency.
 	  * The Currency for this record
 	  */
-	public void setC_Currency_ID(int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/** Get Currency.
 	  * The Currency for this record
@@ -84,7 +84,7 @@ public interface I_Z_ActualizacionPVP
 	/** Set Document Type.
 	  * Document type or rules
 	  */
-	public void setC_DocType_ID(int C_DocType_ID);
+	public void setC_DocType_ID (int C_DocType_ID);
 
 	/** Get Document Type.
 	  * Document type or rules
@@ -115,7 +115,7 @@ public interface I_Z_ActualizacionPVP
 	/** Set Document Date.
 	  * Date of the Document
 	  */
-	public void setDateDoc(Timestamp DateDoc);
+	public void setDateDoc (Timestamp DateDoc);
 
 	/** Get Document Date.
 	  * Date of the Document
@@ -128,7 +128,7 @@ public interface I_Z_ActualizacionPVP
 	/** Set DateToPos.
 	  * Fecha en la que se debe comunicar información al POS en módulo de Retail
 	  */
-	public void setDateToPos(Timestamp DateToPos);
+	public void setDateToPos (Timestamp DateToPos);
 
 	/** Get DateToPos.
 	  * Fecha en la que se debe comunicar información al POS en módulo de Retail
@@ -141,7 +141,7 @@ public interface I_Z_ActualizacionPVP
 	/** Set Description.
 	  * Optional short description of the record
 	  */
-	public void setDescription(String Description);
+	public void setDescription (String Description);
 
 	/** Get Description.
 	  * Optional short description of the record
@@ -154,7 +154,7 @@ public interface I_Z_ActualizacionPVP
 	/** Set Document Action.
 	  * The targeted status of the document
 	  */
-	public void setDocAction(String DocAction);
+	public void setDocAction (String DocAction);
 
 	/** Get Document Action.
 	  * The targeted status of the document
@@ -167,7 +167,7 @@ public interface I_Z_ActualizacionPVP
 	/** Set Document Status.
 	  * The current status of the document
 	  */
-	public void setDocStatus(String DocStatus);
+	public void setDocStatus (String DocStatus);
 
 	/** Get Document Status.
 	  * The current status of the document
@@ -180,7 +180,7 @@ public interface I_Z_ActualizacionPVP
 	/** Set Document No.
 	  * Document sequence number of the document
 	  */
-	public void setDocumentNo(String DocumentNo);
+	public void setDocumentNo (String DocumentNo);
 
 	/** Get Document No.
 	  * Document sequence number of the document
@@ -191,7 +191,7 @@ public interface I_Z_ActualizacionPVP
     public static final String COLUMNNAME_ErrorMsg = "ErrorMsg";
 
 	/** Set Error Msg	  */
-	public void setErrorMsg(String ErrorMsg);
+	public void setErrorMsg (String ErrorMsg);
 
 	/** Get Error Msg	  */
 	public String getErrorMsg();
@@ -202,7 +202,7 @@ public interface I_Z_ActualizacionPVP
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -215,7 +215,7 @@ public interface I_Z_ActualizacionPVP
 	/** Set Approved.
 	  * Indicates if this document requires approval
 	  */
-	public void setIsApproved(boolean IsApproved);
+	public void setIsApproved (boolean IsApproved);
 
 	/** Get Approved.
 	  * Indicates if this document requires approval
@@ -228,7 +228,7 @@ public interface I_Z_ActualizacionPVP
 	/** Set Price List.
 	  * Unique identifier of a Price List
 	  */
-	public void setM_PriceList_ID(int M_PriceList_ID);
+	public void setM_PriceList_ID (int M_PriceList_ID);
 
 	/** Get Price List.
 	  * Unique identifier of a Price List
@@ -243,7 +243,7 @@ public interface I_Z_ActualizacionPVP
 	/** Set Price List Version.
 	  * Identifies a unique instance of a Price List
 	  */
-	public void setM_PriceList_Version_ID(int M_PriceList_Version_ID);
+	public void setM_PriceList_Version_ID (int M_PriceList_Version_ID);
 
 	/** Get Price List Version.
 	  * Identifies a unique instance of a Price List
@@ -258,7 +258,7 @@ public interface I_Z_ActualizacionPVP
 	/** Set OnlyOneOrg.
 	  * Flag para indicar si estoy procesando una sola una organización
 	  */
-	public void setOnlyOneOrg(boolean OnlyOneOrg);
+	public void setOnlyOneOrg (boolean OnlyOneOrg);
 
 	/** Get OnlyOneOrg.
 	  * Flag para indicar si estoy procesando una sola una organización
@@ -269,7 +269,7 @@ public interface I_Z_ActualizacionPVP
     public static final String COLUMNNAME_ProcessButton = "ProcessButton";
 
 	/** Set ProcessButton	  */
-	public void setProcessButton(String ProcessButton);
+	public void setProcessButton (String ProcessButton);
 
 	/** Get ProcessButton	  */
 	public String getProcessButton();
@@ -280,7 +280,7 @@ public interface I_Z_ActualizacionPVP
 	/** Set Processed.
 	  * The document has been processed
 	  */
-	public void setProcessed(boolean Processed);
+	public void setProcessed (boolean Processed);
 
 	/** Get Processed.
 	  * The document has been processed
@@ -291,7 +291,7 @@ public interface I_Z_ActualizacionPVP
     public static final String COLUMNNAME_Processing = "Processing";
 
 	/** Set Process Now	  */
-	public void setProcessing(boolean Processing);
+	public void setProcessing (boolean Processing);
 
 	/** Get Process Now	  */
 	public boolean isProcessing();
@@ -312,11 +312,50 @@ public interface I_Z_ActualizacionPVP
 	  */
 	public int getUpdatedBy();
 
+    /** Column name ValidFrom */
+    public static final String COLUMNNAME_ValidFrom = "ValidFrom";
+
+	/** Set Valid from.
+	  * Valid from including this date (first day)
+	  */
+	public void setValidFrom (Timestamp ValidFrom);
+
+	/** Get Valid from.
+	  * Valid from including this date (first day)
+	  */
+	public Timestamp getValidFrom();
+
+    /** Column name VigenciaFutura */
+    public static final String COLUMNNAME_VigenciaFutura = "VigenciaFutura";
+
+	/** Set VigenciaFutura.
+	  * Si un documento tiene fecha de vigencia futura o no.
+	  */
+	public void setVigenciaFutura (boolean VigenciaFutura);
+
+	/** Get VigenciaFutura.
+	  * Si un documento tiene fecha de vigencia futura o no.
+	  */
+	public boolean isVigenciaFutura();
+
+    /** Column name VigenciaProcesada */
+    public static final String COLUMNNAME_VigenciaProcesada = "VigenciaProcesada";
+
+	/** Set VigenciaProcesada.
+	  * Si se proceso o no un documento que tenía fecha de vigencia futura
+	  */
+	public void setVigenciaProcesada (boolean VigenciaProcesada);
+
+	/** Get VigenciaProcesada.
+	  * Si se proceso o no un documento que tenía fecha de vigencia futura
+	  */
+	public boolean isVigenciaProcesada();
+
     /** Column name Z_ActualizacionPVP_ID */
     public static final String COLUMNNAME_Z_ActualizacionPVP_ID = "Z_ActualizacionPVP_ID";
 
 	/** Set Z_ActualizacionPVP ID	  */
-	public void setZ_ActualizacionPVP_ID(int Z_ActualizacionPVP_ID);
+	public void setZ_ActualizacionPVP_ID (int Z_ActualizacionPVP_ID);
 
 	/** Get Z_ActualizacionPVP ID	  */
 	public int getZ_ActualizacionPVP_ID();
@@ -325,7 +364,7 @@ public interface I_Z_ActualizacionPVP
     public static final String COLUMNNAME_Z_OfertaVenta_ID = "Z_OfertaVenta_ID";
 
 	/** Set Z_OfertaVenta ID	  */
-	public void setZ_OfertaVenta_ID(int Z_OfertaVenta_ID);
+	public void setZ_OfertaVenta_ID (int Z_OfertaVenta_ID);
 
 	/** Get Z_OfertaVenta ID	  */
 	public int getZ_OfertaVenta_ID();

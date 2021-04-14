@@ -215,6 +215,12 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 	 */
 	public String completeIt()
 	{
+
+		// IMPORTANTE:
+		// Este documento tiene fecha vigencia desde, que puede ser futura.
+		// Por este hecho, se pasa la lógica del completar a un método que puede ser luego invocado desde un proceso batch, cuando
+		// se cumpla la fecha de vigencia desde.
+
 		//	Re-Check
 		if (!m_justPrepared)
 		{
@@ -223,53 +229,48 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 				return status;
 		}
 
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
-		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
-		
-		//	Implicit Approval
-		if (!isApproved())
-			approveIt();
-		log.info(toString());
-		//
+		// Me aseguro de tener fecha de vigencia, siempre posterior a hoy
 
 
+		// Seteo flags para determinar si la vigencia de esta gestión de precios es con fecha pasada o futura.
+		// Si es con vigencia en el pasado, solo debo actualizar un historico de costos.
+		// Si es con vigencia en el futuro, no hago nada ahora. Dejo este documento completo y luego cuando llegue la fecha
+		// de vigencia, un proceso batch simulará el completar de este documento como se debe,
 		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 
-		// Obtengo lineas del documento
-		List<MZActualizacionPVPLin> pvpLineas = this.getLines();
-
-		// Instancio modelo de lista de precios del documento
-		MPriceList priceList = (MPriceList) this.getM_PriceList();
-		MPriceListVersion priceListVersion = priceList.getPriceListVersion(null);
-
-		// Recorro y proceso lineas
-		for (MZActualizacionPVPLin pvpLinea: pvpLineas){
-
-			// Actualizo lista de precios de venta del documento para el producto de esta linea
-			this.updateProductPriceListSO(priceList, priceListVersion, pvpLinea, fechaHoy);
-
-			// Debo actualizar lista de venta de cada organizacion participante
-			List<MZActualizacionPVPOrg> pvpOrgs = this.getSelectedOrgs();
-
-			for (MZActualizacionPVPOrg pvpOrg: pvpOrgs){
-				BigDecimal newPriceSO = pvpLinea.getNewPriceSO();
-				if (pvpLinea.isDistinctPriceSO()){
-					MZActualizacionPVPLinOrg pvpLinOrg = pvpLinea.getOrg(pvpOrg.getAD_OrgTrx_ID());
-					newPriceSO = pvpLinOrg.getNewPriceSO();
-				}
-				pvpOrg.updateProductPriceListSO(pvpLinea.getM_Product_ID(), priceList.getC_Currency_ID(), newPriceSO, fechaHoy);
+		// Me aseguro de tener fecha de vigencia, siempre posterior a hoy
+		if (this.getValidFrom() == null){
+			this.setValidFrom(fechaHoy);
+		}
+		else{
+			if (this.getValidFrom().before(fechaHoy)){
+				this.setValidFrom(fechaHoy);
 			}
-
 		}
 
-		//	User Validation
-		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
-		if (valid != null)
-		{
-			m_processMsg = valid;
+		Timestamp validFrom = TimeUtil.trunc(this.getValidFrom(), TimeUtil.TRUNC_DAY);
+
+		boolean vigenciaFutura = false;
+		if (validFrom.after(fechaHoy)){
+			vigenciaFutura = true;
+		}
+
+		// Si este documento tiene fecha de vigencia futura
+		if (vigenciaFutura){
+			// Marco flag de documento con vigencia futura para luego cuando llegue la fecha, poder completarlo.
+			this.setVigenciaFutura(true);
+			this.setVigenciaProcesada(false);
+		}
+		else{
+			this.setVigenciaFutura(false);
+			this.setVigenciaProcesada(true);
+			this.executeComplete();  // Logica del completar en otro metodo para poder ser invocado desde proceso batch.
+		}
+
+		if (m_processMsg != null){
 			return DocAction.STATUS_Invalid;
 		}
+
 		//	Set Definitive Document No
 		setDefiniteDocumentNo();
 
@@ -277,6 +278,74 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
+
+
+	/***
+	 * Metodo que implementa el COMPLETAR de este documento.
+	 * La razón por la cual esta fuera del metodo completeIt, se debe a que este documento puede tener fecha de vigencia desde futura, lo cual
+	 * lleva a que debe completarse cuando se cumpla la fecha de vigencia desde.
+	 * Xpande. Created by Gabriel Vila on 4/14/21.
+	 * @return
+	 */
+	public void executeComplete() {
+
+		try{
+			Timestamp fechaVigencia = TimeUtil.trunc(this.getValidFrom(), TimeUtil.TRUNC_DAY);
+
+			m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
+			if (m_processMsg != null){
+				return;
+			}
+
+			//	Implicit Approval
+			if (!isApproved())
+				approveIt();
+			log.info(toString());
+
+			// Obtengo lineas del documento
+			List<MZActualizacionPVPLin> pvpLineas = this.getLines();
+
+			// Instancio modelo de lista de precios del documento
+			MPriceList priceList = (MPriceList) this.getM_PriceList();
+			MPriceListVersion priceListVersion = priceList.getPriceListVersion(null);
+
+			// Recorro y proceso lineas
+			for (MZActualizacionPVPLin pvpLinea: pvpLineas){
+
+				// Actualizo lista de precios de venta del documento para el producto de esta linea
+				this.updateProductPriceListSO(priceList, priceListVersion, pvpLinea, fechaVigencia);
+
+				// Debo actualizar lista de venta de cada organizacion participante
+				List<MZActualizacionPVPOrg> pvpOrgs = this.getSelectedOrgs();
+
+				for (MZActualizacionPVPOrg pvpOrg: pvpOrgs){
+					BigDecimal newPriceSO = pvpLinea.getNewPriceSO();
+					if (pvpLinea.isDistinctPriceSO()){
+						MZActualizacionPVPLinOrg pvpLinOrg = pvpLinea.getOrg(pvpOrg.getAD_OrgTrx_ID());
+						newPriceSO = pvpLinOrg.getNewPriceSO();
+					}
+					pvpOrg.updateProductPriceListSO(pvpLinea.getM_Product_ID(), priceList.getC_Currency_ID(), newPriceSO, fechaVigencia);
+				}
+
+			}
+
+			//	User Validation
+			String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
+			if (valid != null)
+			{
+				m_processMsg = valid;
+				return;
+			}
+
+			this.setVigenciaProcesada(true);
+			this.saveEx();
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+		return;
+	}
 
 
 	/***

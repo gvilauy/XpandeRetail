@@ -24,14 +24,14 @@ import org.compiere.model.*;
 
 /** Generated Model for Z_ActualizacionPVP
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0 - $Id$ */
+ *  @version Release 3.9.1 - $Id$ */
 public class X_Z_ActualizacionPVP extends PO implements I_Z_ActualizacionPVP, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180118L;
+	private static final long serialVersionUID = 20210414L;
 
     /** Standard Constructor */
     public X_Z_ActualizacionPVP (Properties ctx, int Z_ActualizacionPVP_ID, String trxName)
@@ -55,6 +55,10 @@ public class X_Z_ActualizacionPVP extends PO implements I_Z_ActualizacionPVP, I_
 			setOnlyOneOrg (true);
 // Y
 			setProcessed (false);
+// N
+			setVigenciaFutura (false);
+// N
+			setVigenciaProcesada (false);
 // N
 			setZ_ActualizacionPVP_ID (0);
         } */
@@ -472,6 +476,71 @@ public class X_Z_ActualizacionPVP extends PO implements I_Z_ActualizacionPVP, I_
 	public boolean isProcessing () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processing);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Valid from.
+		@param ValidFrom 
+		Valid from including this date (first day)
+	  */
+	public void setValidFrom (Timestamp ValidFrom)
+	{
+		set_Value (COLUMNNAME_ValidFrom, ValidFrom);
+	}
+
+	/** Get Valid from.
+		@return Valid from including this date (first day)
+	  */
+	public Timestamp getValidFrom () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_ValidFrom);
+	}
+
+	/** Set VigenciaFutura.
+		@param VigenciaFutura 
+		Si un documento tiene fecha de vigencia futura o no.
+	  */
+	public void setVigenciaFutura (boolean VigenciaFutura)
+	{
+		set_Value (COLUMNNAME_VigenciaFutura, Boolean.valueOf(VigenciaFutura));
+	}
+
+	/** Get VigenciaFutura.
+		@return Si un documento tiene fecha de vigencia futura o no.
+	  */
+	public boolean isVigenciaFutura () 
+	{
+		Object oo = get_Value(COLUMNNAME_VigenciaFutura);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set VigenciaProcesada.
+		@param VigenciaProcesada 
+		Si se proceso o no un documento que tenía fecha de vigencia futura
+	  */
+	public void setVigenciaProcesada (boolean VigenciaProcesada)
+	{
+		set_Value (COLUMNNAME_VigenciaProcesada, Boolean.valueOf(VigenciaProcesada));
+	}
+
+	/** Get VigenciaProcesada.
+		@return Si se proceso o no un documento que tenía fecha de vigencia futura
+	  */
+	public boolean isVigenciaProcesada () 
+	{
+		Object oo = get_Value(COLUMNNAME_VigenciaProcesada);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

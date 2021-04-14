@@ -480,10 +480,7 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
      */
     public String validate() {
 
-        String message = null;
-
         try{
-
             // Si este producto esta marcado para no considerarse en esta gestión, no valido nada.
             if (this.isNoConsiderar()){
                 return null;
@@ -540,12 +537,21 @@ public class MZPreciosProvLin extends X_Z_PreciosProvLin {
                 }
             }
 
+            // Margenes negativos
+            if ((this.getPriceFinalMargin() != null) && (this.getPriceFinalMargin().compareTo(Env.ZERO) < 0)){
+                return "Producto con porcentaje negativo en Margen Final, verifique precio final y nuevo precio de venta";
+            }
+
+            if ((this.getPricePOMargin() != null) && (this.getPricePOMargin().compareTo(Env.ZERO) < 0)){
+                return "Producto con porcentaje negativo en Margen OC, verifique precio OC y nuevo precio de venta";
+            }
+
         }
         catch (Exception e){
             throw new AdempiereException(e);
         }
 
-        return message;
+        return null;
 
     }
 
