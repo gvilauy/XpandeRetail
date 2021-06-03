@@ -51,7 +51,6 @@ public class CalloutOrder extends CalloutEngine {
         }
         // Xpande.
 
-
         Integer M_Product_ID = (Integer)value;
         Integer M_AttributeSetInstance_ID = 0;
         //
@@ -906,12 +905,15 @@ public class CalloutOrder extends CalloutEngine {
             mTab.setValue("UPC", null);
             mTab.setValue("VendorProductNo", null);
             mTab.setValue("M_Product_ID", null);
+            mTab.setValue("CodProdAlter", null);
             return "";
         }
 
         boolean isSOTrx = "Y".equals(Env.getContext(ctx, WindowNo, "IsSOTrx"));
 
         int cBPartnerID = Env.getContextAsInt(ctx, WindowNo, "C_BPartner_ID");
+        int adOrgID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
+        int mProductID = -1;
 
         String column = mField.getColumnName();
 
@@ -937,11 +939,12 @@ public class CalloutOrder extends CalloutEngine {
                         }
                     }
                 }
-
+                mProductID = prod.get_ID();
             }
             else{
                 mTab.setValue("VendorProductNo", null);
                 mTab.setValue("M_Product_ID", null);
+                mTab.setValue("CodProdAlter", null);
                 mTab.fireDataStatusEEvent ("Error", "No existe Producto con código de barras ingresado", true);
             }
         }
@@ -954,15 +957,17 @@ public class CalloutOrder extends CalloutEngine {
                     mTab.setValue("UPC", pupc.getUPC());
                 }
                 mTab.setValue("M_Product_ID", prod.get_ID());
+                mProductID = prod.get_ID();
             }
             else{
                 mTab.setValue("UPC", null);
                 mTab.setValue("M_Product_ID", null);
+                mTab.setValue("CodProdAlter", null);
                 mTab.fireDataStatusEEvent ("Error", "No existe Producto para el código ingresado de producto del proveedor", true);
             }
         }
         else if (column.equalsIgnoreCase("M_Product_ID")){
-            int mProductID = ((Integer) value).intValue();
+            mProductID = ((Integer) value).intValue();
 
             if (!isSOTrx){
                 MZProductoSocio productoSocio = MZProductoSocio.getByBPartnerProduct(ctx, cBPartnerID, mProductID, null);
@@ -988,6 +993,17 @@ public class CalloutOrder extends CalloutEngine {
             else{
                 mTab.setValue("UPC", null);
             }
+        }
+
+        // Código de producto alternativo
+        if (mProductID > 0){
+            String sql = " select codigoproducto from z_difprodorg " +
+                    " where ad_orgtrx_id = " + adOrgID + " and m_product_id =" + mProductID;
+            String codProdAlter = DB.getSQLValueStringEx(null, sql);
+            mTab.setValue("CodProdAlter", codProdAlter);
+        }
+        else{
+            mTab.setValue("CodProdAlter", null);
         }
 
         return "";

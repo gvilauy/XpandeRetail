@@ -2234,7 +2234,6 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 	@Override
 	protected boolean beforeSave(boolean newRecord) {
 
-
 		if (newRecord){
 
 			// Si no tengo aun seteada la lista de venta, la seteo ahora.
