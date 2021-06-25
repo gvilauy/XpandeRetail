@@ -369,12 +369,13 @@ public class CalloutPrecios extends CalloutEngine {
                 }
                 mTab.setValue("NewPriceSO", newPriceSO);
 
-
+                /*
                 // Nuevo Precio
                 if ((preciosProvCab.getRate() != null) && (preciosProvCab.getRate().compareTo(Env.ZERO) > 0)){
                     newPriceSO = newPriceSO.multiply(preciosProvCab.getRate()).setScale(precisionVenta, BigDecimal.ROUND_HALF_UP);
                 }
                 mTab.setValue("NewPriceSO", newPriceSO);
+                */
 
                 // Margen OC
                 if ((pricePO == null) || (pricePO.compareTo(Env.ZERO) <= 0)){
