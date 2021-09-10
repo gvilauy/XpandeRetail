@@ -1660,6 +1660,7 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 		HashMap<String, Integer> hashUPC = new HashMap<String, Integer>();
 		HashMap<String, Integer> hashValue = new HashMap<String, Integer>();
+		HashMap<Integer, Integer> hashProd = new HashMap<Integer, Integer>();
 		String whereClause ="";
 
 		try{
@@ -1735,12 +1736,24 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 
 						MZProductoUPC pupc = MZProductoUPC.getByUPC(getCtx(), lineaArchivo.getUPC().trim(), get_TrxName());
 						if ((pupc != null) && (pupc.get_ID() > 0)){
+							// Valido que no me hayan ingresado el mismo producto antes, ya sea por codigo interno o por otro
+							// de sus codigos de barra
+							if (hashProd.containsKey(pupc.getM_Product_ID())){
+								hayIncosistencias = true;
+								lineaArchivo.setIsConfirmed(false);
+								lineaArchivo.setErrorMsg("Producto ingresado mas de una vez con distinto código de barra en linea de archivo : " +
+										lineaArchivo.getLineNumber());
+								lineaArchivo.saveEx();
+								continue;
+							}
+							else{
+								hashProd.put(pupc.getM_Product_ID(), pupc.getM_Product_ID());
+							}
 							// Tengo producto por codigo de barras
 							prod = (MProduct)pupc.getM_Product();
 						}
 					}
 				}
-
 				// Si no tengo producto, busco por codigo interno
 				if (prod == null){
 					// Codigo interno
@@ -1766,6 +1779,19 @@ public class MZPreciosProvCab extends X_Z_PreciosProvCab implements DocAction, D
 							MProduct[] prods = MProduct.get(getCtx(), whereClause, get_TrxName());
 							if (prods != null){
 								if (prods.length > 0){
+									// Valido que no me hayan ingresado el mismo producto antes, ya sea por codigo interno o por otro
+									// de sus codigos de barra
+									if (hashProd.containsKey(prods[0].get_ID())){
+										hayIncosistencias = true;
+										lineaArchivo.setIsConfirmed(false);
+										lineaArchivo.setErrorMsg("Producto ingresado mas de una vez (por codigo de barra y codigo interno) en linea de archivo : " +
+												lineaArchivo.getLineNumber());
+										lineaArchivo.saveEx();
+										continue;
+									}
+									else{
+										hashProd.put(prods[0].get_ID(), prods[0].get_ID());
+									}
 									// Tengo producto por codigo interno
 									prod = prods[0];
 								}
