@@ -14,6 +14,7 @@
     <orderEntry type="module" module-name="XpandeFinancial" exported="" />
     <orderEntry type="module" module-name="XpandeSisteco" exported="" />
     <orderEntry type="module" module-name="XpandeScanntech" exported="" />
+    <orderEntry type="module" module-name="XpandeGeocom" exported="" />
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>

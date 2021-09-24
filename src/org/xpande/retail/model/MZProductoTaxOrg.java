@@ -2,6 +2,7 @@ package org.xpande.retail.model;
 
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MProduct;
+import org.xpande.geocom.model.MZGeocomInterfaceOut;
 import org.xpande.sisteco.model.MZSistecoInterfaceOut;
 import org.xpande.sisteco.model.X_Z_SistecoInterfaceOut;
 import org.xpande.stech.model.MZStechInterfaceOut;
@@ -56,23 +57,22 @@ public class MZProductoTaxOrg extends X_Z_ProductoTaxOrg {
 
             // Genero marca según proveedor de POS asociado a esta organización
             MZPosVendorOrg posVendorOrg = MZPosVendor.getByOrg(getCtx(), this.getAD_OrgTrx_ID(), get_TrxName());
-            if ((posVendorOrg != null) && (posVendorOrg.get_ID() > 0)){
+            if ((posVendorOrg != null) && (posVendorOrg.get_ID() > 0)) {
 
                 MZPosVendor posVendor = (MZPosVendor) posVendorOrg.getZ_PosVendor();
 
-                if (posVendor.getValue().trim().equalsIgnoreCase("SISTECO")){
+                if (posVendor.getValue().trim().equalsIgnoreCase("SISTECO")) {
 
                     // Marca Update para Sisteco
                     MZSistecoInterfaceOut sistecoInterfaceOut = MZSistecoInterfaceOut.getRecord(getCtx(), I_M_Product.Table_ID, this.getM_Product_ID(), this.getAD_OrgTrx_ID(), get_TrxName());
-                    if ((sistecoInterfaceOut != null) && (sistecoInterfaceOut.get_ID() > 0)){
+                    if ((sistecoInterfaceOut != null) && (sistecoInterfaceOut.get_ID() > 0)) {
                         // Proceso segun marca que ya tenía este producto antes de su actualización.
                         // Si marca anterior es CREATE
-                        if (sistecoInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_SistecoInterfaceOut.CRUDTYPE_CREATE)){
+                        if (sistecoInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_SistecoInterfaceOut.CRUDTYPE_CREATE)) {
 
                             // No hago nada y respeto primer marca
                             return true;
-                        }
-                        else if (sistecoInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_SistecoInterfaceOut.CRUDTYPE_DELETE)){
+                        } else if (sistecoInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_SistecoInterfaceOut.CRUDTYPE_DELETE)) {
 
                             // Si marca anterior es DELETEAR, es porque el producto se inactivo anteriormente. No hago nada y respeto primer marca.
                             return true;
@@ -81,7 +81,7 @@ public class MZProductoTaxOrg extends X_Z_ProductoTaxOrg {
                     }
 
                     // Si no tengo marca de update, la creo ahora.
-                    if ((sistecoInterfaceOut == null) || (sistecoInterfaceOut.get_ID() <= 0)){
+                    if ((sistecoInterfaceOut == null) || (sistecoInterfaceOut.get_ID() <= 0)) {
 
                         // No existe aun marca de UPDATE sobre este producto, la creo ahora.
                         sistecoInterfaceOut = new MZSistecoInterfaceOut(getCtx(), 0, get_TrxName());
@@ -93,20 +93,18 @@ public class MZProductoTaxOrg extends X_Z_ProductoTaxOrg {
                         sistecoInterfaceOut.setAD_OrgTrx_ID(this.getAD_OrgTrx_ID());
                         sistecoInterfaceOut.saveEx();
                     }
-                }
-                else if (posVendor.getValue().trim().equalsIgnoreCase("SCANNTECH")){
+                } else if (posVendor.getValue().trim().equalsIgnoreCase("SCANNTECH")) {
 
                     // Marca Update para Sisteco
                     MZStechInterfaceOut scanntechInterfaceOut = MZStechInterfaceOut.getRecord(getCtx(), I_M_Product.Table_ID, this.getM_Product_ID(), this.getAD_OrgTrx_ID(), get_TrxName());
-                    if ((scanntechInterfaceOut != null) && (scanntechInterfaceOut.get_ID() > 0)){
+                    if ((scanntechInterfaceOut != null) && (scanntechInterfaceOut.get_ID() > 0)) {
                         // Proceso segun marca que ya tenía este producto antes de su actualización.
                         // Si marca anterior es CREATE
-                        if (scanntechInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_StechInterfaceOut.CRUDTYPE_CREATE)){
+                        if (scanntechInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_StechInterfaceOut.CRUDTYPE_CREATE)) {
 
                             // No hago nada y respeto primer marca
                             return true;
-                        }
-                        else if (scanntechInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_StechInterfaceOut.CRUDTYPE_DELETE)){
+                        } else if (scanntechInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_StechInterfaceOut.CRUDTYPE_DELETE)) {
 
                             // Si marca anterior es DELETEAR, es porque el producto se inactivo anteriormente.
                             return true;
@@ -114,7 +112,7 @@ public class MZProductoTaxOrg extends X_Z_ProductoTaxOrg {
                     }
 
                     // Si no tengo marca de update, la creo ahora.
-                    if ((scanntechInterfaceOut == null) || (scanntechInterfaceOut.get_ID() <= 0)){
+                    if ((scanntechInterfaceOut == null) || (scanntechInterfaceOut.get_ID() <= 0)) {
 
                         MProduct product = (MProduct) this.getM_Product();
 
@@ -129,6 +127,39 @@ public class MZProductoTaxOrg extends X_Z_ProductoTaxOrg {
                         scanntechInterfaceOut.setEntidadInterPOS(X_Z_StechInterfaceOut.ENTIDADINTERPOS_PRODUCTO);
                         scanntechInterfaceOut.setDescription("PRODUCTO : " + product.getValue() + "- " + product.getName());
                         scanntechInterfaceOut.saveEx();
+                    }
+
+                } else if (posVendor.getValue().trim().equalsIgnoreCase("GEOCOM")) {
+
+                    // Marca Update para Geocom
+                    MZGeocomInterfaceOut geocomInterfaceOut = MZGeocomInterfaceOut.getRecord(getCtx(), I_M_Product.Table_ID, this.getM_Product_ID(), this.getAD_OrgTrx_ID(), get_TrxName());
+                    if ((geocomInterfaceOut != null) && (geocomInterfaceOut.get_ID() > 0)) {
+                        // Proceso segun marca que ya tenía este producto antes de su actualización.
+                        // Si marca anterior es CREATE
+                        if (geocomInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_SistecoInterfaceOut.CRUDTYPE_CREATE)) {
+
+                            // No hago nada y respeto primer marca
+                            return true;
+                        } else if (geocomInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_SistecoInterfaceOut.CRUDTYPE_DELETE)) {
+
+                            // Si marca anterior es DELETEAR, es porque el producto se inactivo anteriormente. No hago nada y respeto primer marca.
+                            return true;
+
+                        }
+                    }
+
+                    // Si no tengo marca de update, la creo ahora.
+                    if ((geocomInterfaceOut == null) || (geocomInterfaceOut.get_ID() <= 0)) {
+
+                        // No existe aun marca de UPDATE sobre este producto, la creo ahora.
+                        geocomInterfaceOut = new MZGeocomInterfaceOut(getCtx(), 0, get_TrxName());
+                        geocomInterfaceOut.setCRUDType(X_Z_SistecoInterfaceOut.CRUDTYPE_UPDATE);
+                        geocomInterfaceOut.setAD_Table_ID(I_M_Product.Table_ID);
+                        geocomInterfaceOut.setSeqNo(20);
+                        geocomInterfaceOut.setRecord_ID(this.getM_Product_ID());
+                        geocomInterfaceOut.setIsPriceChanged(false);
+                        geocomInterfaceOut.setAD_OrgTrx_ID(this.getAD_OrgTrx_ID());
+                        geocomInterfaceOut.saveEx();
                     }
 
                 }
@@ -221,6 +252,40 @@ public class MZProductoTaxOrg extends X_Z_ProductoTaxOrg {
                     scanntechInterfaceOut.saveEx();
                 }
 
+            }
+            else if (posVendor.getValue().trim().equalsIgnoreCase("GEOCOM")){
+
+                // Marca Update para Geocom
+                MZGeocomInterfaceOut geocomInterfaceOut = MZGeocomInterfaceOut.getRecord(getCtx(), I_M_Product.Table_ID, this.getM_Product_ID(), this.getAD_OrgTrx_ID(), get_TrxName());
+                if ((geocomInterfaceOut != null) && (geocomInterfaceOut.get_ID() > 0)){
+                    // Proceso segun marca que ya tenía este producto antes de su actualización.
+                    // Si marca anterior es CREATE
+                    if (geocomInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_SistecoInterfaceOut.CRUDTYPE_CREATE)){
+
+                        // No hago nada y respeto primer marca
+                        return true;
+                    }
+                    else if (geocomInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_SistecoInterfaceOut.CRUDTYPE_DELETE)){
+
+                        // Si marca anterior es DELETEAR, es porque el producto se inactivo anteriormente. No hago nada y respeto primer marca.
+                        return true;
+
+                    }
+                }
+
+                // Si no tengo marca de update, la creo ahora.
+                if ((geocomInterfaceOut == null) || (geocomInterfaceOut.get_ID() <= 0)){
+
+                    // No existe aun marca de UPDATE sobre este producto, la creo ahora.
+                    geocomInterfaceOut = new MZGeocomInterfaceOut(getCtx(), 0, get_TrxName());
+                    geocomInterfaceOut.setCRUDType(X_Z_SistecoInterfaceOut.CRUDTYPE_UPDATE);
+                    geocomInterfaceOut.setAD_Table_ID(I_M_Product.Table_ID);
+                    geocomInterfaceOut.setSeqNo(20);
+                    geocomInterfaceOut.setRecord_ID(this.getM_Product_ID());
+                    geocomInterfaceOut.setIsPriceChanged(false);
+                    geocomInterfaceOut.setAD_OrgTrx_ID(this.getAD_OrgTrx_ID());
+                    geocomInterfaceOut.saveEx();
+                }
             }
         }
 

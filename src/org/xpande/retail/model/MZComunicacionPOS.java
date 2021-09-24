@@ -287,8 +287,14 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 				this.generarAuditoriaScanntech(interfaceOuts);
 				contadorLineas = interfaceOuts.size();
 			}
+		}
+		else if (posVendor.getValue().equalsIgnoreCase("GEOCOM")){
 
-
+			// Proceso interface de salida por geocom
+			org.xpande.geocom.utils.ProcesadorInterfaceOut procesadorInterfaceOut = new org.xpande.geocom.utils.ProcesadorInterfaceOut(getCtx(), get_TrxName());
+			m_processMsg = procesadorInterfaceOut.executeInterfaceOut(this.getAD_Org_ID(), this.get_ID(), processPrices, true, true);
+			if (m_processMsg != null)
+				return DocAction.STATUS_Invalid;
 		}
 
 		// Actualizo marca de comunicado al pos en documentos comunicados
