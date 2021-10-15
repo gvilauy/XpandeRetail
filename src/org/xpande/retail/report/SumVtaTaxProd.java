@@ -96,14 +96,15 @@ public class SumVtaTaxProd extends SvrProcess {
             if (this.zRubroID > 0){
                 whereClause += " and p.z_productorubro_id =" + this.zRubroID;
             }
-            sql = " select a.ad_client_id, a.ad_org_id, " + this.getAD_User_ID() + ", '" + this.endDate + "', " +
+            sql = " select a.ad_client_id, a.ad_org_id, " + this.getAD_User_ID() + ", cast('" + this.endDate + "' as timestamp without time zone), " +
                     " p.z_productoseccion_id, p.z_productorubro_id, " +
                     " t.c_tax_id, a.c_currency_id, sum(amtsubtotal) as amtsubtotal, sum(taxamt) as taxamt " +
                     " from z_bi_vtapos a " +
                     " inner join m_product p on a.m_product_id = p.m_product_id " +
                     " inner join c_tax t on (a.c_taxcategory_id = t.c_taxcategory_id and t.isdefault='Y') " +
                     " where a.ad_org_id =" + this.adOrgID +
-                    " and a.dateinvoiced between '" + this.startDate + "' and '" + this.endDate + "' " + whereClause +
+                    " and (a.dateinvoiced >='" + this.startDate + "' and a.dateinvoiced <='" + this.endDate + "') " +
+                    whereClause +
                     " group by 1,2,3,4,5,6,7,8  ";
 
             DB.executeUpdateEx(action + sql, null);
