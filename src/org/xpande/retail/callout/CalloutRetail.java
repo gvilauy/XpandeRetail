@@ -5,8 +5,10 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.financial.model.MZTransferAfectacion;
+import org.xpande.retail.model.MZCreditLineCategory;
 import org.xpande.retail.model.MZLineaProductoSocio;
 import org.xpande.retail.model.MZProductoSocio;
+import org.xpande.retail.model.X_Z_CreditLineCategory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -50,7 +52,6 @@ public class CalloutRetail extends CalloutEngine {
 
         return "";
     }
-
 
     /***
      * Al ingresar código de barras o producto, se deben setear los otros valores asociados.
@@ -454,4 +455,34 @@ public class CalloutRetail extends CalloutEngine {
         return "";
     }
 
+    /**
+     * Setea información de la linea de credito de un socio de negocio.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String setCreditLineInfo(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (value == null) return "";
+
+        int cBPartnerID = ((Integer) value).intValue();
+
+        if (cBPartnerID > 0){
+            MBPartner partner = new MBPartner(ctx, cBPartnerID, null);
+            if (partner.get_ValueAsInt("Z_CreditLineCategory_ID") > 0){
+                MZCreditLineCategory lineCategory = new MZCreditLineCategory(ctx, partner.get_ValueAsInt("Z_CreditLineCategory_ID"), null);
+                mTab.setValue(X_Z_CreditLineCategory.COLUMNNAME_Z_CreditLineCategory_ID, lineCategory.get_ID());
+                mTab.setValue("C_Currency_ID", lineCategory.getC_Currency_ID());
+                mTab.setValue("AmtBase", lineCategory.getCreditLimit());
+                mTab.setValue("CreditLimit", lineCategory.getCreditLimit());
+            }
+        }
+        else{
+            mTab.setValue("Z_CreditLineCategory_ID", null);
+        }
+        return "";
+    }
 }
