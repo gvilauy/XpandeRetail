@@ -416,11 +416,16 @@ public class MZCredLineGen extends X_Z_CredLineGen implements DocAction, DocOpti
 	 */
 	private String generateCreditLines(List<MZCredLineGenBP> genBPList) {
 		try{
+			// Documento para linea de credito
+			MDocType[] docTypes = MDocType.getOfDocBaseType(getCtx(), "LCG");
+			MDocType docType = docTypes[0];
+
 			// Recorro socios
 			for (MZCredLineGenBP genBP: genBPList){
 				MZCreditLine creditLine = new MZCreditLine(getCtx(), 0, get_TrxName());
 				creditLine.setZ_CredLineGen_ID(this.get_ID());
 				creditLine.setAD_Org_ID(this.getAD_Org_ID());
+				creditLine.setC_DocType_ID(docType.get_ID());
 				creditLine.setCreditLimit(genBP.getCreditLimit());
 				creditLine.setAmtBase(genBP.getAmtBase());
 				creditLine.setC_BPartner_ID(genBP.getC_BPartner_ID());
