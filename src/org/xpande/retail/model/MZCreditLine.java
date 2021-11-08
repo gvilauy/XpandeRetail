@@ -228,7 +228,38 @@ public class MZCreditLine extends X_Z_CreditLine implements DocAction, DocOption
 			approveIt();
 		log.info(toString());
 		//
-		
+
+		// Seteo info en el socio de negocio
+		MBPartner partner = (MBPartner) this.getC_BPartner();
+		Timestamp creditDueDate = (Timestamp) partner.get_Value("CreditDueDate");
+		int creditLineIDAux = partner.get_ValueAsInt("Z_CreditLine_ID");
+		if ((creditLineIDAux > 0) && (creditLineIDAux != this.get_ID())) {
+			if (creditDueDate != null){
+				if (creditDueDate.after(this.getEndDate())){
+					MZCreditLine creditLineAux = new MZCreditLine(getCtx(), creditLineIDAux, null);
+					m_processMsg = "El socio de negocio tiene otra Linea de Crédito vigente (nro.: " + creditLineAux.getDocumentNo() + "). " +
+							 "No puede tener dos lineas de crédito al mismo tiempo para un mismo período.";
+				}
+			}
+		}
+		if (creditLineIDAux <= 0){
+			partner.set_ValueOfColumn("Z_CreditLine_ID", this.get_ID());
+			partner.set_ValueOfColumn("CreditLimit", this.getCreditLimit());
+			partner.set_ValueOfColumn("AmtCreditActual", Env.ZERO);
+			partner.set_ValueOfColumn("CreditDueDate", this.getEndDate());
+		}
+		else if (creditLineIDAux == this.get_ID()){
+			partner.set_ValueOfColumn("CreditLimit", this.getCreditLimit());
+			partner.set_ValueOfColumn("CreditDueDate", this.getEndDate());
+		}
+		else{
+			partner.set_ValueOfColumn("Z_CreditLine_ID", this.get_ID());
+			partner.set_ValueOfColumn("CreditLimit", this.getCreditLimit());
+			partner.set_ValueOfColumn("AmtCreditActual", Env.ZERO);
+			partner.set_ValueOfColumn("CreditDueDate", this.getEndDate());
+		}
+		partner.saveEx();
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -399,4 +430,20 @@ public class MZCreditLine extends X_Z_CreditLine implements DocAction, DocOption
         .append(getSummary()).append("]");
       return sb.toString();
     }
+
+	@Override
+	protected boolean beforeDelete() {
+
+		if (this.getC_BPartner_ID() > 0){
+			MBPartner partner = (MBPartner) this.getC_BPartner();
+			int creditLineIDAux = partner.get_ValueAsInt("Z_CreditLine_ID");
+			if (creditLineIDAux == this.get_ID()){
+				String action = " update c_bpartner " +
+						" set Z_CreditLine_ID = null, CreditDueDate = null, creditlimit = null, amtcreditactual = null " +
+						" where c_bpartner_id =" + this.getC_BPartner_ID();
+				DB.executeUpdateEx(action, get_TrxName());
+			}
+		}
+		return true;
+	}
 }

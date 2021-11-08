@@ -1298,8 +1298,30 @@ public class ValidatorRetail implements ModelValidator {
 
         if (timing == TIMING_AFTER_COMPLETE){
 
-            // No aplica en comprobantes de venta
+            // Para comprobantes de compra
             if (model.isSOTrx()){
+
+                // Chequeo y Actualizo credito utilizado en caso de ser necesario
+                MBPartner partner = (MBPartner) model.getC_BPartner();
+                int creditLineIDAux = partner.get_ValueAsInt("Z_CreditLine_ID");
+                if (creditLineIDAux > 0){
+                    Timestamp creditDueDate = (Timestamp) partner.get_Value("CreditDueDate");
+                    if (creditDueDate != null){
+                        if (creditDueDate.compareTo(model.getDateInvoiced()) >= 0){
+                            BigDecimal creditLimit = (BigDecimal) partner.get_Value("CreditLimit");
+                            if (creditLimit == null) creditLimit = Env.ZERO;
+                            BigDecimal saldoActual = (BigDecimal) partner.get_Value("AmtCreditActual");
+                            if (saldoActual == null) saldoActual = Env.ZERO;
+                            BigDecimal saldoFinal = saldoActual.add(model.getGrandTotal());
+                            if (saldoFinal.compareTo(creditLimit) > 0){
+                                return "El monto de la venta supera el limte de crédito establecido para el socio de negocio";
+                            }
+                            action = " update c_bpartner set amtcreditactual =" + saldoFinal +
+                                    " where c_bpartner_id =" + model.getC_BPartner_ID();
+                            DB.executeUpdateEx(action, model.get_TrxName());
+                        }
+                    }
+                }
                 return null;
             }
 
@@ -1503,8 +1525,24 @@ public class ValidatorRetail implements ModelValidator {
         }
         else if (timing == TIMING_BEFORE_REACTIVATE){
 
-            // No aplica en comprobantes de venta
+            // En comprobantes de venta
             if (model.isSOTrx()){
+                // Actualiza credito del socio de negocio si es necesario
+                MBPartner partner = (MBPartner) model.getC_BPartner();
+                int creditLineIDAux = partner.get_ValueAsInt("Z_CreditLine_ID");
+                if (creditLineIDAux > 0){
+                    Timestamp creditDueDate = (Timestamp) partner.get_Value("CreditDueDate");
+                    if (creditDueDate != null){
+                        if (creditDueDate.compareTo(model.getDateInvoiced()) >= 0){
+                            BigDecimal saldoActual = (BigDecimal) partner.get_Value("AmtCreditActual");
+                            if (saldoActual == null) saldoActual = Env.ZERO;
+                            BigDecimal saldoFinal = saldoActual.subtract(model.getGrandTotal());
+                            action = " update c_bpartner set amtcreditactual =" + saldoFinal +
+                                    " where c_bpartner_id =" + model.getC_BPartner_ID();
+                            DB.executeUpdateEx(action, model.get_TrxName());
+                        }
+                    }
+                }
                 return null;
             }
 
