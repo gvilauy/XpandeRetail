@@ -417,7 +417,7 @@ public class MZCredLineGen extends X_Z_CredLineGen implements DocAction, DocOpti
 	private String generateCreditLines(List<MZCredLineGenBP> genBPList) {
 		try{
 			// Documento para linea de credito
-			MDocType[] docTypes = MDocType.getOfDocBaseType(getCtx(), "LCG");
+			MDocType[] docTypes = MDocType.getOfDocBaseType(getCtx(), "LCS");
 			MDocType docType = docTypes[0];
 
 			// Recorro socios

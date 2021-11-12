@@ -1298,9 +1298,9 @@ public class ValidatorRetail implements ModelValidator {
 
         if (timing == TIMING_AFTER_COMPLETE){
 
-            // Para comprobantes de compra
+            // Para comprobantes de venta
             if (model.isSOTrx()){
-
+                /*
                 // Chequeo y Actualizo credito utilizado en caso de ser necesario
                 MBPartner partner = (MBPartner) model.getC_BPartner();
                 int creditLineIDAux = partner.get_ValueAsInt("Z_CreditLine_ID");
@@ -1322,6 +1322,7 @@ public class ValidatorRetail implements ModelValidator {
                         }
                     }
                 }
+                */
                 return null;
             }
 
@@ -1527,6 +1528,7 @@ public class ValidatorRetail implements ModelValidator {
 
             // En comprobantes de venta
             if (model.isSOTrx()){
+                /*
                 // Actualiza credito del socio de negocio si es necesario
                 MBPartner partner = (MBPartner) model.getC_BPartner();
                 int creditLineIDAux = partner.get_ValueAsInt("Z_CreditLine_ID");
@@ -1543,6 +1545,7 @@ public class ValidatorRetail implements ModelValidator {
                         }
                     }
                 }
+                */
                 return null;
             }
 
