@@ -905,12 +905,14 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 						vtaDetMPST.setZ_MedioPago_ID(rs.getInt("mpsis"));
 					}
 				}
+				if (vtaDetMPST.getZ_MedioPago_ID() <= 0){
+					return "No se pudo obtener información en la configuración de Sisteco para el codigo de medio de pago : " +
+							vtaDetMPST.getST_CodigoMedioPago();
+				}
 				if (rs.getInt("z_mediopagoident_id") > 0){
 					vtaDetMPST.setZ_MedioPagoIdent_ID(rs.getInt("z_mediopagoident_id"));
 				}
-
 				vtaDetMPST.saveEx();
-
 			}
 		}
 		catch (Exception e){

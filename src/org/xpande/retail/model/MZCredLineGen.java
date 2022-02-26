@@ -433,6 +433,7 @@ public class MZCredLineGen extends X_Z_CredLineGen implements DocAction, DocOpti
 				creditLine.setZ_CreditLineCategory_ID(genBP.getZ_CreditLineCategory_ID());
 				creditLine.setStartDate(this.getStartDate());
 				creditLine.setEndDate(this.getEndDate());
+				creditLine.set_ValueOfColumn("IsAuthSupervisor", genBP.get_ValueAsBoolean("IsAuthSupervisor"));
 				creditLine.saveEx();
 
 				if (!creditLine.processIt(X_Z_CreditLine.DOCACTION_Complete)){

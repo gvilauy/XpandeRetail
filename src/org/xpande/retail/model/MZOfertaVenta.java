@@ -33,6 +33,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.xpande.core.utils.PriceListUtils;
+import org.xpande.geocom.model.MZGeocomInterfaceOut;
 import org.xpande.sisteco.model.MZSistecoInterfaceOut;
 import org.xpande.sisteco.model.X_Z_SistecoInterfaceOut;
 import org.xpande.stech.model.MZStechInterfaceOut;
@@ -806,6 +807,64 @@ public class MZOfertaVenta extends X_Z_OfertaVenta implements DocAction, DocOpti
 						scanntechInterfaceOut.setEndDate(null);
 					}
 					scanntechInterfaceOut.saveEx();
+				}
+			}
+			else if (posVendor.getValue().equalsIgnoreCase("GEOCOM")){
+				// Marca Update
+				MZGeocomInterfaceOut geocomInterfaceOut = MZGeocomInterfaceOut.getRecord(getCtx(), I_M_Product.Table_ID, product.get_ID(), adOrgTrxID, get_TrxName());
+				if ((geocomInterfaceOut != null) && (geocomInterfaceOut.get_ID() > 0)){
+					// Proceso segun marca que ya tenía este producto antes de su actualización.
+					// Si marca anterior es CREATE o UPDATE
+					if ((geocomInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_SistecoInterfaceOut.CRUDTYPE_CREATE))
+							|| (geocomInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_SistecoInterfaceOut.CRUDTYPE_UPDATE))){
+
+						// Actualizo datos de esta marca para pasar precio de oferta al POS
+						geocomInterfaceOut.setWithOfferSO(withOffer);
+						geocomInterfaceOut.setPriceSO(newPriceSO);
+
+						if (withOffer){
+							geocomInterfaceOut.setStartDate(this.getStartDate());
+							geocomInterfaceOut.setEndDate(this.getEndDate());
+						}
+						else{
+							geocomInterfaceOut.setM_PriceList_ID(mPriceListID);
+							geocomInterfaceOut.setStartDate(null);
+							geocomInterfaceOut.setEndDate(null);
+						}
+
+						geocomInterfaceOut.saveEx();
+						return;
+					}
+					else if (geocomInterfaceOut.getCRUDType().equalsIgnoreCase(X_Z_SistecoInterfaceOut.CRUDTYPE_DELETE)){
+						// Si marca anterior es DELETEAR, es porque el producto se inactivo anteriormente.
+						// Si este producto sigue estando inactivo
+						if (!product.isActive()){
+							return; // No hago nada y respeto primer marca.
+						}
+					}
+				}
+				// Si no tenia marca, la creo ahora con accion UPDATE
+				if ((geocomInterfaceOut == null) || (geocomInterfaceOut.get_ID() <= 0)){
+					geocomInterfaceOut = new MZGeocomInterfaceOut(getCtx(), 0, get_TrxName());
+					geocomInterfaceOut.setCRUDType(X_Z_SistecoInterfaceOut.CRUDTYPE_UPDATE);
+					geocomInterfaceOut.setAD_Table_ID(I_M_Product.Table_ID);
+					geocomInterfaceOut.setSeqNo(20);
+					geocomInterfaceOut.setRecord_ID(product.get_ID());
+					geocomInterfaceOut.setIsPriceChanged(true);
+					geocomInterfaceOut.setAD_OrgTrx_ID(adOrgTrxID);
+					geocomInterfaceOut.setWithOfferSO(withOffer);
+					geocomInterfaceOut.setPriceSO(newPriceSO);
+
+					if (withOffer){
+						geocomInterfaceOut.setStartDate(this.getStartDate());
+						geocomInterfaceOut.setEndDate(this.getEndDate());
+					}
+					else{
+						geocomInterfaceOut.setM_PriceList_ID(mPriceListID);
+						geocomInterfaceOut.setStartDate(null);
+						geocomInterfaceOut.setEndDate(null);
+					}
+					geocomInterfaceOut.saveEx();
 				}
 			}
 		}
