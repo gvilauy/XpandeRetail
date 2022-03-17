@@ -423,6 +423,20 @@ public class MZAstoVtaRecMP extends X_Z_AstoVtaRecMP implements DocAction, DocOp
 	}
 
 	/***
+	 * Obtiene y retorna lineas de este documento para POS Geocom.
+	 * Xpande. Created by Gabriel Vila on 10/1/19.
+	 * @return
+	 */
+	public List<MZAstoVtaRecMPLinGeo> getLinesGeocom() {
+
+		String whereClause = X_Z_AstoVtaRecMPLinGeo.COLUMNNAME_Z_AstoVtaRecMP_ID + " =" + this.get_ID();
+
+		List<MZAstoVtaRecMPLinGeo> lines = new Query(getCtx(), I_Z_AstoVtaRecMPLinGeo.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+	/***
 	 * Obtiene y retorna lineas de este documento para POS Scanntech.
 	 * Xpande. Created by Gabriel Vila on 5/8/20.
 	 * @return

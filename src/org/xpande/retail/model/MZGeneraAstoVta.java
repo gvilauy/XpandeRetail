@@ -22,6 +22,7 @@ import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -33,9 +34,8 @@ import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.xpande.financial.model.MZMedioPagoItem;
-import org.xpande.financial.model.MZOrdenPago;
-import org.xpande.financial.model.MZPago;
+import org.xpande.core.utils.DateUtils;
+import org.xpande.financial.model.*;
 import org.xpande.stech.model.MZStechCreditos;
 import org.xpande.stech.model.MZStechMedioPago;
 
@@ -387,6 +387,102 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 				this.setZ_AstoVtaRecMP_ID(astoVtaRecMP.get_ID());
 			}
 		}
+		else if (posVendor.getValue().equalsIgnoreCase("GEOCOM")){
+			// Obtengo reclasficacion de medios de pago segun proveedor de POS, si es que tengo alguna.
+			List<MZGenAstoVtaDetMPGeo> vtaDetMPGeoList = this.getMediosPagoModifGeocom();
+
+			// Si tengo medios de pago reclasificados
+			if (vtaDetMPGeoList.size() > 0){
+
+				// Instancio y completo nuevo documento para asiento de reclasificación de medios de pago de sisteco
+				MDocType[] docTypeRecMPList = MDocType.getOfDocBaseType(getCtx(), "AVR");
+				if (docTypeRecMPList.length <= 0){
+					this.m_processMsg = "Falta definr Tipo de Documento para Asiento de Reclasificación de Medios de Pago.";
+					return DocAction.STATUS_Invalid;
+				}
+
+				MZAstoVtaRecMP astoVtaRecMP = new MZAstoVtaRecMP(getCtx(), 0, get_TrxName());
+				astoVtaRecMP.setAD_Org_ID(this.getAD_Org_ID());
+				astoVtaRecMP.setZ_GeneraAstoVta_ID(this.get_ID());
+				astoVtaRecMP.setC_DocType_ID(docTypeRecMPList[0].get_ID());
+				astoVtaRecMP.setDateDoc(this.getDateDoc());
+				astoVtaRecMP.setDateAcct(this.getDateAcct());
+				astoVtaRecMP.setZ_PosVendor_ID(this.getZ_PosVendor_ID());
+				astoVtaRecMP.setDescription("Generado Automáticamente desde Generador de Asientos de Venta Nro. : " + this.getDocumentNo());
+
+				astoVtaRecMP.saveEx();
+
+				for (MZGenAstoVtaDetMPGeo vtaDetMPGeo: vtaDetMPGeoList){
+					MZAstoVtaRecMPLinGeo astoVtaRecMPLin = new MZAstoVtaRecMPLinGeo(getCtx(), 0, get_TrxName());
+					astoVtaRecMPLin.setAD_Org_ID(this.getAD_Org_ID());
+					astoVtaRecMPLin.setZ_AstoVtaRecMP_ID(astoVtaRecMP.get_ID());
+					astoVtaRecMPLin.setZ_GenAstoVtaDetMPGeo_ID(vtaDetMPGeo.get_ID());
+					astoVtaRecMPLin.setamtcashback(vtaDetMPGeo.getamtcashback());
+					astoVtaRecMPLin.setamtcashbackacct(vtaDetMPGeo.getamtcashbackacct());
+					astoVtaRecMPLin.setamtdiscount(vtaDetMPGeo.getamtdiscount());
+					astoVtaRecMPLin.setaplicadtoiva(vtaDetMPGeo.isaplicadtoiva());
+					astoVtaRecMPLin.setbrandid(vtaDetMPGeo.getbrandid());
+					astoVtaRecMPLin.setbrandname(vtaDetMPGeo.getbrandname());
+					astoVtaRecMPLin.setcantcuotas(vtaDetMPGeo.getcantcuotas());
+					astoVtaRecMPLin.setC_BPartner_ID(vtaDetMPGeo.getC_BPartner_ID());
+					astoVtaRecMPLin.setcheckbanknumber(vtaDetMPGeo.getcheckbanknumber());
+					astoVtaRecMPLin.setchecknumber(vtaDetMPGeo.getchecknumber());
+					astoVtaRecMPLin.setcheckvaliddate(vtaDetMPGeo.getcheckvaliddate());
+					astoVtaRecMPLin.setcodautorizacion(vtaDetMPGeo.getcodautorizacion());
+					astoVtaRecMPLin.setcodcaja(vtaDetMPGeo.getcodcaja());
+					astoVtaRecMPLin.setcodcajero(vtaDetMPGeo.getcodcajero());
+					astoVtaRecMPLin.setcodcomercio(vtaDetMPGeo.getcodcomercio());
+					astoVtaRecMPLin.setcodleyimpuesto(vtaDetMPGeo.getcodleyimpuesto());
+					astoVtaRecMPLin.setcodmediopago(vtaDetMPGeo.getcodmediopago());
+					astoVtaRecMPLin.setCodMedioPagoPOS(vtaDetMPGeo.getCodMedioPagoPOS());
+					astoVtaRecMPLin.setcodprodtarjeta(vtaDetMPGeo.getcodprodtarjeta());
+					astoVtaRecMPLin.setcodterminal(vtaDetMPGeo.getcodterminal());
+					astoVtaRecMPLin.setcodtipotarjeta(vtaDetMPGeo.getcodtipotarjeta());
+					astoVtaRecMPLin.setconversionrate(vtaDetMPGeo.getconversionrate());
+					astoVtaRecMPLin.setC_TaxGroup_ID(vtaDetMPGeo.getC_TaxGroup_ID());
+					astoVtaRecMPLin.setdatevoucherorig(vtaDetMPGeo.getdatevoucherorig());
+					astoVtaRecMPLin.setdocdginame(vtaDetMPGeo.getdocdginame());
+					astoVtaRecMPLin.setescambio(vtaDetMPGeo.isescambio());
+					astoVtaRecMPLin.setfechaticket(vtaDetMPGeo.getfechaticket());
+					astoVtaRecMPLin.setISO_Code(vtaDetMPGeo.getISO_Code());
+					astoVtaRecMPLin.setIsOnline(vtaDetMPGeo.isOnline());
+					astoVtaRecMPLin.setmodoingtarjeta(vtaDetMPGeo.getmodoingtarjeta());
+					astoVtaRecMPLin.setnommediopago(vtaDetMPGeo.getnommediopago());
+					astoVtaRecMPLin.setNomMedioPagoPOS(vtaDetMPGeo.getNomMedioPagoPOS());
+					astoVtaRecMPLin.setnomprodtarjeta(vtaDetMPGeo.getnomprodtarjeta());
+					astoVtaRecMPLin.setnrotarjeta(vtaDetMPGeo.getnrotarjeta());
+					astoVtaRecMPLin.setNroTicket(vtaDetMPGeo.getNroTicket());
+					astoVtaRecMPLin.setnrovoucher(vtaDetMPGeo.getnrovoucher());
+					astoVtaRecMPLin.setnrovoucherorigl(vtaDetMPGeo.getnrovoucherorigl());
+					astoVtaRecMPLin.setNumeroCFE(vtaDetMPGeo.getNumeroCFE());
+					astoVtaRecMPLin.setorigenvta(vtaDetMPGeo.getorigenvta());
+					astoVtaRecMPLin.setplanid(vtaDetMPGeo.getplanid());
+					astoVtaRecMPLin.setposbatchid(vtaDetMPGeo.getposbatchid());
+					astoVtaRecMPLin.setSerieCFE(vtaDetMPGeo.getSerieCFE());
+					astoVtaRecMPLin.setTaxID(vtaDetMPGeo.getTaxID());
+					astoVtaRecMPLin.setTipoCFE(vtaDetMPGeo.getTipoCFE());
+					astoVtaRecMPLin.settipotarjeta(vtaDetMPGeo.gettipotarjeta());
+					astoVtaRecMPLin.setTotalAmt(vtaDetMPGeo.getTotalAmt());
+					astoVtaRecMPLin.settotalentregado(vtaDetMPGeo.gettotalentregado());
+					astoVtaRecMPLin.settotalentregadomonref(vtaDetMPGeo.gettotalentregadomonref());
+					astoVtaRecMPLin.setZ_MedioPagoPos_ID(vtaDetMPGeo.getZ_MedioPagoPos_ID());
+					astoVtaRecMPLin.setZ_MPagoIdentPos_ID(vtaDetMPGeo.getZ_MPagoIdentPos_ID());
+					astoVtaRecMPLin.saveEx();
+				}
+
+				if (!astoVtaRecMP.processIt(DocAction.ACTION_Complete)){
+					if (astoVtaRecMP.getProcessMsg() != null){
+						this.m_processMsg = astoVtaRecMP.getProcessMsg();
+					}
+					else {
+						this.m_processMsg = "No se pudo generar y completar el documento de Asiento de Reclasificación de Medios de Pago.";
+					}
+					return DocAction.STATUS_Invalid;
+				}
+				astoVtaRecMP.saveEx();
+				this.setZ_AstoVtaRecMP_ID(astoVtaRecMP.get_ID());
+			}
+		}
 
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -664,6 +760,9 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 					" where " + X_Z_GeneraAstoVtaDetMPSC.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 
+			action = " delete from " + X_Z_GenAstoVtaDetMPGeo.Table_Name +
+					" where " + X_Z_GenAstoVtaDetMPGeo.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
 
 			if (this.getZ_PosVendor_ID() <= 0){
 				return "Falta indicar Proveedor de POS para la Organización seleccionada";
@@ -680,6 +779,12 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 				message = this.getVentasMedioPagoScanntech();
 				if (message == null){
 					message = this.getVentasDetMedioPagoScanntech();
+				}
+			}
+			else if (posVendor.getValue().equalsIgnoreCase("GEOCOM")){
+				message = this.getVentasMedioPagoGeo();
+				if (message == null){
+					message = this.getVentasDetMedioPagoGeo();
 				}
 			}
 
@@ -834,6 +939,104 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		return message;
 	}
 
+	/***
+	 * Obtiene y carga información de ventas SUMARIZADAS por medios de pago desde GEOCOM.
+	 * Xpande. Created by Gabriel Vila on 4/29/19.
+	 * @return
+	 */
+	private String getVentasMedioPagoGeo(){
+
+		String message = null;
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+			Date dateFechaAux = new Date(this.getDateTo().getTime());
+			dateFechaAux =  DateUtils.addDays(dateFechaAux, 1);
+			Timestamp dateTo2 = new Timestamp(dateFechaAux.getTime());
+
+			sql = " select a.codmediopago, a.codtipotarjeta, a.iso_code, coalesce(a.conversionrate,1) as currencyrate, " +
+					" sum(a.totalamt) as totalamt, sum(totalentregadomonref) as totalentregadomonref " +
+					" from zv_detvtamediopago a " +
+					" where a.ad_org_id =" + this.getAD_Org_ID() +
+					" and a.fechaticket between '" + this.getDateTo() + "' and '" + dateTo2 + "' " +
+					" group by 1,2,3,4 ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			MZGeneraAstoVtaSumMP astoVtaSumMP = null;
+			MAcctSchema schema = MClient.get(getCtx(), this.getAD_Client_ID()).getAcctSchema();
+
+			while(rs.next()){
+
+				String isoCode = "UYU";
+				if ((!rs.getString("iso_code").equalsIgnoreCase("858"))
+						&& (!rs.getString("iso_code").equalsIgnoreCase("UYU"))) {
+					isoCode = "USD";
+				}
+				MCurrency currency = MCurrency.get(getCtx(), isoCode);
+
+				String codigoMP = null;
+				String nombreMP = null;
+				int zMedioPagoIdentID = -1;
+
+				String codMedioPagoPOS = rs.getString("codmediopago");
+				String codTarjetaPOS = rs.getString("codtipotarjeta");
+
+				MZMedioPago medioPago = MZMedioPago.getByPosValue(getCtx(), codMedioPagoPOS, get_TrxName());
+				if ((medioPago == null) || (medioPago.get_ID() <= 0)){
+					return "No se pudo obtener medio de pago para el código : " + codMedioPagoPOS;
+				}
+				codigoMP = codMedioPagoPOS;
+				nombreMP = medioPago.getName();
+
+				if ((codTarjetaPOS != null) && (!codTarjetaPOS.trim().equalsIgnoreCase(""))){
+					MZMedioPagoIdent pagoIdent = medioPago.getMedioPagoIdentPOS(codTarjetaPOS);
+					if ((pagoIdent != null) && (pagoIdent.get_ID() > 0)){
+						codigoMP = codTarjetaPOS;
+						nombreMP = pagoIdent.getName();
+						zMedioPagoIdentID = pagoIdent.get_ID();
+					}
+				}
+
+				astoVtaSumMP = new MZGeneraAstoVtaSumMP(getCtx(), 0, get_TrxName());
+				astoVtaSumMP.setZ_GeneraAstoVta_ID(this.get_ID());
+				astoVtaSumMP.set_ValueOfColumn("AD_Client_ID", this.getAD_Client_ID());
+				astoVtaSumMP.setAD_Org_ID(this.getAD_Org_ID());
+				astoVtaSumMP.setCodMedioPagoPOS(codigoMP);
+				astoVtaSumMP.setNomMedioPagoPOS(nombreMP);
+				astoVtaSumMP.setC_Currency_ID(schema.getC_Currency_ID());
+				astoVtaSumMP.setC_Currency_2_ID(currency.get_ID());
+				astoVtaSumMP.setZ_MedioPago_ID(medioPago.get_ID());
+				if (zMedioPagoIdentID > 0){
+					astoVtaSumMP.setZ_MedioPagoIdent_ID(zMedioPagoIdentID);
+				}
+				BigDecimal amt1 = rs.getBigDecimal("totalentregadomonref");
+				BigDecimal amt2 = rs.getBigDecimal("totalamt");
+				BigDecimal currencyRate = rs.getBigDecimal("currencyrate");
+
+				if (amt1 == null) amt1 = Env.ZERO;
+				if (amt2 == null) amt2 = Env.ZERO;
+				if (currencyRate == null) currencyRate = Env.ONE;
+
+				astoVtaSumMP.setAmtTotal1(amt1);
+				astoVtaSumMP.setAmtTotal2(amt2);
+				astoVtaSumMP.setCurrencyRate(currencyRate);
+				astoVtaSumMP.setAmtTotal(amt1);
+				astoVtaSumMP.saveEx();
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+		return null;
+	}
 
 	/***
 	 * Obtiene y carga información de detalle de ventas por medios de pago desde SISTECO.
@@ -1067,6 +1270,115 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		return message;
 	}
 
+	/***
+	 * Obtiene y carga información de detalle de ventas por medios de pago desde GEOCOM.
+	 * Xpande. Created by Gabriel Vila on 10/21/19.
+	 * @return
+	 */
+	private String getVentasDetMedioPagoGeo(){
+
+		String message = null;
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+			Date dateFechaAux = new Date(this.getDateTo().getTime());
+			dateFechaAux =  DateUtils.addDays(dateFechaAux, 1);
+			Timestamp dateTo2 = new Timestamp(dateFechaAux.getTime());
+
+			sql = " select a.* " +
+					" from ZV_DetVtaMedioPago a " +
+					" where a.ad_org_id =" + this.getAD_Org_ID() +
+					" and a.fechaticket between '" + this.getDateTo() + "' and '" + dateTo2 + "' " +
+					" order by a.fechaticket ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+				MZGenAstoVtaDetMPGeo detMPGeo = new MZGenAstoVtaDetMPGeo(getCtx(), 0, get_TrxName());
+				detMPGeo.setAD_Org_ID(this.getAD_Org_ID());
+				detMPGeo.set_ValueOfColumn("AD_Client_ID", this.getAD_Client_ID());
+				detMPGeo.setZ_GeneraAstoVta_ID(this.get_ID());
+				detMPGeo.setamtcashback(rs.getBigDecimal("amtcashback"));
+				detMPGeo.setamtcashbackacct(rs.getBigDecimal("amtcashbackacct"));
+				detMPGeo.setamtdiscount(rs.getBigDecimal("amtdiscount"));
+				String aplicadtoiva = rs.getString("aplicadtoiva");
+				if ((aplicadtoiva == null) || (aplicadtoiva.trim().equalsIgnoreCase(""))) {
+					aplicadtoiva = "N";
+				}
+				detMPGeo.setaplicadtoiva((aplicadtoiva.equalsIgnoreCase("Y")) ? true:false);
+				detMPGeo.setbrandid(rs.getString("brandid"));
+				detMPGeo.setbrandname(rs.getString("brandname"));
+				detMPGeo.setcantcuotas(rs.getBigDecimal("cantcuotas"));
+				detMPGeo.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+				detMPGeo.setcheckbanknumber(rs.getString("checkbanknumber"));
+				detMPGeo.setchecknumber(rs.getString("checknumber"));
+				detMPGeo.setcheckvaliddate(rs.getTimestamp("checkvaliddate"));
+				detMPGeo.setcodautorizacion(rs.getString("codautorizacion"));
+				detMPGeo.setcodcaja(rs.getString("codcaja"));
+				detMPGeo.setcodcajero(rs.getString("codcajero"));
+				detMPGeo.setcodcomercio(rs.getString("codcomercio"));
+				detMPGeo.setcodleyimpuesto(rs.getString("codleyimpuesto"));
+				detMPGeo.setcodmediopago(rs.getString("codmediopago"));
+				detMPGeo.setCodMedioPagoPOS(rs.getString("CodMedioPagoPOS"));
+				detMPGeo.setcodprodtarjeta(rs.getString("codprodtarjeta"));
+				detMPGeo.setcodterminal(rs.getString("codterminal"));
+				detMPGeo.setcodtipotarjeta(rs.getString("codtipotarjeta"));
+				detMPGeo.setconversionrate(rs.getBigDecimal("conversionrate"));
+				if (rs.getInt("c_taxgroup_id") > 0) {
+					detMPGeo.setC_TaxGroup_ID(rs.getInt("c_taxgroup_id"));
+				}
+				detMPGeo.setdatevoucherorig(rs.getTimestamp("datevoucherorig"));
+				detMPGeo.setdocdginame(rs.getString("docdginame"));
+
+				String escambio = rs.getString("escambio");
+				if ((escambio == null) || (escambio.trim().equalsIgnoreCase(""))) {
+					escambio = "N";
+				}
+				detMPGeo.setescambio((escambio.equalsIgnoreCase("Y")) ? true:false);
+				detMPGeo.setfechaticket(rs.getTimestamp("fechaticket"));
+				detMPGeo.setISO_Code(rs.getString("ISO_Code"));
+
+				String isonline = rs.getString("isonline");
+				if ((isonline == null) || (isonline.trim().equalsIgnoreCase(""))) {
+					isonline = "N";
+				}
+				detMPGeo.setIsOnline((isonline.equalsIgnoreCase("Y")) ? true:false);
+
+				detMPGeo.setmodoingtarjeta(rs.getString("modoingtarjeta"));
+				detMPGeo.setnommediopago(rs.getString("nommediopago"));
+				detMPGeo.setNomMedioPagoPOS(rs.getString("NomMedioPagoPOS"));
+				detMPGeo.setnomprodtarjeta(rs.getString("nomprodtarjeta"));
+				detMPGeo.setnrotarjeta(rs.getString("nrotarjeta"));
+				detMPGeo.setNroTicket(rs.getString("nroticket"));
+				detMPGeo.setnrovoucher(rs.getString("nrovoucher"));
+				detMPGeo.setnrovoucherorigl(rs.getString("nrovoucherorigl"));
+				detMPGeo.setNumeroCFE(rs.getString("NumeroCFE"));
+				detMPGeo.setorigenvta(rs.getString("origenvta"));
+				detMPGeo.setplanid(rs.getString("planid"));
+				detMPGeo.setposbatchid(rs.getInt("posbatchid"));
+				detMPGeo.setSerieCFE(rs.getString("seriecfe"));
+				detMPGeo.setTaxID(rs.getString("taxid"));
+				detMPGeo.setTipoCFE(rs.getString("tipocfe"));
+				detMPGeo.settipotarjeta(rs.getString("tipotarjeta"));
+				detMPGeo.setTotalAmt(rs.getBigDecimal("totalamt"));
+				detMPGeo.settotalentregado(rs.getBigDecimal("totalentregado"));
+				detMPGeo.settotalentregadomonref(rs.getBigDecimal("totalentregadomonref"));
+				detMPGeo.saveEx();
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+		return null;
+	}
 
 	/***
 	 * Obtiene y carga información de ventas por medios de pago desde SCANNTECH.
@@ -1230,7 +1542,6 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		return message;
 	}
 
-
 	/***
 	 * Cuando para un medio de pago, como por ejemplo EFECTIVO, hubo ventas en pesos y en dolares, debo considerar un posible
 	 * cambio dado en pesos para las ventas en dolares. Considerarlo significa que debo restarlo a las ventas en pesos de ese
@@ -1330,6 +1641,9 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 			else if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
 				message = this.getVentasImpuestoScanntech();
 			}
+			else if (posVendor.getValue().equalsIgnoreCase("GEOCOM")){
+				message = this.getVentasImpuestoGeocom();
+			}
 
 			// Actualizo monto redondeo
 			//this.setRedondeo();
@@ -1351,7 +1665,6 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		String sql = "";
 
 		try{
-
 			// Obtengo total de medios de pago
 
 			// Sin identificadores
@@ -1395,13 +1708,54 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 			this.setAmtAcctDr(amtMediosPago);
 			this.setAmtAcctCr(amtBaseImp.add(amtImpuestos));
-			this.setAmtRounding(amtMediosPago.subtract(amtBaseImp).subtract(amtImpuestos));
+
+			MZPosVendor posVendor = (MZPosVendor) this.getZ_PosVendor();
+			if (posVendor.getValue().equalsIgnoreCase("GEOCOM")){
+				BigDecimal amtRounding = this.setRedondeoGeocom();
+				this.setAmtRounding(amtRounding);
+			}
+			else{
+				this.setAmtRounding(amtMediosPago.subtract(amtBaseImp).subtract(amtImpuestos));
+			}
 			this.saveEx();
 
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);
 		}
+	}
+
+	private BigDecimal setRedondeoGeocom() {
+
+		BigDecimal amtRounding = Env.ZERO;
+
+		try{
+			Date dateFechaAux = new Date(this.getDateTo().getTime());
+			dateFechaAux =  DateUtils.addDays(dateFechaAux, 1);
+			Timestamp dateTo2 = new Timestamp(dateFechaAux.getTime());
+
+			String sql = " select sum(amtrounding) as amtrounding " +
+						"from z_gc_interfacevta " +
+						" where ad_org_id =" + this.getAD_Org_ID() +
+						" and fechaticket between '" + this.getDateTo() + "' and '" + dateTo2 + "' " +
+						"and tipocfe in ('101', '111')";
+			BigDecimal amtRoundARI = DB.getSQLValueBDEx(get_TrxName(), sql);
+			if  (amtRoundARI == null) amtRoundARI = Env.ZERO;
+
+			sql = " select sum(amtrounding) as amtrounding " +
+					"from z_gc_interfacevta " +
+					" where ad_org_id =" + this.getAD_Org_ID() +
+					" and fechaticket between '" + this.getDateTo() + "' and '" + dateTo2 + "' " +
+					"and tipocfe in ('102', '112')";
+			BigDecimal amtRoundARC = DB.getSQLValueBDEx(get_TrxName(), sql);
+			if  (amtRoundARC == null) amtRoundARC = Env.ZERO;
+
+			amtRounding = amtRoundARI.subtract(amtRoundARC);
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+		return amtRounding;
 	}
 
 
@@ -1502,6 +1856,56 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		return message;
 	}
 
+	/***
+	 * Obtiene y carga información de ventas por impuesto desde GEOCOM
+	 * Xpande. Created by Gabriel Vila on 6/4/19.
+	 * @return
+	 */
+	private String getVentasImpuestoGeocom(){
+
+		String message = null;
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+			sql = " select a.c_taxcategory_id, b.name, a.c_tax_id, cur.c_currency_id, " +
+					" round(sum(a.taxamt),2) as taxamt, " +
+					" round(sum(a.amtsubtotal),2) as taxbaseamt " +
+					" from zv_geocom_detvtas a " +
+					" inner join c_currency cur on (a.iso_code = cur.iso_code) " +
+					" left outer join c_taxcategory b on a.c_taxcategory_id = b.c_taxcategory_id  " +
+					" where a.ad_org_id =" + this.getAD_Org_ID() +
+					" and a.datetrx ='" + this.getDateTo() + "' " +
+					" group by a.c_taxcategory_id, b.name, a.c_tax_id, cur.c_currency_id ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+
+				MZGeneraAstoVtaSumTax astoVtaSumTax = new MZGeneraAstoVtaSumTax(getCtx(), 0, get_TrxName());
+				astoVtaSumTax.setZ_GeneraAstoVta_ID(this.get_ID());
+				astoVtaSumTax.set_ValueOfColumn("AD_Client_ID", this.getAD_Client_ID());
+				astoVtaSumTax.setAD_Org_ID(this.getAD_Org_ID());
+				astoVtaSumTax.setC_TaxCategory_ID(rs.getInt("c_taxcategory_id"));
+				astoVtaSumTax.setC_Currency_ID(rs.getInt("c_currency_id"));
+				astoVtaSumTax.setTaxAmt(rs.getBigDecimal("taxamt"));
+				astoVtaSumTax.setTaxBaseAmt(rs.getBigDecimal("taxbaseamt"));
+				astoVtaSumTax.saveEx();
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return message;
+	}
 
 	/***
 	 * Obtiene y retorna modelo resumen de venta por medio de pago según código de medio de pago recibido.
@@ -1580,4 +1984,19 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		return lines;
 	}
 
+	/***
+	 * Obtiene y retorna lineas de detalle de medios de pago de Geocom, que tuvieron modificaciones en medio de pago o tarjeta.
+	 * Xpande. Created by Gabriel Vila on 5/8/20.
+	 * @return
+	 */
+	public List<MZGenAstoVtaDetMPGeo> getMediosPagoModifGeocom(){
+
+		String whereClause = X_Z_GenAstoVtaDetMPGeo.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID() +
+				" AND (" + X_Z_GenAstoVtaDetMPGeo.COLUMNNAME_Z_MedioPagoPos_ID + " is not null OR " +
+				X_Z_GenAstoVtaDetMPGeo.COLUMNNAME_Z_MPagoIdentPos_ID + " is not null) ";
+
+		List<MZGenAstoVtaDetMPGeo> lines = new Query(getCtx(), I_Z_GenAstoVtaDetMPGeo.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
 }
