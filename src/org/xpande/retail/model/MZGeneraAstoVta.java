@@ -956,11 +956,12 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 			dateFechaAux =  DateUtils.addDays(dateFechaAux, 1);
 			Timestamp dateTo2 = new Timestamp(dateFechaAux.getTime());
 
-			sql = " select a.codmediopago, a.codtipotarjeta, a.iso_code, coalesce(a.conversionrate,1) as currencyrate, " +
+			sql = " select a.codmediopagopos, a.codtipotarjeta, a.iso_code, coalesce(a.conversionrate,1) as currencyrate, " +
 					" sum(a.totalamt) as totalamt, sum(totalentregadomonref) as totalentregadomonref " +
 					" from zv_detvtamediopago a " +
 					" where a.ad_org_id =" + this.getAD_Org_ID() +
 					" and a.fechaticket between '" + this.getDateTo() + "' and '" + dateTo2 + "' " +
+					" and a.codmediopagopos is not null " +
 					" group by 1,2,3,4 ";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
@@ -982,7 +983,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 				String nombreMP = null;
 				int zMedioPagoIdentID = -1;
 
-				String codMedioPagoPOS = rs.getString("codmediopago");
+				String codMedioPagoPOS = rs.getString("codmediopagopos");
 				String codTarjetaPOS = rs.getString("codtipotarjeta");
 
 				MZMedioPago medioPago = MZMedioPago.getByPosValue(getCtx(), codMedioPagoPOS, get_TrxName());
@@ -1292,6 +1293,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 					" from ZV_DetVtaMedioPago a " +
 					" where a.ad_org_id =" + this.getAD_Org_ID() +
 					" and a.fechaticket between '" + this.getDateTo() + "' and '" + dateTo2 + "' " +
+					" and a.codmediopagopos is not null " +
 					" order by a.fechaticket ";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
