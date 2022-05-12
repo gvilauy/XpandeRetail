@@ -952,23 +952,25 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		ResultSet rs = null;
 
 		try{
+			MAcctSchema schema = MClient.get(getCtx(), this.getAD_Client_ID()).getAcctSchema();
 			Date dateFechaAux = new Date(this.getDateTo().getTime());
 			dateFechaAux =  DateUtils.addDays(dateFechaAux, 1);
 			Timestamp dateTo2 = new Timestamp(dateFechaAux.getTime());
 
-			sql = " select a.codmediopagopos, a.codtipotarjeta, a.iso_code, coalesce(a.conversionrate,1) as currencyrate, " +
-					" sum(a.totalamt) as totalamt, sum(totalentregadomonref) as totalentregadomonref " +
+			sql = " select a.codmediopagopos, a.codtipotarjeta, a.brandid, a.brandname, a.codprodtarjeta, a.nomprodtarjeta, " +
+					" a.iso_code, coalesce(a.conversionrate,1) as currencyrate, " +
+					" sum(a.totalamt) as totalamt, sum(totalentregadomonref) as totalentregadomonref, coalesce(sum(amtdiscount),0) as amtdiscount " +
+					//" sum(a.totalamt + coalesce(amtdiscount,0)) as totalamt, sum(totalentregadomonref) as totalentregadomonref " +
 					" from zv_detvtamediopago a " +
 					" where a.ad_org_id =" + this.getAD_Org_ID() +
 					" and a.fechaticket between '" + this.getDateTo() + "' and '" + dateTo2 + "' " +
 					" and a.codmediopagopos is not null " +
-					" group by 1,2,3,4 ";
+					" group by 1,2,3,4,5,6,7,8 ";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();
 
 			MZGeneraAstoVtaSumMP astoVtaSumMP = null;
-			MAcctSchema schema = MClient.get(getCtx(), this.getAD_Client_ID()).getAcctSchema();
 
 			while(rs.next()){
 
@@ -1008,6 +1010,10 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 				astoVtaSumMP.setAD_Org_ID(this.getAD_Org_ID());
 				astoVtaSumMP.setCodMedioPagoPOS(codigoMP);
 				astoVtaSumMP.setNomMedioPagoPOS(nombreMP);
+				astoVtaSumMP.setbrandid(rs.getString("brandid"));
+				astoVtaSumMP.setbrandname(rs.getString("brandname"));
+				astoVtaSumMP.setcodprodtarjeta(rs.getString("codprodtarjeta"));
+				astoVtaSumMP.setnomprodtarjeta(rs.getString("nomprodtarjeta"));
 				astoVtaSumMP.setC_Currency_ID(schema.getC_Currency_ID());
 				astoVtaSumMP.setC_Currency_2_ID(currency.get_ID());
 				astoVtaSumMP.setZ_MedioPago_ID(medioPago.get_ID());
@@ -1022,6 +1028,9 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 				if (amt2 == null) amt2 = Env.ZERO;
 				if (currencyRate == null) currencyRate = Env.ONE;
 
+				if (currency.get_ID() == schema.getC_Currency_ID()){
+					amt2 = amt1;
+				}
 				astoVtaSumMP.setAmtTotal1(amt1);
 				astoVtaSumMP.setAmtTotal2(amt2);
 				astoVtaSumMP.setCurrencyRate(currencyRate);

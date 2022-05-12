@@ -23,7 +23,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for Z_GeneraAstoVtaSumMP
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0
+ *  @version Release 3.9.1
  */
 public interface I_Z_GeneraAstoVtaSumMP 
 {
@@ -31,7 +31,7 @@ public interface I_Z_GeneraAstoVtaSumMP
     /** TableName=Z_GeneraAstoVtaSumMP */
     public static final String Table_Name = "Z_GeneraAstoVtaSumMP";
 
-    /** AD_Table_ID=1000286 */
+    /** AD_Table_ID=1000299 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -56,7 +56,7 @@ public interface I_Z_GeneraAstoVtaSumMP
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_GeneraAstoVtaSumMP
 	/** Set AmtTotal.
 	  * Monto total
 	  */
-	public void setAmtTotal(BigDecimal AmtTotal);
+	public void setAmtTotal (BigDecimal AmtTotal);
 
 	/** Get AmtTotal.
 	  * Monto total
@@ -82,7 +82,7 @@ public interface I_Z_GeneraAstoVtaSumMP
 	/** Set AmtTotal1.
 	  * Monto total uno
 	  */
-	public void setAmtTotal1(BigDecimal AmtTotal1);
+	public void setAmtTotal1 (BigDecimal AmtTotal1);
 
 	/** Get AmtTotal1.
 	  * Monto total uno
@@ -95,12 +95,30 @@ public interface I_Z_GeneraAstoVtaSumMP
 	/** Set AmtTotal2.
 	  * Monto total dos
 	  */
-	public void setAmtTotal2(BigDecimal AmtTotal2);
+	public void setAmtTotal2 (BigDecimal AmtTotal2);
 
 	/** Get AmtTotal2.
 	  * Monto total dos
 	  */
 	public BigDecimal getAmtTotal2();
+
+    /** Column name brandid */
+    public static final String COLUMNNAME_brandid = "brandid";
+
+	/** Set brandid	  */
+	public void setbrandid (String brandid);
+
+	/** Get brandid	  */
+	public String getbrandid();
+
+    /** Column name brandname */
+    public static final String COLUMNNAME_brandname = "brandname";
+
+	/** Set brandname	  */
+	public void setbrandname (String brandname);
+
+	/** Get brandname	  */
+	public String getbrandname();
 
     /** Column name C_Currency_2_ID */
     public static final String COLUMNNAME_C_Currency_2_ID = "C_Currency_2_ID";
@@ -108,7 +126,7 @@ public interface I_Z_GeneraAstoVtaSumMP
 	/** Set C_Currency_2_ID.
 	  * Moneda secundaria para procesos
 	  */
-	public void setC_Currency_2_ID(int C_Currency_2_ID);
+	public void setC_Currency_2_ID (int C_Currency_2_ID);
 
 	/** Get C_Currency_2_ID.
 	  * Moneda secundaria para procesos
@@ -121,7 +139,7 @@ public interface I_Z_GeneraAstoVtaSumMP
 	/** Set Currency.
 	  * The Currency for this record
 	  */
-	public void setC_Currency_ID(int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/** Get Currency.
 	  * The Currency for this record
@@ -134,7 +152,7 @@ public interface I_Z_GeneraAstoVtaSumMP
     public static final String COLUMNNAME_ChangeAmt = "ChangeAmt";
 
 	/** Set ChangeAmt	  */
-	public void setChangeAmt(BigDecimal ChangeAmt);
+	public void setChangeAmt (BigDecimal ChangeAmt);
 
 	/** Get ChangeAmt	  */
 	public BigDecimal getChangeAmt();
@@ -145,12 +163,21 @@ public interface I_Z_GeneraAstoVtaSumMP
 	/** Set CodMedioPagoPOS.
 	  * Código de Medio de Pago del POS en Retail
 	  */
-	public void setCodMedioPagoPOS(String CodMedioPagoPOS);
+	public void setCodMedioPagoPOS (String CodMedioPagoPOS);
 
 	/** Get CodMedioPagoPOS.
 	  * Código de Medio de Pago del POS en Retail
 	  */
 	public String getCodMedioPagoPOS();
+
+    /** Column name codprodtarjeta */
+    public static final String COLUMNNAME_codprodtarjeta = "codprodtarjeta";
+
+	/** Set codprodtarjeta	  */
+	public void setcodprodtarjeta (String codprodtarjeta);
+
+	/** Get codprodtarjeta	  */
+	public String getcodprodtarjeta();
 
     /** Column name CodTipoLineaPOS */
     public static final String COLUMNNAME_CodTipoLineaPOS = "CodTipoLineaPOS";
@@ -158,7 +185,7 @@ public interface I_Z_GeneraAstoVtaSumMP
 	/** Set CodTipoLineaPOS.
 	  * Código de tipo de linea para POS en Retail
 	  */
-	public void setCodTipoLineaPOS(String CodTipoLineaPOS);
+	public void setCodTipoLineaPOS (String CodTipoLineaPOS);
 
 	/** Get CodTipoLineaPOS.
 	  * Código de tipo de linea para POS en Retail
@@ -187,7 +214,7 @@ public interface I_Z_GeneraAstoVtaSumMP
 	/** Set Rate.
 	  * Currency Conversion Rate
 	  */
-	public void setCurrencyRate(BigDecimal CurrencyRate);
+	public void setCurrencyRate (BigDecimal CurrencyRate);
 
 	/** Get Rate.
 	  * Currency Conversion Rate
@@ -200,7 +227,7 @@ public interface I_Z_GeneraAstoVtaSumMP
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -213,12 +240,21 @@ public interface I_Z_GeneraAstoVtaSumMP
 	/** Set NomMedioPagoPOS.
 	  * Nombre de Medio de Pago del POS en Retail
 	  */
-	public void setNomMedioPagoPOS(String NomMedioPagoPOS);
+	public void setNomMedioPagoPOS (String NomMedioPagoPOS);
 
 	/** Get NomMedioPagoPOS.
 	  * Nombre de Medio de Pago del POS en Retail
 	  */
 	public String getNomMedioPagoPOS();
+
+    /** Column name nomprodtarjeta */
+    public static final String COLUMNNAME_nomprodtarjeta = "nomprodtarjeta";
+
+	/** Set nomprodtarjeta	  */
+	public void setnomprodtarjeta (String nomprodtarjeta);
+
+	/** Get nomprodtarjeta	  */
+	public String getnomprodtarjeta();
 
     /** Column name NomTipoLineaPOS */
     public static final String COLUMNNAME_NomTipoLineaPOS = "NomTipoLineaPOS";
@@ -226,7 +262,7 @@ public interface I_Z_GeneraAstoVtaSumMP
 	/** Set NomTipoLineaPOS.
 	  * Nombre de tipo de linea POS para Retail
 	  */
-	public void setNomTipoLineaPOS(String NomTipoLineaPOS);
+	public void setNomTipoLineaPOS (String NomTipoLineaPOS);
 
 	/** Get NomTipoLineaPOS.
 	  * Nombre de tipo de linea POS para Retail
@@ -249,24 +285,11 @@ public interface I_Z_GeneraAstoVtaSumMP
 	  */
 	public int getUpdatedBy();
 
-    /** Column name UUID */
-    public static final String COLUMNNAME_UUID = "UUID";
-
-	/** Set Immutable Universally Unique Identifier.
-	  * Immutable Universally Unique Identifier
-	  */
-	public void setUUID(String UUID);
-
-	/** Get Immutable Universally Unique Identifier.
-	  * Immutable Universally Unique Identifier
-	  */
-	public String getUUID();
-
     /** Column name Z_GeneraAstoVta_ID */
     public static final String COLUMNNAME_Z_GeneraAstoVta_ID = "Z_GeneraAstoVta_ID";
 
 	/** Set Z_GeneraAstoVta ID	  */
-	public void setZ_GeneraAstoVta_ID(int Z_GeneraAstoVta_ID);
+	public void setZ_GeneraAstoVta_ID (int Z_GeneraAstoVta_ID);
 
 	/** Get Z_GeneraAstoVta ID	  */
 	public int getZ_GeneraAstoVta_ID();
@@ -277,7 +300,7 @@ public interface I_Z_GeneraAstoVtaSumMP
     public static final String COLUMNNAME_Z_GeneraAstoVtaSumMP_ID = "Z_GeneraAstoVtaSumMP_ID";
 
 	/** Set Z_GeneraAstoVtaSumMP ID	  */
-	public void setZ_GeneraAstoVtaSumMP_ID(int Z_GeneraAstoVtaSumMP_ID);
+	public void setZ_GeneraAstoVtaSumMP_ID (int Z_GeneraAstoVtaSumMP_ID);
 
 	/** Get Z_GeneraAstoVtaSumMP ID	  */
 	public int getZ_GeneraAstoVtaSumMP_ID();
@@ -286,7 +309,7 @@ public interface I_Z_GeneraAstoVtaSumMP
     public static final String COLUMNNAME_Z_MedioPago_ID = "Z_MedioPago_ID";
 
 	/** Set Z_MedioPago ID	  */
-	public void setZ_MedioPago_ID(int Z_MedioPago_ID);
+	public void setZ_MedioPago_ID (int Z_MedioPago_ID);
 
 	/** Get Z_MedioPago ID	  */
 	public int getZ_MedioPago_ID();
@@ -295,7 +318,7 @@ public interface I_Z_GeneraAstoVtaSumMP
     public static final String COLUMNNAME_Z_MedioPagoIdent_ID = "Z_MedioPagoIdent_ID";
 
 	/** Set Z_MedioPagoIdent ID	  */
-	public void setZ_MedioPagoIdent_ID(int Z_MedioPagoIdent_ID);
+	public void setZ_MedioPagoIdent_ID (int Z_MedioPagoIdent_ID);
 
 	/** Get Z_MedioPagoIdent ID	  */
 	public int getZ_MedioPagoIdent_ID();

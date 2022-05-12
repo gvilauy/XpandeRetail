@@ -91,4 +91,12 @@ public class MZConfirmacionEtiquetaDoc extends X_Z_ConfirmacionEtiquetaDoc {
         }
     }
 
+    public List<MZConfirmacionEtiquetaProd> getProducts() {
+
+        String whereClause = X_Z_ConfirmacionEtiquetaProd.COLUMNNAME_Z_ConfirmacionEtiquetaDoc_ID + " =" + this.get_ID();
+
+        List<MZConfirmacionEtiquetaProd> lines = new Query(getCtx(), I_Z_ConfirmacionEtiquetaProd.Table_Name, whereClause, get_TrxName()).list();
+
+        return lines;
+    }
 }

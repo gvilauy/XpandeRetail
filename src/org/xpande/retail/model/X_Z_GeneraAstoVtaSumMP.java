@@ -25,14 +25,14 @@ import org.compiere.util.Env;
 
 /** Generated Model for Z_GeneraAstoVtaSumMP
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0 - $Id$ */
+ *  @version Release 3.9.1 - $Id$ */
 public class X_Z_GeneraAstoVtaSumMP extends PO implements I_Z_GeneraAstoVtaSumMP, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20191128L;
+	private static final long serialVersionUID = 20220408L;
 
     /** Standard Constructor */
     public X_Z_GeneraAstoVtaSumMP (Properties ctx, int Z_GeneraAstoVtaSumMP_ID, String trxName)
@@ -137,6 +137,34 @@ public class X_Z_GeneraAstoVtaSumMP extends PO implements I_Z_GeneraAstoVtaSumMP
 		return bd;
 	}
 
+	/** Set brandid.
+		@param brandid brandid	  */
+	public void setbrandid (String brandid)
+	{
+		set_Value (COLUMNNAME_brandid, brandid);
+	}
+
+	/** Get brandid.
+		@return brandid	  */
+	public String getbrandid () 
+	{
+		return (String)get_Value(COLUMNNAME_brandid);
+	}
+
+	/** Set brandname.
+		@param brandname brandname	  */
+	public void setbrandname (String brandname)
+	{
+		set_Value (COLUMNNAME_brandname, brandname);
+	}
+
+	/** Get brandname.
+		@return brandname	  */
+	public String getbrandname () 
+	{
+		return (String)get_Value(COLUMNNAME_brandname);
+	}
+
 	/** Set C_Currency_2_ID.
 		@param C_Currency_2_ID 
 		Moneda secundaria para procesos
@@ -222,6 +250,20 @@ public class X_Z_GeneraAstoVtaSumMP extends PO implements I_Z_GeneraAstoVtaSumMP
 		return (String)get_Value(COLUMNNAME_CodMedioPagoPOS);
 	}
 
+	/** Set codprodtarjeta.
+		@param codprodtarjeta codprodtarjeta	  */
+	public void setcodprodtarjeta (String codprodtarjeta)
+	{
+		set_Value (COLUMNNAME_codprodtarjeta, codprodtarjeta);
+	}
+
+	/** Get codprodtarjeta.
+		@return codprodtarjeta	  */
+	public String getcodprodtarjeta () 
+	{
+		return (String)get_Value(COLUMNNAME_codprodtarjeta);
+	}
+
 	/** Set CodTipoLineaPOS.
 		@param CodTipoLineaPOS 
 		Código de tipo de linea para POS en Retail
@@ -276,6 +318,20 @@ public class X_Z_GeneraAstoVtaSumMP extends PO implements I_Z_GeneraAstoVtaSumMP
 		return (String)get_Value(COLUMNNAME_NomMedioPagoPOS);
 	}
 
+	/** Set nomprodtarjeta.
+		@param nomprodtarjeta nomprodtarjeta	  */
+	public void setnomprodtarjeta (String nomprodtarjeta)
+	{
+		set_Value (COLUMNNAME_nomprodtarjeta, nomprodtarjeta);
+	}
+
+	/** Get nomprodtarjeta.
+		@return nomprodtarjeta	  */
+	public String getnomprodtarjeta () 
+	{
+		return (String)get_Value(COLUMNNAME_nomprodtarjeta);
+	}
+
 	/** Set NomTipoLineaPOS.
 		@param NomTipoLineaPOS 
 		Nombre de tipo de linea POS para Retail
@@ -291,23 +347,6 @@ public class X_Z_GeneraAstoVtaSumMP extends PO implements I_Z_GeneraAstoVtaSumMP
 	public String getNomTipoLineaPOS () 
 	{
 		return (String)get_Value(COLUMNNAME_NomTipoLineaPOS);
-	}
-
-	/** Set Immutable Universally Unique Identifier.
-		@param UUID 
-		Immutable Universally Unique Identifier
-	  */
-	public void setUUID (String UUID)
-	{
-		set_Value (COLUMNNAME_UUID, UUID);
-	}
-
-	/** Get Immutable Universally Unique Identifier.
-		@return Immutable Universally Unique Identifier
-	  */
-	public String getUUID () 
-	{
-		return (String)get_Value(COLUMNNAME_UUID);
 	}
 
 	public I_Z_GeneraAstoVta getZ_GeneraAstoVta() throws RuntimeException

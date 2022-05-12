@@ -681,4 +681,13 @@ public class MZComunicacionPOS extends X_Z_ComunicacionPOS implements DocAction,
 
 		return true;
 	}
+
+	public List<MZConfirmacionEtiqueta> getConfEtiquetas() {
+
+		String whereClause = X_Z_ConfirmacionEtiqueta.COLUMNNAME_Z_ComunicacionPOS_ID + " =" + this.get_ID();
+
+		List<MZConfirmacionEtiqueta> lines = new Query(getCtx(), I_Z_ConfirmacionEtiqueta.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
 }
