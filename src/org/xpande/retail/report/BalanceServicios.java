@@ -164,6 +164,7 @@ public class BalanceServicios extends SvrProcess {
                         " left outer join zv_ultimoproductoupc vupc on p.m_product_id = vupc.m_product_id " +
                         " left outer join z_productoupc pupc on vupc.z_productoupc_id = pupc.z_productoupc_id " +
                         " where p.issold ='Y' and p.ispurchased ='Y' and p.isactive ='Y' " + whereClause +
+                        " and p.updated >='2022-09-01 00:00:00' " +
                         " order by p.name ";
             }
             else {

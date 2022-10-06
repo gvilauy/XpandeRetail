@@ -771,7 +771,7 @@ public class CalloutInvoice extends CalloutEngine
 		}
 
 		// Xpande. Gabriel Vila. Al modificar valores de descuentos manuales en la linea de la invoice
-		// Por ahora lo pase para el validatorretail al guardar la linea
+		// Por ahora lo pase para el tail al guardar la linea
 		/*
 		else if ((mField.getColumnName().equals("Discount1")) || (mField.getColumnName().equals("Discount2"))
 					|| (mField.getColumnName().equals("Discount3"))){

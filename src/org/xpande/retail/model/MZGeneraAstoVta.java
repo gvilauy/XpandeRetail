@@ -762,7 +762,7 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 
 			action = " delete from " + X_Z_GenAstoVtaDetMPGeo.Table_Name +
 					" where " + X_Z_GenAstoVtaDetMPGeo.COLUMNNAME_Z_GeneraAstoVta_ID + " =" + this.get_ID();
-			DB.executeUpdateEx(action, get_TrxName());
+			//DB.executeUpdateEx(action, get_TrxName());
 
 			if (this.getZ_PosVendor_ID() <= 0){
 				return "Falta indicar Proveedor de POS para la Organización seleccionada";
@@ -1831,9 +1831,9 @@ public class MZGeneraAstoVta extends X_Z_GeneraAstoVta implements DocAction, Doc
 		ResultSet rs = null;
 
 		try{
-			sql = " select a.c_taxcategory_id, b.name, a.sc_porcentajeiva, round(sum(a.sc_montoiva),2) as taxamt, " +
+			sql = " select a.c_taxcategory_id, b.name, a.sc_porcentajeiva, round(sum(a.sc_montoiva * coalesce(a.sc_cotizacioncompra,1)),2) as taxamt, " +
 					" case when sc_porcentajeiva > 0 then " +
-					" sum(round((a.sc_importe*100)/(100 + sc_porcentajeiva),2)) else sum(a.sc_importe) end as taxbaseamt " +
+					" sum(round((a.sc_importe * coalesce(a.sc_cotizacioncompra,1) *100)/(100 + sc_porcentajeiva),2)) else sum(a.sc_importe * coalesce(a.sc_cotizacioncompra,1)) end as taxbaseamt " +
 					" from zv_scanntech_detvtas a " +
 					" left outer join c_taxcategory b on a.c_taxcategory_id = b.c_taxcategory_id  " +
 					" where a.ad_org_id =" + this.getAD_Org_ID() +
