@@ -21,6 +21,8 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
@@ -229,6 +231,11 @@ public class MZCreditLine extends X_Z_CreditLine implements DocAction, DocOption
 		log.info(toString());
 		//
 
+		m_processMsg = this.validateDocument();
+		if (m_processMsg != null){
+			return DocAction.STATUS_Invalid;
+		}
+
 		// Seteo info en el socio de negocio
 		MBPartner partner = (MBPartner) this.getC_BPartner();
 		Timestamp creditDueDate = (Timestamp) partner.get_Value("CreditDueDate");
@@ -274,7 +281,7 @@ public class MZCreditLine extends X_Z_CreditLine implements DocAction, DocOption
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
-	
+
 	/**
 	 * 	Set the definite document number after completed
 	 */
@@ -432,6 +439,279 @@ public class MZCreditLine extends X_Z_CreditLine implements DocAction, DocOption
     }
 
 	@Override
+	protected boolean beforeSave(boolean newRecord) {
+
+		if (!newRecord){
+			if (is_ValueChanged(X_Z_CreditLine.COLUMNNAME_CreditLimit)) {
+				// Limite Credito
+				MZCreditLineAudit lineAudit = new MZCreditLineAudit(getCtx(), 0, get_TrxName());
+				lineAudit.setAD_Org_ID(this.getAD_Org_ID());
+				lineAudit.setAD_User_ID(this.getUpdatedBy());
+				lineAudit.setC_BPartner_ID(this.getC_BPartner_ID());
+				lineAudit.setC_Currency_ID(this.getC_Currency_ID());
+				lineAudit.setC_DocType_ID(this.getC_DocType_ID());
+				lineAudit.setCreditLimit(this.getCreditLimit());
+				lineAudit.setDateDoc(this.getDateDoc());
+				lineAudit.setDateTrx(this.getCreated());
+				lineAudit.setDocStatus(this.getDocStatus());
+				lineAudit.setEndDate(this.getEndDate());
+				lineAudit.setIsAuthSupervisor(this.get_ValueAsBoolean("IsAuthSupervisor"));
+				lineAudit.setStartDate(this.getStartDate());
+				lineAudit.setZ_CreditLine_ID(this.get_ID());
+				lineAudit.setZ_CreditLineCategory_ID(this.getZ_CreditLineCategory_ID());
+				lineAudit.setColumnName("Limite de Crédito");
+				lineAudit.setOldValue(this.get_ValueOld(X_Z_CreditLine.COLUMNNAME_CreditLimit).toString());
+				lineAudit.setNewValue(this.getCreditLimit().toString());
+				lineAudit.saveEx();
+			}
+			if (is_ValueChanged(X_Z_CreditLine.COLUMNNAME_StartDate)) {
+				MZCreditLineAudit lineAudit = new MZCreditLineAudit(getCtx(), 0, get_TrxName());
+				lineAudit.setAD_Org_ID(this.getAD_Org_ID());
+				lineAudit.setAD_User_ID(this.getUpdatedBy());
+				lineAudit.setC_BPartner_ID(this.getC_BPartner_ID());
+				lineAudit.setC_Currency_ID(this.getC_Currency_ID());
+				lineAudit.setC_DocType_ID(this.getC_DocType_ID());
+				lineAudit.setCreditLimit(this.getCreditLimit());
+				lineAudit.setDateDoc(this.getDateDoc());
+				lineAudit.setDateTrx(this.getCreated());
+				lineAudit.setDocStatus(this.getDocStatus());
+				lineAudit.setEndDate(this.getEndDate());
+				lineAudit.setIsAuthSupervisor(this.get_ValueAsBoolean("IsAuthSupervisor"));
+				lineAudit.setStartDate(this.getStartDate());
+				lineAudit.setZ_CreditLine_ID(this.get_ID());
+				lineAudit.setZ_CreditLineCategory_ID(this.getZ_CreditLineCategory_ID());
+				lineAudit.setColumnName("Fecha Desde");
+				lineAudit.setNewValue(this.getStartDate().toString());
+				lineAudit.setOldValue(this.get_ValueOld(X_Z_CreditLine.COLUMNNAME_StartDate).toString());
+				lineAudit.saveEx();
+			}
+			if (is_ValueChanged(X_Z_CreditLine.COLUMNNAME_EndDate)) {
+				MZCreditLineAudit lineAudit = new MZCreditLineAudit(getCtx(), 0, get_TrxName());
+				lineAudit.setAD_Org_ID(this.getAD_Org_ID());
+				lineAudit.setAD_User_ID(this.getUpdatedBy());
+				lineAudit.setC_BPartner_ID(this.getC_BPartner_ID());
+				lineAudit.setC_Currency_ID(this.getC_Currency_ID());
+				lineAudit.setC_DocType_ID(this.getC_DocType_ID());
+				lineAudit.setCreditLimit(this.getCreditLimit());
+				lineAudit.setDateDoc(this.getDateDoc());
+				lineAudit.setDateTrx(this.getCreated());
+				lineAudit.setDocStatus(this.getDocStatus());
+				lineAudit.setEndDate(this.getEndDate());
+				lineAudit.setIsAuthSupervisor(this.get_ValueAsBoolean("IsAuthSupervisor"));
+				lineAudit.setStartDate(this.getStartDate());
+				lineAudit.setZ_CreditLine_ID(this.get_ID());
+				lineAudit.setZ_CreditLineCategory_ID(this.getZ_CreditLineCategory_ID());
+				lineAudit.setColumnName("Fecha Hasta");
+				lineAudit.setNewValue(this.getEndDate().toString());
+				lineAudit.setOldValue(this.get_ValueOld(X_Z_CreditLine.COLUMNNAME_EndDate).toString());
+				lineAudit.saveEx();
+			}
+			if (is_ValueChanged(X_Z_CreditLine.COLUMNNAME_DocStatus)) {
+				MZCreditLineAudit lineAudit = new MZCreditLineAudit(getCtx(), 0, get_TrxName());
+				lineAudit.setAD_Org_ID(this.getAD_Org_ID());
+				lineAudit.setAD_User_ID(this.getUpdatedBy());
+				lineAudit.setC_BPartner_ID(this.getC_BPartner_ID());
+				lineAudit.setC_Currency_ID(this.getC_Currency_ID());
+				lineAudit.setC_DocType_ID(this.getC_DocType_ID());
+				lineAudit.setCreditLimit(this.getCreditLimit());
+				lineAudit.setDateDoc(this.getDateDoc());
+				lineAudit.setDateTrx(this.getCreated());
+				lineAudit.setDocStatus(this.getDocStatus());
+				lineAudit.setEndDate(this.getEndDate());
+				lineAudit.setIsAuthSupervisor(this.get_ValueAsBoolean("IsAuthSupervisor"));
+				lineAudit.setStartDate(this.getStartDate());
+				lineAudit.setZ_CreditLine_ID(this.get_ID());
+				lineAudit.setZ_CreditLineCategory_ID(this.getZ_CreditLineCategory_ID());
+				lineAudit.setColumnName("Estado Documento");
+				if (this.getDocStatus().equalsIgnoreCase("DR")){
+					lineAudit.setNewValue("Borrador");
+				}
+				else if (this.getDocStatus().equalsIgnoreCase("CO")){
+					lineAudit.setNewValue("Completo");
+				}
+				else if (this.getDocStatus().equalsIgnoreCase("IP")){
+					lineAudit.setNewValue("Reactivado");
+				}
+				else if (this.getDocStatus().equalsIgnoreCase("VO")){
+					lineAudit.setNewValue("Anulado");
+				}
+				String oldValue = this.get_ValueOld(X_Z_CreditLine.COLUMNNAME_DocStatus).toString();
+				if (oldValue.equalsIgnoreCase("DR")){
+					lineAudit.setOldValue("Borrador");
+				}
+				else if (oldValue.equalsIgnoreCase("CO")){
+					lineAudit.setOldValue("Completo");
+				}
+				else if (oldValue.equalsIgnoreCase("IP")){
+					lineAudit.setOldValue("Reactivado");
+				}
+				else if (oldValue.equalsIgnoreCase("VO")){
+					lineAudit.setOldValue("Anulado");
+				}
+				lineAudit.saveEx();
+			}
+			if (is_ValueChanged("IsAuthSupervisor")) {
+				MZCreditLineAudit lineAudit = new MZCreditLineAudit(getCtx(), 0, get_TrxName());
+				lineAudit.setAD_Org_ID(this.getAD_Org_ID());
+				lineAudit.setAD_User_ID(this.getUpdatedBy());
+				lineAudit.setC_BPartner_ID(this.getC_BPartner_ID());
+				lineAudit.setC_Currency_ID(this.getC_Currency_ID());
+				lineAudit.setC_DocType_ID(this.getC_DocType_ID());
+				lineAudit.setCreditLimit(this.getCreditLimit());
+				lineAudit.setDateDoc(this.getDateDoc());
+				lineAudit.setDateTrx(this.getCreated());
+				lineAudit.setDocStatus(this.getDocStatus());
+				lineAudit.setEndDate(this.getEndDate());
+				lineAudit.setIsAuthSupervisor(this.get_ValueAsBoolean("IsAuthSupervisor"));
+				lineAudit.setStartDate(this.getStartDate());
+				lineAudit.setZ_CreditLine_ID(this.get_ID());
+				lineAudit.setZ_CreditLineCategory_ID(this.getZ_CreditLineCategory_ID());
+				lineAudit.setColumnName("Autoriza Sobregiro Supervisor");
+				if (this.get_ValueAsBoolean("IsAuthSupervisor")){
+					lineAudit.setNewValue("Si");
+				}
+				else{
+					lineAudit.setNewValue("No");
+				}
+				lineAudit.setOldValue(this.get_ValueOld("IsAuthSupervisor").toString());
+				lineAudit.saveEx();
+			}
+		}
+		return true;
+	}
+
+	@Override
+	protected boolean afterSave(boolean newRecord, boolean success) {
+
+		if (!success) return false;
+
+		if (newRecord){
+			// Fecha Inicio
+			MZCreditLineAudit lineAudit = new MZCreditLineAudit(getCtx(), 0, get_TrxName());
+			lineAudit.setAD_Org_ID(this.getAD_Org_ID());
+			lineAudit.setAD_User_ID(this.getUpdatedBy());
+			lineAudit.setC_BPartner_ID(this.getC_BPartner_ID());
+			lineAudit.setC_Currency_ID(this.getC_Currency_ID());
+			lineAudit.setC_DocType_ID(this.getC_DocType_ID());
+			lineAudit.setCreditLimit(this.getCreditLimit());
+			lineAudit.setDateDoc(this.getDateDoc());
+			lineAudit.setDateTrx(this.getCreated());
+			lineAudit.setDocStatus(this.getDocStatus());
+			lineAudit.setEndDate(this.getEndDate());
+			lineAudit.setIsAuthSupervisor(this.get_ValueAsBoolean("IsAuthSupervisor"));
+			lineAudit.setStartDate(this.getStartDate());
+			lineAudit.setZ_CreditLine_ID(this.get_ID());
+			lineAudit.setZ_CreditLineCategory_ID(this.getZ_CreditLineCategory_ID());
+			lineAudit.setColumnName("Fecha Desde");
+			lineAudit.setNewValue(this.getStartDate().toString());
+			lineAudit.saveEx();
+
+			// Fecha Fin
+			lineAudit = new MZCreditLineAudit(getCtx(), 0, get_TrxName());
+			lineAudit.setAD_Org_ID(this.getAD_Org_ID());
+			lineAudit.setAD_User_ID(this.getUpdatedBy());
+			lineAudit.setC_BPartner_ID(this.getC_BPartner_ID());
+			lineAudit.setC_Currency_ID(this.getC_Currency_ID());
+			lineAudit.setC_DocType_ID(this.getC_DocType_ID());
+			lineAudit.setCreditLimit(this.getCreditLimit());
+			lineAudit.setDateDoc(this.getDateDoc());
+			lineAudit.setDateTrx(this.getCreated());
+			lineAudit.setDocStatus(this.getDocStatus());
+			lineAudit.setEndDate(this.getEndDate());
+			lineAudit.setIsAuthSupervisor(this.get_ValueAsBoolean("IsAuthSupervisor"));
+			lineAudit.setStartDate(this.getStartDate());
+			lineAudit.setZ_CreditLine_ID(this.get_ID());
+			lineAudit.setZ_CreditLineCategory_ID(this.getZ_CreditLineCategory_ID());
+			lineAudit.setColumnName("Fecha Hasta");
+			lineAudit.setNewValue(this.getEndDate().toString());
+			lineAudit.saveEx();
+
+			// Limite Credito
+			lineAudit = new MZCreditLineAudit(getCtx(), 0, get_TrxName());
+			lineAudit.setAD_Org_ID(this.getAD_Org_ID());
+			lineAudit.setAD_User_ID(this.getUpdatedBy());
+			lineAudit.setC_BPartner_ID(this.getC_BPartner_ID());
+			lineAudit.setC_Currency_ID(this.getC_Currency_ID());
+			lineAudit.setC_DocType_ID(this.getC_DocType_ID());
+			lineAudit.setCreditLimit(this.getCreditLimit());
+			lineAudit.setDateDoc(this.getDateDoc());
+			lineAudit.setDateTrx(this.getCreated());
+			lineAudit.setDocStatus(this.getDocStatus());
+			lineAudit.setEndDate(this.getEndDate());
+			lineAudit.setIsAuthSupervisor(this.get_ValueAsBoolean("IsAuthSupervisor"));
+			lineAudit.setStartDate(this.getStartDate());
+			lineAudit.setZ_CreditLine_ID(this.get_ID());
+			lineAudit.setZ_CreditLineCategory_ID(this.getZ_CreditLineCategory_ID());
+			lineAudit.setColumnName("Limite de Crédito");
+			lineAudit.setNewValue(this.getCreditLimit().toString());
+			lineAudit.saveEx();
+
+			// Estado Documento
+			lineAudit = new MZCreditLineAudit(getCtx(), 0, get_TrxName());
+			lineAudit.setAD_Org_ID(this.getAD_Org_ID());
+			lineAudit.setAD_User_ID(this.getUpdatedBy());
+			lineAudit.setC_BPartner_ID(this.getC_BPartner_ID());
+			lineAudit.setC_Currency_ID(this.getC_Currency_ID());
+			lineAudit.setC_DocType_ID(this.getC_DocType_ID());
+			lineAudit.setCreditLimit(this.getCreditLimit());
+			lineAudit.setDateDoc(this.getDateDoc());
+			lineAudit.setDateTrx(this.getCreated());
+			lineAudit.setDocStatus(this.getDocStatus());
+			lineAudit.setEndDate(this.getEndDate());
+			lineAudit.setIsAuthSupervisor(this.get_ValueAsBoolean("IsAuthSupervisor"));
+			lineAudit.setStartDate(this.getStartDate());
+			lineAudit.setZ_CreditLine_ID(this.get_ID());
+			lineAudit.setZ_CreditLineCategory_ID(this.getZ_CreditLineCategory_ID());
+			lineAudit.setColumnName("Estado Documento");
+			if (this.getDocStatus().equalsIgnoreCase("DR")){
+				lineAudit.setNewValue("Borrador");
+			}
+			else if (this.getDocStatus().equalsIgnoreCase("CO")){
+				lineAudit.setNewValue("Completo");
+			}
+			else if (this.getDocStatus().equalsIgnoreCase("IP")){
+				lineAudit.setNewValue("Reactivado");
+			}
+			else if (this.getDocStatus().equalsIgnoreCase("VO")){
+				lineAudit.setNewValue("Anulado");
+			}
+			lineAudit.saveEx();
+
+			// Autoriza
+			lineAudit = new MZCreditLineAudit(getCtx(), 0, get_TrxName());
+			lineAudit.setAD_Org_ID(this.getAD_Org_ID());
+			lineAudit.setAD_User_ID(this.getUpdatedBy());
+			lineAudit.setC_BPartner_ID(this.getC_BPartner_ID());
+			lineAudit.setC_Currency_ID(this.getC_Currency_ID());
+			lineAudit.setC_DocType_ID(this.getC_DocType_ID());
+			lineAudit.setCreditLimit(this.getCreditLimit());
+			lineAudit.setDateDoc(this.getDateDoc());
+			lineAudit.setDateTrx(this.getCreated());
+			lineAudit.setDocStatus(this.getDocStatus());
+			lineAudit.setEndDate(this.getEndDate());
+			lineAudit.setIsAuthSupervisor(this.get_ValueAsBoolean("IsAuthSupervisor"));
+			lineAudit.setStartDate(this.getStartDate());
+			lineAudit.setZ_CreditLine_ID(this.get_ID());
+			lineAudit.setZ_CreditLineCategory_ID(this.getZ_CreditLineCategory_ID());
+			lineAudit.setColumnName("Autoriza Sobregiro Supervisor");
+			if (this.get_ValueAsBoolean("IsAuthSupervisor")){
+				lineAudit.setNewValue("Si");
+			}
+			else{
+				lineAudit.setNewValue("No");
+			}
+			lineAudit.saveEx();
+		}
+		else{
+			if ((is_ValueChanged(X_Z_CreditLine.COLUMNNAME_CreditLimit)) || (is_ValueChanged(X_Z_CreditLine.COLUMNNAME_StartDate))
+				|| (is_ValueChanged(X_Z_CreditLine.COLUMNNAME_EndDate)) || (is_ValueChanged(X_Z_CreditLine.COLUMNNAME_DocStatus))
+				|| (is_ValueChanged("IsAuthSupervisor"))) {
+			}
+		}
+		return true;
+	}
+
+	@Override
 	protected boolean beforeDelete() {
 
 		if (this.getC_BPartner_ID() > 0){
@@ -445,5 +725,30 @@ public class MZCreditLine extends X_Z_CreditLine implements DocAction, DocOption
 			}
 		}
 		return true;
+	}
+
+	private String validateDocument() {
+		try{
+			// Valido fechas
+			if (this.getStartDate().after(this.getEndDate())){
+				return "Fecha desde no puede ser mayor a fecha hasta";
+			}
+			// Verifico que no haya otra linea de credito vigente para este socio de negocio en estas fechas
+			String sql= " select max(z_creditline_id) as id " +
+					"from z_creditline " +
+					"where z_creditline_id !=" + this.get_ID() +
+					"and docstatus='CO' " +
+					"and c_bpartner_id=" + this.getC_BPartner_ID() +
+					"and ((startdate between '" + this.getStartDate() + "' and '" + this.getEndDate() + "') " +
+					" or (enddate between '" + this.getStartDate() + "' and '" + this.getEndDate() + "')) ";
+			int idAux = DB.getSQLValueEx(get_TrxName(), sql);
+			if (idAux > 0){
+				return "Este Socio de Negocio ya tiene una Linea de Crédito Activa en este rango de Fechas.";
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+		return null;
 	}
 }
