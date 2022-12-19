@@ -785,8 +785,21 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 
 			int zOfertaVentaID = 0;
 			MZConfirmacionEtiquetaDoc etiquetaDoc = null;
-			int adTableID = MTable.getTable_ID(I_Z_OfertaVenta.Table_Name);
+			int adTableID = MTable.getTable_ID(I_Z_RegularOffer.Table_Name);
 
+			sql = " select a.z_regularoffer_id, a.c_doctype_id, a.documentno, a.datefrom as startdate, a.updated, a.updatedby, " +
+					" coalesce(b.salescurrency_id, b.c_currency_id_to) as c_currency_id, b.m_product_id, b.newpriceso " +
+					" from z_regularofferline b " +
+					" inner join z_regularoffer a on b.z_regularoffer_id = a.z_regularoffer_id " +
+					" where a.ad_client_id =" + this.getAD_Client_ID() +
+					" and a.ad_org_id in (0, " + this.getAD_Org_ID() + ") " +
+					" and (a.datefrom <='" + this.getDateDoc() + "' " +
+					" and a.dateto >='" + this.getDateDoc() + "') " +
+					" and a.docstatus='CO' " +
+					" and a.z_pricetostore_id is null " +
+					" order by a.updated, a.z_regularoffer_id ";
+
+			/*
 			sql = " select cab.z_ofertaventa_id, cab.c_doctype_id, cab.documentno, cab.startdate, cab.updated, cab.updatedby, " +
 					" lin.c_currency_id_so as c_currency_id, lin.m_product_id, lin.newpriceso, linorg.ad_orgtrx_id " +
 					" from z_ofertaventalinorg linorg " +
@@ -805,6 +818,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					" where confdoc.isselected ='Y' and confdoc.ad_table_id =" + adTableID +
 					" and conf.ad_org_id =" + this.getAD_Org_ID() + ")) OR (cab.ismodified='Y' AND caborg.ismodified='Y')) " +
 					" order by cab.updated, cab.z_ofertaventa_id ";
+			 */
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();
@@ -812,12 +826,12 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 			while(rs.next()){
 
 				// Corte por id de documento de gestión de precios
-				if (rs.getInt("z_ofertaventa_id") != zOfertaVentaID){
+				if (rs.getInt("z_regularoffer_id") != zOfertaVentaID){
 					// Nuevo documento
 					etiquetaDoc = new MZConfirmacionEtiquetaDoc(getCtx(), 0, get_TrxName());
 					etiquetaDoc.setZ_ConfirmacionEtiqueta_ID(this.get_ID());
 					etiquetaDoc.setAD_Table_ID(adTableID);
-					etiquetaDoc.setRecord_ID(rs.getInt("z_ofertaventa_id"));
+					etiquetaDoc.setRecord_ID(rs.getInt("z_regularoffer_id"));
 					etiquetaDoc.setAD_User_ID(rs.getInt("updatedby"));
 					etiquetaDoc.setC_DocTypeTarget_ID(rs.getInt("c_doctype_id"));
 					etiquetaDoc.setDateDoc(rs.getTimestamp("updated"));
@@ -825,8 +839,9 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					etiquetaDoc.setDateToPos(rs.getTimestamp("startdate"));
 					etiquetaDoc.save();
 
-					zOfertaVentaID = rs.getInt("z_ofertaventa_id");
+					zOfertaVentaID = rs.getInt("z_regularoffer_id");
 
+					/*
 					// Si es una corrección de oferta, tengo que considerar los productos eliminados de la misma
 					MZOfertaVenta ofertaVenta = new MZOfertaVenta(getCtx(), zOfertaVentaID, get_TrxName());
 					if (ofertaVenta.isModified()){
@@ -844,6 +859,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 							etiquetaProd.saveEx();
 						}
 					}
+					 */
 				}
 
 				// Nuevo producto

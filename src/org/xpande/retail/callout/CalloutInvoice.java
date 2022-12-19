@@ -25,6 +25,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.eevolution.model.X_C_TaxGroup;
 import org.xpande.comercial.model.MZComercialConfig;
+import org.xpande.comercial.model.MZProdPurchaseOffer;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.core.model.MZSocioListaPrecio;
 import org.xpande.core.utils.PriceListUtils;
@@ -426,6 +427,15 @@ public class CalloutInvoice extends CalloutEngine
 				mTab.setValue("PricePO", mTab.getValue("PriceEntered"));
 				mTab.setValue("PricePONoDto", mTab.getValue("PriceEntered"));
 			}
+			// Verifico si tengo que tomar precio PO desde oferta periódica
+			BigDecimal priceOffer = MZProdPurchaseOffer.getOfferPrice(ctx, invoice.getAD_Client_ID(), invoice.getAD_Org_ID(), M_Product_ID, invoice.getDateInvoiced(), null);
+			if (priceOffer != null) {
+				pricePO = priceOffer;
+				mTab.setValue("PriceActual", priceOffer);
+				mTab.setValue("PriceEntered", priceOffer);
+				mTab.setValue("PricePO", priceOffer);
+				mTab.setValue("PricePONoDto", priceOffer);
+			}
 		}
 		// Xpande.
 
@@ -739,6 +749,17 @@ public class CalloutInvoice extends CalloutEngine
 				else{
 					mTab.setValue("PricePO", mTab.getValue("PriceEntered"));
 					mTab.setValue("PricePONoDto", mTab.getValue("PriceEntered"));
+				}
+				// Verifico si tengo que tomar precio PO desde oferta periódica
+				BigDecimal priceOffer = MZProdPurchaseOffer.getOfferPrice(ctx, invoice.getAD_Client_ID(), invoice.getAD_Org_ID(), M_Product_ID, invoice.getDateInvoiced(), null);
+				if (priceOffer != null) {
+					pricePO = priceOffer;
+					mTab.setValue("PriceActual", priceOffer);
+					PriceEntered = PriceListUtils.convertPriceFrom(ctx, M_Product_ID, C_UOM_To_ID, priceOffer, StdPrecision);
+					if (PriceEntered == null) PriceEntered = priceOffer;
+					mTab.setValue("PriceEntered", PriceEntered);
+					mTab.setValue("PricePO", pricePO);
+					mTab.setValue("PricePONoDto", pricePO);
 				}
 			}
 			// Xpande.

@@ -5,6 +5,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.xpande.comercial.model.MZProdSalesOffer;
 import org.xpande.core.model.MZProductoUPC;
 import org.xpande.core.model.MZSocioListaPrecio;
 import org.xpande.core.utils.CurrencyUtils;
@@ -750,6 +751,7 @@ public class CalloutPrecios extends CalloutEngine {
 
             // Verifico si este producto tiene una oferta vigente para la fecha actual.
             // Si es asi, el precio que tiene que considerarse es el precio oferta y no el precio de lista.
+            /*
             Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
             MZProductoOferta productoOferta = MZProductoOferta.getByProductDate(ctx, prod.get_ID(), fechaHoy, fechaHoy, null);
             if ((productoOferta != null) && (productoOferta.get_ID() > 0)){
@@ -762,6 +764,24 @@ public class CalloutPrecios extends CalloutEngine {
                 }
                 validFrom = ofertaVenta.getStartDate();
             }
+            */
+
+            // Si tengo oferta de venta vigente para este producto y organización me aseguro de setear este precio de oferta
+            // De esta manera la marca se crea pero el precio es el de oferta
+            Timestamp today = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+            int adOrgID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
+            String sql = " select max(z_prodsalesoffer_id) as z_prodsalesoffer_id " +
+                    " from z_prodsalesoffer " +
+                    " where ad_org_id =" + adOrgID +
+                    " and m_product_id =" + prod.get_ID() +
+                    " and enddate >= '" + today + "' ";
+            int offerID = DB.getSQLValueEx(null, sql);
+            if (offerID > 0) {
+                MZProdSalesOffer prodSalesOffer = new MZProdSalesOffer(ctx, offerID, null);
+                priceSO = prodSalesOffer.getPrice();
+                validFrom = prodSalesOffer.getEndDate();
+            }
+
             if (productPrice != null){
                 mTab.setValue("PriceSO", priceSO);
                 mTab.setValue("NewPriceSO", priceSO);

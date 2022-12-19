@@ -238,14 +238,13 @@ public class MZCreditLine extends X_Z_CreditLine implements DocAction, DocOption
 
 		// Seteo info en el socio de negocio
 		MBPartner partner = (MBPartner) this.getC_BPartner();
-		Timestamp creditDueDate = (Timestamp) partner.get_Value("CreditDueDate");
 		int creditLineIDAux = partner.get_ValueAsInt("Z_CreditLine_ID");
 		if ((creditLineIDAux > 0) && (creditLineIDAux != this.get_ID())) {
-			if (creditDueDate != null){
-				if (creditDueDate.after(this.getEndDate())){
-					MZCreditLine creditLineAux = new MZCreditLine(getCtx(), creditLineIDAux, null);
-					m_processMsg = "El socio de negocio tiene otra Linea de Crédito vigente (nro.: " + creditLineAux.getDocumentNo() + "). " +
-							 "No puede tener dos lineas de crédito al mismo tiempo para un mismo período.";
+			MZCreditLine creditLineAux = new MZCreditLine(getCtx(), creditLineIDAux, null);
+			if ((creditLineAux != null) && (creditLineAux.get_ID() > 0)){
+				if (creditLineAux.getEndDate().after(this.getEndDate())){
+					m_processMsg = "El socio de negocio " + partner.getName() + " tiene otra Linea de Crédito vigente (nro.: " + creditLineAux.getDocumentNo() + "). " +
+							"No puede tener dos lineas de crédito al mismo tiempo para un mismo período.";
 				}
 			}
 		}
@@ -743,7 +742,10 @@ public class MZCreditLine extends X_Z_CreditLine implements DocAction, DocOption
 					" or (enddate between '" + this.getStartDate() + "' and '" + this.getEndDate() + "')) ";
 			int idAux = DB.getSQLValueEx(get_TrxName(), sql);
 			if (idAux > 0){
-				return "Este Socio de Negocio ya tiene una Linea de Crédito Activa en este rango de Fechas.";
+				MBPartner partner = (MBPartner) this.getC_BPartner();
+				MZCreditLine creditLineAux = new MZCreditLine(getCtx(), idAux, null);
+				return "El Socio de Negocio " + partner.getName() + " ya tiene una Linea de Crédito Activa en este rango de Fechas " +
+						"(número: " + creditLineAux.getDocumentNo() + ")";
 			}
 		}
 		catch (Exception e){

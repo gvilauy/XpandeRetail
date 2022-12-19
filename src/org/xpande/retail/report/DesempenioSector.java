@@ -4,6 +4,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.xpande.retail.utils.ComercialUtils;
 
 import java.math.BigDecimal;
@@ -219,6 +220,8 @@ public class DesempenioSector extends SvrProcess {
 
             while(rs.next()){
 
+                this.updateSalesInfo(rs.getInt("m_product_id"));
+
                 // Precio Promedio Venta
                 BigDecimal precioPromedioVta = ComercialUtils.getPrecioPromedioVta(getCtx(), this.getAD_Client_ID(), this.adOrgID,
                         rs.getInt("m_product_id"), this.cCurrencyID, this.startDate, this.endDate, null);
@@ -237,6 +240,45 @@ public class DesempenioSector extends SvrProcess {
         finally {
             DB.close(rs, pstmt);
             rs = null; pstmt = null;
+        }
+
+    }
+
+    private void updateSalesInfo(int mProductID) {
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select round(sum(qtyinvoiced),2) as qtyinvoiced, round(sum(amtsubtotal),2) as amtsubtotal " +
+                    " from z_bi_vtaproddia a " +
+                    " where a.ad_org_id =" + this.adOrgID +
+                    " and ad.m_product_id =" + mProductID +
+                    " and a.dateinvoiced between '" + this.startDate + "' and '" + this.endDate + "' ";
+            pstmt = DB.prepareStatement(sql, null);
+        	rs = pstmt.executeQuery();
+
+        	if (rs.next()){
+                BigDecimal qty = rs.getBigDecimal("qtyinvoiced");
+                BigDecimal amt = rs.getBigDecimal("amtsubtotal");
+                if (qty == null) qty = Env.ZERO;
+                if (amt == null) amt = Env.ZERO;
+
+                String action = " update " + TABLA_REPORTE +
+                        " set qtysold =" + qty + ", amtsold =" + amt +
+                        " where ad_user_id =" + this.getAD_User_ID() +
+                        " and m_product_id =" + mProductID;
+
+                DB.executeUpdateEx(action, null);
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
         }
 
     }
