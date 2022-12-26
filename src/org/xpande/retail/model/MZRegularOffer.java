@@ -1192,12 +1192,12 @@ public class MZRegularOffer extends X_Z_RegularOffer implements DocAction, DocOp
 			MProductPrice productPrice = null;
 
 			// Verifico si tengo precio de lista actual para el producto de esta linea.
-			sql = " select m_productprice_id " +
+			sql = " select count(*) as contador " +
 					" from m_productprice " +
 					" where m_pricelist_version_id =" + plVersion.get_ID() +
 					" and m_product_id =" + mProductID;
-			int mProductPriceID = DB.getSQLValueEx(get_TrxName(), sql);
-			if (mProductPriceID <= 0){
+			int contador = DB.getSQLValueEx(get_TrxName(), sql);
+			if (contador <= 0){
 				// Inserto nuevo producto con precio
 				productPrice = new MProductPrice(getCtx(), 0, get_TrxName());
 				productPrice.setAD_Org_ID(plVersion.getAD_Org_ID());
@@ -1212,7 +1212,7 @@ public class MZRegularOffer extends X_Z_RegularOffer implements DocAction, DocOp
 				productPrice.saveEx();
 			}
 			else{
-				productPrice = new MProductPrice(getCtx(), mProductPriceID, get_TrxName());
+				productPrice = MProductPrice.get(getCtx(), plVersion.get_ID(), mProductID, get_TrxName());
 				Env.setContext(getCtx(), "UpdatePrice", "Y");
 				// Actualizo fecha de precio recibido para que se disparen los Validators de cambio en la M_ProductPrice
 				// Necesito actualizar al menos un campo para eso.

@@ -156,7 +156,22 @@ public class DesempenioSector extends SvrProcess {
 
                 sql = " select a.ad_client_id, a.ad_org_id, " + this.getAD_User_ID() + ", " +
                         " z_prodorg_ult_bp_po(a.ad_org_id, a.m_product_id)::numeric(10,0), " +
-                        //((cBPartnerID > 0) ? String.valueOf(this.cBPartnerID) : "null") + "::numeric(10,0), " +
+                        " a.m_product_id, p.value, p.name, '" +  this.startDate + "'::timestamp without time zone, " +
+                        " p.z_productoseccion_id, p.z_productorubro_id, " +
+                        " p.z_productofamilia_id, p.z_productosubfamilia_id, " +
+                        " pupc.z_productoupc_id, pupc.upc, " +
+                        " round(sum(qtypurchased),2) as qtypurchased, round(sum(qtysold),2) as qtysold, " +
+                        " round(sum(amtsubtotalpo),2) as amtsubtotalpo, round(sum(amtsubtotal),2) as amtsubtotal " +
+                        " from m_product p " +
+                        " left outer join z_bi_invprodday a on a.m_product_id = p.m_product_id " +
+                        " left outer join zv_ultimoproductoupc vupc on p.m_product_id = vupc.m_product_id  " +
+                        " left outer join z_productoupc pupc on vupc.z_productoupc_id = pupc.z_productoupc_id " +
+                        " where a.ad_org_id =" + this.adOrgID +
+                        " and a.dateinvoiced between '" + this.startDate + "' and '" + this.endDate + "' " + whereClause +
+                        " group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14 ";
+                /*
+                sql = " select a.ad_client_id, a.ad_org_id, " + this.getAD_User_ID() + ", " +
+                        " z_prodorg_ult_bp_po(a.ad_org_id, a.m_product_id)::numeric(10,0), " +
                         " a.m_product_id, p.value, p.name, '" +  this.startDate + "'::timestamp without time zone, " +
                         " p.z_productoseccion_id, p.z_productorubro_id, " +
                         " p.z_productofamilia_id, p.z_productosubfamilia_id, " +
@@ -170,6 +185,8 @@ public class DesempenioSector extends SvrProcess {
                         " where a.ad_org_id =" + this.adOrgID +
                         " and a.dateinvoiced between '" + this.startDate + "' and '" + this.endDate + "' " + whereClause +
                         " group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14 ";
+                 */
+
             }
             else {
 
@@ -220,8 +237,11 @@ public class DesempenioSector extends SvrProcess {
 
             while(rs.next()){
 
-                this.updateSalesInfo(rs.getInt("m_product_id"));
-
+                BigDecimal qtySold = rs.getBigDecimal("qtysold");
+                if (qtySold == null) qtySold = Env.ZERO;
+                if (qtySold.compareTo(Env.ZERO) == 0){
+                    this.updateSalesInfo(rs.getInt("m_product_id"));
+                }
                 // Precio Promedio Venta
                 BigDecimal precioPromedioVta = ComercialUtils.getPrecioPromedioVta(getCtx(), this.getAD_Client_ID(), this.adOrgID,
                         rs.getInt("m_product_id"), this.cCurrencyID, this.startDate, this.endDate, null);
@@ -254,7 +274,7 @@ public class DesempenioSector extends SvrProcess {
             sql = " select round(sum(qtyinvoiced),2) as qtyinvoiced, round(sum(amtsubtotal),2) as amtsubtotal " +
                     " from z_bi_vtaproddia a " +
                     " where a.ad_org_id =" + this.adOrgID +
-                    " and ad.m_product_id =" + mProductID +
+                    " and a.m_product_id =" + mProductID +
                     " and a.dateinvoiced between '" + this.startDate + "' and '" + this.endDate + "' ";
             pstmt = DB.prepareStatement(sql, null);
         	rs = pstmt.executeQuery();

@@ -252,11 +252,11 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 		for (MZConfirmacionEtiquetaDoc etiquetaDoc: etiquetaDocs){
 
 			// Si este documento es una oferta periódica
-			if (etiquetaDoc.getAD_Table_ID() == X_Z_OfertaVenta.Table_ID){
-
-				// Le indico que se comunico al local con este ID
-				MZOfertaVenta ofertaVenta = new MZOfertaVenta(getCtx(), etiquetaDoc.getRecord_ID(), get_TrxName());
-				ofertaVenta.setComunicadaLocal(this.get_ID(), this.getAD_Org_ID());
+			if (etiquetaDoc.getAD_Table_ID() == X_Z_RegularOffer.Table_ID){
+				// Asocio organización comunicada al local con el ID de comunicacion recibido
+				String action = " update z_regularoffer set z_confirmacionetiqueta_id =" + this.get_ID() +
+						" where z_regularoffer_id =" + etiquetaDoc.getRecord_ID();
+				DB.executeUpdateEx(action, get_TrxName());
 			}
 		}
 
@@ -796,7 +796,8 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					" and (a.datefrom <='" + this.getDateDoc() + "' " +
 					" and a.dateto >='" + this.getDateDoc() + "') " +
 					" and a.docstatus='CO' " +
-					" and a.z_pricetostore_id is null " +
+					" and a.z_confirmacionetiqueta_id is null " +
+					" and b.newpriceso is not null " +
 					" order by a.updated, a.z_regularoffer_id ";
 
 			/*
