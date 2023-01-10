@@ -5,8 +5,15 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MProduct;
 import org.compiere.process.SvrProcess;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.xpande.comercial.model.MZProdPurchaseOffer;
+import org.xpande.comercial.model.MZProdSalesOffer;
 import org.xpande.retail.model.*;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 /**
  * Proceso que refresca costos (campo precio OC) en las lineas de un comprobante de proveedor.
@@ -63,6 +70,8 @@ public class RefrescarCostosFact extends SvrProcess {
                     contador++;
                     */
 
+                    BigDecimal pricePO = null;
+
                     // Si la fecha del comprobante es menor a la fecha de vigencia de costos del modelo producto-socio
                     if (this.invoice.getDateInvoiced().before(productoSocio.getDateValidPO())){
 
@@ -70,9 +79,7 @@ public class RefrescarCostosFact extends SvrProcess {
                         MZHistCostoProd histCostoProd = MZHistCostoProd.getByDateOrgProdPartner(getCtx(), this.invoice.getDateInvoiced(),
                                 this.invoice.getAD_Org_ID(), this.invoice.getC_BPartner_ID(), invoiceLine.getM_Product_ID(), this.invoice.getC_Currency_ID(), get_TrxName());
                         if ((histCostoProd != null) && (histCostoProd.get_ID() > 0)){
-
-                            invoiceLine.set_ValueOfColumn("PricePO", histCostoProd.getPricePO());
-                            invoiceLine.set_ValueOfColumn("PricePONoDto", histCostoProd.getPricePO());
+                            pricePO = histCostoProd.getPricePO();
                         }
                     }
                     else{
@@ -84,24 +91,28 @@ public class RefrescarCostosFact extends SvrProcess {
                             // Tengo oferta, tomo el precio de la oferta
                             MZOfertaVentaLinBP ofertaVentaLinBP = (MZOfertaVentaLinBP) socioOferta.getZ_OfertaVentaLinBP();
                             if ((ofertaVentaLinBP != null) && (ofertaVentaLinBP.get_ID() > 0)){
-
-                                invoiceLine.set_ValueOfColumn("PricePO", ofertaVentaLinBP.getNewPricePO());
-                                invoiceLine.set_ValueOfColumn("PricePONoDto", ofertaVentaLinBP.getNewPricePO());
+                                pricePO = ofertaVentaLinBP.getNewPricePO();
                             }
                         }
                         else{
 
                             MZProductoSocioOrg productoSocioOrg = productoSocio.getOrg(this.invoice.getAD_Org_ID());
                             if ((productoSocioOrg != null) && (productoSocioOrg.get_ID() > 0)){
-                                invoiceLine.set_ValueOfColumn("PricePO", productoSocioOrg.getPricePO());
-                                invoiceLine.set_ValueOfColumn("PricePONoDto", productoSocioOrg.getPricePO());
+                                pricePO = productoSocioOrg.getPricePO();
                             }
                             else{
-                                invoiceLine.set_ValueOfColumn("PricePO", productoSocio.getPricePO());
-                                invoiceLine.set_ValueOfColumn("PricePONoDto", productoSocio.getPricePO());
+                                pricePO = productoSocio.getPricePO();
                             }
                         }
-
+                    }
+                    // Verifico si tengo que tomar precio PO desde oferta periódica
+                    BigDecimal priceOffer = MZProdPurchaseOffer.getOfferPrice(getCtx(), invoice.getAD_Client_ID(), invoice.getAD_Org_ID(), invoiceLine.getM_Product_ID(), invoice.getDateInvoiced(), null);
+                    if (priceOffer != null) {
+                        pricePO = priceOffer;
+                    }
+                    if (pricePO != null){
+                        invoiceLine.set_ValueOfColumn("PricePO", pricePO);
+                        invoiceLine.set_ValueOfColumn("PricePONoDto", pricePO);
                     }
 
                     invoiceLine.saveEx();
