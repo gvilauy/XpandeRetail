@@ -358,6 +358,14 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 	private void updateProductPriceListSO(MPriceList priceList, MPriceListVersion priceListVersion, MZActualizacionPVPLin pvpLinea, Timestamp fechaVigencia) {
 
 		try{
+			boolean forcePriceUpdate = this.get_ValueAsBoolean("SendSamePrice");
+			if (forcePriceUpdate){
+				Env.setContext(getCtx(), "UpdatePrice", "Y");
+			}
+			else{
+				Env.setContext(getCtx(), "UpdatePrice", "N");
+			}
+
 			// Intento obtener precio de lista actual para el producto de esta linea, en la versión de lista
 			// de precios de venta recibida.
 			MProductPrice pprice = MProductPrice.get(getCtx(), priceListVersion.get_ID(), pvpLinea.getM_Product_ID(), get_TrxName());
@@ -375,6 +383,7 @@ public class MZActualizacionPVP extends X_Z_ActualizacionPVP implements DocActio
 			pprice.set_ValueOfColumn("ValidFrom", fechaVigencia);
 			pprice.set_ValueOfColumn("C_DocType_ID", this.getC_DocType_ID());
 			pprice.set_ValueOfColumn("DocumentNoRef", this.getDocumentNo());
+
 			pprice.saveEx();
 
 			// Actualizo datos venta para el producto en esta lista en asociaciones producto-socio
