@@ -521,17 +521,19 @@ public class MZRegularOffer extends X_Z_RegularOffer implements DocAction, DocOp
 		if (newRecord) {
 			// Si este documento tiene organización *, entonces cargo todas las organizaciones de la empresa para
 			// que luego el usuario indique cuales quiere procesar
-			int contOrg = 1;
+			int contOrg = 0;
 			if (this.getAD_Org_ID() == 0){
 				MOrg orgs[] = MOrg.getOfClient(this);
 				for (int i = 0; i < orgs.length; i++){
-					MZRegularOfferOrg offerOrg = new MZRegularOfferOrg(getCtx(), 0, get_TrxName());
-					offerOrg.setZ_RegularOffer_ID(this.get_ID());
-					offerOrg.setAD_OrgTrx_ID(orgs[i].get_ID());
-					offerOrg.setIsExecuted(true);
-					offerOrg.saveEx();
+					if (orgs[i].isActive()){
+						MZRegularOfferOrg offerOrg = new MZRegularOfferOrg(getCtx(), 0, get_TrxName());
+						offerOrg.setZ_RegularOffer_ID(this.get_ID());
+						offerOrg.setAD_OrgTrx_ID(orgs[i].get_ID());
+						offerOrg.setIsExecuted(true);
+						offerOrg.saveEx();
+						contOrg++;
+					}
 				}
-				contOrg = orgs.length;
 			}
 			else{
 				// Este documento tiene una organización determinada, cargo entonces esa única organización.
@@ -540,6 +542,7 @@ public class MZRegularOffer extends X_Z_RegularOffer implements DocAction, DocOp
 				offerOrg.setAD_OrgTrx_ID(this.getAD_Org_ID());
 				offerOrg.setIsExecuted(true);
 				offerOrg.saveEx();
+				contOrg =1;
 			}
 
 			// Si manejo mas de una organización, actualizo flag
@@ -1064,6 +1067,13 @@ public class MZRegularOffer extends X_Z_RegularOffer implements DocAction, DocOp
 				int cCurrencyID = offerLine.getC_Currency_ID_To();
 				int offerCurrencyID = offerLine.getSalesCurrency_ID();
 				BigDecimal newPriceSO = offerLine.getNewPriceSO();
+				// Si tengo organizacion asterisco, tomo la version de lista desde la organizacion que estoy procesando
+				if ((this.getAD_Org_ID() == 0) && (offerOrg.getAD_OrgTrx_ID() != 0)) {
+					MPriceListVersion plvSO = PriceListUtils.getPriceListVersion(getCtx(), this.getAD_Client_ID(), offerOrg.getAD_OrgTrx_ID(), offerLine.getM_Product_ID(), this.getDateFrom(), true, null);
+					if ((plvSO != null) && (plvSO.get_ID() > 0)) {
+						plVersionID = plvSO.get_ID();
+					}
+				}
 				// Si esta linea maneja precios diferenciales de compra por organización y no estoy procesando la organizacion *
 				if ((offerLine.isDifferPriceSO()) && (offerOrg.getAD_OrgTrx_ID() != 0)) {
 					// Busco modelo según organización
