@@ -614,7 +614,8 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					" inner join z_actualizacionpvplin lin on linorg.z_actualizacionpvplin_id = lin.z_actualizacionpvplin_id " +
 					" inner join z_actualizacionpvp cab on lin.z_actualizacionpvp_id = cab.z_actualizacionpvp_id " +
 					" where linorg.ad_orgtrx_id =" + this.getAD_Org_ID() +
-					" and linorg.newpriceso <> linorg.priceso " +
+					//" and linorg.newpriceso <> linorg.priceso " +
+					" and case when cab.sendsameprice ='N' then linorg.newpriceso <> linorg.priceso else 1=1 end " +
 					" and cab.docstatus='CO' " +
 					" and cab.z_actualizacionpvp_id not in " +
 					" (select confdoc.record_id from z_confirmacionetiquetadoc confdoc " +
