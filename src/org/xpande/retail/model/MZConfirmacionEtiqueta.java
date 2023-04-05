@@ -254,8 +254,9 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 			// Si este documento es una oferta periódica
 			if (etiquetaDoc.getAD_Table_ID() == X_Z_RegularOffer.Table_ID){
 				// Asocio organización comunicada al local con el ID de comunicacion recibido
-				String action = " update z_regularoffer set z_confirmacionetiqueta_id =" + this.get_ID() +
-						" where z_regularoffer_id =" + etiquetaDoc.getRecord_ID();
+				String action = " update z_regularofferorg set z_confirmacionetiqueta_id =" + this.get_ID() +
+						" where z_regularoffer_id =" + etiquetaDoc.getRecord_ID() +
+						" and ad_orgtrx_id =" + this.getAD_Org_ID();
 				DB.executeUpdateEx(action, get_TrxName());
 			}
 		}
@@ -792,35 +793,16 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					" coalesce(b.salescurrency_id, b.c_currency_id_to) as c_currency_id, b.m_product_id, b.newpriceso " +
 					" from z_regularofferline b " +
 					" inner join z_regularoffer a on b.z_regularoffer_id = a.z_regularoffer_id " +
+					" inner join z_regularofferorg c on (a.z_regularoffer_id = c.z_regularoffer_id) " +
 					" where a.ad_client_id =" + this.getAD_Client_ID() +
 					" and a.ad_org_id in (0, " + this.getAD_Org_ID() + ") " +
 					" and (a.datefrom <='" + this.getDateDoc() + "' " +
 					" and a.dateto >='" + this.getDateDoc() + "') " +
 					" and a.docstatus='CO' " +
-					" and a.z_confirmacionetiqueta_id is null " +
+					" and (c.z_confirmacionetiqueta_id is null and c.ad_orgtrx_id = 1000008 and c.isexecuted='Y') " +
+					//" and a.z_confirmacionetiqueta_id is null " +
 					" and b.newpriceso is not null " +
 					" order by a.updated, a.z_regularoffer_id ";
-
-			/*
-			sql = " select cab.z_ofertaventa_id, cab.c_doctype_id, cab.documentno, cab.startdate, cab.updated, cab.updatedby, " +
-					" lin.c_currency_id_so as c_currency_id, lin.m_product_id, lin.newpriceso, linorg.ad_orgtrx_id " +
-					" from z_ofertaventalinorg linorg " +
-					" inner join z_ofertaventalin lin on linorg.z_ofertaventalin_id = lin.z_ofertaventalin_id " +
-					" inner join z_ofertaventa cab on lin.z_ofertaventa_id = cab.z_ofertaventa_id " +
-					" inner join z_ofertaventaorg caborg on (cab.z_ofertaventa_id = caborg.z_ofertaventa_id " +
-					" and caborg.ad_orgtrx_id =" + this.getAD_Org_ID() + ") " +
-					" where linorg.ad_orgtrx_id =" + this.getAD_Org_ID() +
-					" and lin.newpriceso > 0 " +
-					" and cab.docstatus='CO' " +
-					" and cab.startdate <='" + fechaOferta + "' "  +
-					//"' and cab.enddate >='" + fechaOferta + "') " +
-					" and ((cab.z_ofertaventa_id not in " +
-					" (select confdoc.record_id from z_confirmacionetiquetadoc confdoc " +
-					" inner join z_confirmacionetiqueta conf on confdoc.z_confirmacionetiqueta_id = conf.z_confirmacionetiqueta_id " +
-					" where confdoc.isselected ='Y' and confdoc.ad_table_id =" + adTableID +
-					" and conf.ad_org_id =" + this.getAD_Org_ID() + ")) OR (cab.ismodified='Y' AND caborg.ismodified='Y')) " +
-					" order by cab.updated, cab.z_ofertaventa_id ";
-			 */
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();
@@ -843,25 +825,6 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 
 					zOfertaVentaID = rs.getInt("z_regularoffer_id");
 
-					/*
-					// Si es una corrección de oferta, tengo que considerar los productos eliminados de la misma
-					MZOfertaVenta ofertaVenta = new MZOfertaVenta(getCtx(), zOfertaVentaID, get_TrxName());
-					if (ofertaVenta.isModified()){
-						List<MZOfertaVentaLinDel> linDelList = ofertaVenta.getLinesDeleted();
-						for (MZOfertaVentaLinDel linDel: linDelList){
-							// Agrego producto eliminado en correccion de oferta
-							MZConfirmacionEtiquetaProd etiquetaProd = new MZConfirmacionEtiquetaProd(getCtx(), 0, get_TrxName());
-							etiquetaProd.setZ_ConfirmacionEtiquetaDoc_ID(etiquetaDoc.get_ID());
-							etiquetaProd.setM_Product_ID(linDel.getM_Product_ID());
-							etiquetaProd.setPriceSO(linDel.getNewPriceSO());
-							etiquetaProd.setDateValidSO(linDel.getValidFrom());
-							etiquetaProd.setC_Currency_ID_SO(ofertaVenta.getC_Currency_ID_SO());
-							etiquetaProd.setWithOfferSO(false);  // Este producto en si mismo esta entrando a comuniacion al local para imprimirse por una cercana oferta.
-							etiquetaProd.setQtyCount(1);
-							etiquetaProd.saveEx();
-						}
-					}
-					 */
 				}
 
 				// Nuevo producto
