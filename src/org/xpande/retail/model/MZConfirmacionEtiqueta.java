@@ -799,7 +799,7 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					" and (a.datefrom <='" + this.getDateDoc() + "' " +
 					" and a.dateto >='" + this.getDateDoc() + "') " +
 					" and a.docstatus='CO' " +
-					" and (c.z_confirmacionetiqueta_id is null and c.ad_orgtrx_id = 1000008 and c.isexecuted='Y') " +
+					" and (c.z_confirmacionetiqueta_id is null and c.ad_orgtrx_id =" + this.getAD_Org_ID() + " and c.isexecuted='Y') " +
 					//" and a.z_confirmacionetiqueta_id is null " +
 					" and b.newpriceso is not null " +
 					" order by a.updated, a.z_regularoffer_id ";
