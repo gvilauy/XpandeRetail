@@ -701,6 +701,8 @@ public class MZConfirmacionEtiqueta extends X_Z_ConfirmacionEtiqueta implements 
 					" from z_preciosprovlinorg linorg " +
 					" inner join z_preciosprovlin lin on linorg.z_preciosprovlin_id = lin.z_preciosprovlin_id " +
 					" inner join z_preciosprovcab cab on lin.z_preciosprovcab_id = cab.z_preciosprovcab_id " +
+					" inner join z_preciosprovorg caborg on (cab.z_preciosprovcab_id = caborg.z_preciosprovcab_id " +
+					" and caborg.ad_orgtrx_id =" + this.getAD_Org_ID() + " and caborg.isselected ='Y') " +
 					" where linorg.ad_orgtrx_id =" + this.getAD_Org_ID() +
 					" and lin.m_product_id is not null " +
 					" and linorg.newpriceso <> linorg.priceso " +
