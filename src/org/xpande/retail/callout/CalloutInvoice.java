@@ -670,6 +670,7 @@ public class CalloutInvoice extends CalloutEngine
 		MInvoice invoice = new MInvoice(ctx, cInvoiceID, null);
 		int M_PriceList_ID = invoice.getM_PriceList_ID();
 		int StdPrecision = MPriceList.getPricePrecision(ctx, M_PriceList_ID);
+		if (invoice.isSOTrx()) StdPrecision = 2;
 
 		BigDecimal QtyEntered, QtyInvoiced, PriceEntered, PriceActual, PriceLimit, Discount, PriceList;
 
