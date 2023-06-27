@@ -628,6 +628,18 @@ public class CalloutInvoice extends CalloutEngine
 					}
 				}
 			}
+			if (IsSOTrx) {
+				MProduct product = new MProduct(ctx, M_Product_ID, null);
+				String sql = " select c_taxcategory_id from z_productotaxorg where ad_orgtrx_id =" + AD_Org_ID +
+						" and m_product_id =" + product.get_ID();
+				int cTaxCategoryAuxID = DB.getSQLValueEx(null, sql);
+				if (cTaxCategoryAuxID > 0){
+					MTax taxAux = TaxUtils.getDefaultTaxByCategory(ctx, cTaxCategoryAuxID, null);
+					if ((taxAux != null) && (taxAux.get_ID() > 0)){
+						C_Tax_ID = taxAux.get_ID();
+					}
+				}
+			}
 		}
 		// Xpande
 
