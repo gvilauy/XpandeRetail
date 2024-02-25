@@ -7,13 +7,16 @@ import org.compiere.model.MPriceListVersion;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocumentEngine;
 import org.compiere.process.SvrProcess;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.ZipUtil;
+import org.xpande.core.utils.DateUtils;
 import org.xpande.core.utils.PriceListUtils;
 import org.xpande.retail.model.*;
 
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -38,6 +41,25 @@ public class CloseRegOffer extends SvrProcess {
             }
 
             Timestamp today = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+            Date dateCloseAux = new Date(today.getTime());
+            dateCloseAux =  DateUtils.addDays(dateCloseAux, -1);
+            Timestamp closeDate = new Timestamp(dateCloseAux.getTime());
+
+            // Actualiza fecha fin de oferta
+            this.regularOffer.setDateTo(closeDate);
+
+            // Actualiza fecha fin de oferta de venta de cada producto
+            String action = " update z_prodsalesoffer set enddate='" + closeDate + "' " +
+                    " where ad_table_id =" + MZRegularOffer.Table_ID +
+                    " and record_id =" + this.regularOffer.get_ID();
+            DB.executeUpdateEx(action, get_TrxName());
+
+            // Actualiza fecha fin de oferta de compra de cada producto
+            action = " update z_prodpurchaseoffer set enddate='" + closeDate + "' " +
+                    " where ad_table_id =" + MZRegularOffer.Table_ID +
+                    " and record_id =" + this.regularOffer.get_ID();
+            DB.executeUpdateEx(action, get_TrxName());
+
             // Obtengo lineas del documento
             List<MZRegularOfferLine> offerLines = this.regularOffer.getLines();
             // Obtengo organizaciones que participan en este documento
